@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Persian (fa) translation of values/strings_settings.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Language picker chrome. The language names themselves are rendered by
+         the OS in their own language and are not translated here. -->
+    <string name="settings_language">زبان</string>
+    <string name="language_option_system">پیش‌فرض سیستم</string>
+
+    <!-- Notification settings modal chrome -->
+    <string name="notif_settings_carousel_back">› بازگشت</string>
+    <string name="notif_settings_carousel_next">بعدی ‹</string>
+    <string name="notif_settings_technical_details">جزئیات فنی</string>
+    <string name="notif_settings_sound_row_label">صدا و لرزش</string>
+    <string name="notif_settings_sound_row_hint">هشدارها مثل هر پیام‌رسان دیگری صدا می‌دهند. می‌توانید آن‌ها را در تنظیمات اعلان Android تغییر دهید یا بی‌صدا کنید — Rún هرگز انتخاب شما را نادیده نمی‌گیرد.</string>
+    <string name="notif_settings_register_error_generic">ثبت‌نام برای اعلان‌ها انجام نشد. اتصال خود را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="notif_settings_register_error_no_distributor">هیچ توزیع‌کنندهٔ اعلانی انتخاب نشده است. ntfy را از F-Droid نصب کنید و دوباره تلاش کنید.</string>
+    <string name="notif_settings_register_error_distributor_selection">اتصال به توزیع‌کنندهٔ اعلان شما ممکن نشد. Rún را کاملاً ببندید و دوباره باز کنید، سپس دوباره تلاش کنید.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">سرور پوش این توزیع‌کننده هنوز پشتیبانی نمی‌شود — به VAPID نیاز دارد. ntfy کار می‌کند؛ می‌توانید آن را از F-Droid نصب کنید.</string>
+    <string name="notif_settings_register_error_distributor_refused">توزیع‌کنندهٔ اعلان شما ثبت‌نام را رد کرد. آن را باز کنید، از راه‌اندازی‌اش مطمئن شوید و دوباره تلاش کنید.</string>
+    <string name="notif_settings_register_error_no_endpoint">توزیع‌کنندهٔ اعلان شما به‌موقع پاسخ نداد. آن را باز کنید، مطمئن شوید متصل است و دوباره تلاش کنید.</string>
+    <string name="notif_settings_no_distributor_message">این گوشی سرویس‌های Google را ندارد، پس اعلان‌ها به یک برنامهٔ توزیع‌کنندهٔ UnifiedPush نیاز دارند. یکی نصب کنید — ntfy گزینهٔ پیشنهادی است — سپس به اینجا برگردید و اعلان‌ها را روشن کنید.</string>
+    <string name="notif_settings_no_distributor_link_label">دریافت ntfy از F-Droid</string>
+    <string name="notif_settings_unregistered_notice">توزیع‌کنندهٔ اعلان شما دیگر به Rún تحویل نمی‌دهد، بنابراین اعلان‌ها خاموش شدند. برای اتصال دوباره، آن‌ها را دوباره روشن کنید.</string>
+    <string name="settings_language_restart_title">برای اعمال، دوباره راه‌اندازی کنید</string>
+    <string name="settings_language_restart_message">برای تغییر زبان برنامه به %1$s، لازم است Rún دوباره راه‌اندازی شود. ادامه می‌دهید؟</string>
+    <string name="settings_report_bug">گزارش اشکال</string>
+    <string name="settings_debug_mode">حالت اشکال‌زدایی</string>
+    <string name="settings_debug_mode_on">حالت اشکال‌زدایی (روشن)</string>
+    <string name="debug_mode_title">حالت اشکال‌زدایی</string>
+    <string name="debug_mode_message">برای کمک به توسعه، گزارش‌های تشخیصی ناشناس را به رله بفرستید. این گزارش‌ها هرگز شامل چیزی نمی‌شوند که هویت شما یا این دستگاه را مشخص کند: نه نام، نه محتوای پیام، نه نشانی، نه کلید، نه شناسهٔ صندوق ورودی یا مخاطب.</string>
+    <string name="debug_mode_message_off">حالت اشکال‌زدایی روشن است. برای توقف ارسال گزارش‌های تشخیصی ناشناس، آن را خاموش کنید.</string>
+    <string name="debug_mode_turn_on">روشن کردن</string>
+    <string name="debug_mode_turn_off">خاموش کردن</string>
+    <string name="ext_proxy_title">پروکسی Tor خارجی</string>
+    <string name="ext_proxy_description">تمام ترافیک رله را از طریق یک پروکسی SOCKS5 که خودتان اجرا می‌کنید، مانند Orbot یا Tor در شبکهٔ خودتان، به‌جای Tor داخلی Rún ارسال کنید. تا وقتی این گزینه روشن است، Tor داخلی هرگز راه‌اندازی نمی‌شود. اگر پروکسی در دسترس نباشد، Rún آفلاین می‌ماند. هیچ مسیر جایگزینی وجود ندارد.</string>
+    <string name="ext_proxy_toggle">استفاده از پروکسی خارجی</string>
+    <string name="ext_proxy_host_label">نشانی IP پروکسی</string>
+    <string name="ext_proxy_port_label">درگاه</string>
+    <string name="ext_proxy_error_host">یک نشانی IP روی این تلفن یا شبکهٔ محلی خود وارد کنید: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x یا 169.254.x.x. نام میزبان مجاز نیست.</string>
+    <string name="ext_proxy_error_port">درگاهی از 1 تا 65535 وارد کنید.</string>
+    <string name="ext_proxy_error_save">ذخیرهٔ تنظیم انجام نشد. دوباره تلاش کنید.</string>
+    <string name="ext_proxy_lan_warning">ترافیک بین این تلفن و پروکسی رمزگذاری نشده است. هر کسی که بتواند این نشانی را زیر نظر بگیرد یا جعل کند، حتی در شبکه‌های دیگری که این تلفن بعداً به آن‌ها وصل می‌شود، توکن‌های دسترسی به صندوق‌های ورودی گفتگوهای شما را به دست می‌آورد. او می‌تواند این صندوق‌ها را حذف یا تصاحب کند، اما نمی‌تواند پیام‌های شما را بخواند. این حالت را فقط در شبکه‌ای که خودتان کنترل می‌کنید استفاده کنید و هنگام ترک آن شبکه خاموشش کنید.</string>
+    <string name="ext_proxy_loopback_warning">تا زمانی که برنامهٔ پروکسی (مثل Orbot) اجرا نیست، هر برنامهٔ دیگری روی این تلفن می‌تواند پورت آن را بگیرد و همان توکن‌های دسترسی را دریافت کند. برنامهٔ پروکسی را روی پورتی غیرپیش‌فرض تنظیم کنید و آن را در حال اجرا نگه دارید.</string>
+    <string name="ext_proxy_next_launch">تغییرات دفعهٔ بعد که Rún را باز کنید اعمال می‌شود.</string>
+    <string name="ext_proxy_saved">ذخیره شد. برای اعمال، Rún را ببندید و دوباره باز کنید.</string>
+    <string name="ext_proxy_connecting">در حال اتصال از طریق پروکسی خارجی شما</string>
+    <string name="ext_proxy_status_checking">استفاده از پروکسی خارجی: در حال بررسی</string>
+    <string name="ext_proxy_status_reachable">استفاده از پروکسی خارجی</string>
+    <string name="ext_proxy_status_unreachable">پروکسی خارجی در دسترس نیست</string>
+    <string name="ext_proxy_status_invalid">تنظیم پروکسی خارجی نامعتبر است. آن را در تنظیمات اصلاح کنید.</string>
+    <string name="ext_proxy_status_unreadable">تنظیم پروکسی خارجی خوانده نشد. پیام‌رسانی در دسترس نیست.</string>
+    <string name="report_bug_title">اشکال را شرح دهید (شما ناشناس هستید)</string>
+    <string name="report_bug_placeholder">چه اتفاقی افتاد و چه انتظاری داشتید؟</string>
+    <string name="report_bug_send">ارسال</string>
+    <string name="report_bug_failed">گزارش ارسال نشد — اتصال را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="report_bug_thanks">از اینکه به بهتر شدن Rún کمک می‌کنید سپاسگزاریم</string>
+</resources>

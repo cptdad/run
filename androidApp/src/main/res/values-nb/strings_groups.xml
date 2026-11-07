@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Antall medlemmer (delt av gruppetopptekst og gruppeinfo) -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d medlem</item>
+        <item quantity="other">%1$d medlemmer</item>
+    </plurals>
+    <!-- Legges til etter medlemstallet med « · » i koden -->
+    <string name="group_info_not_reachable_suffix">%1$d kan ikke nås ennå</string>
+    <string name="group_info_admin_suffix">du er administrator</string>
+
+    <!-- Gruppesamtale -->
+    <string name="group_member_list_differs">⚠ medlemslisten avviker</string>
+    <string name="group_delivery_not_delivered">ikke levert til %1$d</string>
+    <string name="group_notice_not_delivered">Meldingen din nådde ikke %1$d av medlemmene: de kan ikke nås ennå fra denne telefonen, eller relayet avviste kopien deres. Rún beholder ingen kopi for å sende den senere.</string>
+
+    <!-- Gruppeinfo -->
+    <string name="group_info_add_member">Legg til medlem</string>
+    <string name="group_info_you">Deg</string>
+    <string name="group_info_not_reachable">Kan ikke nås ennå</string>
+    <string name="group_info_no_verified_pairing">Ingen bekreftet parkobling med dette medlemmet ennå</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Forlat gruppen</string>
+    <string name="group_info_make_admin">Gjør til admin</string>
+    <string name="group_info_remove_from_group">Fjern fra gruppen</string>
+    <string name="group_info_add_member_precondition">Vedkommende må ha parkoblet ansikt til ansikt med alle medlemmene. Du går god for det.</string>
+    <string name="group_info_add_member_empty">Ingen aktuelle kontakter – alle du har parkoblet med, er allerede i gruppen.</string>
+    <string name="group_info_leave_confirm_title_android">Forlate %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Forlat gruppen</string>
+    <string name="group_info_leave_confirm_admin_message">Du er administrator. Overfør rollen først, ellers kan ingen endre medlemslisten.</string>
+    <string name="group_info_leave_confirm_message">De andre medlemmene får beskjed om at du har forlatt gruppen.</string>
+    <string name="group_info_leave_unread_warning">Det du har sendt som de andre ikke har lest ennå, blir kanskje aldri vist for dem.</string>
+    <string name="group_info_leave_confirm_action">Forlat</string>
+    <string name="group_info_choose_admin_title">Velg ny administrator</string>
+    <string name="group_info_choose_admin_subtitle_android">Vedkommende kan legge til og fjerne medlemmer etter at du har forlatt gruppen.</string>
+    <string name="group_info_choose_admin_nav_title">Ny administrator</string>
+    <string name="group_info_choose_admin_subtitle_ios">Velg hvem som skal bli ny administrator. Vedkommende kan legge til og fjerne medlemmer etter at du har forlatt gruppen.</string>
+    <string name="group_info_transfer_failed_title">Kunne ikke overføre administratorrollen</string>
+    <string name="group_info_transfer_failed_message">Ingenting ble endret – du er fortsatt administrator, så gruppen kan fortsatt styres. Prøv igjen.</string>
+
+    <!-- Opprett gruppe -->
+    <string name="create_group_title">Ny gruppe</string>
+    <string name="create_group_name_placeholder">Gruppenavn</string>
+    <string name="create_group_precondition">Alle i en gruppe må ha parkoblet ansikt til ansikt med alle andre. Du går god for det når du oppretter gruppen.</string>
+    <string name="create_group_failed">Kunne ikke opprette gruppen. Sjekk forbindelsen og prøv igjen.</string>
+    <string name="create_group_creating">Oppretter…</string>
+    <string name="create_group_select_members">Velg medlemmer</string>
+    <string name="create_group_button_label">Opprett gruppe (%1$d)</string>
+    <string name="group_private_from">Privat fra %1$s · bare du ser dette</string>
+    <string name="group_private_to">Privat til %1$s</string>
+    <string name="group_private_reply">Svar privat</string>
+    <string name="group_private_reply_chip">Privat svar til %1$s</string>
+    <string name="group_private_reply_chip_close">Avslutt privat svar</string>
+
+</resources>

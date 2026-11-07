@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_settings.xml.
+  Machine-translated 2026-08-27, pending human review.
+  The language list itself is not translated here — LanguagePickerModal renders
+  every supported tag's name in its own language.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="settings_language">Sprog</string>
+    <string name="language_option_system">Systemets standard</string>
+
+    <!-- Notification settings modal chrome (NotificationSettingsModal.kt) -->
+    <string name="notif_settings_carousel_back">‹ Tilbage</string>
+    <string name="notif_settings_carousel_next">Næste ›</string>
+    <string name="notif_settings_technical_details">Tekniske detaljer</string>
+    <string name="notif_settings_sound_row_label">Lyd og vibration</string>
+    <string name="notif_settings_sound_row_hint">Notifikationer lyder som i enhver anden beskedapp. Du kan ændre dem eller slå lyden fra i notifikationsindstillingerne i Android — Rún tilsidesætter aldrig dit valg.</string>
+    <string name="notif_settings_register_error_generic">Kunne ikke registrere dig til notifikationer. Tjek din forbindelse, og prøv igen.</string>
+    <string name="notif_settings_register_error_no_distributor">Der blev ikke valgt nogen notifikationsdistributør. Installér ntfy fra F-Droid, og prøv igen.</string>
+    <string name="notif_settings_register_error_distributor_selection">Kunne ikke få forbindelse til din notifikationsdistributør. Luk Rún helt, åbn appen igen, og prøv en gang til.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Denne distributørs pushserver understøttes ikke endnu — den kræver VAPID. ntfy virker; du kan installere den fra F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Din notifikationsdistributør afviste registreringen. Åbn den, tjek at den er sat op, og prøv igen.</string>
+    <string name="notif_settings_register_error_no_endpoint">Din notifikationsdistributør svarede ikke i tide. Åbn den, sørg for at den er forbundet, og prøv igen.</string>
+    <string name="notif_settings_no_distributor_message">Denne telefon har ingen Google-tjenester, så notifikationer kræver en UnifiedPush-distributørapp. Installér en — ntfy er den anbefalede — og kom så tilbage hertil og slå notifikationer til.</string>
+    <string name="notif_settings_no_distributor_link_label">Hent ntfy på F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Din notifikationsdistributør holdt op med at levere til Rún, så notifikationer blev slået fra. Slå dem til igen for at genoprette forbindelsen.</string>
+    <string name="settings_language_restart_title">Genstart for at anvende</string>
+    <string name="settings_language_restart_message">Rún skal genstarte for at skifte appens sprog til %1$s. Fortsæt?</string>
+    <string name="settings_report_bug">Rapportér fejl</string>
+    <string name="settings_debug_mode">Fejlfindingstilstand</string>
+    <string name="settings_debug_mode_on">Fejlfindingstilstand (til)</string>
+    <string name="debug_mode_title">Fejlfindingstilstand</string>
+    <string name="debug_mode_message">Send anonyme diagnoselogge til relæet for at hjælpe udviklingen. Loggene indeholder aldrig noget, der identificerer dig eller denne enhed: ingen navne, intet beskedindhold, ingen adresser, ingen nøgler, ingen indbakke- eller kontakt-id\'er.</string>
+    <string name="debug_mode_message_off">Fejlfindingstilstand er slået til. Slå den fra for at stoppe med at sende anonyme diagnoselogge.</string>
+    <string name="debug_mode_turn_on">Slå til</string>
+    <string name="debug_mode_turn_off">Slå fra</string>
+    <string name="ext_proxy_title">Ekstern Tor-proxy</string>
+    <string name="ext_proxy_description">Send al relætrafik gennem en SOCKS5-proxy, som du selv driver, for eksempel Orbot eller Tor på dit eget netværk, i stedet for den indbyggede Tor i Rún. Mens dette er slået til, starter den indbyggede Tor aldrig. Hvis proxyen ikke kan nås, forbliver Rún offline. Der er ingen reserveløsning.</string>
+    <string name="ext_proxy_toggle">Brug en ekstern proxy</string>
+    <string name="ext_proxy_host_label">Proxyens IP-adresse</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Angiv en IP-adresse på denne telefon eller dit lokale netværk: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x eller 169.254.x.x. Værtsnavne er ikke tilladt.</string>
+    <string name="ext_proxy_error_port">Angiv en port fra 1 til 65535.</string>
+    <string name="ext_proxy_error_save">Indstillingen kunne ikke gemmes. Prøv igen.</string>
+    <string name="ext_proxy_lan_warning">Trafikken mellem denne telefon og proxyen er ikke krypteret. Enhver, der kan overvåge eller udgive sig for at være denne adresse, også på andre netværk, som telefonen tilslutter sig senere, får adgangstokens til dine samtalers indbakker. Vedkommende kan slette eller overtage indbakkerne, men kan ikke læse dine beskeder. Brug kun dette på et netværk, du selv kontrollerer, og slå tilstanden fra, når du forlader det.</string>
+    <string name="ext_proxy_loopback_warning">Mens proxy-appen (f.eks. Orbot) ikke kører, kan enhver anden app på denne telefon overtage dens port og få de samme adgangstokens. Indstil proxy-appen til en port, der ikke er standard, og lad den køre.</string>
+    <string name="ext_proxy_next_launch">Ændringer træder i kraft, næste gang du åbner Rún.</string>
+    <string name="ext_proxy_saved">Gemt. Luk og åbn Rún igen for at anvende det.</string>
+    <string name="ext_proxy_connecting">Opretter forbindelse via din eksterne proxy</string>
+    <string name="ext_proxy_status_checking">Bruger ekstern proxy: kontrollerer</string>
+    <string name="ext_proxy_status_reachable">Bruger ekstern proxy</string>
+    <string name="ext_proxy_status_unreachable">Ekstern proxy kan ikke nås</string>
+    <string name="ext_proxy_status_invalid">Indstillingen for ekstern proxy er ugyldig. Ret den i Indstillinger.</string>
+    <string name="ext_proxy_status_unreadable">Indstillingen for ekstern proxy kunne ikke læses. Beskeder er ikke tilgængelige.</string>
+    <string name="report_bug_title">Beskriv fejlen (du er anonym)</string>
+    <string name="report_bug_placeholder">Hvad skete der, og hvad forventede du?</string>
+    <string name="report_bug_send">Send</string>
+    <string name="report_bug_failed">Rapporten kunne ikke sendes — tjek forbindelsen, og prøv igen.</string>
+    <string name="report_bug_thanks">Tak fordi du hjælper med at forbedre Rún</string>
+</resources>

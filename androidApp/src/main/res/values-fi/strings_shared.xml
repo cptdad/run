@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_shared.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About carousel (AboutContent.kt) -->
+    <string name="about_welcome_title">Tervetuloa Rún-sovellukseen</string>
+    <string name="about_welcome_body">Viestintää, jossa ei ole mitään takavarikoitavaa, jäljitettävää tai oikeuden määräyksellä haettavaa — ei tilejä, ei numeroita, ei jälkiä. Nimi on muinaisnorjaa: ”rún” — salaisuus, kätketty tieto, sanan ”riimu” juuri, ja iirissä sekä gaelissa se rakas, jonka huostaan salaisuus uskotaan.</string>
+    <string name="about_tor_intro_title">Reititetty Tor-verkon kautta</string>
+    <string name="about_tor_intro_body">Kaikki, mitä Rún lähettää, kulkee Tor-verkon kautta — maailmanlaajuisen verkon, joka välittää liikenteesi useiden solmujen läpi ja piilottaa IP-osoitteesi sekä sijaintisi. Edes Rún-sovelluksen oma välityspalvelin ei saa tietää, kuka tai missä olet, eikä Rún muodosta yhteyttä millään muulla tavalla.</string>
+    <string name="about_tor_runestone_title">Punainen tarkoittaa Tor-verkkoa</string>
+    <string name="about_tor_runestone_body">Tarkkaile riimukiveä — punainen tarkoittaa, että olet Tor-verkossa. Sen rengas sykkii sitä voimakkaammin, mitä lähempänä olet, palaa tasaisen punaisena heti kun välityspalvelin vastaa, ja sitten R-kirjain syttyy.</string>
+    <string name="about_e2e_title">Päästä päähän -salattu</string>
+    <string name="about_e2e_body">Jokainen viesti sinetöidään avaimella, joka on vain sinulla ja kontaktillasi, ja keskustelun jatkuessa avain kiertyy eteenpäin — joten yhden avaimen paljastuminen jättää loput silti sinetöidyiksi.</string>
+    <string name="about_relay_title">Välityspalvelin, joka ei osaa lukea</string>
+    <string name="about_relay_body">Rún-välityspalvelin on tarkoituksella tyhmä — ei tilejä, ei mitään luettavaa, vain täytettyjä datamöykkyjä numeroiduissa postilaatikoissa, joita se välittää eteenpäin; niiden täytetty koko ei paljasta sisällöstä mitään. Mikään ei jää roikkumaan toimituksen jälkeen — viestit poistuvat postilaatikosta sitä mukaa, kun luet ne, ja postilaatikko itse vapautetaan pitkän hiljaisuuden jälkeen.</string>
+    <string name="about_relay_runestone_title">Valkoinen ᚱ tarkoittaa välityspalvelinta</string>
+    <string name="about_relay_runestone_body">Kun keskellä oleva ᚱ palaa valkoisena, Rún on saavuttanut välityspalvelimen — viestit voivat lähteä ja saapua. Punainen ilman valkoista ᚱ-merkkiä tarkoittaa, että Tor on pystyssä mutta välityspalvelin ei ole vielä tavoitettavissa.</string>
+    <string name="about_contacts_title">Kontaktit, jotka valitset itse</string>
+    <string name="about_contacts_body">Ei sähköposteja, ei rekisteröitymisiä — eikä kukaan tuntematon voi lisätä sinua. Tapaatte kasvokkain ja luette toistenne QR-koodit. Jokainen kontakti saa satunnaisen peitenimen; lisää yksityinen muistiinpano, jonka vain sinä näet, niin vain sinä tiedät, kuka hän oikeasti on.</string>
+    <string name="about_referrals_title">Taatut esittelyt</string>
+    <string name="about_referrals_body">Rún ei tarjoa hakemistoa siitä, kuka sitä käyttää. Sen sijaan joku, johon jo luotat, voi esitellä sinut jollekulle, johon hän luottaa — ja sinä päätät, hyväksytkö. Luottamus kulkee ihmiseltä ihmiselle, ei koskaan palvelimen kautta.</string>
+    <string name="about_groups_title">Ryhmäkeskustelut</string>
+    <string name="about_groups_body">Ryhmä elää vain jäsentensä puhelimissa — ei ryhmätiliä, ei jäsenluetteloa, ei mitään takavarikoitavaa välityspalvelimella. Jokainen viesti lähetetään erikseen jokaiselle jäsenelle, joten välityspalvelin ei koskaan saa tietää ryhmän nimeä, keitä siinä on, eikä sanaakaan puheesta. Se kyllä näkee yhden viestin menevän useaan postilaatikkoon kerralla — sen verran, että ryhmän olemassaolo ja tavoitettujen määrä paljastuvat, ei koskaan keiden.</string>
+    <string name="about_vanish_title">Viestit katoavat</string>
+    <string name="about_vanish_body">Tämä on ”palaa luettaessa”: viestit elävät vain muistissa, eivät koskaan levyllä. Sulje sovellus tai poistu keskustelusta, ja ne ovat lopullisesti poissa.</string>
+    <string name="about_quiet_title">Hiljainen oletuksena</string>
+    <string name="about_quiet_body">Ei mainoksia, analytiikkaa tai profiileja — ei koskaan, eikä oletuksena ilmoituksia: Rún ottaa yhteyden välityspalvelimeensa Tor-verkon kautta vain silloin, kun avaat sen. Voit halutessasi ottaa käyttöön välittömät hälytykset — sisällöttömän herätyksen Applen tai Googlen push-palvelun kautta tai sellaisen kautta, jonka asennat itse; se paljastaa vain karkean ajoituksen, ei koskaan viestiä eikä lähettäjää — ne ovat pois päältä, ellet kytke niitä päälle.</string>
+    <string name="about_lockwipe_title">Lukitsee ja pyyhkii itsensä</string>
+    <string name="about_lockwipe_body">Käyttämättömänä tai taustalle siirrettynä Rún lukittuu — avaat sen taas PIN-koodillasi tai salalauseellasi. Liian monta väärää yritystä tai pitkä koskematon jakso vie pidemmälle: se pyyhkii avaimet ja kaiken datan peruuttamattomasti. Kuinka pian kumpikin tapahtuu, määräytyy valitsemasi suojaustason mukaan.</string>
+    <string name="about_screen_privacy_title">Näytön yksityisyys</string>
+    <string name="about_screen_privacy_body_android">Kuvakaappaukset, näytön tallennus ja viimeisimpien sovellusten esikatselu on kaikki estetty, joten mitään ei vuoda galleriaasi tai sovellusvalitsimeen.</string>
+    <string name="about_screen_privacy_body_ios">Sovellusvalitsimen esikatselu ja näytön tallennus on peitetty. iOS ei voi estää käsin otettua kuvakaappausta, joten ole varovainen arkaluontoisissa keskusteluissa — Rún varoittaa sinua, jos sellainen otetaan.</string>
+    <string name="about_forensic_title">Forensiikan kestävä</string>
+    <string name="about_forensic_body">Takavarikoitu puhelin ei luovuta mitään hyödyllistä. Kaikki levossa oleva on sinetöity SQLCipher-salauksella, ja pyyhintä tuhoaa itse avaimet — jäljelle jää vain kohinaa, ei välimuisteja eikä sirpaleita. Kuinka vaikeaa sen avaaminen on, on sinun valintasi: Perus nojaa PIN-koodiisi; Turva sitoo avaimen tämän puhelimen turvasiruun, sormenjälkesi tai kasvojesi taakse; Maksimi vaihtaa PIN-koodin tilalle salalauseen, jonka vain sinä tiedät — joten edes täysin kopioitu puhelin ei aukea.</string>
+    <string name="about_ready_title">Valmis, kun sinäkin olet</string>
+    <string name="about_ready_body">Se on Rún — hiljainen, yksityinen ja sinun salaisuutesi. Lisää joku kasvokkain ja aloita keskustelu, jota kukaan muu ei näe.</string>
+
+    <!-- Donate / Support modal (DonateContent.kt) -->
+    <string name="donate_appeal">Rún ei näytä mainoksia eikä sillä ole sijoittajia, eikä se koskaan myy tietojasi. Jokainen lahjoitus — suuri tai pieni — auttaa pitämään sen ilmaisena kaikille, ikuisesti.</string>
+
+    <!-- Notification education carousel (NotificationEducationContent.kt) -->
+    <string name="notif_edu_vendor_title">Ilmoitukset kulkevat %1$s:n palvelinten kautta. Ne eivät koskaan sisällä viestejäsi — vain tiedon siitä, että sinulle on uusi viesti.</string>
+    <string name="notif_edu_vendor_deep">Välityspalvelin lähettää sisällöttömän herätyksen palvelun %1$s kautta — ei lähettäjää, ei tekstiä, ei määrää — ja Rún näyttää vain yleisen ”Ilmoitus”-hälytyksen. Mitään ei haeta eikä pureta, ennen kuin avaat Rún-sovelluksen ja sen lukituksen. %3$s toimii samalla tavalla; kumpikaan palveluntarjoaja ei ole toistaan yksityisempi.\n\nMyös välityspalvelin oppii jotain: kaikki postilaatikkosi rekisteröidään sen yhden push-osoitteen alle, jonka %2$s on myöntänyt tälle puhelimelle, joten välityspalvelin näkee, mitkä keskustelut ovat samalla laitteella. Se, joka pystyy pakottamaan sekä %2$s:n että välityspalvelimen luovuttamaan tietoja, voisi yhdistää sinut keskusteluihisi. Siksi tämä kytkin on pois päältä, kunnes kytket sen itse päälle.</string>
+    <string name="notif_edu_timing_title">%1$s saa tietää vain, milloin viestit saapuvat sinulle — ei koskaan kuka ne lähetti tai mitä niissä lukee. Ajan myötä jo pelkät aikaleimat voivat paljastaa, milloin olet yhteydessä.</string>
+    <string name="notif_edu_timing_deep">Herätys laukeaa aina, kun viesti saapuu sinulle, joten %1$s näkee jatkuvan kuvion — kuinka usein, mihin kellonaikoihin — sidottuna tämän puhelimen Rún-asennukseen. Tor peittää tämän ajoituksen normaalisti; ilmoitusten käyttöönotto vaihtaa osan siitä välittömään toimitukseen.</string>
+    <string name="notif_edu_content_safe_title">Viestisi eivät koskaan päädy %1$s:lle. Rún hakee ne Tor-verkon kautta ja purkaa ne tässä puhelimessa vasta, kun olet avannut lukituksen.</string>
+    <string name="notif_edu_content_safe_deep">Herätys ei kanna mitään eikä käynnistä itsestään verkkoliikennettä. Viestisi odottavat salattuina välityspalvelimella, kunnes avaat Rún-sovelluksen, joka hakee ne Tor-verkon kautta ja purkaa ne paikallisesti PIN-koodistasi tai salalauseestasi johdetulla avaimella. %1$s ei koskaan vastaanota, tallenna eikä välitä yhtään viestitavua.</string>
+    <string name="notif_edu_switch_title">Ota ilmoitukset käyttöön</string>
+    <string name="notif_edu_switch_label">Reaaliaikaiset ilmoitukset (palvelun %1$s kautta)</string>
+    <string name="notif_vendor_name_android">Google</string>
+    <string name="notif_vendor_name_ios">Apple</string>
+    <string name="notif_service_name_android">Googlen Firebase Cloud Messaging (FCM)</string>
+    <string name="notif_service_name_ios">Applen Push Notification -palvelu (APNs)</string>
+    <string name="notif_cross_ref_label_android">iOS-push (APNs)</string>
+    <string name="notif_cross_ref_label_ios">Android-push (FCM)</string>
+
+    <!-- UnifiedPush (Google-free) education carousel -->
+    <string name="notif_edu_up_distributor_title">Tässä puhelimessa ei ole Google-palveluita, joten herätesignaalin toimittaa erillinen valitsemasi sovellus — UnifiedPush-välittäjäsovellus, kuten ntfy.</string>
+    <string name="notif_edu_up_distributor_deep">Välittäjäsovellus pitää yhden yhteyden auki push-palvelimeen ja luovuttaa jokaisen herätyksen Rún-sovellukselle. Viesteissäsi ei muutu mikään: herätys ei sisällä viestiä, ja Rún hakee ja purkaa edelleen kaiken Tor-verkon kautta sen jälkeen, kun olet avannut lukituksen.</string>
+    <string name="notif_edu_up_parties_title">Kaksi osapuolta saa tietää, milloin sinuun otetaan yhteyttä — välittäjäsovellus ja sen push-palvelin — ei koskaan kuka kirjoitti tai mitä. Jo pelkät aikaleimat voivat paljastaa, milloin olet yhteydessä.</string>
+    <string name="notif_edu_up_parties_deep">Se on yksi osapuoli enemmän kuin Google-versiossa. Välittäjäsovellus näkee jokaisen herätyksen, koska se toimittaa ne; sen push-palvelin näkee ne, koska se välittää ne, ja julkisella palvelimella se näkee myös tämän puhelimen IP-osoitteen. Kumpikaan ei näe lähettäjää, viestiä eikä määrää. Tor peittää tämän ajoituksen normaalisti; ilmoitukset vaihtavat osan siitä välittömään toimitukseen. Jos ylläpidät omaa push-palvelinta, toinen osapuoli olet sinä.</string>
+    <string name="notif_edu_up_content_safe_title">Viestisi eivät koskaan päädy välittäjäsovellukselle eivätkä sen palvelimelle. Jokainen herätys on salattu tälle puhelimelle eikä kanna mitään; Rún hakee viestisi Tor-verkon kautta ja purkaa ne, kun olet avannut lukituksen.</string>
+    <string name="notif_edu_up_content_safe_deep">Jokainen herätys salataan avainparille, joka ei koskaan poistu tästä puhelimesta (Web Push, RFC 8291), joten se, joka saa selville päätepisteosoitteesi, ei voi väärentää uutta hälytystä — push-palvelimesi voisi kuitenkin lähettää jo vastaanottamasi herätyksen uudelleen, joten Rún rajoittaa, kuinka usein toisto voi laukaista hälytyksen — ja jokainen herätys on samaa kiinteää kokoa. Viestisi odottavat salattuina välityspalvelimella, kunnes avaat Rún-sovelluksen, joka hakee ne Tor-verkon kautta ja purkaa ne paikallisesti PIN-koodistasi tai salalauseestasi johdetulla avaimella.</string>
+
+    <!-- Protection level chooser (ProtectionLevelContent.kt / DeviceLockPolicy.kt) -->
+    <string name="protection_title">Valitse suojaustaso forensisia hyökkäyksiä vastaan</string>
+    <string name="protection_empty_state">Valitse taso jatkaaksesi. Mitään tasoa ei valita puolestasi.</string>
+    <string name="protection_stop_reason_prefix">Tason valinta ei ole mahdollista.</string>
+    <string name="protection_tier_name_casual">Perus</string>
+    <string name="protection_tier_name_private">Turva</string>
+    <string name="protection_tier_name_maximum">Maksimi</string>
+    <string name="protection_tier_tagline_casual">Kuusinumeroinen PIN-koodi Rún-sovelluksen avaamiseen. Forensiset työkalut voivat murtaa sen brute force -hyökkäyksellä tunneissa, joten Rún nojaa täysin puhelimen omaan suojaukseen. Androidissa näppäimistön sanaehdotukset ja emojit pysyvät käytössä, joten näppäimistö voi oppia kirjoittamiasi sanoja.</string>
+    <string name="protection_tier_tagline_private">Kuusinumeroinen PIN-koodi, mutta holvin avain on sinetöity puhelimen turvasiruun ja vapautuu vain sormenjäljelläsi tai kasvoillasi. Takavarikoitu puhelin kestää forensiset brute force -hyökkäykset, vaikka sen pääsykoodi murrettaisiin. Androidissa näppäimistön sanaehdotukset ja emojit pysyvät käytössä, joten näppäimistö voi oppia kirjoittamiasi sanoja.</string>
+    <string name="protection_tier_tagline_maximum">Pitkä salalause PIN-koodin sijaan — niin vahva, ettei mikään forensinen työkalu pysty murtamaan sitä brute force -hyökkäyksellä, ei edes avatusta puhelimesta. Näppäimistö toimii salasanatilassa: mitään kirjoittamaasi ei opita eikä ehdoteta, eikä Androidissa emoji-näppäin ole käytettävissä.</string>
+    <string name="protection_forced_notice_title">Puhelimessasi ei ole %1$s</string>
+    <string name="protection_forced_notice_body">Ilman sitä salalauseesi on ainoa asia viestiesi ja tämän puhelimen haltijan välissä. Siksi Rún toimii täällä Maksimi-tasolla.\n\nSe kysyy salalausetta joka kerta, lukittuu 60 sekunnin käyttämättömyyden jälkeen, ja kun Rún avataan seuraavan kerran 7 päivän käyttämättömyyden jälkeen, se pyyhkii kaiken — pysyvästi.\n\nAseta puhelimeesi pääsykoodi, niin voit valita lempeämmän tason.</string>
+    <string name="protection_device_lock_term_android">näytön lukitusta</string>
+    <string name="protection_device_lock_term_ios">pääsykoodia</string>
+    <string name="protection_stop_no_lock">Puhelimessasi ei ole %1$s, joten vain Maksimi voi suojata Rún-sovelluksen täällä.</string>
+    <string name="protection_stop_no_chip">Tässä puhelimessa ei ole turvasirua.</string>
+    <string name="protection_stop_no_biometrics">Biometristä tunnistusta ei ole käytettävissä. Ota Face ID tai sormenjälki käyttöön.</string>
+
+    <!-- Conversation rune whisper vocabulary (ConversationRunes.kt) -->
+    <string name="runes_consulting">Kysytään riimuilta…</string>
+    <string name="runes_whisper">Riimut kuiskaavat</string>
+    <string name="runes_silent">Riimut ovat vaiti</string>
+
+    <!-- Group departure notices -->
+    <string name="group_notice_left">%1$s poistui ryhmästä</string>
+    <string name="group_notice_removed">%1$s poistettiin ryhmästä</string>
+    <string name="group_notice_member_fallback">Jäsen</string>
+    <string name="menu_terms_contact">Ehdot ja yhteystiedot</string>
+    <string name="terms_contact_report_line">Ilmoita väärinkäytöstä tai loukkaavasta sisällöstä</string>
+    <string name="terms_contact_enforcement">Ilmoituksiin reagoidaan 24 tunnin kuluessa: loukkaava sisältö poistetaan ja väärinkäyttäjät suljetaan pois.</string>
+
+</resources>

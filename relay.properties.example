@@ -1,0 +1,31 @@
+# Relay configuration. Copy this file to `relay.properties` (gitignored), or set
+# the RELAY_ONION_URL environment variable (a non-empty env var wins over the
+# file):
+#
+#   export RELAY_ONION_URL=http://<your-relay-v3-address>.onion
+#
+# The value below is the PRODUCTION relay, the one the store apps use. It is
+# public on purpose (README, "Using the production relay from your own build").
+# Replace it to build against another relay. Empty / unset = no relay (valid).
+relayOnionUrl=http://fmmg3eei3i6uektuo7fanp2i6i5sc6m3xfdnhwjdq7xjuow5rhispjyd.onion,http://ua44wdlitwnw2to26ngf25wfvib77vqkbgamezvkltyjetrvora7hqid.onion,http://6gqehngnp37mgpijaomuk7i33sk4xmb5jicqmgroju5t7gtxnvsvrcqd.onion
+#
+# SEVERAL ADDRESSES (2026-10-23): relayOnionUrl (and relayDevOnionUrl below, and
+# both env vars) may hold a COMMA-SEPARATED list of up to 3 onion addresses of
+# the SAME relay backend, slot 1 first, e.g.
+#   relayOnionUrl=http://<addr1>.onion,http://<addr2>.onion
+# Each address has its own responsible-HSDir set; the client races the
+# descriptor fetch across all of them and uses the first that arrives. With
+# several entries every one must be a v3 .onion URL; more than 3 fails the
+# build. A single entry is exactly the old single-address configuration. A
+# non-empty env var replaces the WHOLE list from this file.
+
+# Optional dev/test relay — used ONLY by DEBUG builds on physical devices.
+# Release builds are compile-time pinned to relayOnionUrl above, and the build
+# FAILS if this value equals relayOnionUrl. Env override: RELAY_DEV_ONION_URL.
+# Release-artifact builds (task names containing "release", Xcode
+# CONFIGURATION=Release, or STRIP_DEV_RELAY=1) additionally emit this constant
+# EMPTY, so the dev address leaves no byte-level trace in shipped binaries.
+relayDevOnionUrl=
+# Comma-separated list, same rules as relayOnionUrl; the WHOLE list is
+# scrubbed from release builds, and the build FAILS if ANY dev entry equals ANY
+# production entry.

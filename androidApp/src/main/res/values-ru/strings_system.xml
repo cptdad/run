@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_system.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Сообщения</string>
+    <string name="notification_title">Уведомление</string>
+    <string name="apns_notification_body">Уведомление</string>
+    <string name="tor_keepalive_channel_name">Ожидание соединения</string>
+    <string name="tor_keepalive_notification_title">Соединение поддерживается готовым</string>
+    <string name="infoplist_camera_usage">Камера используется для сканирования QR-кодов при обмене контактами.</string>
+    <string name="infoplist_faceid_usage">Face ID разблокирует ваше зашифрованное хранилище, когда включена аппаратная блокировка.</string>
+    <string name="infoplist_local_network_usage">Доступ к локальной сети используется только тогда, когда вы задаёте внешний прокси Tor в вашей локальной сети.</string>
+</resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_add_contact.xml.
+  Add Contact — QR scan/show, code entry, alias naming, referral/introduction offers, camera permission copy (AddContactScreen.kt / AddContactView.swift).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="add_contact_title">Ku dar xiriiriye</string>
+    <string name="add_contact_nav_title">Ku dar xiriiriye</string>
+    <string name="add_contact_choice_heading">Ku dar xiriiriye</string>
+    <string name="add_contact_choice_subtitle">Adiga iyo xiriiriyahaaga waxaad isweydaarsataan koodh. Dooro sida aad ku bilowdo — labadaba waad samayn doontaa.</string>
+    <string name="add_contact_choice_show">Tus koodhkayga</string>
+    <string name="add_contact_choice_scan">Sawir gareyso koodh</string>
+    <string name="add_contact_show_heading">Tan u tus xiriiriyahaaga</string>
+    <string name="add_contact_show_hint_scanned">Ka dhig inay tan sawir gareeyaan, kadibna dhammee.</string>
+    <string name="add_contact_show_hint_pending">Ka dhig inay tan sawir gareeyaan. Marka xigta waxaad sawir gareyn doontaa tooda.</string>
+    <string name="add_contact_next">Xiga</string>
+    <string name="add_contact_show_first_android">Waan tusay →</string>
+    <string name="add_contact_show_first_ios">Waan tusay</string>
+    <string name="add_contact_scan_heading">Sawir gareyso koodhka QR ee xiriiriyahaaga</string>
+    <string name="add_contact_camera_permission">Ogolaanshaha kamaradda ayaa loo baahan yahay si loo sawir gareeyo</string>
+    <string name="add_contact_invalid_qr">Qaabka koodhka QR ma saxna</string>
+    <string name="add_contact_scan_deadlock">Ka sawir gareyso koodhka ku yaal shaashaddooda ee “Ku dhawaad dhammaatay”</string>
+    <string name="add_contact_mint_failed_relay">Relay-ga lama gaadhi karin</string>
+    <string name="add_contact_solving_pow">Xallinta proof-of-work…</string>
+    <string name="add_contact_setting_up_inbox">Diyaarinta sanduuqa…</string>
+    <string name="add_contact_mint_failed_prefix">Mint wuu fashilmay: %1$s</string>
+    <string name="add_contact_mint_ready">Sanduuqa waa diyaar</string>
+    <string name="add_contact_done_heading">✓ Xiriiriyaha waa la daray</string>
+    <string name="add_contact_saved_as">Waxaa loo kaydiyay: %1$s</string>
+    <string name="add_contact_scan_back_hint">Hadda ka dhig xiriiriyahaaga inay sawir gareeyaan koodhkaaga. Waxaad awoodi doontaan inaad fariimo isu soo dirtaan isla marka ay sameeyaan.</string>
+    <string name="add_contact_keep_waiting">Sii sug</string>
+    <string name="add_contact_cancel_pairing">Jooji lammaanaanta</string>
+    <string name="add_contact_cancel_pairing_title">Jooji lammaanaanta?</string>
+    <string name="add_contact_cancel_pairing_message">Tan waxay tirtirtaa xiriiriyaha aan la dhammaystirin waxayna xidhaa sanduuqyadiisa. Labadiinnuba waa inaad ku bilowdaan koodh cusub.</string>
+    <string name="add_contact_qr_preparing">Diyaarinta koodhkaaga…</string>
+    <string name="add_contact_announce_hint">Wax yar ka dib waxay awoodi doonaan inay fariin kuu soo diraan — sanduuqaaga si toos ah ayaa loo gudbinayaa.</string>
+    <string name="add_contact_mnemonic_label">Xusuus gaar ah (ikhtiyaari)</string>
+    <string name="add_contact_mnemonic_placeholder">tusaale: Kula kulmay shirka Oslo</string>
+    <string name="add_contact_scan_back_title">Ku dhawaad dhammaatay</string>
+    <string name="add_contact_your_code">Koodhkaaga</string>
+    <string name="add_contact_their_code">Koodhkooda</string>
+    <string name="add_contact_paste_placeholder">Halkan ku dheji koodhka xiriiriyaha</string>
+    <string name="add_contact_copied_bang">Waa la koobiyeeyay!</string>
+    <string name="add_contact_invalid_code">Koodh aan sax ahayn</string>
+    <string name="add_contact_paste_not_ready">Sanduuqa weli waa la diyaarinayaa — wax yar ka dib isku day mar kale</string>
+    <string name="add_contact_inbox_in_use">Xiriiriyahan lama darin karin — mid ka mid ah sanduuqyada ku jira koodhkooda ayaa hore loogu isticmaalayaa halkan. Haddii aad dib u darayso qof aad hore u haysay, marka hore tirtir xiriiriyihii hore, kadibna isku day mar kale.</string>
+</resources>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Group conversation, group info (members/invites/kick/leave/delete), and
+  create-group screens. Key prefixes: group_, group_info_, create_group_.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Shared across the group header (GroupConversationScreen) and group
+         info header (GroupInfoScreen) — member count, replacing the naive
+         "${n} members" concatenation. -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d member</item>
+        <item quantity="other">%1$d members</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d not yet reachable</string>
+    <string name="group_info_admin_suffix">you are admin</string>
+
+    <!-- Group conversation (GroupConversationScreen.kt / GroupViews.swift) -->
+    <string name="group_member_list_differs">⚠ member list differs</string>
+    <!-- Delivery mark under an own group bubble when at least one member got no copy
+         (replaces the old "1/2" fraction); %1$d = members without a copy -->
+    <string name="group_delivery_not_delivered">not delivered to %1$d</string>
+    <!-- Local system note shown once per distinct count when a sent group text did not
+         reach every member -->
+    <string name="group_notice_not_delivered">Your message did not reach %1$d of the members: not yet reachable from this phone, or the relay refused their copy. Rún keeps no copy to send later.</string>
+
+    <!-- Group info (GroupInfoScreen.kt / GroupViews.swift GroupInfoView) -->
+    <string name="group_info_add_member">Add member</string>
+    <string name="group_info_you">You</string>
+    <string name="group_info_not_reachable">Not yet reachable</string>
+    <string name="group_info_no_verified_pairing">No verified pairing with this member yet</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Leave group</string>
+    <string name="group_info_make_admin">Make admin</string>
+    <string name="group_info_remove_from_group">Remove from group</string>
+    <string name="group_info_add_member_precondition">They must have paired in person with every member. You are vouching for that.</string>
+    <string name="group_info_add_member_empty">No eligible contacts — everyone you\'ve paired with is already in the group.</string>
+    <!-- Leave-confirm dialog title differs by platform pre-existing: Android
+         interpolates the group name, iOS shows a static "Leave Group" — kept
+         byte-identical per-platform, not unified here (out of localization
+         scope). -->
+    <string name="group_info_leave_confirm_title_android">Leave %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Leave Group</string>
+    <string name="group_info_leave_confirm_admin_message">You are the admin. Transfer the role first, or nobody will be able to change the member list.</string>
+    <string name="group_info_leave_confirm_message">The other members will be told you left.</string>
+    <!-- Appended (new paragraph, added in code) to every leave confirmation that can
+         actually leave: a member who has not yet read the leaver's texts drops them on
+         arrival once the leave notice has removed the sender from their roster -->
+    <string name="group_info_leave_unread_warning">Anything you sent that the others have not read yet may never be shown to them.</string>
+    <string name="group_info_leave_confirm_action">Leave</string>
+    <!-- Choose-new-admin picker: Android uses a separate title + subtitle;
+         iOS combines them into one sentence and uses a different nav title.
+         Kept byte-identical per-platform (pre-existing divergence). -->
+    <string name="group_info_choose_admin_title">Choose new admin</string>
+    <string name="group_info_choose_admin_subtitle_android">They\'ll be able to add and remove members after you leave.</string>
+    <string name="group_info_choose_admin_nav_title">New admin</string>
+    <string name="group_info_choose_admin_subtitle_ios">Choose who becomes the new admin. They\'ll be able to add and remove members after you leave.</string>
+    <!-- iOS-only admin-handoff-failure dialog (no Android counterpart exists
+         today — pre-existing parity gap, out of scope here). -->
+    <string name="group_info_transfer_failed_title">Couldn’t hand off admin</string>
+    <string name="group_info_transfer_failed_message">Nothing changed — you’re still the admin, so the group stays manageable. Try again.</string>
+
+    <!-- Create group (CreateGroupScreen.kt / GroupViews.swift CreateGroupView) -->
+    <string name="create_group_title">New group</string>
+    <string name="create_group_name_placeholder">Group name</string>
+    <string name="create_group_precondition">Everyone in a group must have paired in person with everyone else. You are vouching for that when you create it.</string>
+    <string name="create_group_failed">Could not create the group. Check the connection and try again.</string>
+    <string name="create_group_creating">Creating…</string>
+    <string name="create_group_select_members">Select members</string>
+    <string name="create_group_button_label">Create group (%1$d)</string>
+
+    <!-- NO-PARK (2026-10-06): a 1:1 text that the GROUP screen's poll fetched is shown
+         there, marked private, and can be answered privately over the 1:1 channel
+         (GroupConversationScreen.kt / GroupViews.swift). %1$s = the contact's name. -->
+    <string name="group_private_from">Private from %1$s · only you can see this</string>
+    <string name="group_private_to">Private to %1$s</string>
+    <string name="group_private_reply">Reply privately</string>
+    <string name="group_private_reply_chip">Private reply to %1$s</string>
+    <string name="group_private_reply_chip_close">End private reply</string>
+
+</resources>

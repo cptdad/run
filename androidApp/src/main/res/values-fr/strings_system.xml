@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French (fr) translation of values/strings_system.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Messages</string>
+    <string name="notification_title">Notification</string>
+    <string name="apns_notification_body">Notification</string>
+    <string name="tor_keepalive_channel_name">Connexion en veille</string>
+    <string name="tor_keepalive_notification_title">Connexion maintenue prête</string>
+    <string name="infoplist_camera_usage">L\'appareil photo sert à scanner les codes QR lors de l\'échange de contacts.</string>
+    <string name="infoplist_faceid_usage">Face ID déverrouille votre coffre-fort chiffré lorsque le déverrouillage lié au matériel est activé.</string>
+    <string name="infoplist_local_network_usage">L\'accès au réseau local n\'est utilisé que si vous définissez un proxy Tor externe sur votre réseau local.</string>
+</resources>

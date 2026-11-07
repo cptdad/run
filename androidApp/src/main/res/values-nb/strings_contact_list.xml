@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Statuslinje for tilkobling + hint når det stopper opp -->
+    <string name="connect_tor_phase">Kobler til Tor</string>
+    <string name="connect_relay_phase">Kobler til relayet</string>
+    <string name="connect_relay_first_time_hint">Den første tilkoblingen kan ta noen minutter.</string>
+    <string name="connect_relay_slow_hint">Tor-nettverket kan noen ganger være tregt – det er prisen for total anonymitet.</string>
+    <string name="connect_tor_stalled_hint">Kobler fortsatt til…\nDette nettverket blokkerer kanskje den private forbindelsen. Prøv et annet Wi-Fi eller mobildata – vi fortsetter å prøve.</string>
+    <string name="connect_mint_stalled_hint">Kobler fortsatt til… Dette nettverket blokkerer kanskje den private forbindelsen. Prøv et annet Wi-Fi eller mobildata – vi fortsetter å prøve.</string>
+    <string name="connect_relay_stalled">Får fortsatt ikke kontakt med relayet.</string>
+    <string name="connect_reconnect_button">Koble til på nytt</string>
+
+    <!-- Hint kun på iOS -->
+    <string name="connect_relay_stalled_reopen_hint">Får fortsatt ikke kontakt med relayet.\nÅpne Rún på nytt hvis dette fortsetter.</string>
+    <string name="connect_relay_relaunch_hint">Den sikre forbindelsen kan ikke gjenopprettes i denne økten.\nLukk Rún og åpne appen på nytt for å koble til igjen.</string>
+    <string name="connect_tor_stalled_long_hint">Får fortsatt ikke koblet til.\nLukk Rún helt og åpne appen på nytt – det starter en ny privat forbindelse.</string>
+    <string name="connect_tor_reboot_hint">Hvis det ikke hjelper å lukke og åpne på nytt, start iPhone på nytt.</string>
+
+    <!-- Innstillingsmeny (tannhjul) -->
+    <string name="contact_list_change_passphrase">Bytt passfrase</string>
+    <string name="contact_list_change_pin">Bytt PIN-kode</string>
+    <string name="contact_list_protection_level">Beskyttelsesnivå</string>
+    <string name="contact_list_notifications">Varsler</string>
+    <string name="contact_list_push_notifications">Push-varsler</string>
+    <string name="contact_list_how_it_works">Slik virker Rún</string>
+    <string name="contact_list_about">Om</string>
+    <string name="contact_list_blocked_contacts">Blokkerte kontakter</string>
+
+    <!-- Spørsmål om push-varsler ved første åpning -->
+    <string name="push_prompt_message">Vil du slå på push-varsler?</string>
+
+    <!-- Oppdateringspåminnelse i appen -->
+    <string name="nudge_message">Ny versjon tilgjengelig</string>
+    <string name="nudge_later">Senere</string>
+    <string name="nudge_open_play_store">Åpne Google Play</string>
+    <string name="nudge_open_app_store">Åpne App Store</string>
+
+    <!-- Introduksjoner -->
+    <string name="referral_introduce_title">Introduser %1$s for…</string>
+    <string name="referral_connecting">Kobler til…</string>
+    <string name="referral_introduce_button">Introduser</string>
+    <string name="referral_introduce_button_count">Introduser (%1$d)</string>
+    <string name="referral_introduce_body">Velg hvem du vil introdusere %1$s for. Introduser bare folk du kjenner og stoler på.</string>
+    <string name="referral_no_candidates">Ingen andre kontakter å introdusere.</string>
+    <string name="referral_introduce_error">Ikke tilkoblet ennå – prøv igjen om et øyeblikk.</string>
+    <string name="referral_offer_title">Kontaktforespørsel</string>
+    <string name="referral_offer_message">%1$s vil introdusere deg for «%2$s». Godkjenn for å legge vedkommende til som kontakt.</string>
+    <string name="referral_approve">Godkjenn</string>
+    <string name="referral_relayed_title">Introduksjon godkjent</string>
+    <string name="referral_relayed_first">%1$s har godkjent at du introduserer vedkommende for %2$s. Tilkoblingsdetaljene er sendt videre. Når %2$s også godkjenner, kan de sende meldinger til hverandre.</string>
+    <string name="referral_relayed_complete_title">Introduksjon fullført</string>
+    <string name="referral_relayed_complete">Både %1$s og %2$s har godkjent. Nå har hver av dem det som skal til for å nå den andre. Du er ikke en del av samtalen deres og kan ikke lese den.</string>
+    <string name="referral_relayed_queued">%1$s har godkjent at du introduserer vedkommende for %2$s. Rún fikk ikke kontakt med relayet akkurat nå og sender detaljene videre automatisk neste gang du åpner appen.</string>
+
+    <!-- Gruppeinvitasjon -->
+    <string name="contact_list_group_invite_title">Gruppeinvitasjon</string>
+    <string name="contact_list_group_invite_join">Bli med</string>
+    <string name="contact_list_group_invite_joining">Blir med…</string>
+    <string name="contact_list_group_invite_message">%1$s inviterte deg til gruppen «%2$s».</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s inviterte deg til «%2$s», men denne gruppen hadde du tidligere under en ANNEN administrator. Bli bare med hvis du stoler på at %1$s styrer medlemslisten i gruppen.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s inviterte deg til «%2$s», men denne gruppen hadde du tidligere under en ANNEN administrator (opprinnelig administrert av «%3$s»). Bli bare med hvis du stoler på at %1$s styrer medlemslisten i gruppen.</string>
+
+    <!-- Bekreftelse på sletting av kontakt (Android-ordlyd) -->
+    <string name="contact_list_delete_confirm_title">Slette %1$s?</string>
+    <string name="contact_list_delete_confirm_message">Alle meldinger blir slettet for godt</string>
+
+    <!-- Bekreftelse på sletting av kontakt (iOS-ordlyd) -->
+    <string name="contact_list_delete_contact_title">Slett kontakt</string>
+    <string name="contact_list_delete_contact_message">Dette sletter kontakten og alle tilhørende meldinger for godt.</string>
+
+    <!-- Nullstill tilgangen til relayet -->
+    <string name="contact_list_reset_relay_title">Nullstille tilgangen til relayet?</string>
+    <string name="contact_list_reset_relay_message">Rún henter nye tilgangsnøkler for denne samtalen fra relayet. Meldingene dine, historikken din og denne kontakten blir akkurat som før, og %1$s trenger ikke gjøre noe.\n\nGjør dette hvis du tror noen andre har hatt telefonen din mens den var ulåst. Det kan ikke gjøre om på noe de allerede har lest – og hvis telefonen faktisk ble tatt, er det tryggeste fortsatt å slette denne kontakten og parkoble på nytt ansikt til ansikt.</string>
+    <string name="contact_list_reset_button">Nullstill</string>
+    <string name="contact_list_reset_relay_success">Tilgangen til relayet er nullstilt.</string>
+    <string name="contact_list_reset_relay_failure">Fikk ikke kontakt med relayet. Rún fullfører dette på egen hånd.</string>
+
+    <!-- Bekreftelse på å forlate gruppen (Android-ordlyd) -->
+    <string name="contact_list_leave_group_admin_message_android">Du er administrator. Etter at du har forlatt gruppen, kan ingen endre medlemslisten.</string>
+
+    <!-- Å forlate gruppen (kun iOS) -->
+    <string name="contact_list_leave_group_admin_message_ios">Du er gruppeadministrator. Åpne gruppen, trykk på info-knappen og velg en ny administrator – da kan du forlate gruppen.</string>
+
+    <!-- Blokker / rapporter en kontakt (kun iOS) -->
+    <string name="contact_list_block_contact_title">Blokker kontakt</string>
+    <string name="contact_list_block_contact_message">Du vil ikke lenger motta meldinger fra %1$s, og vedkommende fjernes fra listen din.</string>
+    <string name="contact_list_contact_blocked_title">Kontakten er blokkert</string>
+    <string name="contact_list_post_block_report_message">Vil du rapportere denne kontakten for støtende innhold eller misbruk? Rapporter gjennomgås og følges opp innen 24 timer. Rapporten sendes fra din egen e-postapp, så den viser oss e-postadressen din – og utkastet lagres av den appen, utenfor Rún, der det ikke blir slettet om du sletter alt i Rún.</string>
+    <string name="contact_list_block_shared_groups_title">Delte grupper</string>
+    <string name="contact_list_block_shared_groups_message">%1$s er fortsatt medlem av en gruppe dere deler. Å blokkere fjerner ikke personen fra den — vedkommende fortsetter å motta meldingene dine der, fra alle de andre medlemmene. Forlat en delt gruppe nedenfor, eller blokker %1$s likevel.</string>
+    <string name="contact_list_block_shared_groups_leave_button">Forlat «%1$s»</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Blokker likevel</string>
+
+    <!-- Meny ved langt trykk på en kontakt -->
+    <string name="contact_list_memory_label">Minne</string>
+    <string name="contact_list_no_memory_yet">Ikke noe minne ennå</string>
+    <string name="contact_list_add_memory_button">Legg til</string>
+    <string name="contact_list_edit_memory_button">Rediger</string>
+    <string name="contact_list_remove_memory_button">Fjern</string>
+    <string name="contact_list_new_name_button">Nytt navn</string>
+    <string name="contact_list_introduce_to_button">Introduser for…</string>
+    <string name="contact_list_reset_relay_in_progress">Nullstiller tilgangen til relayet…</string>
+    <string name="contact_list_reset_relay_button">Nullstill relaytilgang</string>
+    <string name="contact_list_delete_contact_button">Slett kontakt</string>
+
+    <!-- Dialog for personlig minne -->
+    <string name="contact_list_memory_dialog_subtitle">En privat påminnelse om hvem denne kontakten er. Bare du kan se dette.</string>
+    <string name="contact_list_memory_placeholder_android">f.eks. Møttes på konferansen i 2025</string>
+    <string name="contact_list_memory_placeholder_ios">f.eks. Møttes på konferansen i 2025</string>
+    <string name="contact_list_memory_dialog_title">Personlig minne</string>
+
+    <!-- Kontaktrad / grupperad -->
+    <string name="contact_list_repair_required">Må parkobles på nytt</string>
+    <string name="contact_list_waiting_for_inbox">Venter på innboksen deres…</string>
+    <string name="contact_list_introduced_by">Introdusert av %1$s</string>
+    <string name="contact_list_introduced">Introdusert</string>
+    <string name="contact_list_repair_chip">Parkoble på nytt</string>
+    <string name="contact_list_unread_messages_description">Uleste meldinger</string>
+    <string name="contact_list_group_admin_label">Gruppe · administrator</string>
+    <string name="contact_list_group_label">Gruppe</string>
+
+    <!-- Banner om utdatert parkobling -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d kontakt må parkobles på nytt. Trykk for å legge den til igjen.</item>
+        <item quantity="other">%1$d kontakter må parkobles på nytt. Trykk for å legge dem til igjen.</item>
+    </plurals>
+    <string name="connect_log_title">Tilkoblingslogg</string>
+
+    <!-- Om-boks -->
+    <string name="about_info_version_label">Versjon %1$s (%2$s)</string>
+
+    <!-- Karusell for push-innstillinger -->
+    <string name="notif_settings_sound_and_alerts">Lyd og varsler</string>
+    <string name="notif_settings_sound_hint">Varsler høres ut som i alle andre meldingsapper. Endre eller demp dem i varselinnstillingene i iOS – Rún overstyrer aldri valget ditt.</string>
+
+</resources>

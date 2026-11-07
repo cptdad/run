@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_onboarding.xml.
+  Machine-translated 2026-08-27, pending human review.
+  Android says "skærmlås" / "rootet", iOS says "adgangskode" / "jailbreaket" —
+  the twin keys keep the per-platform wording. The eula_/report_ strings are
+  iOS-only.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">Slet denne boks?</string>
+    <string name="pin_erase_vault_message">Boksen på denne enhed kan ikke åbnes — der er hverken en PIN eller en adgangssætning gemt til den. Sletter du den, forsvinder den permanent, og en ny opsætning begynder. Det kan ikke fortrydes.</string>
+    <string name="pin_erase_vault_confirm">Slet</string>
+    <string name="pin_prompt_passphrase">Indtast adgangssætning</string>
+    <string name="pin_passphrase_placeholder">Adgangssætning</string>
+    <string name="pin_unlock_button">Lås op</string>
+    <string name="pin_backoff_hint">Prøv igen om %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Din enheds skærmlås er blevet ændret, så hardwarenøglen, der beskytter denne boks, er væk. Din gendannelseskode kan stadig åbne den.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Din enheds skærmlås er blevet ændret, så hardwarenøglen, der beskytter denne boks, er væk. Uden en gendannelseskode kan boksen ikke åbnes.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Din enheds adgangskode er blevet ændret, så hardwarenøglen, der beskytter denne boks, er væk. Din gendannelseskode kan stadig åbne den.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Din enheds adgangskode er blevet ændret, så hardwarenøglen, der beskytter denne boks, er væk. Uden en gendannelseskode kan boksen ikke åbnes.</string>
+    <string name="pin_use_recovery_code">Brug gendannelseskode</string>
+    <string name="pin_use_recovery_code_prompt">Kan du ikke låse op? Brug gendannelseskoden</string>
+    <string name="pin_orphaned_vault_notice">Denne enhed har en boks, men der er hverken en PIN eller en adgangssætning gemt til den, så intet kan åbne den. Indholdet kan ikke gendannes.</string>
+    <string name="pin_erase_start_over">Slet, og start forfra</string>
+
+    <!-- Passphrase strength meter (shared by entry/setup/change) -->
+    <string name="pin_strength_too_weak">For svag</string>
+    <string name="pin_strength_still_weak">Stadig for svag — tilføj ord</string>
+    <string name="pin_strength_strong">Stærk</string>
+    <string name="pin_strength_excellent">Fremragende</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">Hardwarelås ikke slået til</string>
+    <string name="pin_hardware_lock_not_enabled_message">Din telefon bekræftede ikke hardwarenøglen, så din boks er sat op på et lavere beskyttelsesniveau. Du kan slå den til senere i Indstillinger.</string>
+    <string name="pin_device_key_busy_title">Kunne ikke fuldføre opsætningen</string>
+    <string name="pin_device_key_busy_message">Telefonens sikre hardware er optaget. Lås din telefon, lås den op igen, og prøv en gang til.</string>
+    <string name="pin_setup_choose_pin">Vælg din PIN</string>
+    <string name="pin_setup_confirm_pin">Bekræft din PIN</string>
+    <string name="pin_setup_choose_passphrase">Vælg en adgangssætning</string>
+    <string name="pin_setup_confirm_passphrase">Bekræft din adgangssætning</string>
+    <string name="pin_setup_passphrase_hint">Cirka seks tilfældige ord. Den skal skrives ved hver oplåsning — der er ingen PIN og ingen biometrisk genvej. Det er hele pointen.</string>
+    <string name="pin_passphrase_placeholder_reenter">Gentag adgangssætning</string>
+    <string name="pin_confirm_button">Bekræft</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">Indtast nuværende adgangssætning</string>
+    <string name="pin_change_enter_current_pin">Indtast nuværende PIN</string>
+    <string name="pin_change_choose_new_pin">Vælg ny PIN</string>
+    <string name="pin_change_confirm_passphrase">Bekræft adgangssætning</string>
+    <string name="pin_change_confirm_new_pin">Bekræft ny PIN</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">Enheden er kompromitteret</string>
+    <string name="gate_compromised_body">Denne enhed ser ud til at være rootet. Rún kan ikke garantere sikkerheden for dine beskeder på en kompromitteret enhed.</string>
+    <string name="gate_compromised_body_jailbroken">Denne enhed ser ud til at være jailbreaket. Rún kan ikke garantere sikkerheden for dine beskeder på en kompromitteret enhed.</string>
+    <string name="gate_compromised_continue">Jeg forstår — fortsæt</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">Tjek af adgangssætning om %1$d…</string>
+    <string name="gate_lock_countdown">Låser om %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Tryk et vilkårligt sted for at forblive låst op</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only — VS-2) -->
+    <string name="gate_passcode_warning_title">Ingen adgangskode på enheden</string>
+    <string name="gate_passcode_warning_message">Hardwarebeskyttelsen af de gemte data i Rún er svagere uden en adgangskode på enheden. Opret en i Indstillinger for at få fuld beskyttelse, og vend tilbage for at gøre opsætningen færdig. Du kan fortsætte uden.</string>
+    <string name="gate_passcode_warning_open_settings">Åbn Indstillinger</string>
+    <string name="gate_passcode_warning_continue_anyway">Fortsæt alligevel</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">Før du går i gang</string>
+    <string name="eula_terms_of_use_title">Brugervilkår</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">Ved at bruge Rún accepterer du disse brugervilkår.\n\nRún er en privat beskedapp med end-to-end-kryptering. Du tilføjer kontakter ansigt til ansigt ved at udveksle en QR-kode, og dine beskeder krypteres på din enhed, før de sendes. Vi kan ikke læse dine beskeder, og vi hoster hverken et offentligt feed, profiler eller andet delt indhold.\n\nNULTOLERANCE OVER FOR ANSTØDELIGT INDHOLD OG MISBRUG\nDer er nultolerance over for anstødeligt, ulovligt eller krænkende indhold og adfærd i Rún. Du accepterer, at du ikke vil bruge Rún til at sende, bede om eller opfordre til indhold, der er ulovligt, chikanerende, truende, hadefuldt, seksuelt udnyttende eller på anden måde anstødeligt, og at du ikke vil misbruge, chikanere eller skade andre mennesker. Overtrædelse af dette er et brud på disse vilkår.\n\nSÅDAN PASSER DU PÅ DIG SELV\nFordi dine samtaler kun er mellem dig og dem, du selv tilføjer, bestemmer du, hvem der kan kontakte dig:\n\n• Anmeld — hvis en kontakt sender dig anstødeligt indhold eller opfører sig krænkende, kan du bruge “Anmeld” (i en samtale eller ved at trykke og holde på kontakten) for at give os besked. Vi gennemgår hver anmeldelse inden for 24 timer og handler på den — vi udelukker krænkende afsendere, hvor vi teknisk kan, og anmelder ulovligt indhold til de relevante myndigheder. Fordi beskeder er end-to-end-krypterede, handler vi ud fra det, du fortæller os i din anmeldelse.\n\n• Blokér — brug “Blokér” for straks at skjule en kontakt, så du ikke længere ser dem eller deres beskeder. Blokering kan fortrydes — du kan ophæve den når som helst i indstillingsmenuen.\n\nDu er selv ansvarlig for det indhold, du sender, og for de personer, du vælger at tilføje som kontakter. Du skal være gammel nok til at indgå en bindende aftale i dit land for at bruge Rún.\n\nINGEN GARANTI\nRún leveres “som den er”, uden garantier af nogen art, i det videst mulige omfang loven tillader.\n\nKontakt: %1$s</string>
+    <string name="eula_agree_button">Jeg accepterer og fortsætter</string>
+    <string name="eula_decline_alert_title">Accept er påkrævet</string>
+    <string name="eula_decline_alert_message">Du skal acceptere brugervilkårene for at bruge Rún. De findes for at holde alle sikre og forbyder anstødeligt indhold og krænkende adfærd.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">Rún-anmeldelse af misbrug</string>
+    <string name="report_abuse_email_body">Jeg vil gerne anmelde en kontakt for anstødeligt indhold eller krænkende adfærd.\n\nKontakt (det navn, jeg har givet dem på min enhed): %1$s\n\nHvad skete der (beskriv det med dine egne ord):\n\n\n---\nRún gennemgår hver anmeldelse inden for 24 timer og handler på den — vi\nudelukker krænkende afsendere, hvor det er teknisk muligt, og anmelder\nulovligt indhold til de relevante myndigheder.\n\nDenne mail gemmes af din mailapp uden for det krypterede lager i Rún, så\nmedtag kun det, du er tryg ved at have liggende der.</string>
+    <string name="report_email_fallback_title">Anmeld via mail</string>
+    <string name="report_email_fallback_message">Der er ikke sat nogen mailapp op på denne enhed. Tryk på Kopiér anmeldelse, og indsæt den så i en mail til %1$s.</string>
+    <string name="report_copy_report_button">Kopiér anmeldelse</string>
+    <string name="report_copy_report_clipboard">Til: %1$s\nEmne: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Du har ikke blokeret nogen.</string>
+    <string name="report_unblock_button">Fjern blokering</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">Brænd efter læsning</string>
+    <string name="burn_notice_message">Beskeder vises én gang — lige her — og gemmes aldrig. Når du forlader denne samtale, er de væk for altid.</string>
+
+</resources>

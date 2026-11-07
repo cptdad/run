@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French (fr) translation of values/strings_protection.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser -->
+    <string name="protection_pick_a_level">Choisissez un niveau pour continuer</string>
+    <string name="protection_apply_button">Appliquer</string>
+    <string name="protection_level_accessibility_label">Protection %1$s</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">Sécurité de base de l\'appareil</string>
+    <string name="protection_device_panel_detected_label">DÉTECTÉ</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Référence de l\'appareil · AFU</string>
+
+    <!-- Settings apply flow -->
+    <string name="protection_downgrade_title">Réduire votre protection ?</string>
+    <string name="protection_downgrade_message_android">Passer à %1$s rend votre téléphone plus facile à forcer s\'il vous est pris. Continuer ?</string>
+    <string name="protection_downgrade_message_ios">Passer à %1$s rend votre téléphone plus facile à forcer s\'il vous est pris.</string>
+    <string name="protection_downgrade_keep">Garder l\'actuel</string>
+    <string name="protection_downgrade_reduce">Réduire</string>
+    <string name="protection_persist_failed_title">Impossible d\'enregistrer ce niveau</string>
+    <string name="protection_persist_failed_message">Rien n\'a été modifié — la clé de l\'appareil était occupée. Réessayez.</string>
+    <string name="protection_lever_b_failed_message">Votre téléphone n\'a pas confirmé la clé matérielle : votre coffre-fort est donc réglé à un niveau de protection inférieur à celui que vous avez choisi. Vous pouvez réessayer depuis les Paramètres.</string>
+    <string name="protection_lever_b_reharden_notice">Votre clé de protection doit être mise à niveau. Désactivez puis réactivez Sécurisé pour la renforcer à nouveau.</string>
+    <string name="protection_enabling_title">Sécurisation de votre coffre-fort…</string>
+    <string name="protection_enabling_body_android">Votre téléphone peut vous demander de confirmer avec son verrouillage d\'écran.</string>
+    <string name="protection_enabling_body_ios">Votre téléphone peut vous demander de confirmer avec Face ID ou son code.</string>
+    <string name="protection_forced_explainer_intro">Sans cela, le téléphone lui-même ne peut pas protéger les clés de Rún — Rún applique donc ici sa protection la plus forte. Deux solutions :</string>
+    <string name="protection_forced_explainer_cta_title_android">Définir un verrouillage d\'écran</string>
+    <string name="protection_forced_explainer_cta_body_android">Un code PIN, un schéma, un mot de passe ou une empreinte, tout convient. Tous les niveaux de protection deviennent disponibles dès que votre téléphone en a un.</string>
+    <string name="protection_forced_open_settings_button">Ouvrir les paramètres de verrouillage</string>
+    <string name="protection_forced_explainer_outro_android">Ou créez dès maintenant une phrase secrète ci-dessous — Maximum verrouille Rún elle-même, sans verrouillage d\'écran. Quatre ou cinq mots pris au hasard en font une phrase solide.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Définir un code d\'appareil</string>
+    <string name="protection_forced_explainer_cta_body_ios">Ouvrez Réglages → Face ID et code → Activer le code, puis revenez dans Rún. Tous les niveaux de protection deviennent disponibles dès que votre téléphone en a un.</string>
+    <string name="protection_forced_explainer_outro_ios">Ou créez dès maintenant une phrase secrète ci-dessous — Maximum verrouille Rún elle-même, sans code d\'appareil. Quatre ou cinq mots pris au hasard en font une phrase solide.</string>
+
+    <!-- Post-unlock migration screen -->
+    <string name="protection_migration_finish_maximum">%1$s exige une phrase secrète, et cet écran n\'en définit pas — votre coffre-fort reste donc à %2$s pour l\'instant. Pour terminer, ouvrez Paramètres › Niveau de protection et choisissez de nouveau %1$s — cela définit votre phrase secrète et applique ses délais.</string>
+    <string name="protection_migration_finish_private">Nous n\'avons pas pu activer ici le verrou matériel de %1$s : votre coffre-fort reste donc à %2$s pour l\'instant. Pour terminer, ouvrez Paramètres › Niveau de protection et choisissez de nouveau %1$s — cela active le verrou matériel et applique ses délais.</string>
+    <string name="protection_migration_finish_same">Les délais de %1$s sont désormais appliqués. Pour terminer l\'activation de son déverrouillage renforcé, ouvrez Paramètres › Niveau de protection.</string>
+    <string name="protection_migration_almost_there_title">Presque terminé</string>
+
+    <!-- Recovery code display -->
+    <string name="protection_recovery_code_title">Votre code de récupération</string>
+    <string name="protection_recovery_code_body_android">Notez-le et conservez-le en lieu sûr, séparé de votre téléphone. Si votre empreinte ou le code de votre appareil change un jour et vous bloque, ce code associé à votre code PIN restaure vos messages. Nous ne pourrons pas vous le remontrer.</string>
+    <string name="protection_recovery_code_body_ios">Notez-le et conservez-le en lieu sûr, séparé de votre téléphone. Si votre Face ID ou le code de votre appareil change un jour et vous bloque, ce code associé à votre code PIN restaure vos messages. Nous ne pourrons pas vous le remontrer.</string>
+    <string name="protection_recovery_ack_label">Je l\'ai noté</string>
+    <string name="protection_recovery_ack_hint_android">Cochez « Je l\'ai noté » pour continuer.</string>
+    <string name="protection_recovery_ack_hint_ios">Activez « Je l\'ai noté » pour continuer.</string>
+
+    <!-- Recovery code entry -->
+    <string name="protection_recovery_entry_title">Récupérer avec votre code</string>
+    <string name="protection_recovery_entry_subtitle">Saisissez le code de récupération que vous avez conservé ainsi que votre %1$s. Cela restaure vos messages. Si ce téléphone peut encore utiliser le verrou matériel, celui-ci se réactive avec ce même code : conservez-le donc en lieu sûr.</string>
+    <string name="protection_recovery_code_placeholder">Code de récupération</string>
+    <string name="protection_recovery_wrong_credential">Ce code et votre %1$s ne correspondent pas. Vérifiez les deux et réessayez.</string>
+    <string name="protection_recovery_generic_error">Récupération impossible pour le moment — aucun code de récupération enregistré, ou la clé de l\'appareil est occupée. Réessayez.</string>
+    <string name="protection_recovery_attempt_record_failed">Impossible d\'enregistrer la tentative — la clé de l\'appareil est occupée. Réessayez.</string>
+    <string name="protection_recovery_button_recovering">Récupération…</string>
+    <string name="protection_recovery_button_recover">Récupérer</string>
+
+    <!-- Credential-type vocabulary -->
+    <string name="protection_credential_type_passphrase">phrase secrète</string>
+    <string name="protection_credential_type_pin">code PIN</string>
+
+</resources>

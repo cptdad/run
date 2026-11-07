@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spanish (es) translation of values/strings_shared.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About carousel -->
+    <string name="about_welcome_title">Bienvenido a Rún</string>
+    <string name="about_welcome_body">Mensajería sin nada que incautar, rastrear ni reclamar por vía judicial: sin cuentas, sin números, sin rastro. El nombre viene del nórdico antiguo: “rún”, secreto, conocimiento oculto, la raíz de “runa”, y en gaélico irlandés y escocés la persona amada a quien se le confía guardarlo.</string>
+    <string name="about_tor_intro_title">Enrutado a través de Tor</string>
+    <string name="about_tor_intro_body">Todo lo que envía Rún viaja por Tor, una red global que hace pasar tu tráfico por varios saltos y oculta tu IP y tu ubicación. Ni siquiera el propio relay de Rún sabe quién eres ni dónde estás, y Rún no se conecta de ninguna otra forma.</string>
+    <string name="about_tor_runestone_title">El rojo significa Tor</string>
+    <string name="about_tor_runestone_body">Fíjate en la piedra rúnica: el rojo significa que estás en Tor. Su anillo late con más fuerza cuanto más cerca estás, se queda en rojo fijo en cuanto responde el relay y luego se enciende la R.</string>
+    <string name="about_e2e_title">Cifrado de extremo a extremo</string>
+    <string name="about_e2e_body">Cada mensaje se sella con una clave que solo tenéis tu contacto y tú, y a medida que seguís hablando esa clave avanza sin volver atrás, así que exponer una sola clave deja el resto igual de sellado.</string>
+    <string name="about_relay_title">Un relay que no puede leer</string>
+    <string name="about_relay_body">El relay de Rún es tonto a propósito: sin cuentas, sin nada que leer, solo bloques de datos con relleno en buzones numerados que se limita a reenviar, y ese relleno hace que su tamaño no revele nada del contenido. No queda nada una vez entregado: los mensajes se borran del buzón según los lees, y el propio buzón se libera tras un largo silencio.</string>
+    <string name="about_relay_runestone_title">La ᚱ blanca significa relay</string>
+    <string name="about_relay_runestone_body">Cuando la ᚱ del centro arde en blanco, Rún ha llegado al relay: los mensajes pueden salir y llegar. Rojo sin la ᚱ blanca significa que Tor funciona, pero todavía no se alcanza el relay.</string>
+    <string name="about_contacts_title">Contactos que eliges tú</string>
+    <string name="about_contacts_body">Sin correos, sin registros, y ningún desconocido puede añadirte. Os veis en persona y escaneáis vuestros códigos QR. Cada contacto recibe un nombre en clave aleatorio; añade una nota privada que solo tú ves, así solo tú sabes quién es en realidad.</string>
+    <string name="about_referrals_title">Presentaciones avaladas</string>
+    <string name="about_referrals_body">No existe ningún directorio de quién está en Rún. En su lugar, alguien en quien ya confías puede presentarte a alguien en quien confía, y tú decides si aceptas. La confianza viaja de persona a persona, nunca a través de un servidor.</string>
+    <string name="about_groups_title">Chats de grupo</string>
+    <string name="about_groups_body">Un grupo vive solo en los teléfonos de sus miembros: sin cuenta de grupo, sin lista de miembros, sin nada que incautar en el relay. Cada mensaje se envía en privado a cada miembro, así que el relay nunca sabe el nombre del grupo, quién está en él ni una palabra de lo que se dice. Sí ve un mensaje ir a varios buzones a la vez: lo justo para saber que existe un grupo y a cuántos ha llegado, nunca a quiénes.</string>
+    <string name="about_vanish_title">Los mensajes desaparecen</string>
+    <string name="about_vanish_body">Esto es “arder al leerse”: los mensajes viven solo en memoria, nunca en disco. Cierra la app o sal de un chat y desaparecen para siempre.</string>
+    <string name="about_quiet_title">Silencioso por defecto</string>
+    <string name="about_quiet_body">Sin anuncios, analíticas ni perfiles, nunca; y de serie, sin notificaciones: Rún llega a su relay, por Tor, solo cuando lo abres. Puedes activar los avisos instantáneos: una activación sin contenido a través del servicio push de Apple o de Google, o de uno que instales tú, que solo revela una franja horaria aproximada, nunca el mensaje ni quién lo envía; está desactivada salvo que tú la actives.</string>
+    <string name="about_lockwipe_title">Se bloquea y se borra solo</string>
+    <string name="about_lockwipe_body">Si lo dejas inactivo o lo envías a segundo plano, Rún se bloquea: vuelves a desbloquearlo con tu PIN o tu frase de contraseña. Demasiados intentos fallidos, o mucho tiempo sin tocarlo, va más lejos: borra las claves y todos los datos, sin recuperación posible. Lo pronto que ocurre cada cosa lo marca el nivel de protección que elijas.</string>
+    <string name="about_screen_privacy_title">Privacidad en pantalla</string>
+    <string name="about_screen_privacy_body_android">Las capturas de pantalla, la grabación de pantalla y la vista previa de apps recientes están bloqueadas, así que nada se filtra a tu galería ni al selector de apps.</string>
+    <string name="about_screen_privacy_body_ios">La vista previa del selector de apps y la grabación de pantalla están tapadas. iOS no puede bloquear una captura manual, así que ten cuidado en los chats delicados: Rún te avisa si alguien hace una.</string>
+    <string name="about_forensic_title">A prueba de forenses</string>
+    <string name="about_forensic_body">Un teléfono incautado no entrega nada útil. Todo lo que está en reposo se sella con SQLCipher, y un borrado destruye las claves mismas, dejando solo ruido, sin cachés ni fragmentos. Lo difícil que sea abrirlo lo eliges tú: Aceptable se apoya en tu PIN; Seguro ata la clave al chip de seguridad de este teléfono, detrás de tu huella o tu cara; Máximo cambia el PIN por una frase de contraseña que solo tú conoces, así que ni un teléfono clonado por completo se abre.</string>
+    <string name="about_ready_title">Listo cuando tú quieras</string>
+    <string name="about_ready_body">Eso es Rún: silencioso, privado y tuyo para guardarlo en secreto. Añade a alguien en persona y empieza una conversación que nadie más puede ver.</string>
+
+    <!-- Donate / Support modal -->
+    <string name="donate_appeal">Rún no tiene anuncios ni inversores, y nunca vende tus datos. Cada donación, grande o pequeña, ayuda a mantenerlo gratuito para todo el mundo, para siempre.</string>
+
+    <!-- Notification education carousel -->
+    <string name="notif_edu_vendor_title">Las notificaciones viajan por los servidores de %1$s. Nunca contienen tus mensajes, solo que hay uno nuevo esperándote.</string>
+    <string name="notif_edu_vendor_deep">El relay envía una activación sin contenido a través de %1$s —sin remitente, sin texto, sin recuento— y Rún solo muestra un aviso genérico de “Notificación”. No se descarga ni se descifra nada hasta que abres Rún y lo desbloqueas. %3$s funciona igual; ninguno de los dos proveedores es más privado.\n\nEl relay también aprende algo: todos tus buzones se registran bajo la única dirección push que %2$s ha emitido para este teléfono, así que el relay puede saber qué conversaciones comparten dispositivo. Alguien capaz de obligar tanto a %2$s como al relay podría vincularte con tus conversaciones. Por eso este interruptor está apagado hasta que lo actives tú.</string>
+    <string name="notif_edu_timing_title">%1$s solo sabe cuándo te llegan los mensajes, nunca quién los envió ni qué dicen. Con el tiempo, esas marcas de tiempo por sí solas revelan cuándo te comunicas.</string>
+    <string name="notif_edu_timing_deep">Salta una activación cada vez que te llega un mensaje, así que %1$s ve un patrón continuo —con qué frecuencia, a qué horas— ligado a la instalación de Rún de este teléfono. Tor normalmente oculta ese patrón; activar las notificaciones cambia parte de él por entrega instantánea.</string>
+    <string name="notif_edu_content_safe_title">Tus mensajes nunca llegan a %1$s. Rún los descarga por Tor y los descifra en este teléfono solo después de que lo desbloquees.</string>
+    <string name="notif_edu_content_safe_deep">La activación no lleva nada y por sí misma no provoca actividad de red. Tus mensajes esperan cifrados en el relay hasta que abres Rún, que los descarga por Tor y los descifra en el propio teléfono con la clave derivada de tu PIN o tu frase de contraseña. %1$s nunca recibe, guarda ni transmite ni un byte de tus mensajes.</string>
+    <string name="notif_edu_switch_title">Activar las notificaciones</string>
+    <string name="notif_edu_switch_label">Notificaciones en tiempo real (mediante %1$s)</string>
+    <string name="notif_vendor_name_android">Google</string>
+    <string name="notif_vendor_name_ios">Apple</string>
+    <string name="notif_service_name_android">Firebase Cloud Messaging (FCM) de Google</string>
+    <string name="notif_service_name_ios">el servicio de notificaciones push de Apple (APNs)</string>
+    <string name="notif_cross_ref_label_android">El push de iOS (APNs)</string>
+    <string name="notif_cross_ref_label_ios">El push de Android (FCM)</string>
+
+    <!-- UnifiedPush (Google-free) education carousel -->
+    <string name="notif_edu_up_distributor_title">Este teléfono no lleva servicios de Google, así que la señal de activación la entrega una app aparte que eliges tú: un distribuidor de UnifiedPush como ntfy.</string>
+    <string name="notif_edu_up_distributor_deep">La app distribuidora mantiene una conexión abierta con un servidor push y le pasa cada activación a Rún. Nada cambia en tus mensajes: la activación no contiene ningún mensaje, y Rún sigue descargando y descifrando todo por Tor después de que desbloquees.</string>
+    <string name="notif_edu_up_parties_title">Dos partes saben cuándo te contactan —la app distribuidora y su servidor push—, nunca quién escribió ni qué. Esas marcas de tiempo por sí solas revelan cuándo te comunicas.</string>
+    <string name="notif_edu_up_parties_deep">Es una parte más que en la versión con Google. El distribuidor ve todas las activaciones porque es quien las entrega; su servidor push las ve porque las reenvía y, en un servidor público, ve además la dirección IP de este teléfono. Ninguno ve un remitente, un mensaje ni un recuento. Tor normalmente oculta ese patrón; las notificaciones cambian parte de él por entrega instantánea. Si tienes tu propio servidor push, la segunda parte eres tú.</string>
+    <string name="notif_edu_up_content_safe_title">Tus mensajes nunca llegan al distribuidor ni a su servidor. Cada activación va cifrada para este teléfono y no lleva nada; Rún descarga tus mensajes por Tor y los descifra después de que desbloquees.</string>
+    <string name="notif_edu_up_content_safe_deep">Cada activación va cifrada para un par de claves que nunca sale de este teléfono (Web Push, RFC 8291), así que quien averigüe la dirección de tu endpoint no puede falsificar un aviso nuevo — aunque tu servidor push sí podría reenviar uno que ya has recibido, Rún limita la frecuencia con la que una repetición puede activar el aviso — y todas las activaciones tienen el mismo tamaño fijo. Tus mensajes esperan cifrados en el relay hasta que abres Rún, que los descarga por Tor y los descifra en el propio teléfono con la clave derivada de tu PIN o tu frase de contraseña.</string>
+
+    <!-- Protection level chooser -->
+    <string name="protection_title">Elige el nivel de protección frente a ataques forenses</string>
+    <string name="protection_empty_state">Elige un nivel para continuar. Nadie elige por ti.</string>
+    <string name="protection_stop_reason_prefix">No es posible seleccionar el nivel.</string>
+    <string name="protection_tier_name_casual">Aceptable</string>
+    <string name="protection_tier_name_private">Seguro</string>
+    <string name="protection_tier_name_maximum">Máximo</string>
+    <string name="protection_tier_tagline_casual">Código PIN de seis dígitos para abrir Rún. Las herramientas forenses pueden romperlo por fuerza bruta en unas horas, así que Rún depende por completo de la protección del teléfono. En Android, las sugerencias del teclado y los emojis siguen activados, así que el teclado puede aprender palabras que escribes.</string>
+    <string name="protection_tier_tagline_private">Código PIN de seis dígitos, pero la clave de la caja fuerte queda sellada en el chip de seguridad del teléfono y solo la libera tu huella o tu cara. Un teléfono incautado resiste la fuerza bruta forense aunque le rompan el código. En Android, las sugerencias del teclado y los emojis siguen activados, así que el teclado puede aprender palabras que escribes.</string>
+    <string name="protection_tier_tagline_maximum">Una frase de contraseña larga en lugar de un código PIN, tan fuerte que ninguna herramienta forense puede romperla por fuerza bruta, ni siquiera desde un teléfono desbloqueado. El teclado funciona en modo contraseña: nada de lo que escribes se aprende ni se sugiere, y en Android la tecla de emojis no está disponible.</string>
+    <string name="protection_forced_notice_title">Tu teléfono no tiene %1$s</string>
+    <string name="protection_forced_notice_body">Sin eso, tu frase de contraseña es lo único que hay entre tus mensajes y quien tenga este teléfono. Por eso aquí Rún funciona en Máximo.\n\nPide esa frase de contraseña siempre, se bloquea a los 60 segundos de inactividad y, la próxima vez que se abra Rún tras 7 días sin uso, lo borra todo de forma permanente.\n\nConfigura un código en tu teléfono para poder elegir un nivel más suave.</string>
+    <string name="protection_device_lock_term_android">pantalla de bloqueo</string>
+    <string name="protection_device_lock_term_ios">código</string>
+    <string name="protection_stop_no_lock">Tu teléfono no tiene %1$s; aquí solo Máximo puede proteger Rún.</string>
+    <string name="protection_stop_no_chip">Este teléfono no tiene chip de seguridad.</string>
+    <string name="protection_stop_no_biometrics">No hay biometría configurada. Configura Face ID o la huella.</string>
+
+    <!-- Conversation rune whisper vocabulary -->
+    <string name="runes_consulting">Consultando las runas…</string>
+    <string name="runes_whisper">Las runas susurran</string>
+    <string name="runes_silent">Las runas callan</string>
+
+    <!-- Group departure notices -->
+    <string name="group_notice_left">%1$s ha salido del grupo</string>
+    <string name="group_notice_removed">Se ha expulsado a %1$s del grupo</string>
+    <string name="group_notice_member_fallback">Un miembro</string>
+    <string name="menu_terms_contact">Términos y contacto</string>
+    <string name="terms_contact_report_line">Denunciar contenido objetable o abuso</string>
+    <string name="terms_contact_enforcement">Las denuncias se atienden en menos de 24 horas: el contenido objetable se elimina y los usuarios abusivos son expulsados.</string>
+
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic (ar) translation of values/strings_common.xml.
+  Generic UI vocabulary shared by every screen on BOTH platforms.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">حسنًا</string>
+    <string name="common_cancel">إلغاء</string>
+    <string name="common_close">إغلاق</string>
+    <string name="common_done">تم</string>
+    <string name="common_back">رجوع</string>
+    <string name="common_delete">حذف</string>
+    <string name="common_retry">إعادة المحاولة</string>
+    <string name="common_continue">متابعة</string>
+    <string name="common_copy">نسخ</string>
+    <string name="common_copied">تم النسخ</string>
+    <string name="common_save">حفظ</string>
+    <string name="common_yes">نعم</string>
+    <string name="common_no">لا</string>
+    <string name="common_got_it">فهمت</string>
+    <string name="common_understood">مفهوم</string>
+    <string name="common_decline">رفض</string>
+    <string name="common_not_now">ليس الآن</string>
+    <string name="common_open">فتح</string>
+    <string name="common_settings">الإعدادات</string>
+    <string name="common_loading">جارٍ التحميل…</string>
+    <string name="common_message_placeholder">رسالة</string>
+    <string name="common_conversation_interrupted">انقطعت المحادثة</string>
+    <string name="common_screenshot_notice">ربما التقط %1$s لقطة شاشة</string>
+    <string name="common_time_yesterday">أمس %1$s</string>
+</resources>

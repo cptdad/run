@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Enskild konversation (ConversationScreen.kt / ConversationView.swift) -->
+    <string name="conversation_pending_banner">Väntar på kontaktens inkorg — du kan skicka om en stund.</string>
+    <string name="conversation_alias_unknown">Okänd</string>
+    <string name="conversation_contact_fallback">Kontakt</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy har inte aktiverats</string>
+    <string name="conversation_fs_stalled_body">Meddelanden till den här kontakten är fortfarande krypterade, men de får ännu inte det extra skydd som håller tidigare meddelanden säkra om en nyckel avslöjas senare. Det brukar lösa sig när kontakten svarar. Om problemet kvarstår, ta bort kontakten och lägg till den igen.</string>
+    <string name="conversation_ratchet_refused_body">Det gick inte att upprätta en säker kanal med den här kontakten. Meddelanden skickas inte. Ta bort kontakten och parkoppla på nytt.</string>
+
+    <!-- Ark för anmäl/blockera, endast iOS (riktlinje 1.2) -->
+    <string name="conversation_report_confirm_title">Anmäl kontakt</string>
+    <string name="conversation_report_confirm_message">Anmälningar granskas och åtgärdas inom 24 timmar. Din anmälan skickas från din egen e-postapp, så vi ser din e-postadress — och utkastet sparas av den appen, utanför Rún, där det inte raderas om du raderar Rún.</string>
+    <string name="conversation_report_confirm_button">Anmäl till Rún</string>
+    <string name="conversation_report_action">Anmäl</string>
+    <string name="conversation_block_action">Blockera</string>
+
+    <!-- Varningsbanner om manuell skärmdump, endast iOS (ScreenshotProtection.swift) -->
+    <string name="conversation_screenshot_warning_banner">⚠ Skärmdumpen sparades i Bilder — den bilden är INTE krypterad och kan synkas till iCloud.</string>
+    <string name="conversation_group_echo_label">Gruppmeddelande i %1$s</string>
+    <string name="conversation_group_echo_open">Öppna gruppen</string>
+
+</resources>

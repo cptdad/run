@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_common.xml.
+  Generic UI vocabulary shared by every screen on BOTH platforms (the l10n generator mirrors this file into the iOS String Catalog / L10n.swift). Only add a key here when the exact English literal is used by more than one feature area; area-specific copy lives in strings_<area>.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">Hagaag</string>
+    <string name="common_cancel">Jooji</string>
+    <string name="common_close">Xir</string>
+    <string name="common_done">Dhammee</string>
+    <string name="common_back">Gadaal</string>
+    <string name="common_delete">Tirtir</string>
+    <string name="common_retry">Isku day mar kale</string>
+    <string name="common_continue">Sii wad</string>
+    <string name="common_copy">Koobi</string>
+    <string name="common_copied">Waa la koobiyeeyay</string>
+    <string name="common_save">Kaydi</string>
+    <string name="common_yes">Haa</string>
+    <string name="common_no">Maya</string>
+    <string name="common_got_it">Waan fahmay</string>
+    <string name="common_understood">Waa la fahmay</string>
+    <string name="common_decline">Diid</string>
+    <string name="common_not_now">Hadda maya</string>
+    <string name="common_open">Fur</string>
+    <string name="common_settings">Dejinta</string>
+    <string name="common_loading">Waa la soo raraya…</string>
+    <string name="common_message_placeholder">Fariin</string>
+    <string name="common_conversation_interrupted">Wada-hadalka ayaa la hakiyay</string>
+    <string name="common_screenshot_notice">%1$s ayaa laga yaabaa in sawir shaashadeed la qaaday</string>
+    <string name="common_time_yesterday">Shalay %1$s</string>
+</resources>

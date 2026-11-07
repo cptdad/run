@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic (ar) translation of values/strings_system.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">الرسائل</string>
+    <string name="notification_title">إشعار</string>
+    <string name="apns_notification_body">إشعار</string>
+    <string name="tor_keepalive_channel_name">وضع الاستعداد للاتصال</string>
+    <string name="tor_keepalive_notification_title">الحفاظ على جاهزية الاتصال</string>
+    <string name="infoplist_camera_usage">تُستخدم الكاميرا لمسح رموز QR ضوئيًا أثناء تبادل جهات الاتصال.</string>
+    <string name="infoplist_faceid_usage">يفتح Face ID قفل خزنتك المشفّرة عندما يكون الفتح المرتبط بالعتاد مفعّلًا.</string>
+    <string name="infoplist_local_network_usage">لا يُستخدم الوصول إلى الشبكة المحلية إلا عند تعيين بروكسي Tor خارجي على شبكتك المحلية.</string>
+</resources>

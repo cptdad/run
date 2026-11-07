@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French (fr) translation of values/strings_conversation.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">En attente de la boîte de réception de ce contact — vous pourrez envoyer dans un instant.</string>
+    <string name="conversation_alias_unknown">Inconnu</string>
+    <string name="conversation_contact_fallback">Contact</string>
+    <string name="conversation_fs_stalled_title">La confidentialité persistante n\'est pas encore active</string>
+    <string name="conversation_fs_stalled_body">Les messages destinés à ce contact restent chiffrés, mais ils ne bénéficient pas encore de la protection supplémentaire qui met les messages précédents à l\'abri si une clé venait à être exposée. Cela se résout généralement dès que le contact répond. Si le problème persiste, supprimez le contact, puis ajoutez-le de nouveau.</string>
+    <string name="conversation_ratchet_refused_body">Impossible d\'établir un canal sécurisé avec ce contact. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">Signaler le contact</string>
+    <string name="conversation_report_confirm_message">Les signalements sont examinés et traités sous 24 heures. Votre signalement part depuis votre propre application e-mail : il nous montrera donc votre adresse e-mail — et le brouillon est conservé par cette application, en dehors de Rún, où il ne sera pas effacé si vous effacez Rún.</string>
+    <string name="conversation_report_confirm_button">Signaler à Rún</string>
+    <string name="conversation_report_action">Signaler</string>
+    <string name="conversation_block_action">Bloquer</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ Capture d\'écran enregistrée dans Photos — cette image n\'est PAS chiffrée et peut se synchroniser avec iCloud.</string>
+    <string name="conversation_group_echo_label">Message de groupe dans %1$s</string>
+    <string name="conversation_group_echo_open">Ouvrir le groupe</string>
+
+</resources>

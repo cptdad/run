@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_system.xml.
+  Machine-translated 2026-08-27, pending human review.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Beskeder</string>
+    <string name="notification_title">Notifikation</string>
+    <string name="apns_notification_body">Notifikation</string>
+    <string name="tor_keepalive_channel_name">Forbindelsesberedskab</string>
+    <string name="tor_keepalive_notification_title">Holder forbindelsen klar</string>
+    <string name="infoplist_camera_usage">Kameraet bruges til at scanne QR-koder ved udveksling af kontakter.</string>
+    <string name="infoplist_faceid_usage">Face ID låser din krypterede boks op, når hardwarebundet oplåsning er slået til.</string>
+    <string name="infoplist_local_network_usage">Adgang til lokalt netværk bruges kun, når du angiver en ekstern Tor-proxy på dit lokale netværk.</string>
+</resources>

@@ -1,0 +1,54 @@
+# gitleaks configuration — extends the built-in default ruleset.
+# Used by .githooks/pre-commit to block secrets from entering the repo.
+title = "Run gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Project-specific false positives"
+# File paths (regex) that never contain real secrets.
+paths = [
+    '''\.gitleaks\.toml$''',
+    '''iosApp/Frameworks/.*''',          # vendored Tor.xcframework (e.g. token_bucket.h)
+    '''relay\.properties\.example$''',   # template — empty values only
+    # Test sources legitimately contain FAKE tokens/keys/hashes as fixtures
+    # (not real secrets). Allowlist the test source sets to avoid false
+    # positives like a "token":"..." string in a parser test.
+    '''/src/(commonTest|iosTest|androidUnitTest|androidTest|test)/''',
+    # Gradle dependency-verification metadata is SHA-256 checksums, not secrets.
+    '''gradle/verification-metadata\.xml$''',
+]
+# The real relay.properties is gitignored, so it is never staged/scanned.
+# The Apple Developer Team ID is a public identifier, not a secret.
+regexes = [
+    '''YOUR_TEAM_ID''',
+    # ACCEPTED BURNED secret — never re-flag (see the accepted-burned-secrets note).
+    # A dead Loki write token committed to relay.properties before it was gitignored
+    # and moved to env (commits ef28b0e7 add / 1010409 untrack). It is revoked and
+    # lives only in git history. The staged-only pre-commit hook never re-hits it, but
+    # the CI FULL-HISTORY scan does — so exempt it by EXACT value: this one dead token
+    # in ANY commit, present or future re-scan; any NEW/other secret is still caught.
+    '''a6ca6bee-5605-4715-b7c4-0e3dfc07be96''',
+    # MOCK-RELAY TEST FIXTURE, not a secret. Base64 of the literal string
+    # "deadbeefauthsecret" — the fake RFC 8291 auth secret in the mock relay's
+    # UnifiedPush push-contract tests (e2e-tests/mock-relay/, which sits outside
+    # the /src/**/test/ paths allowlisted above). The `auth: '...'` shape is what
+    # trips generic-api-key. Exempt by EXACT value so a real key pasted into
+    # those specs is still caught.
+    '''ZGVhZGJlZWZhdXRoc2VjcmV0''',
+    # E2E TEST CREDENTIAL, not a secret. The MAXIMUM protection tier demands a
+    # ≥70-bit passphrase, so the harness cannot use a throwaway like the '111111'
+    # PIN the other seats share — it must be high-entropy by construction, which
+    # is exactly the shape gitleaks flags. It unlocks nothing but a wiped-every-run
+    # debug vault on our own test devices. Exempt by EXACT value so any OTHER
+    # high-entropy string in the specs is still caught.
+    '''Xq7-vrune-Kd92-tzalm-Bq48-wfyr''',
+    # RAM-FORENSICS SELF-TEST CANARY, not a secret. security-tests/ram-forensics/
+    # ram_forensics.py plants this marker in its OWN process memory and then dumps
+    # /proc/self/mem to prove the dump+scan pipeline works without root. It is
+    # deliberately high-entropy so a hit can only be the planted canary, which is
+    # exactly the shape generic-api-key flags. Exempt by EXACT value so any OTHER
+    # secret-shaped string in that harness is still caught.
+    '''RAMF_9Q2X7ZK_END''',
+]

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  SEC-1 (config-build): set the app-wide default file-protection class to
+	  NSFileProtectionComplete. Without this entitlement iOS defaults on-disk
+	  files to NSFileProtectionCompleteUntilFirstUserAuthentication, leaving the
+	  file-system key available while the device is merely screen-locked — a
+	  forensic acquisition of a powered, locked, previously-unlocked device could
+	  then read app files at the filesystem layer. NSFileProtectionComplete
+	  evicts the class key on lock. (The SQLCipher vault DBs already apply
+	  .completeFileProtection in code; this closes the gap for the app's other
+	  on-disk files: the UserDefaults plist and the Tor working dir. NOTE: there
+	  are NO app-sandbox log files — LogBuffer is in-memory and os_log/unified-log
+	  output is system-managed outside the sandbox, unaffected by this.) The Data
+	  Protection capability is a default capability on all App IDs, so this needs
+	  no provisioning change. TRADE-OFF: the UserDefaults plist is now readable
+	  only while unlocked, so a locked-device launch reads config as absent — that
+	  is handled by the protected-data deferral in AppState.runLaunchSecurityChecks.
+	-->
+	<key>com.apple.developer.default-data-protection</key>
+	<string>NSFileProtectionComplete</string>
+	<!--
+	  Opt-in push (docs/RELAY_SPEC.md). Required for APNs registration
+	  even though push is off by default (Tier 0) — without this entitlement
+	  `registerForRemoteNotifications()` fails outright the first time a user
+	  opts into Tier 2. "development" here is the ENTITLEMENT value (which
+	  provisioning profile classes an install under); the actual
+	  sandbox-vs-production APNs environment picked at runtime is separate
+	  (AppState.registerPushToken: #if DEBUG "sandbox" else "production" —
+	  matches Apple's own dev-build-vs-App-Store-build split). Xcode rewrites
+	  this to "production" automatically for a Release/App-Store-signed build
+	  using an Automatic-signing distribution profile.
+
+	  NOTE (flagged for the pre-push / release checklist): automatic signing
+	  may still need the "Push Notifications" capability enabled for this App
+	  ID in the Apple Developer portal before Xcode will provision a profile
+	  that actually grants this entitlement — the entitlement file alone does
+	  not create the portal-side capability. This does not block compiling the
+	  client code; it blocks real APNs delivery.
+	-->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

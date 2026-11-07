@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Én-til-én-samtale -->
+    <string name="conversation_pending_banner">Venter på innboksen til denne kontakten – du kan sende om et øyeblikk.</string>
+    <string name="conversation_alias_unknown">Ukjent</string>
+    <string name="conversation_contact_fallback">Kontakt</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy er ikke aktivert ennå</string>
+    <string name="conversation_fs_stalled_body">Meldinger til denne kontakten er fremdeles kryptert, men de får ennå ikke den ekstra beskyttelsen som holder tidligere meldinger trygge hvis en nøkkel skulle bli eksponert senere. Dette ordner seg som regel når kontakten svarer. Hvis det vedvarer, fjern kontakten og legg den til på nytt.</string>
+    <string name="conversation_ratchet_refused_body">Kunne ikke opprette en sikker kanal med denne kontakten. Meldinger blir ikke sendt. Fjern kontakten og parkoble på nytt.</string>
+
+    <!-- Rapporter/blokker (kun iOS) -->
+    <string name="conversation_report_confirm_title">Rapporter kontakt</string>
+    <string name="conversation_report_confirm_message">Rapporter gjennomgås og følges opp innen 24 timer. Rapporten sendes fra din egen e-postapp, så den viser oss e-postadressen din – og utkastet lagres av den appen, utenfor Rún, der det ikke blir slettet om du sletter alt i Rún.</string>
+    <string name="conversation_report_confirm_button">Rapporter til Rún</string>
+    <string name="conversation_report_action">Rapporter</string>
+    <string name="conversation_block_action">Blokker</string>
+
+    <!-- Advarsel om manuelt skjermbilde (kun iOS) -->
+    <string name="conversation_screenshot_warning_banner">⚠ Skjermbildet er lagret i Bilder – det bildet er IKKE kryptert og kan synkroniseres til iCloud.</string>
+    <string name="conversation_group_echo_label">Gruppemelding i %1$s</string>
+    <string name="conversation_group_echo_open">Åpne gruppen</string>
+
+</resources>

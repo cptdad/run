@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_protection.xml.
+  Machine-translated 2026-08-27, pending human review.
+  Tier names: God / Sikker / Maksimal (see strings_shared.xml) — use exactly
+  these words everywhere, including the store listings.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser (ProtectionLevelScreen.kt / ProtectionLevelView.swift) -->
+    <string name="protection_pick_a_level">Vælg et niveau for at fortsætte</string>
+    <string name="protection_apply_button">Anvend</string>
+    <string name="protection_level_accessibility_label">%1$s beskyttelse</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">Enhedens grundsikkerhed</string>
+    <string name="protection_device_panel_detected_label">REGISTRERET</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Enhedens udgangspunkt · AFU</string>
+
+    <!-- Settings apply flow (ProtectionLevelSettingsScreen.kt / ProtectionLevelSettingsView) -->
+    <string name="protection_downgrade_title">Vil du sænke din beskyttelse?</string>
+    <string name="protection_downgrade_message_android">Skifter du til %1$s, bliver din telefon lettere at bryde ind i, hvis den bliver taget. Vil du fortsætte?</string>
+    <string name="protection_downgrade_message_ios">Skifter du til %1$s, bliver din telefon lettere at bryde ind i, hvis den bliver taget.</string>
+    <string name="protection_downgrade_keep">Behold nuværende</string>
+    <string name="protection_downgrade_reduce">Sænk</string>
+    <string name="protection_persist_failed_title">Kunne ikke gemme det niveau</string>
+    <string name="protection_persist_failed_message">Intet blev ændret — enhedsnøglen var optaget. Prøv igen.</string>
+    <string name="protection_lever_b_failed_message">Din telefon bekræftede ikke hardwarenøglen, så din boks er sat til et lavere beskyttelsesniveau, end du valgte. Du kan prøve igen i Indstillinger.</string>
+    <string name="protection_lever_b_reharden_notice">Din beskyttelsesnøgle skal opdateres. Slå Sikker fra og til igen for at hærde den på ny.</string>
+    <string name="protection_enabling_title">Sikrer din boks…</string>
+    <string name="protection_enabling_body_android">Din telefon beder dig måske bekræfte med skærmlåsen.</string>
+    <string name="protection_enabling_body_ios">Din telefon beder dig måske bekræfte med Face ID eller enhedens adgangskode.</string>
+    <string name="protection_forced_explainer_intro">Uden en kan telefonen ikke selv beskytte nøglerne i Rún — så Rún kræver sin stærkeste beskyttelse her. Der er to veje videre:</string>
+    <string name="protection_forced_explainer_cta_title_android">Opret en skærmlås</string>
+    <string name="protection_forced_explainer_cta_body_android">En PIN, et mønster, en adgangskode eller et fingeraftryk tæller alt sammen. Alle beskyttelsesniveauer bliver tilgængelige, så snart din telefon har en.</string>
+    <string name="protection_forced_open_settings_button">Åbn indstillinger for skærmlås</string>
+    <string name="protection_forced_explainer_outro_android">Eller opret en adgangssætning nedenfor — Maksimal låser Rún selv, uden skærmlås. Fire-fem tilfældige ord giver en stærk en.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Opret en adgangskode på enheden</string>
+    <string name="protection_forced_explainer_cta_body_ios">Åbn Indstillinger → Face ID &amp; kode → Slå kode til, og vend så tilbage til Rún. Alle beskyttelsesniveauer bliver tilgængelige, så snart din telefon har en.</string>
+    <string name="protection_forced_explainer_outro_ios">Eller opret en adgangssætning nedenfor — Maksimal låser Rún selv, uden adgangskode på enheden. Fire-fem tilfældige ord giver en stærk en.</string>
+
+    <!-- Post-unlock migration screen. %1$s is the chosen tier name, %2$s the persisted one. -->
+    <string name="protection_migration_finish_maximum">%1$s kræver en adgangssætning, og den opretter du ikke på denne skærm — så din boks bliver på %2$s indtil videre. Gør det færdigt ved at åbne Indstillinger › Beskyttelsesniveau og vælge %1$s igen — så oprettes din adgangssætning, og niveauets tider træder i kraft.</string>
+    <string name="protection_migration_finish_private">Vi kunne ikke slå hardwarelåsen til for %1$s her, så din boks bliver på %2$s indtil videre. Gør det færdigt ved at åbne Indstillinger › Beskyttelsesniveau og vælge %1$s igen — så slås hardwarelåsen til, og niveauets tider træder i kraft.</string>
+    <string name="protection_migration_finish_same">Tiderne for %1$s er sat nu. Åbn Indstillinger › Beskyttelsesniveau for at gøre den stærkere oplåsning færdig.</string>
+    <string name="protection_migration_almost_there_title">Næsten færdig</string>
+
+    <!-- Recovery code display (RecoveryCodeScreen.kt / RecoveryCodeView) -->
+    <string name="protection_recovery_code_title">Din gendannelseskode</string>
+    <string name="protection_recovery_code_body_android">Skriv den ned, og opbevar den et sikkert sted væk fra din telefon. Hvis dit fingeraftryk eller enhedens adgangskode en dag ændrer sig og låser dig ude, kan denne kode sammen med din PIN gendanne dine beskeder. Vi kan ikke vise den igen.</string>
+    <string name="protection_recovery_code_body_ios">Skriv den ned, og opbevar den et sikkert sted væk fra din telefon. Hvis dit Face ID eller enhedens adgangskode en dag ændrer sig og låser dig ude, kan denne kode sammen med din PIN gendanne dine beskeder. Vi kan ikke vise den igen.</string>
+    <string name="protection_recovery_ack_label">Jeg har skrevet den ned</string>
+    <string name="protection_recovery_ack_hint_android">Sæt flueben i “Jeg har skrevet den ned” for at fortsætte.</string>
+    <string name="protection_recovery_ack_hint_ios">Slå “Jeg har skrevet den ned” til for at fortsætte.</string>
+
+    <!-- Recovery code entry (RecoveryEntryScreen.kt / RecoveryEntryView) -->
+    <string name="protection_recovery_entry_title">Gendan med din kode</string>
+    <string name="protection_recovery_entry_subtitle">Indtast den gendannelseskode, du gemte, sammen med din %1$s. Det gendanner dine beskeder. Hvis telefonen stadig kan bruge hardwarelåsen, slås den til igen med den samme kode, så pas godt på koden.</string>
+    <string name="protection_recovery_code_placeholder">Gendannelseskode</string>
+    <string name="protection_recovery_wrong_credential">Koden og din %1$s passede ikke sammen. Tjek begge dele, og prøv igen.</string>
+    <string name="protection_recovery_generic_error">Kunne ikke gendanne lige nu — der er ingen gendannelseskode registreret, eller enhedsnøglen er optaget. Prøv igen.</string>
+    <string name="protection_recovery_attempt_record_failed">Kunne ikke registrere forsøget — enhedsnøglen er optaget. Prøv igen.</string>
+    <string name="protection_recovery_button_recovering">Gendanner…</string>
+    <string name="protection_recovery_button_recover">Gendan</string>
+
+    <!-- Credential-type vocabulary -->
+    <string name="protection_credential_type_passphrase">adgangssætning</string>
+    <string name="protection_credential_type_pin">PIN</string>
+
+</resources>

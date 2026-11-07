@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian (fa) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete) and
+  create-group screens.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Member count, shared by the group header and the group info header -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d عضو</item>
+        <item quantity="other">%1$d عضو</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d نفر هنوز در دسترس نیستند</string>
+    <string name="group_info_admin_suffix">شما مدیر هستید</string>
+
+    <!-- Group conversation -->
+    <string name="group_member_list_differs">⚠ فهرست اعضا متفاوت است</string>
+    <string name="group_delivery_not_delivered">به %1$d نفر نرسید</string>
+    <string name="group_notice_not_delivered">پیام شما به %1$d نفر از اعضا نرسید: هنوز از این گوشی در دسترس نیستند، یا رله نسخهٔ آن‌ها را رد کرد. Rún هیچ نسخه‌ای برای ارسال بعدی نگه نمی‌دارد.</string>
+
+    <!-- Group info -->
+    <string name="group_info_add_member">افزودن عضو</string>
+    <string name="group_info_you">شما</string>
+    <string name="group_info_not_reachable">هنوز در دسترس نیست</string>
+    <string name="group_info_no_verified_pairing">هنوز جفت‌سازی تأییدشده‌ای با این عضو وجود ندارد</string>
+    <string name="group_info_admin_badge">مدیر</string>
+    <string name="group_info_leave_group">ترک گروه</string>
+    <string name="group_info_make_admin">مدیر کردن</string>
+    <string name="group_info_remove_from_group">حذف از گروه</string>
+    <string name="group_info_add_member_precondition">او باید با تک‌تک اعضا حضوری جفت‌سازی کرده باشد. شما ضامن این هستید.</string>
+    <string name="group_info_add_member_empty">مخاطب واجد شرایطی نیست — همهٔ کسانی که با آن‌ها جفت‌سازی کرده‌اید همین حالا در گروه‌اند.</string>
+    <!-- Leave-confirm dialog title differs by platform (pre-existing) -->
+    <string name="group_info_leave_confirm_title_android">%1$s ترک شود؟</string>
+    <string name="group_info_leave_confirm_title_ios">ترک گروه</string>
+    <string name="group_info_leave_confirm_admin_message">شما مدیر هستید. اول نقش را واگذار کنید، وگرنه هیچ‌کس نمی‌تواند فهرست اعضا را تغییر دهد.</string>
+    <string name="group_info_leave_confirm_message">به دیگر اعضا گفته می‌شود که شما رفته‌اید.</string>
+    <string name="group_info_leave_unread_warning">هر چیزی که فرستاده‌اید و دیگران هنوز نخوانده‌اند ممکن است هرگز به آن‌ها نشان داده نشود.</string>
+    <string name="group_info_leave_confirm_action">ترک</string>
+    <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
+    <string name="group_info_choose_admin_title">انتخاب مدیر جدید</string>
+    <string name="group_info_choose_admin_subtitle_android">او پس از رفتن شما می‌تواند عضو اضافه و حذف کند.</string>
+    <string name="group_info_choose_admin_nav_title">مدیر جدید</string>
+    <string name="group_info_choose_admin_subtitle_ios">انتخاب کنید چه کسی مدیر جدید شود. او پس از رفتن شما می‌تواند عضو اضافه و حذف کند.</string>
+    <!-- iOS-only admin-handoff-failure dialog -->
+    <string name="group_info_transfer_failed_title">واگذاری مدیریت انجام نشد</string>
+    <string name="group_info_transfer_failed_message">چیزی تغییر نکرد — شما همچنان مدیر هستید و گروه قابل مدیریت می‌ماند. دوباره تلاش کنید.</string>
+
+    <!-- Create group -->
+    <string name="create_group_title">گروه جدید</string>
+    <string name="create_group_name_placeholder">نام گروه</string>
+    <string name="create_group_precondition">همهٔ اعضای یک گروه باید حضوری با یکدیگر جفت‌سازی کرده باشند. با ساختن گروه، شما ضامن این هستید.</string>
+    <string name="create_group_failed">ایجاد گروه ممکن نشد. اتصال را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="create_group_creating">در حال ایجاد…</string>
+    <string name="create_group_select_members">انتخاب اعضا</string>
+    <string name="create_group_button_label">ایجاد گروه (%1$d)</string>
+    <string name="group_private_from">خصوصی از %1$s · فقط شما این را می‌بینید</string>
+    <string name="group_private_to">خصوصی برای %1$s</string>
+    <string name="group_private_reply">پاسخ خصوصی</string>
+    <string name="group_private_reply_chip">پاسخ خصوصی به %1$s</string>
+    <string name="group_private_reply_chip_close">پایان پاسخ خصوصی</string>
+
+</resources>

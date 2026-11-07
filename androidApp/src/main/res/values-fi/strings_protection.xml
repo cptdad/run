@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_protection.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser -->
+    <string name="protection_pick_a_level">Valitse taso jatkaaksesi</string>
+    <string name="protection_apply_button">Aseta</string>
+    <string name="protection_level_accessibility_label">Suojaustaso %1$s</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">Laitteen perusturva</string>
+    <string name="protection_device_panel_detected_label">TUNNISTETTU</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Laitteen perustaso · AFU</string>
+
+    <!-- Settings apply flow -->
+    <string name="protection_downgrade_title">Heikennetäänkö suojaustasi?</string>
+    <string name="protection_downgrade_message_android">Vaihto tasolle %1$s tekee puhelimestasi helpomman murtaa, jos se viedään. Jatketaanko?</string>
+    <string name="protection_downgrade_message_ios">Vaihto tasolle %1$s tekee puhelimestasi helpomman murtaa, jos se viedään.</string>
+    <string name="protection_downgrade_keep">Pidä nykyinen</string>
+    <string name="protection_downgrade_reduce">Heikennä</string>
+    <string name="protection_persist_failed_title">Tasoa ei voitu tallentaa</string>
+    <string name="protection_persist_failed_message">Mitään ei muutettu — laiteavain oli varattu. Yritä uudelleen.</string>
+    <string name="protection_lever_b_failed_message">Puhelimesi ei vahvistanut laitteistoavainta, joten holvisi on valitsemaasi matalammalla suojaustasolla. Voit yrittää uudelleen asetuksista.</string>
+    <string name="protection_lever_b_reharden_notice">Suojausavaimesi vaatii päivityksen. Kytke Turva pois päältä ja takaisin päälle koventaaksesi sen uudelleen.</string>
+    <string name="protection_enabling_title">Suojataan holviasi…</string>
+    <string name="protection_enabling_body_android">Puhelimesi voi pyytää vahvistusta näytön lukituksella.</string>
+    <string name="protection_enabling_body_ios">Puhelimesi voi pyytää vahvistusta Face ID:llä tai pääsykoodilla.</string>
+    <string name="protection_forced_explainer_intro">Ilman sitä puhelin itse ei voi suojata Rún-sovelluksen avaimia — siksi Rún tarvitsee täällä vahvimman suojauksensa. Kaksi tapaa edetä:</string>
+    <string name="protection_forced_explainer_cta_title_android">Ota näytön lukitus käyttöön</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN-koodi, kuvio, salasana tai sormenjälki — mikä tahansa käy. Kaikki suojaustasot ovat käytettävissä heti, kun puhelimessasi on jokin niistä.</string>
+    <string name="protection_forced_open_settings_button">Avaa näytön lukituksen asetukset</string>
+    <string name="protection_forced_explainer_outro_android">Tai luo salalause nyt alla — Maksimi lukitsee Rún-sovelluksen itse, näytön lukitusta ei tarvita. Neljä tai viisi satunnaista sanaa riittää vahvaan salalauseeseen.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Ota laitteen pääsykoodi käyttöön</string>
+    <string name="protection_forced_explainer_cta_body_ios">Avaa Asetukset → Face ID ja pääsykoodi → Ota pääsykoodi käyttöön ja avaa sitten Rún uudelleen. Kaikki suojaustasot ovat käytettävissä heti, kun puhelimessasi on pääsykoodi.</string>
+    <string name="protection_forced_explainer_outro_ios">Tai luo salalause nyt alla — Maksimi lukitsee Rún-sovelluksen itse, laitteen pääsykoodia ei tarvita. Neljä tai viisi satunnaista sanaa riittää vahvaan salalauseeseen.</string>
+
+    <!-- Post-unlock migration screen -->
+    <string name="protection_migration_finish_maximum">Taso %1$s vaatii salalauseen, eikä tämä näkymä aseta sellaista — joten holvisi pysyy toistaiseksi tasolla %2$s. Viimeistele avaamalla Asetukset › Suojaustaso ja valitsemalla %1$s uudelleen — se asettaa salalauseesi ja ottaa sen ajastukset käyttöön.</string>
+    <string name="protection_migration_finish_private">Tason %1$s laitteistolukitusta ei voitu ottaa käyttöön täällä, joten holvisi pysyy toistaiseksi tasolla %2$s. Viimeistele avaamalla Asetukset › Suojaustaso ja valitsemalla %1$s uudelleen — se ottaa laitteistolukituksen käyttöön ja soveltaa sen ajastuksia.</string>
+    <string name="protection_migration_finish_same">Tason %1$s ajastukset on nyt asetettu. Viimeistele sen vahvemman avauksen käyttöönotto avaamalla Asetukset › Suojaustaso.</string>
+    <string name="protection_migration_almost_there_title">Melkein valmista</string>
+
+    <!-- Recovery code display -->
+    <string name="protection_recovery_code_title">Palautuskoodisi</string>
+    <string name="protection_recovery_code_body_android">Kirjoita tämä ylös ja säilytä se turvallisessa paikassa erillään puhelimestasi. Jos sormenjälkesi tai laitteen pääsykoodi joskus muuttuu ja lukitset itsesi ulos, tämä koodi ja PIN-koodisi palauttavat viestisi. Emme voi näyttää sitä uudelleen.</string>
+    <string name="protection_recovery_code_body_ios">Kirjoita tämä ylös ja säilytä se turvallisessa paikassa erillään puhelimestasi. Jos Face ID tai laitteen pääsykoodi joskus muuttuu ja lukitset itsesi ulos, tämä koodi ja PIN-koodisi palauttavat viestisi. Emme voi näyttää sitä uudelleen.</string>
+    <string name="protection_recovery_ack_label">Olen kirjoittanut sen ylös</string>
+    <string name="protection_recovery_ack_hint_android">Rastita ”Olen kirjoittanut sen ylös” jatkaaksesi.</string>
+    <string name="protection_recovery_ack_hint_ios">Ota käyttöön ”Olen kirjoittanut sen ylös” jatkaaksesi.</string>
+
+    <!-- Recovery code entry -->
+    <string name="protection_recovery_entry_title">Palauta koodillasi</string>
+    <string name="protection_recovery_entry_subtitle">Syötä tallentamasi palautuskoodi ja %1$s. Tämä palauttaa viestisi. Jos tämä puhelin voi yhä käyttää laitteistolukitusta, se otetaan uudelleen käyttöön samalla koodilla, joten säilytä koodi turvassa.</string>
+    <string name="protection_recovery_code_placeholder">Palautuskoodi</string>
+    <string name="protection_recovery_wrong_credential">Koodi ja %1$s eivät täsmänneet. Tarkista molemmat ja yritä uudelleen.</string>
+    <string name="protection_recovery_generic_error">Palautus ei onnistunut juuri nyt — palautuskoodia ei ole tallessa tai laiteavain on varattu. Yritä uudelleen.</string>
+    <string name="protection_recovery_attempt_record_failed">Yritystä ei voitu kirjata — laiteavain on varattu. Yritä uudelleen.</string>
+    <string name="protection_recovery_button_recovering">Palautetaan…</string>
+    <string name="protection_recovery_button_recover">Palauta</string>
+
+    <!-- Credential-type vocabulary (stays in the nominative — the surrounding
+         sentences are built so no case ending is needed on the placeholder). -->
+    <string name="protection_credential_type_passphrase">salalause</string>
+    <string name="protection_credential_type_pin">PIN-koodi</string>
+
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_settings.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="settings_language">Јазик</string>
+    <string name="language_option_system">Стандардно на системот</string>
+    <string name="notif_settings_carousel_back">‹ Назад</string>
+    <string name="notif_settings_carousel_next">Следно ›</string>
+    <string name="notif_settings_technical_details">Технички детали</string>
+    <string name="notif_settings_sound_row_label">Звук и вибрации</string>
+    <string name="notif_settings_sound_row_hint">Известувањата звучат како кај секоја друга апликација за пораки. Променете ги или исклучете ги во поставките за известувања на Android — Rún никогаш не го менува вашиот избор.</string>
+    <string name="notif_settings_register_error_generic">Не успеа регистрацијата за известувања. Проверете ја врската и обидете се повторно.</string>
+    <string name="notif_settings_register_error_no_distributor">Не е избран дистрибутер за известувања. Инсталирајте ntfy од F-Droid, па обидете се повторно.</string>
+    <string name="notif_settings_register_error_distributor_selection">Не успеа поврзувањето со вашиот дистрибутер за известувања. Затворете го Rún целосно и отворете го повторно, па обидете се повторно.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Push-серверот на овој дистрибутер сè уште не е поддржан — бара VAPID. ntfy работи; можете да го инсталирате од F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Вашиот дистрибутер за известувања ја одби регистрацијата. Отворете го, проверете дали е поставен и обидете се повторно.</string>
+    <string name="notif_settings_register_error_no_endpoint">Вашиот дистрибутер за известувања не одговори навреме. Отворете го, проверете дали е поврзан и обидете се повторно.</string>
+    <string name="notif_settings_no_distributor_message">Овој телефон нема Google-услуги, па известувањата бараат апликација-дистрибутер за UnifiedPush. Инсталирајте една — ntfy е препорачаниот избор — па вратете се тука и вклучете ги известувањата.</string>
+    <string name="notif_settings_no_distributor_link_label">Преземете ntfy на F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Вашиот дистрибутер за известувања престана да испорачува до Rún, па известувањата беа исклучени. Вклучете ги повторно за да се поврзете одново.</string>
+    <string name="settings_language_restart_title">Рестартирајте за да се примени</string>
+    <string name="settings_language_restart_message">Rún треба да се рестартира за да го смени јазикот на апликацијата на %1$s. Да продолжите?</string>
+    <string name="settings_report_bug">Пријави грешка</string>
+    <string name="settings_debug_mode">Режим за дебагирање</string>
+    <string name="settings_debug_mode_on">Режим за дебагирање (вклучен)</string>
+    <string name="debug_mode_title">Режим за дебагирање</string>
+    <string name="debug_mode_message">Испраќајте анонимни дијагностички дневници до релето за да помогнете во развојот. Дневниците никогаш не содржат ништо што ве идентификува вас или овој уред: ниту имиња, ниту содржина на пораки, ниту адреси, ниту клучеви, ниту идентификатори на сандачиња или контакти.</string>
+    <string name="debug_mode_message_off">Режимот за дебагирање е вклучен. Исклучете го за да престанете да испраќате анонимни дијагностички дневници.</string>
+    <string name="debug_mode_turn_on">Вклучи</string>
+    <string name="debug_mode_turn_off">Исклучи</string>
+    <string name="ext_proxy_title">Надворешен Tor прокси</string>
+    <string name="ext_proxy_description">Испраќајте го целиот сообраќај на релето преку SOCKS5 прокси што сами го водите, на пример Orbot или Tor во вашата мрежа, наместо вградениот Tor во Rún. Додека ова е вклучено, вградениот Tor никогаш не се стартува. Ако прокситото е недостапно, Rún останува офлајн. Нема резервен пат.</string>
+    <string name="ext_proxy_toggle">Користи надворешен прокси</string>
+    <string name="ext_proxy_host_label">IP-адреса на прокситото</string>
+    <string name="ext_proxy_port_label">Порта</string>
+    <string name="ext_proxy_error_host">Внесете IP-адреса на овој телефон или во вашата локална мрежа: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x или 169.254.x.x. Имињата на хостови не се дозволени.</string>
+    <string name="ext_proxy_error_port">Внесете порта од 1 до 65535.</string>
+    <string name="ext_proxy_error_save">Поставката не можеше да се зачува. Обидете се повторно.</string>
+    <string name="ext_proxy_lan_warning">Сообраќајот меѓу овој телефон и прокситото не е шифриран. Секој што може да ја следи или да ја имитира оваа адреса, вклучително и во други мрежи на кои телефонот ќе се поврзе подоцна, ги добива токените за пристап до сандачињата на вашите разговори. Може да ги избрише или да ги преземе тие сандачиња, но не може да ги чита вашите пораки. Користете го ова само во мрежа што ја контролирате и исклучете го режимот кога ќе ја напуштите.</string>
+    <string name="ext_proxy_loopback_warning">Додека апликацијата за прокси (како Orbot) не работи, секоја друга апликација на овој телефон може да ја заземе нејзината порта и да ги добие истите токени за пристап. Поставете ја апликацијата за прокси на нестандардна порта и оставете ја да работи.</string>
+    <string name="ext_proxy_next_launch">Промените стапуваат на сила следниот пат кога ќе го отворите Rún.</string>
+    <string name="ext_proxy_saved">Зачувано. Затворете го и повторно отворете го Rún за да се примени.</string>
+    <string name="ext_proxy_connecting">Поврзување преку вашиот надворешен прокси</string>
+    <string name="ext_proxy_status_checking">Се користи надворешен прокси: проверка</string>
+    <string name="ext_proxy_status_reachable">Се користи надворешен прокси</string>
+    <string name="ext_proxy_status_unreachable">Надворешниот прокси е недостапен</string>
+    <string name="ext_proxy_status_invalid">Поставката за надворешен прокси е неважечка. Поправете ја во Поставки.</string>
+    <string name="ext_proxy_status_unreadable">Поставката за надворешен прокси не можеше да се прочита. Испраќањето пораки е недостапно.</string>
+    <string name="report_bug_title">Опишете ја грешката (анонимни сте)</string>
+    <string name="report_bug_placeholder">Што се случи и што очекувавте?</string>
+    <string name="report_bug_send">Испрати</string>
+    <string name="report_bug_failed">Извештајот не можеше да се испрати — проверете ја врската и обидете се повторно.</string>
+    <string name="report_bug_thanks">Ви благодариме што помагате да се подобри Rún</string>
+</resources>

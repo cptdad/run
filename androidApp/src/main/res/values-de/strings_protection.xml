@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German (de) translation of values/strings_protection.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser -->
+    <string name="protection_pick_a_level">Wähle eine Stufe, um fortzufahren</string>
+    <string name="protection_apply_button">Übernehmen</string>
+    <string name="protection_level_accessibility_label">Schutzstufe %1$s</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">Grundsicherheit des Geräts</string>
+    <string name="protection_device_panel_detected_label">ERKANNT</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Grundsicherheit · AFU</string>
+
+    <!-- Settings apply flow -->
+    <string name="protection_downgrade_title">Schutz verringern?</string>
+    <string name="protection_downgrade_message_android">Der Wechsel zu %1$s macht dein Telefon leichter zu knacken, falls es dir abgenommen wird. Fortfahren?</string>
+    <string name="protection_downgrade_message_ios">Der Wechsel zu %1$s macht dein Telefon leichter zu knacken, falls es dir abgenommen wird.</string>
+    <string name="protection_downgrade_keep">Beibehalten</string>
+    <string name="protection_downgrade_reduce">Verringern</string>
+    <string name="protection_persist_failed_title">Stufe nicht gespeichert</string>
+    <string name="protection_persist_failed_message">Es wurde nichts geändert — der Geräteschlüssel war beschäftigt. Versuch es erneut.</string>
+    <string name="protection_lever_b_failed_message">Dein Telefon hat den Hardware-Schlüssel nicht bestätigt, deshalb steht dein Tresor auf einer niedrigeren Schutzstufe als der gewählten. Du kannst es in den Einstellungen erneut versuchen.</string>
+    <string name="protection_lever_b_reharden_notice">Dein Schutzschlüssel muss aktualisiert werden. Schalte Sicher einmal aus und wieder ein, um ihn erneut zu härten.</string>
+    <string name="protection_enabling_title">Dein Tresor wird gesichert…</string>
+    <string name="protection_enabling_body_android">Dein Telefon fragt dich möglicherweise nach seiner Bildschirmsperre.</string>
+    <string name="protection_enabling_body_ios">Dein Telefon fragt dich möglicherweise nach Face ID oder deinem Gerätecode.</string>
+    <string name="protection_forced_explainer_intro">Fehlt das, kann das Telefon selbst die Schlüssel von Rún nicht absichern — deshalb braucht Rún hier seinen stärksten Schutz. Zwei Wege führen weiter:</string>
+    <string name="protection_forced_explainer_cta_title_android">Bildschirmsperre einrichten</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN, Muster, Passwort oder Fingerabdruck — alles zählt. Sobald dein Telefon eine hat, ist jede Schutzstufe verfügbar.</string>
+    <string name="protection_forced_open_settings_button">Sperrbildschirm-Einstellungen öffnen</string>
+    <string name="protection_forced_explainer_outro_android">Oder erstelle jetzt unten eine Passphrase — Maximum sperrt Rún selbst, ganz ohne Bildschirmsperre. Vier oder fünf zufällige Wörter ergeben eine starke.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Gerätecode einrichten</string>
+    <string name="protection_forced_explainer_cta_body_ios">Öffne Einstellungen → Face ID &amp; Code → Code aktivieren und komm dann zu Rún zurück. Sobald dein Telefon einen hat, ist jede Schutzstufe verfügbar.</string>
+    <string name="protection_forced_explainer_outro_ios">Oder erstelle jetzt unten eine Passphrase — Maximum sperrt Rún selbst, ganz ohne Gerätecode. Vier oder fünf zufällige Wörter ergeben eine starke.</string>
+
+    <!-- Post-unlock migration screen -->
+    <string name="protection_migration_finish_maximum">Für %1$s ist eine Passphrase nötig, und auf diesem Bildschirm wird keine gesetzt — dein Tresor bleibt daher vorerst auf %2$s. Zum Abschließen öffne Einstellungen › Schutzstufe und wähle erneut %1$s — das setzt deine Passphrase und übernimmt die zugehörigen Zeiten.</string>
+    <string name="protection_migration_finish_private">Die Hardware-Sperre von %1$s ließ sich hier nicht aktivieren, dein Tresor bleibt daher vorerst auf %2$s. Zum Abschließen öffne Einstellungen › Schutzstufe und wähle erneut %1$s — das aktiviert die Hardware-Sperre und übernimmt die zugehörigen Zeiten.</string>
+    <string name="protection_migration_finish_same">Die Zeiten von %1$s sind jetzt gesetzt. Um die stärkere Entsperrung zu aktivieren, öffne Einstellungen › Schutzstufe.</string>
+    <string name="protection_migration_almost_there_title">Fast geschafft</string>
+
+    <!-- Recovery code display -->
+    <string name="protection_recovery_code_title">Dein Wiederherstellungscode</string>
+    <string name="protection_recovery_code_body_android">Schreib ihn auf und bewahre ihn sicher und getrennt von deinem Telefon auf. Falls sich dein Fingerabdruck oder dein Gerätecode jemals ändert und dich aussperrt, stellt dieser Code zusammen mit deiner PIN deine Nachrichten wieder her. Wir können ihn kein zweites Mal anzeigen.</string>
+    <string name="protection_recovery_code_body_ios">Schreib ihn auf und bewahre ihn sicher und getrennt von deinem Telefon auf. Falls sich Face ID oder dein Gerätecode jemals ändert und dich aussperrt, stellt dieser Code zusammen mit deiner PIN deine Nachrichten wieder her. Wir können ihn kein zweites Mal anzeigen.</string>
+    <string name="protection_recovery_ack_label">Ich habe ihn aufgeschrieben</string>
+    <string name="protection_recovery_ack_hint_android">Setze das Häkchen bei „Ich habe ihn aufgeschrieben“, um fortzufahren.</string>
+    <string name="protection_recovery_ack_hint_ios">Aktiviere „Ich habe ihn aufgeschrieben“, um fortzufahren.</string>
+
+    <!-- Recovery code entry -->
+    <string name="protection_recovery_entry_title">Mit deinem Code wiederherstellen</string>
+    <string name="protection_recovery_entry_subtitle">Gib den gespeicherten Wiederherstellungscode und deine %1$s ein. Das stellt deine Nachrichten wieder her. Wenn dieses Telefon die Hardware-Sperre noch nutzen kann, wird sie mit genau diesem Code wieder eingeschaltet – bewahre den Code also sicher auf.</string>
+    <string name="protection_recovery_code_placeholder">Wiederherstellungscode</string>
+    <string name="protection_recovery_wrong_credential">Dieser Code und diese %1$s passen nicht zusammen. Prüfe beides und versuch es erneut.</string>
+    <string name="protection_recovery_generic_error">Wiederherstellung gerade nicht möglich — es ist kein Wiederherstellungscode hinterlegt, oder der Geräteschlüssel ist beschäftigt. Versuch es erneut.</string>
+    <string name="protection_recovery_attempt_record_failed">Der Versuch konnte nicht erfasst werden — der Geräteschlüssel ist beschäftigt. Versuch es erneut.</string>
+    <string name="protection_recovery_button_recovering">Wird wiederhergestellt…</string>
+    <string name="protection_recovery_button_recover">Wiederherstellen</string>
+
+    <!-- Credential-type vocabulary -->
+    <string name="protection_credential_type_passphrase">Passphrase</string>
+    <string name="protection_credential_type_pin">PIN</string>
+
+</resources>

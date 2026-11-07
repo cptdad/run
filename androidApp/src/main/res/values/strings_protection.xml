@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser (ProtectionLevelScreen.kt / ProtectionLevelView.swift).
+         Title/tier-names/taglines/forced-notice/empty-state are single-sourced in
+         shared ProtectionLevelContent and already keyed in strings_shared.xml. -->
+    <string name="protection_pick_a_level">Pick a level to continue</string>
+    <string name="protection_apply_button">Apply</string>
+    <string name="protection_level_accessibility_label">%1$s protection</string>
+
+    <!-- Device base security panel (temporarily disabled behind a flag on both
+         platforms, but the copy still ships in the binary). -->
+    <string name="protection_device_panel_title">Device base security</string>
+    <string name="protection_device_panel_detected_label">DETECTED</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Device baseline · AFU</string>
+
+    <!-- Settings apply flow (ProtectionLevelSettingsScreen.kt / ProtectionLevelSettingsView
+         in ProtectionLevelView.swift): downgrade confirm, persist-failed / Lever B failed
+         dialogs, the Lever-B "enabling" interstitial, and the forced-route explainer. -->
+    <string name="protection_downgrade_title">Reduce your protection?</string>
+    <string name="protection_downgrade_message_android">Switching to %1$s makes your phone easier to crack if it’s taken. Continue?</string>
+    <string name="protection_downgrade_message_ios">Switching to %1$s makes your phone easier to crack if it’s taken.</string>
+    <string name="protection_downgrade_keep">Keep current</string>
+    <string name="protection_downgrade_reduce">Reduce</string>
+    <string name="protection_persist_failed_title">Couldn\'t save that level</string>
+    <string name="protection_persist_failed_message">Nothing was changed — the device key was busy. Try again.</string>
+    <string name="protection_lever_b_failed_message">Your phone didn\'t confirm the hardware key, so your vault is set to a lower protection level than you chose. You can try again from Settings.</string>
+    <!-- Shown when the vault's hardware-bound key (Lever B) is
+         on the legacy device-credential-openable scheme (VaultSelector.needsLeverBReharden)
+         — a non-blocking notice pointing the user at the existing disable/enable cycle. -->
+    <string name="protection_lever_b_reharden_notice">Your protection key needs an upgrade. Turn the Secure tier off and on again to re-harden it.</string>
+    <string name="protection_enabling_title">Securing your vault…</string>
+    <string name="protection_enabling_body_android">Your phone may ask you to confirm with its screen lock.</string>
+    <string name="protection_enabling_body_ios">Your phone may ask you to confirm with Face ID or its passcode.</string>
+    <string name="protection_forced_explainer_intro">Without one, the phone itself can\'t protect Rún\'s keys — so Rún needs its strongest protection here. Two ways forward:</string>
+    <string name="protection_forced_explainer_cta_title_android">Set a screen lock</string>
+    <string name="protection_forced_explainer_cta_body_android">A PIN, pattern, password, or fingerprint all count. Any protection level is available once your phone has one.</string>
+    <string name="protection_forced_open_settings_button">Open lock screen settings</string>
+    <string name="protection_forced_explainer_outro_android">Or create a passphrase now below — Maximum locks Rún itself, no screen lock needed. Four or five random words make a strong one.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Set a device passcode</string>
+    <string name="protection_forced_explainer_cta_body_ios">Open Settings → Face ID &amp; Passcode → Turn Passcode On, then come back to Rún. Any protection level is available once your phone has one.</string>
+    <string name="protection_forced_explainer_outro_ios">Or create a passphrase now below — Maximum locks Rún itself, no device passcode needed. Four or five random words make a strong one.</string>
+
+    <!-- Post-unlock migration screen (ProtectionLevelMigrationScreen.kt /
+         ProtectionLevelMigrationView in ProtectionLevelView.swift). %1$s is always
+         the chosen tier name (repeated), %2$s the honest persisted tier name. -->
+    <string name="protection_migration_finish_maximum">%1$s needs a passphrase, and this screen doesn\'t set one — so your vault stays at %2$s for now. To finish, open Settings › Protection level and choose %1$s again — that sets your passphrase and applies its timings.</string>
+    <string name="protection_migration_finish_private">We couldn\'t turn on %1$s\'s hardware lock here, so your vault stays at %2$s for now. To finish, open Settings › Protection level and choose %1$s again — that turns on the hardware lock and applies its timings.</string>
+    <string name="protection_migration_finish_same">%1$s\'s timings are set now. To finish turning on its stronger unlock, open Settings › Protection level.</string>
+    <string name="protection_migration_almost_there_title">Almost there</string>
+
+    <!-- Recovery code display (RecoveryCodeScreen.kt / RecoveryCodeView in
+         ProtectionLevelView.swift) — shown once, right after Lever B is enabled. -->
+    <string name="protection_recovery_code_title">Your recovery code</string>
+    <string name="protection_recovery_code_body_android">Write this down and keep it somewhere safe and separate from your phone. If your fingerprint or device passcode ever changes and locks you out, this code plus your PIN restores your messages. We can\'t show it again.</string>
+    <string name="protection_recovery_code_body_ios">Write this down and keep it somewhere safe and separate from your phone. If your Face ID or device passcode ever changes and locks you out, this code plus your PIN restores your messages. We can\'t show it again.</string>
+    <string name="protection_recovery_ack_label">I’ve written it down</string>
+    <string name="protection_recovery_ack_hint_android">Tick “I’ve written it down” to continue.</string>
+    <string name="protection_recovery_ack_hint_ios">Turn on “I’ve written it down” to continue.</string>
+
+    <!-- Recovery code entry (RecoveryEntryScreen.kt / RecoveryEntryView in
+         ProtectionLevelView.swift) — the lock-screen escape hatch when Lever B
+         locks a user out. %1$s in the subtitle/wrong-credential strings is the
+         credential-type word (protection_credential_type_passphrase / _pin). -->
+    <string name="protection_recovery_entry_title">Recover with your code</string>
+    <string name="protection_recovery_entry_subtitle">Enter the recovery code you saved plus your %1$s. This restores your messages. If this phone can still use the hardware lock, it switches back on with this same code, so keep the code safe.</string>
+    <string name="protection_recovery_code_placeholder">Recovery code</string>
+    <string name="protection_recovery_wrong_credential">That code and %1$s didn’t match. Check both and try again.</string>
+    <string name="protection_recovery_generic_error">Couldn’t recover right now — no recovery code on file, or the device key is busy. Try again.</string>
+    <string name="protection_recovery_attempt_record_failed">Couldn\'t record the attempt — the device key is busy. Try again.</string>
+    <string name="protection_recovery_button_recovering">Recovering…</string>
+    <string name="protection_recovery_button_recover">Recover</string>
+
+    <!-- Credential-type vocabulary shared by the recovery-entry subtitle/error text
+         and the recovery credential field placeholder. -->
+    <string name="protection_credential_type_passphrase">passphrase</string>
+    <string name="protection_credential_type_pin">PIN</string>
+
+</resources>

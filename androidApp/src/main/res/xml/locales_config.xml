@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Per-app language picker (Android 13+ android:localeConfig) — kept in
+     lockstep BY HAND with androidResources.localeFilters in
+     androidApp/build.gradle.kts and the LOCALES list in
+     scripts/l10n/gen-l10n.mjs. AGP does not generate this file from
+     localeFilters automatically, so a new locale needs all three updated. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="sv" />
+    <locale android:name="de" />
+    <locale android:name="fr" />
+    <locale android:name="es" />
+    <locale android:name="nb" />
+    <locale android:name="da" />
+    <locale android:name="fi" />
+    <locale android:name="ar" />
+    <locale android:name="fa" />
+    <locale android:name="so" />
+    <locale android:name="ru" />
+    <locale android:name="mk" />
+</locale-config>

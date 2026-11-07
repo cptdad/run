@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Om-karusell -->
+    <string name="about_welcome_title">Velkommen til Rún</string>
+    <string name="about_welcome_body">Meldinger uten noe å beslaglegge, spore eller kreve utlevert – ingen kontoer, ingen numre, ingen spor. Navnet er norrønt: «rún» – hemmelighet, skjult kunnskap, roten til ordet «rune», og på irsk og skotsk gælisk den kjære som blir betrodd den.</string>
+    <string name="about_tor_intro_title">Rutet gjennom Tor</string>
+    <string name="about_tor_intro_body">Alt Rún sender, går via Tor – et globalt nettverk som sender trafikken din gjennom flere hopp og skjuler IP-adressen og posisjonen din. Ikke engang relayet til Rún får vite hvem eller hvor du er, og Rún kobler seg ikke til på noen annen måte.</string>
+    <string name="about_tor_runestone_title">Rødt betyr Tor</string>
+    <string name="about_tor_runestone_body">Følg med på runesteinen – rødt betyr at du er på Tor. Ringen pulserer kraftigere jo nærmere du kommer, lyser jevnt rødt i det øyeblikket relayet svarer, og så tennes R-en.</string>
+    <string name="about_e2e_title">Ende-til-ende-kryptert</string>
+    <string name="about_e2e_body">Hver melding forsegles med en nøkkel bare du og kontakten din har, og etter hvert som dere prater, skrus nøkkelen videre – så selv om én nøkkel skulle bli avslørt, forblir resten forseglet.</string>
+    <string name="about_relay_title">Et relay som ikke kan lese</string>
+    <string name="about_relay_body">Relayet til Rún er bevisst dumt – ingen kontoer, ingenting å lese, bare datablokker med padding i nummererte innbokser som det sender videre, og størrelsen røper ingenting om innholdet. Ingenting blir liggende etter levering – meldinger fjernes fra innboksen etter hvert som du leser dem, og selve innboksen frigis etter en lang periode med stillhet.</string>
+    <string name="about_relay_runestone_title">Hvit ᚱ betyr relay</string>
+    <string name="about_relay_runestone_body">Når ᚱ i midten lyser hvitt, har Rún nådd relayet – meldinger kan sendes og komme frem. Rødt uten hvit ᚱ betyr at Tor er oppe, men at relayet ennå ikke er tilgjengelig.</string>
+    <string name="about_contacts_title">Kontakter du velger selv</string>
+    <string name="about_contacts_body">Ingen e-postadresser, ingen registrering – og ingen fremmede kan legge deg til. Dere møtes ansikt til ansikt og skanner QR-koden til hverandre. Hver kontakt får et tilfeldig kodenavn; legg til et privat notat bare du kan se, så bare du vet hvem de egentlig er.</string>
+    <string name="about_referrals_title">Betrodde introduksjoner</string>
+    <string name="about_referrals_body">Det finnes ingen katalog over hvem som er på Rún. I stedet kan noen du allerede stoler på, introdusere deg for noen de stoler på – og du velger selv om du vil takke ja. Tillit går fra person til person, aldri gjennom en server.</string>
+    <string name="about_groups_title">Gruppesamtaler</string>
+    <string name="about_groups_body">En gruppe finnes bare på telefonene til medlemmene – ingen gruppekonto, ingen medlemsliste, ingenting på relayet å beslaglegge. Hver melding sendes privat til hvert medlem, så relayet får aldri vite navnet på gruppen, hvem som er med, eller et eneste ord av det som sies. Det ser at én melding går til flere innbokser samtidig – nok til å vite at en gruppe finnes og hvor mange den nådde, aldri hvem.</string>
+    <string name="about_vanish_title">Meldinger forsvinner</string>
+    <string name="about_vanish_body">Dette er «brenn ved lesing»: meldinger finnes bare i minnet, aldri på disk. Lukk appen eller forlat en samtale, og de er borte for godt.</string>
+    <string name="about_quiet_title">Stille som standard</string>
+    <string name="about_quiet_body">Ingen annonser, ingen analyse, ingen profiler – aldri, og ingen varsler fra start: Rún kontakter relayet sitt, over Tor, bare når du åpner appen. Du kan velge å slå på umiddelbare varsler – et innholdsløst vekkesignal via push-tjenesten til Apple eller Google, eller via en du installerer selv, som bare røper omtrentlig tidspunkt, aldri meldingen eller hvem som sendte den – avslått med mindre du slår det på.</string>
+    <string name="about_lockwipe_title">Låser og sletter seg selv</string>
+    <string name="about_lockwipe_body">Står appen ubrukt eller sendes den i bakgrunnen, låser Rún seg – du låser opp igjen med PIN-koden eller passfrasen din. For mange feilforsøk, eller en lang periode uten bruk, går lenger: da slettes nøklene og alle data, uten mulighet for gjenoppretting. Hvor raskt hver av delene skjer, bestemmes av beskyttelsesnivået du velger.</string>
+    <string name="about_screen_privacy_title">Skjermpersonvern</string>
+    <string name="about_screen_privacy_body_android">Skjermbilder, skjermopptak og forhåndsvisningen i appbytteren er blokkert, så ingenting lekker til galleriet eller appoversikten.</string>
+    <string name="about_screen_privacy_body_ios">Forhåndsvisningen i appbytteren og skjermopptak er tildekket. iOS kan ikke blokkere et manuelt skjermbilde, så vær forsiktig i sensitive samtaler – Rún varsler deg hvis noen tar et.</string>
+    <string name="about_forensic_title">Trygg ved beslag</string>
+    <string name="about_forensic_body">En beslaglagt telefon gir ikke fra seg noe nyttig. Alt som ligger lagret, er forseglet med SQLCipher, og en sletting fjerner selve nøklene – igjen står bare støy, ingen mellomlagre eller fragmenter. Hvor vanskelig den er å åpne, bestemmer du: God hviler på PIN-koden din; Sikker binder nøkkelen til sikkerhetsbrikken i denne telefonen, bak fingeravtrykket eller ansiktet ditt; Maksimal bytter ut PIN-koden med en passfrase bare du kjenner – så selv en fullstendig kopiert telefon forblir stengt.</string>
+    <string name="about_ready_title">Klar når du er klar</string>
+    <string name="about_ready_body">Det er Rún – stille, privat og din å holde hemmelig. Legg til noen ansikt til ansikt, og start en samtale ingen andre kan se.</string>
+
+    <!-- Støtte-/donasjonsvindu -->
+    <string name="donate_appeal">Rún har ingen annonser, ingen investorer, og selger aldri dataene dine. Hver donasjon – stor eller liten – bidrar til å holde appen gratis for alle, for alltid.</string>
+
+    <!-- Karusell om varsler -->
+    <string name="notif_edu_vendor_title">Varsler går via serverne til %1$s. De inneholder aldri meldingene dine – bare at det ligger en ny til deg.</string>
+    <string name="notif_edu_vendor_deep">Relayet sender et innholdsløst vekkesignal gjennom %1$s – ingen avsender, ingen tekst, intet antall – og Rún viser bare et generisk «Varsel». Ingenting hentes eller dekrypteres før du åpner Rún og låser opp. %3$s fungerer på samme måte; ingen av leverandørene er mer privat enn den andre.\n\nRelayet lærer også noe: alle innboksene dine registreres under den ene push-adressen som %2$s har utstedt til denne telefonen, så relayet kan se hvilke samtaler som deler en enhet. Noen som klarer å tvinge fram informasjon fra både %2$s og relayet, kan koble deg til samtalene dine. Derfor er denne bryteren av helt til du slår den på.</string>
+    <string name="notif_edu_timing_title">%1$s får bare vite når meldinger når fram til deg – aldri hvem som sendte dem eller hva de sier. Over tid kan disse tidspunktene alene vise når du kommuniserer.</string>
+    <string name="notif_edu_timing_deep">Et vekkesignal utløses hver gang en melding når deg, så %1$s ser et løpende mønster – hvor ofte, til hvilke tider – knyttet til Rún-installasjonen på denne telefonen. Tor skjuler normalt slike tidsspor; å slå på varsler bytter bort noe av dem mot umiddelbar levering.</string>
+    <string name="notif_edu_content_safe_title">Meldingene dine når aldri fram til %1$s. Rún henter dem over Tor og dekrypterer dem på denne telefonen først etter at du har låst opp.</string>
+    <string name="notif_edu_content_safe_deep">Vekkesignalet bærer ingenting og utløser ingen nettverksaktivitet på egen hånd. Meldingene dine ligger krypterte på relayet til du åpner Rún, som henter dem over Tor og dekrypterer dem lokalt med nøkkelen som utledes fra PIN-koden eller passfrasen din. %1$s mottar, lagrer eller videresender aldri en eneste byte av meldingene.</string>
+    <string name="notif_edu_switch_title">Slå på varsler</string>
+    <string name="notif_edu_switch_label">Sanntidsvarsler (via %1$s)</string>
+    <string name="notif_vendor_name_android">Google</string>
+    <string name="notif_vendor_name_ios">Apple</string>
+    <string name="notif_service_name_android">Firebase Cloud Messaging (FCM) fra Google</string>
+    <string name="notif_service_name_ios">Push Notification service (APNs) fra Apple</string>
+    <string name="notif_cross_ref_label_android">iOS-push (APNs)</string>
+    <string name="notif_cross_ref_label_ios">Android-push (FCM)</string>
+
+    <!-- UnifiedPush-karusell (Google-fri versjon) -->
+    <string name="notif_edu_up_distributor_title">Denne telefonen har ingen Google-tjenester, så vekkesignalet leveres av en egen app du velger selv – en UnifiedPush-distributør som ntfy.</string>
+    <string name="notif_edu_up_distributor_deep">Distributørappen holder én forbindelse åpen til en push-server og gir hvert vekkesignal videre til Rún. Ingenting endres for meldingene dine: vekkesignalet inneholder ingen melding, og Rún henter og dekrypterer fortsatt alt over Tor etter at du har låst opp.</string>
+    <string name="notif_edu_up_parties_title">To parter får vite når du blir kontaktet – distributørappen og push-serveren dens – aldri hvem som skrev eller hva. Disse tidspunktene alene kan vise når du kommuniserer.</string>
+    <string name="notif_edu_up_parties_deep">Det er én part mer enn i Google-versjonen. Distributøren ser hvert vekkesignal fordi den leverer dem; push-serveren dens ser dem fordi den videresender dem, og på en offentlig server ser den også IP-adressen til denne telefonen. Ingen av dem ser avsender, melding eller antall. Tor skjuler normalt slike tidsspor; varsler bytter bort noe av dem mot umiddelbar levering. Kjører du din egen push-server, er den andre parten deg.</string>
+    <string name="notif_edu_up_content_safe_title">Meldingene dine når aldri fram til distributøren eller serveren dens. Hvert vekkesignal er kryptert til denne telefonen og bærer ingenting; Rún henter meldingene dine over Tor og dekrypterer dem etter at du har låst opp.</string>
+    <string name="notif_edu_up_content_safe_deep">Hvert vekkesignal krypteres til et nøkkelpar som aldri forlater denne telefonen (Web Push, RFC 8291), så noen som får tak i endepunktadressen din, kan ikke forfalske et nytt varsel — men push-serveren din kan sende det samme vekkesignalet på nytt, så Rún begrenser hvor ofte en gjentakelse kan utløse varselet — og hvert vekkesignal har samme faste størrelse. Meldingene dine ligger krypterte på relayet til du åpner Rún, som henter dem over Tor og dekrypterer dem lokalt med nøkkelen som utledes fra PIN-koden eller passfrasen din.</string>
+
+    <!-- Valg av beskyttelsesnivå -->
+    <string name="protection_title">Velg beskyttelsesnivå mot dataetterforskning</string>
+    <string name="protection_empty_state">Velg et nivå for å fortsette. Ingen nivå velges for deg.</string>
+    <string name="protection_stop_reason_prefix">Det er ikke mulig å velge dette nivået.</string>
+    <string name="protection_tier_name_casual">God</string>
+    <string name="protection_tier_name_private">Sikker</string>
+    <string name="protection_tier_name_maximum">Maksimal</string>
+    <string name="protection_tier_tagline_casual">Sekssifret PIN-kode for å åpne Rún. Kan knekkes med brute force av etterforskningsverktøy i løpet av timer, så Rún hviler helt på beskyttelsen i telefonen. På Android er tastaturets ordforslag og emoji fortsatt slått på, så tastaturet kan lære ord du skriver.</string>
+    <string name="protection_tier_tagline_private">Sekssifret PIN-kode, men nøkkelen til hvelvet forsegles i sikkerhetsbrikken i telefonen og frigis bare av fingeravtrykket eller ansiktet ditt. En beslaglagt telefon står imot brute force fra etterforskningsverktøy selv om koden til telefonen blir knekt. På Android er tastaturets ordforslag og emoji fortsatt slått på, så tastaturet kan lære ord du skriver.</string>
+    <string name="protection_tier_tagline_maximum">En lang passfrase i stedet for en PIN-kode – sterk nok til at ingen etterforskningsverktøy kan knekke den med brute force, selv fra en ulåst telefon. Tastaturet kjører i passordmodus: ingenting du skriver blir lært eller foreslått, og på Android er emoji-tasten utilgjengelig.</string>
+    <string name="protection_forced_notice_title">Telefonen din har ingen %1$s</string>
+    <string name="protection_forced_notice_body">Uten en slik er passfrasen din det eneste som står mellom meldingene dine og hvem som helst som holder denne telefonen. Derfor kjører Rún på Maksimal her.\n\nAppen ber om passfrasen hver gang, låser seg etter 60 sekunder uten bruk, og neste gang Rún åpnes etter 7 dager uten bruk, slettes alt – permanent.\n\nAngi en kode på telefonen for å kunne velge et mildere nivå.</string>
+    <string name="protection_device_lock_term_android">låseskjerm</string>
+    <string name="protection_device_lock_term_ios">kode</string>
+    <string name="protection_stop_no_lock">Telefonen din har ingen %1$s, bare Maksimal kan beskytte Rún her.</string>
+    <string name="protection_stop_no_chip">Denne telefonen har ingen sikkerhetsbrikke.</string>
+    <string name="protection_stop_no_biometrics">Biometri mangler. Sett opp Face ID eller fingeravtrykk.</string>
+
+    <!-- Runehvisking i samtaler -->
+    <string name="runes_consulting">Rådspør runene…</string>
+    <string name="runes_whisper">Runene hvisker</string>
+    <string name="runes_silent">Runene tier</string>
+
+    <!-- Meldinger om at noen forlot gruppen -->
+    <string name="group_notice_left">%1$s forlot gruppen</string>
+    <string name="group_notice_removed">%1$s ble fjernet fra gruppen</string>
+    <string name="group_notice_member_fallback">Et medlem</string>
+    <string name="menu_terms_contact">Vilkår og kontakt</string>
+    <string name="terms_contact_report_line">Rapporter støtende innhold eller misbruk</string>
+    <string name="terms_contact_enforcement">Rapporter følges opp innen 24 timer: støtende innhold fjernes, og brukere som misbruker tjenesten, utestenges.</string>
+
+</resources>

@@ -1,0 +1,24 @@
+
+# Physical-device test screen recordings (helpers/multi/recording.ts)
+videos/
+
+# Per-phase whole-fleet screenshots (helpers/screenshotEachPhase.ts) — generated
+# artifacts under screenshots/<suite>/<device>/. Scoped to this feature's own
+# filename signature so the adhoc (seed13-*.png) + l10n sweep outputs are untouched.
+screenshots/**/*__PASS.png
+screenshots/**/*__FAIL.png
+
+# Physical cross-suite run logs (tee'd during e2e runs — pure artifacts)
+_crossrun_*.log
+push-tier2-*.log
+push-tier2-*.taillog
+android-poll-*.log
+
+# Device-pool lease store (helpers/devicePool.js) — leases, slots, waiters, inventory
+.device-pool/
+prod-tester-*.log
+prod-tester-cycles*.csv
+.prod-tester-pause
+
+# test:dynamic_real_life run folders (scenario, actions, ledger, frames — pure artifacts)
+dynamic/runs/

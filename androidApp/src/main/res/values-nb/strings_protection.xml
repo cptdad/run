@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Valg av beskyttelsesnivå -->
+    <string name="protection_pick_a_level">Velg et nivå for å fortsette</string>
+    <string name="protection_apply_button">Bruk</string>
+    <string name="protection_level_accessibility_label">%1$s beskyttelse</string>
+
+    <!-- Panel for enhetens grunnsikkerhet -->
+    <string name="protection_device_panel_title">Enhetens grunnsikkerhet</string>
+    <string name="protection_device_panel_detected_label">OPPDAGET</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Enhetens basisnivå · AFU</string>
+
+    <!-- Endring av nivå i innstillingene -->
+    <string name="protection_downgrade_title">Redusere beskyttelsen?</string>
+    <string name="protection_downgrade_message_android">Å bytte til %1$s gjør telefonen lettere å knekke hvis den blir tatt. Vil du fortsette?</string>
+    <string name="protection_downgrade_message_ios">Å bytte til %1$s gjør telefonen lettere å knekke hvis den blir tatt.</string>
+    <string name="protection_downgrade_keep">Behold nåværende</string>
+    <string name="protection_downgrade_reduce">Reduser</string>
+    <string name="protection_persist_failed_title">Kunne ikke lagre nivået</string>
+    <string name="protection_persist_failed_message">Ingenting ble endret – enhetsnøkkelen var opptatt. Prøv igjen.</string>
+    <string name="protection_lever_b_failed_message">Telefonen bekreftet ikke maskinvarenøkkelen, så hvelvet ditt er satt til et lavere beskyttelsesnivå enn du valgte. Du kan prøve igjen fra Innstillinger.</string>
+    <string name="protection_lever_b_reharden_notice">Beskyttelsesnøkkelen din må oppgraderes. Slå Sikker av og på igjen for å herde den på nytt.</string>
+    <string name="protection_enabling_title">Sikrer hvelvet ditt…</string>
+    <string name="protection_enabling_body_android">Telefonen kan be deg bekrefte med skjermlåsen.</string>
+    <string name="protection_enabling_body_ios">Telefonen kan be deg bekrefte med Face ID eller koden sin.</string>
+    <string name="protection_forced_explainer_intro">Uten en slik kan ikke telefonen selv beskytte nøklene til Rún – derfor kreves den sterkeste beskyttelsen her. To veier videre:</string>
+    <string name="protection_forced_explainer_cta_title_android">Angi en skjermlås</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN, mønster, passord eller fingeravtrykk – alt teller. Alle beskyttelsesnivåer blir tilgjengelige så snart telefonen har en.</string>
+    <string name="protection_forced_open_settings_button">Åpne innstillinger for låseskjerm</string>
+    <string name="protection_forced_explainer_outro_android">Eller lag en passfrase nedenfor nå – Maksimal låser Rún selv, uten skjermlås. Fire eller fem tilfeldige ord gir en sterk passfrase.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Angi en kode på enheten</string>
+    <string name="protection_forced_explainer_cta_body_ios">Åpne Innstillinger → Face ID og kode → Slå på kode, og kom tilbake til Rún. Alle beskyttelsesnivåer blir tilgjengelige så snart telefonen har en.</string>
+    <string name="protection_forced_explainer_outro_ios">Eller lag en passfrase nedenfor nå – Maksimal låser Rún selv, uten kode på enheten. Fire eller fem tilfeldige ord gir en sterk passfrase.</string>
+
+    <!-- Migreringsskjerm etter opplåsing -->
+    <string name="protection_migration_finish_maximum">%1$s krever en passfrase, og denne skjermen setter ingen – så hvelvet ditt blir stående på %2$s inntil videre. Fullfør ved å åpne Innstillinger › Beskyttelsesnivå og velge %1$s på nytt – da settes passfrasen din og tidene som hører til.</string>
+    <string name="protection_migration_finish_private">Vi fikk ikke slått på maskinvarelåsen til %1$s her, så hvelvet ditt blir stående på %2$s inntil videre. Fullfør ved å åpne Innstillinger › Beskyttelsesnivå og velge %1$s på nytt – da slås maskinvarelåsen på og tidene som hører til, tas i bruk.</string>
+    <string name="protection_migration_finish_same">Tidene for %1$s er satt nå. For å fullføre den sterkere opplåsingen, åpne Innstillinger › Beskyttelsesnivå.</string>
+    <string name="protection_migration_almost_there_title">Nesten i mål</string>
+
+    <!-- Visning av gjenopprettingskode -->
+    <string name="protection_recovery_code_title">Gjenopprettingskoden din</string>
+    <string name="protection_recovery_code_body_android">Skriv den ned og oppbevar den trygt, atskilt fra telefonen. Hvis fingeravtrykket eller koden på enheten din endres og låser deg ute, gjenoppretter denne koden sammen med PIN-koden din meldingene dine. Vi kan ikke vise den igjen.</string>
+    <string name="protection_recovery_code_body_ios">Skriv den ned og oppbevar den trygt, atskilt fra telefonen. Hvis Face ID eller koden på enheten din endres og låser deg ute, gjenoppretter denne koden sammen med PIN-koden din meldingene dine. Vi kan ikke vise den igjen.</string>
+    <string name="protection_recovery_ack_label">Jeg har skrevet den ned</string>
+    <string name="protection_recovery_ack_hint_android">Kryss av for «Jeg har skrevet den ned» for å fortsette.</string>
+    <string name="protection_recovery_ack_hint_ios">Slå på «Jeg har skrevet den ned» for å fortsette.</string>
+
+    <!-- Inntasting av gjenopprettingskode -->
+    <string name="protection_recovery_entry_title">Gjenopprett med koden din</string>
+    <string name="protection_recovery_entry_subtitle">Skriv inn gjenopprettingskoden du lagret, sammen med %1$s. Dette gjenoppretter meldingene dine. Hvis telefonen fortsatt kan bruke maskinvarelåsen, slås den på igjen med den samme koden, så ta godt vare på koden.</string>
+    <string name="protection_recovery_code_placeholder">Gjenopprettingskode</string>
+    <string name="protection_recovery_wrong_credential">Koden og %1$s stemte ikke. Sjekk begge deler og prøv igjen.</string>
+    <string name="protection_recovery_generic_error">Kunne ikke gjenopprette nå – ingen gjenopprettingskode er lagret, eller enhetsnøkkelen er opptatt. Prøv igjen.</string>
+    <string name="protection_recovery_attempt_record_failed">Kunne ikke registrere forsøket – enhetsnøkkelen er opptatt. Prøv igjen.</string>
+    <string name="protection_recovery_button_recovering">Gjenoppretter…</string>
+    <string name="protection_recovery_button_recover">Gjenopprett</string>
+
+    <!-- Ord for legitimasjonstype -->
+    <string name="protection_credential_type_passphrase">passfrasen</string>
+    <string name="protection_credential_type_pin">PIN-koden</string>
+
+</resources>

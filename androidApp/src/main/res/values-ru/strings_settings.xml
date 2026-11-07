@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_settings.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="settings_language">Язык</string>
+    <string name="language_option_system">Язык системы</string>
+    <string name="notif_settings_carousel_back">‹ Назад</string>
+    <string name="notif_settings_carousel_next">Далее ›</string>
+    <string name="notif_settings_technical_details">Технические подробности</string>
+    <string name="notif_settings_sound_row_label">Звук и вибрация</string>
+    <string name="notif_settings_sound_row_hint">Оповещения звучат так же, как в любом другом мессенджере. Измените или отключите их в настройках уведомлений Android — Rún никогда не переопределяет ваш выбор.</string>
+    <string name="notif_settings_register_error_generic">Не удалось зарегистрироваться для получения уведомлений. Проверьте подключение и повторите попытку.</string>
+    <string name="notif_settings_register_error_no_distributor">Не выбран дистрибьютор уведомлений. Установите ntfy из F-Droid и повторите попытку.</string>
+    <string name="notif_settings_register_error_distributor_selection">Не удалось подключиться к дистрибьютору уведомлений. Полностью закройте Rún и откройте его снова, затем повторите попытку.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Push-сервер этого дистрибьютора пока не поддерживается — ему требуется VAPID. ntfy подходит; его можно установить из F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Дистрибьютор уведомлений отклонил регистрацию. Откройте его, проверьте настройку и повторите попытку.</string>
+    <string name="notif_settings_register_error_no_endpoint">Дистрибьютор уведомлений не ответил вовремя. Откройте его, убедитесь, что он подключён, и повторите попытку.</string>
+    <string name="notif_settings_no_distributor_message">На этом телефоне нет сервисов Google, поэтому для уведомлений нужно приложение-дистрибьютор UnifiedPush. Установите такое приложение — рекомендуем ntfy — и вернитесь сюда, чтобы включить уведомления.</string>
+    <string name="notif_settings_no_distributor_link_label">Получить ntfy на F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Дистрибьютор уведомлений перестал доставлять их в Rún, поэтому уведомления были отключены. Включите их снова, чтобы восстановить соединение.</string>
+    <string name="settings_language_restart_title">Перезапуск для применения</string>
+    <string name="settings_language_restart_message">Rún необходимо перезапустить, чтобы изменить язык приложения на %1$s. Продолжить?</string>
+    <string name="settings_report_bug">Сообщить об ошибке</string>
+    <string name="settings_debug_mode">Режим отладки</string>
+    <string name="settings_debug_mode_on">Режим отладки (вкл.)</string>
+    <string name="debug_mode_title">Режим отладки</string>
+    <string name="debug_mode_message">Отправляйте анонимные диагностические журналы на ретранслятор, чтобы помочь разработке. Журналы никогда не содержат ничего, что идентифицирует вас или это устройство: ни имён, ни содержимого сообщений, ни адресов, ни ключей, ни идентификаторов почтовых ящиков или контактов.</string>
+    <string name="debug_mode_message_off">Режим отладки включён. Выключите его, чтобы перестать отправлять анонимные диагностические журналы.</string>
+    <string name="debug_mode_turn_on">Включить</string>
+    <string name="debug_mode_turn_off">Выключить</string>
+    <string name="ext_proxy_title">Внешний прокси Tor</string>
+    <string name="ext_proxy_description">Направляйте весь трафик ретранслятора через SOCKS5-прокси, который вы запускаете сами, например Orbot или Tor в вашей собственной сети, вместо встроенного Tor в Rún. Пока эта функция включена, встроенный Tor не запускается. Если прокси недоступен, Rún остаётся офлайн. Резервного пути нет.</string>
+    <string name="ext_proxy_toggle">Использовать внешний прокси</string>
+    <string name="ext_proxy_host_label">IP-адрес прокси</string>
+    <string name="ext_proxy_port_label">Порт</string>
+    <string name="ext_proxy_error_host">Введите IP-адрес на этом телефоне или в вашей локальной сети: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x или 169.254.x.x. Имена хостов не допускаются.</string>
+    <string name="ext_proxy_error_port">Введите порт от 1 до 65535.</string>
+    <string name="ext_proxy_error_save">Не удалось сохранить настройку. Повторите попытку.</string>
+    <string name="ext_proxy_lan_warning">Трафик между этим телефоном и прокси не шифруется. Любой, кто может наблюдать за этим адресом или подменить его, в том числе в других сетях, к которым телефон подключится позже, получит токены доступа к почтовым ящикам ваших бесед. Он сможет удалить эти ящики или завладеть ими, но не сможет прочитать ваши сообщения. Используйте этот режим только в сети, которую вы контролируете, и отключайте его, покидая её.</string>
+    <string name="ext_proxy_loopback_warning">Пока приложение прокси (например, Orbot) не запущено, любое другое приложение на этом телефоне может занять его порт и получить те же токены доступа. Настройте приложение прокси на нестандартный порт и держите его запущенным.</string>
+    <string name="ext_proxy_next_launch">Изменения вступят в силу при следующем открытии Rún.</string>
+    <string name="ext_proxy_saved">Сохранено. Закройте и снова откройте Rún, чтобы применить настройку.</string>
+    <string name="ext_proxy_connecting">Подключение через ваш внешний прокси</string>
+    <string name="ext_proxy_status_checking">Используется внешний прокси: проверка</string>
+    <string name="ext_proxy_status_reachable">Используется внешний прокси</string>
+    <string name="ext_proxy_status_unreachable">Внешний прокси недоступен</string>
+    <string name="ext_proxy_status_invalid">Настройка внешнего прокси недействительна. Исправьте её в настройках.</string>
+    <string name="ext_proxy_status_unreadable">Не удалось прочитать настройку внешнего прокси. Обмен сообщениями недоступен.</string>
+    <string name="report_bug_title">Опишите ошибку (вы анонимны)</string>
+    <string name="report_bug_placeholder">Что произошло и чего вы ожидали?</string>
+    <string name="report_bug_send">Отправить</string>
+    <string name="report_bug_failed">Не удалось отправить отчёт — проверьте подключение и повторите попытку.</string>
+    <string name="report_bug_thanks">Спасибо, что помогаете улучшать Rún</string>
+</resources>

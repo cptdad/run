@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Required for relay server communication -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Network-restore kick (NetworkRestoreKick.kt, RunViewModel): the default-
+         network callback tells the embedded Tor the moment the network comes
+         back, instead of it waiting out its own ~10-minute guard retry.
+         Install-time (normal) permission; reads connectivity state only. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Required for QR code scanning during contact exchange. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Required by the platform android.hardware.biometrics.BiometricPrompt used
+         for Lever B (hardware auth-bound vault unlock). We deliberately use the
+         platform API rather than androidx.biometric (which would auto-merge this),
+         so the permission must be declared by hand — without it authenticate()
+         throws SecurityException on OEMs that enforce the @RequiresPermission. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+
+    <!-- Opt-in background notifications (Tier 1): the contentless "New messages"
+         local notification. Runtime permission on API 33+; the feature degrades
+         gracefully (no notification, poll still off-by-default) when denied. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Bounded Tor keep-alive (TorKeepAlive.kt): after backgrounding, a
+         foreground service keeps the process (and the embedded Tor child) alive
+         for 2 minutes so a quick return skips the Tor bootstrap. The generic
+         FGS permission only: the service is typed `shortService` on API 34+,
+         which needs NO type-specific permission (there is no
+         FOREGROUND_SERVICE_SHORT_SERVICE), and typeless on API 30-33. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Held only for the bounded Tor keep-alive window (TorKeepAliveHolder):
+         a partial wake lock with a 2-minute timeout, so device sleep cannot
+         stretch that window in wall time. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Google Play Billing (the Support Rún tip jar). Declared explicitly so
+         Play Console detects it and one-time (consumable) tip products can be
+         created. On devices without Play Services the tip tab degrades
+         gracefully (VendorBilling/TipJar handle unavailability at runtime). -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+    <application
+        android:name=".RunApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Run"
+        android:networkSecurityConfig="@xml/network_security_config">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Run">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Bounded Tor keep-alive (TorKeepAliveService / TorKeepAliveHolder):
+             started only from MainActivity.onStop's teardown path, stopped when
+             a new session reclaims Tor or after 2 min; never exported. -->
+        <service
+            android:name=".TorKeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
+
+        <!-- SensitiveClipboard's delayed-clear backstop: reached only by the app's
+             own AlarmManager PendingIntent (explicit, immutable), so never
+             exported. It clears the clipboard and touches nothing else. -->
+        <receiver
+            android:name=".ClipboardClearReceiver"
+            android:exported="false" />
+
+        <!-- UnifiedPush wake entry point (the Google-free notification tier).
+             The one universal build carries both transports; this one is used
+             when Play Services is absent (VendorPush.isAvailable() == false),
+             and stays dormant otherwise.
+
+             exported="false" is deliberate and sufficient. The connector's own
+             manifest (merged from the AAR) declares the EXPORTED receiver
+             `…connector.internal.MessagingReceiverImpl`, which is what the
+             distributor app actually broadcasts to; that receiver then binds
+             THIS service in-process. So the distributor never needs — and must
+             never get — direct reach into RunPushService: an exported service
+             here would let any installed app fabricate wake events.
+
+             No <queries> needed app-side: connector-3.3.5's own manifest
+             already declares the distributor-discovery queries (LINK /
+             REGISTER / UNREGISTER), without which getDistributors() returns
+             empty on API 30+. Verified by reading the AAR — see
+             UnifiedPushSupport.isAvailable. -->
+        <service
+            android:name=".RunPushService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.connector.PUSH_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- FCM vendor-push tier — used when
+             Play Services is present and the user opts in. -->
+        <service
+            android:name=".RunFcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- The FirebaseMessaging component is
+             registered alwaysEager() in the SDK, so the merged FirebaseInitProvider
+             constructs it at process start — before ANY app code runs, including
+             RunApplication.onCreate() — and with no override here it defaults to
+             auto-init ENABLED, registering this device with Google on first launch
+             regardless of the in-app push opt-in. These two meta-data flip that
+             default OFF; VendorPush.currentToken() re-enables isAutoInitEnabled
+             just-in-time, immediately before a GENUINE opt-in registration, and
+             WipeRoutine's destroyLocalPushIdentity() turns it back off on every
+             wipe (that setter persists across app restarts). -->
+        <meta-data
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_data_collection_default_enabled"
+            android:value="false" />
+
+        <!-- Refuses Firebase's "notification
+             delegation" grant on a FRESH install. `ProxyNotificationInitializer`
+             (bytecode-verified against firebase-messaging 25.1.2) runs from an
+             UNGATED eager lambda at process start — NOT gated on
+             firebase_messaging_auto_init_enabled above, unlike its siblings —
+             and when this key is ABSENT it defaults to calling
+             `NotificationManager.setNotificationDelegate("com.google.android.gms")`,
+             authorising Play Services to render an FCM display payload as a Rún
+             notification WITHOUT this app's process ever starting, bypassing
+             RunFcmService.handleIntent's payload strip and the NotificationLevel wake
+             gate entirely. This meta-data closes that for installs that have
+             NEVER granted the delegate. It does NOT close it retroactively — the
+             SDK persists whichever delegate it last set, once-ever, in its own
+             prefs — so VendorPush.disableNotificationDelegation's RUNTIME call
+             (RunApplication.onCreate + every VendorPush.destroyLocalPushIdentity
+             call, i.e. every wipe and every push opt-out) is the half that
+             actually revokes an already-granted delegate. Both halves are
+             required; neither alone is sufficient. -->
+        <meta-data
+            android:name="firebase_messaging_notification_delegation_enabled"
+            android:value="false" />
+
+        <!-- Fallback channel for FCM messages the SDK
+             displays ITSELF — i.e. any payload carrying a "notification" block
+             rather than being data-only. This app's own wake push is contractually
+             data-only (see RunFcmService's "Contentless invariant" header) and is
+             always routed through NotificationHelper's channel
+             (run_new_messages_v3, NotificationHelper.CHANNEL_ID), whose
+             settings the user owns. Without this meta-data, an
+             SDK-auto-displayed notification would fall back to an ad-hoc
+             "Miscellaneous" channel — a SECOND entry in system settings that
+             the user's choices on the real channel would not govern, carrying
+             whatever text the payload put in its "notification" block.
+             Pointing this at the SAME id keeps every notification this app can
+             possibly post under one user-controllable channel. Must stay
+             byte-for-byte equal to
+             NotificationHelper.CHANNEL_ID ("run_new_messages_v3") — a mismatch
+             silently recreates this gap by referencing a channel that doesn't
+             exist yet at first-notification time. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="run_new_messages_v3" />
+
+    </application>
+
+</manifest>

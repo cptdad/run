@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_groups.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Shared by the group header and group info header -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d jäsen</item>
+        <item quantity="other">%1$d jäsentä</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d ei vielä tavoitettavissa</string>
+    <string name="group_info_admin_suffix">olet ylläpitäjä</string>
+
+    <!-- Group conversation -->
+    <string name="group_member_list_differs">⚠ jäsenluettelo poikkeaa</string>
+    <string name="group_delivery_not_delivered">toimittamatta: %1$d</string>
+    <string name="group_notice_not_delivered">Viestisi ei tavoittanut %1$d jäsenistä: ei vielä tavoitettavissa tästä puhelimesta, tai välityspalvelin hylkäsi heidän kopionsa. Rún ei säilytä kopiota myöhemmin lähetettäväksi.</string>
+
+    <!-- Group info -->
+    <string name="group_info_add_member">Lisää jäsen</string>
+    <string name="group_info_you">Sinä</string>
+    <string name="group_info_not_reachable">Ei vielä tavoitettavissa</string>
+    <string name="group_info_no_verified_pairing">Ei vielä vahvistettua paritusta tämän jäsenen kanssa</string>
+    <string name="group_info_admin_badge">Ylläpitäjä</string>
+    <string name="group_info_leave_group">Poistu ryhmästä</string>
+    <string name="group_info_make_admin">Tee ylläpitäjäksi</string>
+    <string name="group_info_remove_from_group">Poista ryhmästä</string>
+    <string name="group_info_add_member_precondition">Hänen on täytynyt tehdä paritus kasvokkain jokaisen jäsenen kanssa. Menet siitä takuuseen.</string>
+    <string name="group_info_add_member_empty">Ei sopivia kontakteja — kaikki, joiden kanssa olet tehnyt parituksen, ovat jo ryhmässä.</string>
+    <string name="group_info_leave_confirm_title_android">Poistutaanko ryhmästä %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Poistu ryhmästä</string>
+    <string name="group_info_leave_confirm_admin_message">Olet ylläpitäjä. Siirrä rooli ensin, tai kukaan ei voi enää muuttaa jäsenluetteloa.</string>
+    <string name="group_info_leave_confirm_message">Muille jäsenille kerrotaan, että poistuit.</string>
+    <string name="group_info_leave_unread_warning">Kaikkea lähettämääsi, mitä muut eivät ole vielä lukeneet, ei ehkä koskaan näytetä heille.</string>
+    <string name="group_info_leave_confirm_action">Poistu</string>
+    <string name="group_info_choose_admin_title">Valitse uusi ylläpitäjä</string>
+    <string name="group_info_choose_admin_subtitle_android">Hän voi lisätä ja poistaa jäseniä sen jälkeen, kun olet poistunut.</string>
+    <string name="group_info_choose_admin_nav_title">Uusi ylläpitäjä</string>
+    <string name="group_info_choose_admin_subtitle_ios">Valitse, kenestä tulee uusi ylläpitäjä. Hän voi lisätä ja poistaa jäseniä sen jälkeen, kun olet poistunut.</string>
+    <!-- iOS-only admin-handoff-failure dialog -->
+    <string name="group_info_transfer_failed_title">Ylläpitäjyyttä ei voitu siirtää</string>
+    <string name="group_info_transfer_failed_message">Mikään ei muuttunut — olet yhä ylläpitäjä, joten ryhmä pysyy hallittavissa. Yritä uudelleen.</string>
+
+    <!-- Create group -->
+    <string name="create_group_title">Uusi ryhmä</string>
+    <string name="create_group_name_placeholder">Ryhmän nimi</string>
+    <string name="create_group_precondition">Kaikkien ryhmän jäsenten on täytynyt tehdä paritus kasvokkain kaikkien muiden kanssa. Menet siitä takuuseen, kun luot ryhmän.</string>
+    <string name="create_group_failed">Ryhmän luonti epäonnistui. Tarkista yhteys ja yritä uudelleen.</string>
+    <string name="create_group_creating">Luodaan…</string>
+    <string name="create_group_select_members">Valitse jäsenet</string>
+    <string name="create_group_button_label">Luo ryhmä (%1$d)</string>
+    <string name="group_private_from">Yksityinen viesti, lähettäjä %1$s · vain sinä näet tämän</string>
+    <string name="group_private_to">Yksityinen viesti, vastaanottaja %1$s</string>
+    <string name="group_private_reply">Vastaa yksityisesti</string>
+    <string name="group_private_reply_chip">Yksityinen vastaus: %1$s</string>
+    <string name="group_private_reply_chip_close">Lopeta yksityinen vastaus</string>
+
+</resources>

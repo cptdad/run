@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete), and create-group screens. Key prefixes: group_, group_info_, create_group_.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d член</item>
+        <item quantity="other">%1$d членови</item>
+    </plurals>
+    <string name="group_info_not_reachable_suffix">%1$d сè уште недостапни</string>
+    <string name="group_info_admin_suffix">вие сте администратор</string>
+    <string name="group_member_list_differs">⚠ листата на членови се разликува</string>
+    <string name="group_delivery_not_delivered">не е доставено до %1$d</string>
+    <string name="group_notice_not_delivered">Вашата порака не стигна до %1$d од членовите: сè уште недостапни од овој телефон, или релето ја одби нивната копија. Rún не чува копија за подоцнежно испраќање.</string>
+    <string name="group_info_add_member">Додај член</string>
+    <string name="group_info_you">Вие</string>
+    <string name="group_info_not_reachable">Сè уште недостапно</string>
+    <string name="group_info_no_verified_pairing">Сè уште нема потврдено спарување со овој член</string>
+    <string name="group_info_admin_badge">Администратор</string>
+    <string name="group_info_leave_group">Напушти група</string>
+    <string name="group_info_make_admin">Направи администратор</string>
+    <string name="group_info_remove_from_group">Отстрани од групата</string>
+    <string name="group_info_add_member_precondition">Тие мора да се спарени лично со секој член. Вие гарантирате за тоа.</string>
+    <string name="group_info_add_member_empty">Нема подобни контакти — сите со кои сте се спариле веќе се во групата.</string>
+    <string name="group_info_leave_confirm_title_android">Да ја напуштите %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Напушти група</string>
+    <string name="group_info_leave_confirm_admin_message">Вие сте администраторот. Прво пренесете ја улогата, инаку никој нема да може да ја менува листата на членови.</string>
+    <string name="group_info_leave_confirm_message">Другите членови ќе бидат известени дека заминавте.</string>
+    <string name="group_info_leave_unread_warning">Она што сте го испратиле, а другите сè уште не го прочитале, можеби никогаш нема да им биде прикажано.</string>
+    <string name="group_info_leave_confirm_action">Напушти</string>
+    <string name="group_info_choose_admin_title">Изберете нов администратор</string>
+    <string name="group_info_choose_admin_subtitle_android">Тие ќе можат да додаваат и отстрануваат членови откако ќе заминете.</string>
+    <string name="group_info_choose_admin_nav_title">Нов администратор</string>
+    <string name="group_info_choose_admin_subtitle_ios">Изберете кој ќе стане нов администратор. Тие ќе можат да додаваат и отстрануваат членови откако ќе заминете.</string>
+    <string name="group_info_transfer_failed_title">Пренесувањето на администратор не успеа</string>
+    <string name="group_info_transfer_failed_message">Ништо не се промени — сè уште сте администратор, па групата и понатаму може да се управува. Обидете се повторно.</string>
+    <string name="create_group_title">Нова група</string>
+    <string name="create_group_name_placeholder">Име на групата</string>
+    <string name="create_group_precondition">Сите во групата мора да се спарени лично едни со други. Вие гарантирате за тоа кога ја креирате.</string>
+    <string name="create_group_failed">Групата не можеше да се креира. Проверете ја врската и обидете се повторно.</string>
+    <string name="create_group_creating">Се креира…</string>
+    <string name="create_group_select_members">Изберете членови</string>
+    <string name="create_group_button_label">Креирај група (%1$d)</string>
+    <string name="group_private_from">Приватно од %1$s · го гледате само вие</string>
+    <string name="group_private_to">Приватно до %1$s</string>
+    <string name="group_private_reply">Одговори приватно</string>
+    <string name="group_private_reply_chip">Приватен одговор до %1$s</string>
+    <string name="group_private_reply_chip_close">Заврши го приватниот одговор</string>
+</resources>

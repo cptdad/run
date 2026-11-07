@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic (ar) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates, EULA, block/report, rune dialog
+  chrome and the burn-on-read onboarding notice.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">هل تريد محو هذه الخزنة؟</string>
+    <string name="pin_erase_vault_message">لا يمكن فتح الخزنة الموجودة على هذا الجهاز — فلا يوجد رمز PIN ولا عبارة مرور محفوظة لها. المحو يحذفها نهائيًا ويبدأ إعدادًا جديدًا. لا يمكن التراجع عن هذا.</string>
+    <string name="pin_erase_vault_confirm">محو</string>
+    <string name="pin_prompt_passphrase">أدخل عبارة المرور</string>
+    <string name="pin_passphrase_placeholder">عبارة المرور</string>
+    <string name="pin_unlock_button">فتح القفل</string>
+    <string name="pin_backoff_hint">أعد المحاولة بعد %1$d ثانية</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">تغيّر قفل شاشة جهازك، لذا فُقد مفتاح العتاد الذي يحمي هذه الخزنة. لا يزال بإمكان رمز الاسترداد فتحها.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">تغيّر قفل شاشة جهازك، لذا فُقد مفتاح العتاد الذي يحمي هذه الخزنة. من دون رمز استرداد لا يمكن فتح هذه الخزنة.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">تغيّر رمز دخول جهازك، لذا فُقد مفتاح العتاد الذي يحمي هذه الخزنة. لا يزال بإمكان رمز الاسترداد فتحها.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">تغيّر رمز دخول جهازك، لذا فُقد مفتاح العتاد الذي يحمي هذه الخزنة. من دون رمز استرداد لا يمكن فتح هذه الخزنة.</string>
+    <string name="pin_use_recovery_code">استخدام رمز الاسترداد</string>
+    <string name="pin_use_recovery_code_prompt">تعذّر فتح القفل؟ استخدم رمز الاسترداد</string>
+    <string name="pin_orphaned_vault_notice">توجد على هذا الجهاز خزنة، لكن لا يوجد رمز PIN ولا عبارة مرور محفوظة لها، فلا شيء يستطيع فتحها. لا يمكن استرداد محتوياتها.</string>
+    <string name="pin_erase_start_over">المحو والبدء من جديد</string>
+
+    <!-- Passphrase strength meter -->
+    <string name="pin_strength_too_weak">ضعيفة جدًا</string>
+    <string name="pin_strength_still_weak">ما زالت ضعيفة جدًا — أضف كلمات</string>
+    <string name="pin_strength_strong">قوية</string>
+    <string name="pin_strength_excellent">ممتازة</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">قفل العتاد غير مفعّل</string>
+    <string name="pin_hardware_lock_not_enabled_message">لم يؤكد هاتفك مفتاح العتاد، لذا أُعدّت خزنتك على مستوى حماية أدنى. يمكنك تفعيله لاحقًا من الإعدادات.</string>
+    <string name="pin_device_key_busy_title">تعذّر إكمال الإعداد</string>
+    <string name="pin_device_key_busy_message">العتاد الآمن في هاتفك مشغول. اقفل هاتفك ثم افتح قفله وحاول مجددًا.</string>
+    <string name="pin_setup_choose_pin">اختر رمز PIN</string>
+    <string name="pin_setup_confirm_pin">أكّد رمز PIN</string>
+    <string name="pin_setup_choose_passphrase">اختر عبارة مرور</string>
+    <string name="pin_setup_confirm_passphrase">أكّد عبارة المرور</string>
+    <string name="pin_setup_passphrase_hint">ست كلمات عشوائية تقريبًا. تكتبها عند كل فتح للقفل — فلا رمز PIN ولا اختصار بالبصمة أو الوجه. وهذا هو المقصود تمامًا.</string>
+    <string name="pin_passphrase_placeholder_reenter">أعد إدخال عبارة المرور</string>
+    <string name="pin_confirm_button">تأكيد</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">أدخل عبارة المرور الحالية</string>
+    <string name="pin_change_enter_current_pin">أدخل رمز PIN الحالي</string>
+    <string name="pin_change_choose_new_pin">اختر رمز PIN جديدًا</string>
+    <string name="pin_change_confirm_passphrase">أكّد عبارة المرور</string>
+    <string name="pin_change_confirm_new_pin">أكّد رمز PIN الجديد</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">الجهاز مُخترَق</string>
+    <string name="gate_compromised_body">يبدو أن هذا الجهاز يعمل بصلاحيات الروت. لا يستطيع Rún ضمان أمان رسائلك على جهاز مُخترَق.</string>
+    <string name="gate_compromised_body_jailbroken">يبدو أن هذا الجهاز مكسور الحماية (جيلبريك). لا يستطيع Rún ضمان أمان رسائلك على جهاز مُخترَق.</string>
+    <string name="gate_compromised_continue">أفهم ذلك — متابعة</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">التحقق من عبارة المرور خلال %1$d…</string>
+    <string name="gate_lock_countdown">القفل خلال %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">انقر في أي مكان لإبقاء القفل مفتوحًا</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only) -->
+    <string name="gate_passcode_warning_title">لا يوجد رمز دخول للجهاز</string>
+    <string name="gate_passcode_warning_message">حماية Rún للبيانات المخزّنة عبر العتاد أضعف من دون رمز دخول للجهاز. عيّن واحدًا في الإعدادات للحصول على الحماية الكاملة، ثم عد لإكمال الإعداد. يمكنك المتابعة من دونه.</string>
+    <string name="gate_passcode_warning_open_settings">فتح الإعدادات</string>
+    <string name="gate_passcode_warning_continue_anyway">المتابعة على أي حال</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">قبل أن تبدأ</string>
+    <string name="eula_terms_of_use_title">شروط الاستخدام</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">باستخدامك Rún أنت توافق على شروط الاستخدام هذه.\n\nإن Rún تطبيق مراسلة خاص، مشفّر من طرف إلى طرف. تضيف جهات الاتصال شخصيًا بتبادل رمز QR، وتُشفَّر رسائلك على جهازك قبل أن تُرسَل. لا يمكننا قراءة رسائلك، ولا نستضيف موجزًا عامًا أو ملفات تعريف أو أي محتوى مشترك.\n\nلا تسامح مطلقًا مع المحتوى المرفوض وإساءة الاستخدام\nلا مجال للتسامح في Rún مع أي محتوى أو سلوك مرفوض أو غير قانوني أو مسيء. أنت توافق على ألا تستخدم Rún لإرسال أو طلب أو التماس محتوى غير قانوني أو تحرشي أو تهديدي أو يحض على الكراهية أو استغلالي جنسيًا أو مرفوض بأي شكل آخر، وعلى ألا تسيء إلى الآخرين أو تتحرش بهم أو تؤذيهم. انتهاك ذلك يُعدّ خرقًا لهذه الشروط.\n\nكيف تحافظ على سلامتك\nلأن محادثاتك خاصة بك وبمن تضيفهم، فأنت من يتحكم في من يمكنه التواصل معك:\n\n• الإبلاغ — إذا أرسلت إليك جهة اتصال محتوى مرفوضًا أو تصرفت بشكل مسيء، فاستخدم «إبلاغ» (داخل المحادثة، أو بالضغط المطوّل على جهة الاتصال) لإخطارنا. نراجع كل بلاغ خلال 24 ساعة ونتخذ إجراءً بشأنه — بمنع المرسلين المسيئين حيثما أمكننا ذلك تقنيًا، وبإبلاغ السلطات المختصة عن المحتوى غير القانوني. ولأن الرسائل مشفّرة من طرف إلى طرف، فإننا نتصرف بناءً على ما تخبرنا به في بلاغك.\n\n• الحظر — استخدم «حظر» لإخفاء جهة اتصال فورًا بحيث لا تعود ترى الشخص ولا رسائله. الحظر قابل للتراجع — يمكنك إلغاء الحظر في أي وقت من قائمة الإعدادات.\n\nأنت مسؤول عن المحتوى الذي ترسله وعن الأشخاص الذين تختار إضافتهم كجهات اتصال. ويجب أن تكون في سنّ تسمح لك بإبرام اتفاق مُلزم في بلدك لاستخدام Rún.\n\nلا ضمان\nيُقدَّم Rún «كما هو»، من دون ضمانات من أي نوع، إلى أقصى حد يسمح به القانون.\n\nللتواصل: %1$s</string>
+    <string name="eula_agree_button">أوافق وأتابع</string>
+    <string name="eula_decline_alert_title">الموافقة مطلوبة</string>
+    <string name="eula_decline_alert_message">يجب أن تقبل شروط الاستخدام لاستخدام Rún. وُجدت هذه الشروط لحماية الجميع، وهي تحظر المحتوى المرفوض والسلوك المسيء.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">بلاغ إساءة على Rún</string>
+    <string name="report_abuse_email_body">أريد الإبلاغ عن جهة اتصال بسبب محتوى مرفوض أو سلوك مسيء.\n\nجهة الاتصال (الاسم الذي أعطيته لها على جهازي): %1$s\n\nما الذي حدث (يُرجى الوصف بكلماتك الخاصة):\n\n\n---\nيراجع فريق Rún كل بلاغ خلال 24 ساعة ويتخذ إجراءً بشأنه — بمنع المرسلين\nالمسيئين حيثما أمكن تقنيًا، وبإبلاغ السلطات المختصة عن المحتوى غير\nالقانوني.\n\nيُخزَّن هذا البريد الإلكتروني في تطبيق البريد لديك، خارج تخزين Rún\nالمشفّر، لذا لا تُدرج فيه إلا ما يناسبك بقاؤه هناك.</string>
+    <string name="report_email_fallback_title">الإبلاغ عبر البريد الإلكتروني</string>
+    <string name="report_email_fallback_message">لا يوجد تطبيق بريد إلكتروني مُعدّ على هذا الجهاز. انقر على «نسخ البلاغ» ثم ألصقه في أي رسالة بريد إلكتروني موجهة إلى %1$s.</string>
+    <string name="report_copy_report_button">نسخ البلاغ</string>
+    <string name="report_copy_report_clipboard">إلى: %1$s\nالموضوع: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">لم تحظر أحدًا.</string>
+    <string name="report_unblock_button">إلغاء الحظر</string>
+
+    <!-- Burn-on-read onboarding notice. The coach message names the back
+         arrow without a direction glyph because it mirrors in RTL layouts. -->
+    <string name="burn_notice_title">الحرق عند القراءة</string>
+    <string name="burn_notice_message">تظهر الرسائل مرة واحدة — هنا بالذات — ولا تُحفظ أبدًا. عندما تغادر هذه المحادثة، تختفي إلى الأبد.</string>
+
+</resources>

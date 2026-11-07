@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_protection.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="protection_pick_a_level">Изберете ниво за да продолжите</string>
+    <string name="protection_apply_button">Примени</string>
+    <string name="protection_level_accessibility_label">Ниво на заштита %1$s</string>
+    <string name="protection_device_panel_title">Основна безбедност на уредот</string>
+    <string name="protection_device_panel_detected_label">ОТКРИЕНО</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Основно ниво на уредот · AFU</string>
+    <string name="protection_downgrade_title">Да ја намалите заштитата?</string>
+    <string name="protection_downgrade_message_android">Префрлањето на %1$s го прави вашиот телефон полесен за разбивање ако биде одземен. Да продолжите?</string>
+    <string name="protection_downgrade_message_ios">Префрлањето на %1$s го прави вашиот телефон полесен за разбивање ако биде одземен.</string>
+    <string name="protection_downgrade_keep">Задржи го тековното</string>
+    <string name="protection_downgrade_reduce">Намали</string>
+    <string name="protection_persist_failed_title">Тоа ниво не можеше да се зачува</string>
+    <string name="protection_persist_failed_message">Ништо не е променето — клучот на уредот беше зафатен. Обидете се повторно.</string>
+    <string name="protection_lever_b_failed_message">Вашиот телефон не го потврди хардверскиот клуч, па вашиот трезор е поставен на пониско ниво на заштита од она што го избравте. Можете да се обидете повторно од Поставки.</string>
+    <string name="protection_lever_b_reharden_notice">Вашиот заштитен клуч треба надградба. Исклучете и повторно вклучете Безбедно, за да го зацврстите одново.</string>
+    <string name="protection_enabling_title">Се обезбедува вашиот трезор…</string>
+    <string name="protection_enabling_body_android">Вашиот телефон може да побара потврда со заклучувањето на екранот.</string>
+    <string name="protection_enabling_body_ios">Вашиот телефон може да побара потврда со Face ID или неговиот код за пристап.</string>
+    <string name="protection_forced_explainer_intro">Без него, самиот телефон не може да ги заштити клучевите на Rún — затоа на Rún му треба неговата најсилна заштита тука. Два начини да продолжите:</string>
+    <string name="protection_forced_explainer_cta_title_android">Поставете заклучување на екранот</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN, шема, лозинка или отпечаток — сите важат. Секое ниво на заштита е достапно откако вашиот телефон ќе има заклучување на екранот.</string>
+    <string name="protection_forced_open_settings_button">Отвори поставки за заклучување на екранот</string>
+    <string name="protection_forced_explainer_outro_android">Или создајте тајна фраза сега подолу — Максимално го заклучува самиот Rún, без потреба од заклучување на екранот. Четири или пет случајни зборови прават силна тајна фраза.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Поставете код за пристап на уредот</string>
+    <string name="protection_forced_explainer_cta_body_ios">Отворете Поставки → Face ID и код за пристап → Вклучи код за пристап, па вратете се во Rún. Секое ниво на заштита е достапно откако вашиот телефон ќе има код за пристап.</string>
+    <string name="protection_forced_explainer_outro_ios">Или создајте тајна фраза сега подолу — Максимално го заклучува самиот Rún, без потреба од код за пристап на уредот. Четири или пет случајни зборови прават силна тајна фраза.</string>
+    <string name="protection_migration_finish_maximum">На %1$s му треба тајна фраза, а овој екран не поставува таква — затоа вашиот трезор останува на %2$s засега. За да завршите, отворете Поставки › Ниво на заштита и изберете %1$s повторно — тоа ја поставува вашата тајна фраза и ги применува неговите временски интервали.</string>
+    <string name="protection_migration_finish_private">Не можевме да го вклучиме хардверското заклучување на %1$s тука, па вашиот трезор останува на %2$s засега. За да завршите, отворете Поставки › Ниво на заштита и изберете %1$s повторно — тоа го вклучува хардверското заклучување и ги применува неговите временски интервали.</string>
+    <string name="protection_migration_finish_same">Временските интервали на %1$s сега се поставени. За да завршите со вклучувањето на неговото посилно отклучување, отворете Поставки › Ниво на заштита.</string>
+    <string name="protection_migration_almost_there_title">Речиси готово</string>
+    <string name="protection_recovery_code_title">Вашиот код за обновување</string>
+    <string name="protection_recovery_code_body_android">Запишете го ова и чувајте го на безбедно место, одвоено од вашиот телефон. Ако вашиот отпечаток или код за пристап на уредот некогаш се промени и останете без пристап, овој код заедно со вашиот PIN ги враќа вашите пораки. Не можеме повторно да го прикажеме.</string>
+    <string name="protection_recovery_code_body_ios">Запишете го ова и чувајте го на безбедно место, одвоено од вашиот телефон. Ако вашиот Face ID или код за пристап на уредот некогаш се промени и останете без пристап, овој код заедно со вашиот PIN ги враќа вашите пораки. Не можеме повторно да го прикажеме.</string>
+    <string name="protection_recovery_ack_label">Го запишав</string>
+    <string name="protection_recovery_ack_hint_android">Означете „Го запишав“ за да продолжите.</string>
+    <string name="protection_recovery_ack_hint_ios">Вклучете „Го запишав“ за да продолжите.</string>
+    <string name="protection_recovery_entry_title">Обновете со вашиот код</string>
+    <string name="protection_recovery_entry_subtitle">Внесете го зачуваниот код за обновување заедно со %1$s. Ова ги враќа вашите пораки. Ако овој телефон сè уште може да го користи хардверското заклучување, тоа повторно се вклучува со истиот код, па чувајте го кодот на безбедно место.</string>
+    <string name="protection_recovery_code_placeholder">Код за обновување</string>
+    <string name="protection_recovery_wrong_credential">Тој код и %1$s не се совпаднаа. Проверете ги двата и обидете се повторно.</string>
+    <string name="protection_recovery_generic_error">Во моментов не можевме да обновиме — нема зачуван код за обновување, или клучот на уредот е зафатен. Обидете се повторно.</string>
+    <string name="protection_recovery_attempt_record_failed">Обидот не можеше да се забележи — клучот на уредот е зафатен. Обидете се повторно.</string>
+    <string name="protection_recovery_button_recovering">Се обновува…</string>
+    <string name="protection_recovery_button_recover">Обнови</string>
+    <string name="protection_credential_type_passphrase">тајна фраза</string>
+    <string name="protection_credential_type_pin">PIN</string>
+</resources>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- "Move to new device" (docs/device-move.md). Old phone: settings item →
+         explain → QR / text → waiting → moved or frozen. New phone: setup chooser
+         → scan or paste → import progress. Identical copy on both platforms. -->
+
+    <!-- Settings entry (ContactListScreen dropdown) -->
+    <string name="move_menu_item">Move to new device</string>
+
+    <!-- Setup chooser (first launch, before the protection level is picked) -->
+    <string name="setup_choose_title">Set up Rún</string>
+    <string name="setup_choose_body">Already using Rún on another phone? Move it here and your contacts, groups and conversations come with you.</string>
+    <string name="setup_choose_new_label">Set up as new</string>
+    <string name="setup_choose_move_label">Move from another phone</string>
+
+    <!-- Old phone — explain page -->
+    <string name="move_explain_title">Move to a new phone</string>
+    <string name="move_explain_body">Rún packs everything into one sealed transfer and shows you a code. Scan that code on the new phone while you set it up.</string>
+    <string name="move_explain_moves_title">What moves</string>
+    <string name="move_explain_moves_body">Your contacts, your groups, and the keys your conversations run on.</string>
+    <string name="move_explain_stays_title">What does not move</string>
+    <string name="move_explain_stays_body">Your recovery code, %1$s protection, and notifications. Set those up again on the new phone.</string>
+    <string name="move_explain_warning">This phone stops sending and receiving the moment you start, and stays that way until you wipe it or cancel the move.</string>
+    <string name="move_explain_continue_label">Start the move</string>
+
+    <!-- Old phone — preparing (status line, one per MoveExportStep) -->
+    <string name="move_step_unregister">Turning off notifications…</string>
+    <string name="move_step_freeze">Stopping this phone…</string>
+    <string name="move_step_mint">Preparing the transfer…</string>
+    <string name="move_step_upload">Sealing and uploading…</string>
+
+    <!-- Old phone — the code -->
+    <string name="move_qr_title">Scan this on the new phone</string>
+    <string name="move_qr_body">On the new phone, open Rún, choose “Move from another phone”, and scan this code.</string>
+    <string name="move_qr_warning">Anyone who photographs this code can take the transfer. Show it only to the new phone.</string>
+    <string name="move_show_text_label">Show as text</string>
+    <string name="move_hide_text_label">Hide the text</string>
+    <string name="move_handle_caption">Copy this into the new phone if the camera will not cooperate.</string>
+    <string name="move_waiting">Waiting for the new phone…</string>
+    <string name="move_expiry_note">The transfer waits on the relay for 30 minutes. After that, show the code again.</string>
+    <string name="move_cancel_label">Cancel the move</string>
+    <string name="move_cancel_refused">Too late to cancel — the transfer has already been picked up.</string>
+    <string name="move_cancel_unconfirmed">Could not check whether the new phone has the transfer yet. Try again in a moment, or wipe this phone once the new one is working.</string>
+
+    <!-- Old phone — the transfer was picked up (or expired: the relay answers the
+         same way, which is why the copy sends the user to the NEW phone to check
+         before the irreversible wipe, and why "Keep it off" always stays). -->
+    <string name="move_done_title">The transfer was picked up</string>
+    <string name="move_done_body">Check the new phone first: it should show your contacts. Once it does, wiping this phone is what makes the move safe — nothing here can be read afterwards.</string>
+    <string name="move_done_expired_hint">If the new phone never got it, the code may simply have run out. Keep this phone off and show a fresh code instead.</string>
+    <string name="move_done_wipe_label">Wipe this phone</string>
+    <string name="move_done_keep_label">Keep it off</string>
+    <string name="move_kept_off_title">This phone is off</string>
+    <string name="move_kept_off_body">Rún no longer sends or receives here. Wipe it whenever you are ready.</string>
+
+    <!-- Old phone — frozen (every unlock after a move was started) -->
+    <string name="move_frozen_title">This phone is stopped</string>
+    <string name="move_frozen_body">A move was started here, so Rún no longer sends or receives on this phone. Show a fresh code to finish the move, cancel to use this phone again, or wipe it.</string>
+    <string name="move_frozen_show_again_label">Show the code again</string>
+
+    <!-- Old phone — errors -->
+    <string name="move_error_relay">Could not reach the relay. Check your connection and try again.</string>
+    <string name="move_error_mint">Could not prepare the transfer. Try again.</string>
+    <string name="move_error_upload">The transfer did not upload. Try again.</string>
+    <string name="move_error_too_large">There is too much here to move in one transfer.</string>
+    <string name="move_error_locked">The vault is not open. Unlock and try again.</string>
+    <string name="move_error_generic">The move did not work. Try again.</string>
+
+    <!-- New phone — scan or paste -->
+    <string name="move_from_title">Move from another phone</string>
+    <string name="move_from_body">On the old phone, open the settings menu, tap “Move to new device”, and scan the code it shows.</string>
+    <string name="move_paste_label">Or paste the code</string>
+    <string name="move_paste_placeholder">Paste the transfer code</string>
+    <string name="move_paste_submit_label">Use this code</string>
+    <string name="move_paste_invalid">That is not a Rún transfer code.</string>
+
+    <!-- New phone — import progress -->
+    <string name="move_progress_title">Bringing your Rún over</string>
+    <string name="move_progress_fetching">Fetching your data…</string>
+    <string name="move_progress_importing">Importing…</string>
+    <string name="move_progress_securing">Securing…</string>
+    <string name="move_progress_hint">Keep Rún open — this runs over Tor and takes a moment.</string>
+
+    <!-- New phone — import errors -->
+    <string name="move_import_failed_title">The move did not finish</string>
+    <string name="move_error_bundle_gone">The transfer is no longer on the relay. Show the code again on the old phone.</string>
+    <string name="move_error_bad_code">That code did not open the transfer. Show the code again on the old phone.</string>
+    <string name="move_error_corrupt">The transfer could not be read. Show the code again on the old phone.</string>
+    <string name="move_error_schema">The old phone runs a newer Rún. Update Rún here, then try again.</string>
+    <string name="move_error_import">Could not finish bringing your data over. Try again.</string>
+    <string name="move_error_already_imported">This phone has already taken over a move.</string>
+    <string name="move_import_skip_label">Continue without it</string>
+
+</resources>

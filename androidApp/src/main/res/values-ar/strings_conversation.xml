@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic (ar) translation of values/strings_conversation.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">في انتظار صندوق وارد جهة الاتصال هذه — ستتمكن من الإرسال بعد لحظات.</string>
+    <string name="conversation_alias_unknown">غير معروف</string>
+    <string name="conversation_contact_fallback">جهة اتصال</string>
+    <string name="conversation_fs_stalled_title">لم تبدأ السرية التامة للأمام بعد</string>
+    <string name="conversation_fs_stalled_body">لا تزال الرسائل المُرسَلة إلى جهة الاتصال هذه مشفّرة، لكنها لا تحصل بعد على الحماية الإضافية التي تُبقي الرسائل السابقة آمنة إذا انكشف أحد المفاتيح لاحقًا. يزول هذا عادةً بمجرّد أن يرد الطرف الآخر. وإذا استمر، فاحذف جهة الاتصال ثم أضفها من جديد.</string>
+    <string name="conversation_ratchet_refused_body">تعذّر إنشاء قناة آمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. احذف جهة الاتصال وأعد الاقتران.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">الإبلاغ عن جهة الاتصال</string>
+    <string name="conversation_report_confirm_message">تُراجَع البلاغات ويُتَّخذ إجراء بشأنها خلال 24 ساعة. يُرسَل بلاغك من تطبيق البريد الإلكتروني الخاص بك، لذا سيُظهر لنا عنوان بريدك الإلكتروني — وتُخزَّن المسودة في ذلك التطبيق، خارج Rún، حيث لن تُمحى إذا محوت Rún.</string>
+    <string name="conversation_report_confirm_button">إبلاغ Rún</string>
+    <string name="conversation_report_action">إبلاغ</string>
+    <string name="conversation_block_action">حظر</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ حُفظت لقطة الشاشة في «الصور» — هذه الصورة غير مشفّرة إطلاقًا وقد تتزامن مع iCloud.</string>
+    <string name="conversation_group_echo_label">رسالة مجموعة في %1$s</string>
+    <string name="conversation_group_echo_open">فتح المجموعة</string>
+
+</resources>

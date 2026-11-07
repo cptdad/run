@@ -1,0 +1,12 @@
+<resources>
+    <!-- The app name is a proper noun (Old Norse "rún", secret/rune) and is
+         IDENTICAL in every locale — it is the brand, not copy. Marked
+         translatable="false" so lint stops demanding a per-locale copy of it
+         (MissingTranslation) and so no translator is ever handed it.
+
+         NOTE: this file is deliberately OUTSIDE the l10n pipeline. Both
+         scripts/l10n/gen-l10n.mjs and scripts/l10n/l10n-sync.mjs only ever
+         scan files matching strings_*.xml, so app_name is neither extracted
+         nor locked — do not move it into one of those files. -->
+    <string name="app_name" translatable="false">Rún</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  French (fr) translation of values/strings_common.xml.
+  Generic UI vocabulary shared by every screen on BOTH platforms.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Annuler</string>
+    <string name="common_close">Fermer</string>
+    <string name="common_done">Terminé</string>
+    <string name="common_back">Retour</string>
+    <string name="common_delete">Supprimer</string>
+    <string name="common_retry">Réessayer</string>
+    <string name="common_continue">Continuer</string>
+    <string name="common_copy">Copier</string>
+    <string name="common_copied">Copié</string>
+    <string name="common_save">Enregistrer</string>
+    <string name="common_yes">Oui</string>
+    <string name="common_no">Non</string>
+    <string name="common_got_it">Compris</string>
+    <string name="common_understood">J\'ai compris</string>
+    <string name="common_decline">Refuser</string>
+    <string name="common_not_now">Pas maintenant</string>
+    <string name="common_open">Ouvrir</string>
+    <string name="common_settings">Paramètres</string>
+    <string name="common_loading">Chargement…</string>
+    <string name="common_message_placeholder">Message</string>
+    <string name="common_conversation_interrupted">Conversation interrompue</string>
+    <string name="common_screenshot_notice">%1$s a peut-être fait une capture d\'écran</string>
+    <string name="common_time_yesterday">Hier %1$s</string>
+</resources>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French (fr) translation of values/strings_contact_list.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints -->
+    <string name="connect_tor_phase">Connexion à Tor</string>
+    <string name="connect_relay_phase">Connexion au relais</string>
+    <string name="connect_relay_first_time_hint">La première connexion peut prendre quelques minutes.</string>
+    <string name="connect_relay_slow_hint">Le réseau Tor peut parfois être lent — c\'est le prix de l\'anonymat total.</string>
+    <string name="connect_tor_stalled_hint">Connexion toujours en cours…\nCe réseau bloque peut-être la connexion privée. Essayez un autre Wi-Fi ou les données mobiles — nous continuons d\'essayer.</string>
+    <string name="connect_mint_stalled_hint">Connexion toujours en cours… Ce réseau bloque peut-être la connexion privée. Essayez un autre Wi-Fi ou les données mobiles — nous continuons d\'essayer.</string>
+    <string name="connect_relay_stalled">Le relais reste inaccessible.</string>
+    <string name="connect_reconnect_button">Reconnecter</string>
+
+    <!-- iOS-only relay/Tor hints -->
+    <string name="connect_relay_stalled_reopen_hint">Le relais reste inaccessible.\nRouvrez Rún si cela persiste.</string>
+    <string name="connect_relay_relaunch_hint">La connexion sécurisée ne peut pas se rétablir dans cette session.\nFermez et rouvrez Rún pour vous reconnecter.</string>
+    <string name="connect_tor_stalled_long_hint">Connexion toujours impossible.\nFermez complètement Rún et rouvrez-la — cela lance une nouvelle connexion privée.</string>
+    <string name="connect_tor_reboot_hint">Si fermer et rouvrir l\'appli n\'a rien changé, redémarrez votre iPhone.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">Changer la phrase secrète</string>
+    <string name="contact_list_change_pin">Changer le code PIN</string>
+    <string name="contact_list_protection_level">Niveau de protection</string>
+    <string name="contact_list_notifications">Notifications</string>
+    <string name="contact_list_push_notifications">Notifications push</string>
+    <string name="contact_list_how_it_works">Comment fonctionne Rún</string>
+    <string name="contact_list_about">À propos</string>
+    <string name="contact_list_blocked_contacts">Contacts bloqués</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">Voulez-vous activer les notifications push ?</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">Nouvelle version disponible</string>
+    <string name="nudge_later">Plus tard</string>
+    <string name="nudge_open_play_store">Ouvrir Google Play</string>
+    <string name="nudge_open_app_store">Ouvrir l\'App Store</string>
+
+    <!-- Referral / vouching -->
+    <string name="referral_introduce_title">Présenter %1$s à…</string>
+    <string name="referral_connecting">Connexion…</string>
+    <string name="referral_introduce_button">Présenter</string>
+    <string name="referral_introduce_button_count">Présenter (%1$d)</string>
+    <string name="referral_introduce_body">Choisissez à qui présenter %1$s. Ne présentez que des personnes que vous connaissez et en qui vous avez confiance.</string>
+    <string name="referral_no_candidates">Aucun autre contact à présenter.</string>
+    <string name="referral_introduce_error">Pas encore connecté — réessayez dans un instant.</string>
+    <string name="referral_offer_title">Demande de mise en relation</string>
+    <string name="referral_offer_message">%1$s souhaite vous présenter « %2$s ». Approuvez pour l\'ajouter à vos contacts.</string>
+    <string name="referral_approve">Approuver</string>
+    <string name="referral_relayed_title">Présentation approuvée</string>
+    <string name="referral_relayed_first">%1$s a approuvé votre présentation à %2$s. Ses informations de connexion ont été transmises. Dès que %2$s l\'approuvera à son tour, ils pourront s\'écrire.</string>
+    <string name="referral_relayed_complete_title">Présentation terminée</string>
+    <string name="referral_relayed_complete">%1$s et %2$s ont tous les deux approuvé. Chacun a maintenant ce qu\'il faut pour joindre l\'autre. Vous ne faites pas partie de leur conversation et vous ne pouvez pas la lire.</string>
+    <string name="referral_relayed_queued">%1$s a approuvé votre présentation à %2$s. Rún n\'a pas pu joindre le relais à l\'instant et transmettra ses informations automatiquement à la prochaine ouverture de l\'appli.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">Invitation à un groupe</string>
+    <string name="contact_list_group_invite_join">Rejoindre</string>
+    <string name="contact_list_group_invite_joining">Adhésion…</string>
+    <string name="contact_list_group_invite_message">%1$s vous invite à rejoindre le groupe « %2$s ».</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s vous invite à « %2$s », mais vous aviez déjà ce groupe sous un administrateur DIFFÉRENT. Ne le rejoignez que si vous faites confiance à %1$s pour gérer les membres de ce groupe.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s vous invite à « %2$s », mais vous aviez déjà ce groupe sous un administrateur DIFFÉRENT (administré à l\'origine par « %3$s »). Ne le rejoignez que si vous faites confiance à %1$s pour gérer les membres de ce groupe.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">Supprimer %1$s ?</string>
+    <string name="contact_list_delete_confirm_message">Tous les messages seront définitivement détruits</string>
+
+    <!-- Delete-contact confirmation (iOS wording) -->
+    <string name="contact_list_delete_contact_title">Supprimer le contact</string>
+    <string name="contact_list_delete_contact_message">Cette action supprimera définitivement ce contact et tous les messages associés.</string>
+
+    <!-- Reset relay access -->
+    <string name="contact_list_reset_relay_title">Réinitialiser l\'accès au relais ?</string>
+    <string name="contact_list_reset_relay_message">Rún obtiendra du relais de nouvelles clés d\'accès pour cette conversation. Vos messages, votre historique et ce contact restent exactement tels quels, et %1$s n\'a rien à faire.\n\nFaites-le si vous pensez que quelqu\'un d\'autre a eu votre téléphone alors qu\'il était déverrouillé. Cela n\'annule pas ce qu\'il a déjà pu lire — et si le téléphone a réellement été pris, la solution la plus sûre reste de supprimer ce contact et de vous appairer à nouveau en personne.</string>
+    <string name="contact_list_reset_button">Réinitialiser</string>
+    <string name="contact_list_reset_relay_success">Accès au relais réinitialisé.</string>
+    <string name="contact_list_reset_relay_failure">Impossible de joindre le relais. Rún terminera l\'opération toute seule.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">Vous êtes l\'administrateur. Après votre départ, plus personne ne pourra modifier la liste des membres.</string>
+
+    <!-- Leave-group (iOS-only strings) -->
+    <string name="contact_list_leave_group_admin_message_ios">Vous êtes l\'administrateur du groupe. Ouvrez le groupe, touchez le bouton d\'informations et choisissez un nouvel administrateur — vous pourrez ensuite partir.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only) -->
+    <string name="contact_list_block_contact_title">Bloquer le contact</string>
+    <string name="contact_list_block_contact_message">Vous ne recevrez plus de messages de %1$s, et cette personne sera retirée de votre liste.</string>
+    <string name="contact_list_contact_blocked_title">Contact bloqué</string>
+    <string name="contact_list_post_block_report_message">Souhaitez-vous signaler ce contact pour contenu répréhensible ou abus ? Les signalements sont examinés et traités sous 24 heures. Votre signalement part depuis votre propre application e-mail : il nous montrera donc votre adresse e-mail — et le brouillon est conservé par cette application, en dehors de Rún, où il ne sera pas effacé si vous effacez Rún.</string>
+    <string name="contact_list_block_shared_groups_title">Groupes partagés</string>
+    <string name="contact_list_block_shared_groups_message">%1$s fait toujours partie d\'un groupe que vous partagez. Bloquer cette personne ne la retire pas du groupe — elle continuera d\'y recevoir vos messages via tous les autres membres. Quittez un groupe partagé ci-dessous, ou bloquez %1$s quand même.</string>
+    <string name="contact_list_block_shared_groups_leave_button">Quitter « %1$s »</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Bloquer quand même</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">Mémo</string>
+    <string name="contact_list_no_memory_yet">Aucun mémo pour l\'instant</string>
+    <string name="contact_list_add_memory_button">Ajouter</string>
+    <string name="contact_list_edit_memory_button">Modifier</string>
+    <string name="contact_list_remove_memory_button">Retirer</string>
+    <string name="contact_list_new_name_button">Nouveau nom</string>
+    <string name="contact_list_introduce_to_button">Présenter à…</string>
+    <string name="contact_list_reset_relay_in_progress">Réinitialisation de l\'accès au relais…</string>
+    <string name="contact_list_reset_relay_button">Réinitialiser l\'accès au relais</string>
+    <string name="contact_list_delete_contact_button">Supprimer le contact</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">Un rappel privé de qui est ce contact. Vous seul pouvez le voir.</string>
+    <string name="contact_list_memory_placeholder_android">ex. : rencontré à la conférence en 2025</string>
+    <string name="contact_list_memory_placeholder_ios">ex. : rencontré à la conférence en 2025</string>
+    <string name="contact_list_memory_dialog_title">Mémo personnel</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">Réappairage requis</string>
+    <string name="contact_list_waiting_for_inbox">En attente de sa boîte de réception…</string>
+    <string name="contact_list_introduced_by">Présenté par %1$s</string>
+    <string name="contact_list_introduced">Présenté</string>
+    <string name="contact_list_repair_chip">Réappairer</string>
+    <string name="contact_list_unread_messages_description">Messages non lus</string>
+    <string name="contact_list_group_admin_label">Groupe · admin</string>
+    <string name="contact_list_group_label">Groupe</string>
+
+    <!-- Stale re-pair banner -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d contact doit être réappairé. Touchez pour l\'ajouter à nouveau.</item>
+        <item quantity="other">%1$d contacts doivent être réappairés. Touchez pour les ajouter à nouveau.</item>
+    </plurals>
+    <string name="connect_log_title">Journal de connexion</string>
+
+    <!-- About-info static box -->
+    <string name="about_info_version_label">Version %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome (iOS) -->
+    <string name="notif_settings_sound_and_alerts">Son et alertes</string>
+    <string name="notif_settings_sound_hint">Les alertes sonnent comme celles de n\'importe quelle messagerie. Modifiez-les ou coupez-les dans les réglages de notifications d\'iOS — Rún ne remplace jamais votre choix.</string>
+
+</resources>

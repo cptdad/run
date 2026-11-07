@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic (ar) translation of values/strings_settings.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Language picker chrome. The language names themselves are rendered by
+         the OS in their own language and are not translated here. -->
+    <string name="settings_language">اللغة</string>
+    <string name="language_option_system">لغة النظام</string>
+
+    <!-- Notification settings modal chrome. The carousel chevrons are mirrored
+         for RTL: back points right (›), next points left (‹). -->
+    <string name="notif_settings_carousel_back">› رجوع</string>
+    <string name="notif_settings_carousel_next">التالي ‹</string>
+    <string name="notif_settings_technical_details">تفاصيل تقنية</string>
+    <string name="notif_settings_sound_row_label">الصوت والاهتزاز</string>
+    <string name="notif_settings_sound_row_hint">تصدر التنبيهات صوتًا مثل أي تطبيق مراسلة آخر. غيّرها أو أسكتها من إعدادات الإشعارات في Android — لا يتجاوز Rún اختيارك أبدًا.</string>
+    <string name="notif_settings_register_error_generic">تعذّر التسجيل للإشعارات. تحقق من اتصالك وحاول مجددًا.</string>
+    <string name="notif_settings_register_error_no_distributor">لم يُختَر أي موزّع إشعارات. ثبّت ntfy من F-Droid ثم حاول مجددًا.</string>
+    <string name="notif_settings_register_error_distributor_selection">تعذّر الاتصال بموزّع الإشعارات لديك. أغلق Rún تمامًا وأعد فتحه، ثم حاول مجددًا.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">خادم الإشعارات الفورية لهذا الموزّع غير مدعوم بعد — فهو يتطلب VAPID. يعمل ntfy جيدًا؛ ويمكنك تثبيته من F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">رفض موزّع الإشعارات لديك التسجيل. افتحه وتأكد من إعداده ثم حاول مجددًا.</string>
+    <string name="notif_settings_register_error_no_endpoint">لم يستجب موزّع الإشعارات لديك في الوقت المناسب. افتحه وتأكد من أنه متصل ثم حاول مجددًا.</string>
+    <string name="notif_settings_no_distributor_message">لا يحتوي هذا الهاتف على خدمات Google، لذا تحتاج الإشعارات إلى تطبيق موزّع UnifiedPush. ثبّت واحدًا — ntfy هو الخيار الموصى به — ثم عد إلى هنا وشغّل الإشعارات.</string>
+    <string name="notif_settings_no_distributor_link_label">الحصول على ntfy من F-Droid</string>
+    <string name="notif_settings_unregistered_notice">توقف موزّع الإشعارات لديك عن التسليم إلى Rún، لذا أُوقفت الإشعارات. شغّلها من جديد لإعادة الاتصال.</string>
+    <string name="settings_language_restart_title">أعد التشغيل للتطبيق</string>
+    <string name="settings_language_restart_message">يجب أن يُعيد Rún التشغيل لتغيير لغة التطبيق إلى %1$s. المتابعة؟</string>
+    <string name="settings_report_bug">الإبلاغ عن خلل</string>
+    <string name="settings_debug_mode">وضع تصحيح الأخطاء</string>
+    <string name="settings_debug_mode_on">وضع تصحيح الأخطاء (مُفعَّل)</string>
+    <string name="debug_mode_title">وضع تصحيح الأخطاء</string>
+    <string name="debug_mode_message">أرسل سجلات تشخيصية مجهولة إلى المُرحّل للمساعدة في التطوير. لا تتضمّن السجلات أبدًا أي شيء يحدّد هويتك أو هوية هذا الجهاز: لا أسماء، ولا محتوى رسائل، ولا عناوين، ولا مفاتيح، ولا معرّفات صناديق وارد أو جهات اتصال.</string>
+    <string name="debug_mode_message_off">وضع تصحيح الأخطاء مُفعَّل. عطّله لإيقاف إرسال السجلات التشخيصية المجهولة.</string>
+    <string name="debug_mode_turn_on">تفعيل</string>
+    <string name="debug_mode_turn_off">تعطيل</string>
+    <string name="ext_proxy_title">بروكسي Tor خارجي</string>
+    <string name="ext_proxy_description">أرسل كل حركة بيانات المُرحّل عبر بروكسي SOCKS5 تديره بنفسك، مثل Orbot أو Tor على شبكتك الخاصة، بدلًا من Tor المدمج في Rún. ما دام هذا الخيار مفعّلًا، لا يبدأ Tor المدمج أبدًا. وإذا تعذّر الوصول إلى البروكسي، يبقى Rún غير متصل. ولا يوجد أي مسار بديل.</string>
+    <string name="ext_proxy_toggle">استخدام بروكسي خارجي</string>
+    <string name="ext_proxy_host_label">عنوان IP للبروكسي</string>
+    <string name="ext_proxy_port_label">المنفذ</string>
+    <string name="ext_proxy_error_host">أدخل عنوان IP على هذا الهاتف أو على شبكتك المحلية: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x أو 169.254.x.x. أسماء المضيف غير مسموح بها.</string>
+    <string name="ext_proxy_error_port">أدخل منفذًا من 1 إلى 65535.</string>
+    <string name="ext_proxy_error_save">تعذّر حفظ الإعداد. حاول مرة أخرى.</string>
+    <string name="ext_proxy_lan_warning">حركة البيانات بين هذا الهاتف والبروكسي غير مشفّرة. أي شخص يستطيع مراقبة هذا العنوان أو انتحاله، بما في ذلك على شبكات أخرى ينضم إليها هذا الهاتف لاحقًا، يحصل على رموز الوصول (tokens) إلى صناديق الوارد الخاصة بمحادثاتك. يمكنه حذف هذه الصناديق أو الاستيلاء عليها، لكنه لا يستطيع قراءة رسائلك. استخدم هذا فقط على شبكة تتحكم بها، وأوقف هذا الوضع عند مغادرتها.</string>
+    <string name="ext_proxy_loopback_warning">ما دام تطبيق البروكسي (مثل Orbot) غير قيد التشغيل، يمكن لأي تطبيق آخر على هذا الهاتف الاستحواذ على منفذه والحصول على رموز الوصول (tokens) نفسها. اضبط تطبيق البروكسي على منفذ غير افتراضي وأبقِه قيد التشغيل.</string>
+    <string name="ext_proxy_next_launch">تسري التغييرات عند فتح Rún في المرة القادمة.</string>
+    <string name="ext_proxy_saved">تم الحفظ. أغلق Rún ثم افتحه مجددًا لتطبيق ذلك.</string>
+    <string name="ext_proxy_connecting">جارٍ الاتصال عبر البروكسي الخارجي</string>
+    <string name="ext_proxy_status_checking">استخدام بروكسي خارجي: جارٍ الفحص</string>
+    <string name="ext_proxy_status_reachable">استخدام بروكسي خارجي</string>
+    <string name="ext_proxy_status_unreachable">تعذّر الوصول إلى البروكسي الخارجي</string>
+    <string name="ext_proxy_status_invalid">إعداد البروكسي الخارجي غير صالح. صحّحه من الإعدادات.</string>
+    <string name="ext_proxy_status_unreadable">تعذّرت قراءة إعداد البروكسي الخارجي. المراسلة غير متاحة.</string>
+    <string name="report_bug_title">صف الخلل (هويتك مجهولة)</string>
+    <string name="report_bug_placeholder">ماذا حدث، وما الذي كنت تتوقعه؟</string>
+    <string name="report_bug_send">إرسال</string>
+    <string name="report_bug_failed">تعذّر إرسال التقرير — تحقق من الاتصال وحاول مجددًا.</string>
+    <string name="report_bug_thanks">شكرًا لمساعدتك في تحسين Rún</string>
+</resources>

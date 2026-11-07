@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kontaktlistan: lista, tomt läge, inställningsmeny/ark, uppdateringsmodal,
+  push-fråga, dialoger för introduktioner, banner om omparkoppling,
+  blockerade kontakter (endast iOS — Android har ingen blockera/anmäl-funktion,
+  se docs) samt statusraden för Tor/relä med tips vid stopp (delad hjälpfunktion:
+  RelayConnectHints.kt / AppState.connectStatusLine).
+
+  Nyckelprefix: contact_list_, nudge_, push_prompt_, referral_, connect_.
+  Två undantag bor också här eftersom deras Swift-innehåll ligger inbakat i
+  ContactListView.swift (Om-rutan och push-inställningarnas karusellram) trots
+  att Android-motsvarigheterna är separata filer som ägs av ett annat område —
+  prefixen about_info_ / notif_settings_, enligt kampanjens dedupe-konvention.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Statusrad för reläet före anslutning + tips vid stopp (RelayConnectHints.kt / AppState.connectStatusLine — Android och iOS delar dessa nycklar byte för byte) -->
+    <string name="connect_tor_phase">Ansluter till Tor</string>
+    <string name="connect_relay_phase">Ansluter till reläet</string>
+    <string name="connect_relay_first_time_hint">Den första anslutningen kan ta några minuter.</string>
+    <string name="connect_relay_slow_hint">Tor-nätverket kan ibland vara långsamt — det är priset för total anonymitet.</string>
+    <string name="connect_tor_stalled_hint">Ansluter fortfarande…\nNätverket kan blockera den privata anslutningen. Prova ett annat Wi-Fi eller mobildata — vi fortsätter försöka.</string>
+    <string name="connect_mint_stalled_hint">Ansluter fortfarande… Nätverket kan blockera den privata anslutningen. Prova ett annat Wi-Fi eller mobildata — vi fortsätter försöka.</string>
+    <string name="connect_relay_stalled">Når fortfarande inte reläet.</string>
+    <string name="connect_reconnect_button">Anslut igen</string>
+
+    <!-- Relä-/Tor-tips som bara finns på iOS (iOS kan inte starta om Tor i processen — tor_main körs en gång per process, så plattformen behöver extra text om omstart och stopp i flera steg som Android inte behöver) -->
+    <string name="connect_relay_stalled_reopen_hint">Når fortfarande inte reläet.\nÖppna Rún igen om det här fortsätter.</string>
+    <string name="connect_relay_relaunch_hint">Den säkra anslutningen kan inte återhämta sig i den här sessionen.\nStäng och öppna Rún igen för att ansluta på nytt.</string>
+    <string name="connect_tor_stalled_long_hint">Kan fortfarande inte ansluta.\nStäng Rún helt och öppna appen igen — det startar en ny privat anslutning.</string>
+    <string name="connect_tor_reboot_hint">Om det inte hjälpte att stänga och öppna appen, starta om din iPhone.</string>
+
+    <!-- Inställningsmeny / ark (kugghjulet) -->
+    <string name="contact_list_change_passphrase">Byt lösenfras</string>
+    <string name="contact_list_change_pin">Byt PIN-kod</string>
+    <string name="contact_list_protection_level">Skyddsnivå</string>
+    <string name="contact_list_notifications">Notiser</string>
+    <string name="contact_list_push_notifications">Push-notiser</string>
+    <string name="contact_list_how_it_works">Så fungerar Rún</string>
+    <string name="contact_list_about">Om</string>
+    <string name="contact_list_blocked_contacts">Blockerade kontakter</string>
+
+    <!-- Push-frågan vid första öppningen -->
+    <string name="push_prompt_message">Vill du slå på push-notiser?</string>
+
+    <!-- Uppdateringspåminnelse i appen -->
+    <string name="nudge_message">Ny version tillgänglig</string>
+    <string name="nudge_later">Senare</string>
+    <string name="nudge_open_play_store">Öppna Google Play</string>
+    <string name="nudge_open_app_store">Öppna App Store</string>
+
+    <!-- Introduktioner (introducera + inkommande erbjudande) -->
+    <string name="referral_introduce_title">Introducera %1$s för…</string>
+    <string name="referral_connecting">Ansluter…</string>
+    <string name="referral_introduce_button">Introducera</string>
+    <string name="referral_introduce_button_count">Introducera (%1$d)</string>
+    <string name="referral_introduce_body">Välj vem du vill introducera %1$s för. Introducera bara personer du känner och litar på.</string>
+    <string name="referral_no_candidates">Inga andra kontakter att introducera.</string>
+    <string name="referral_introduce_error">Inte ansluten än — försök igen om en stund.</string>
+    <string name="referral_offer_title">Kontaktförfrågan</string>
+    <string name="referral_offer_message">%1$s vill introducera dig för ”%2$s”. Godkänn för att lägga till personen som kontakt.</string>
+    <string name="referral_approve">Godkänn</string>
+    <string name="referral_relayed_title">Introduktionen godkänd</string>
+    <string name="referral_relayed_first">%1$s godkände din introduktion till %2$s. Anslutningsuppgifterna har skickats vidare. När %2$s också godkänner kan de skicka meddelanden till varandra.</string>
+    <string name="referral_relayed_complete_title">Introduktionen klar</string>
+    <string name="referral_relayed_complete">Både %1$s och %2$s har godkänt. Nu har var och en det som behövs för att nå den andra. Du har ingen del i deras samtal och kan inte läsa det.</string>
+    <string name="referral_relayed_queued">%1$s godkände din introduktion till %2$s. Rún kunde inte nå reläet just nu och skickar vidare uppgifterna automatiskt nästa gång du öppnar appen.</string>
+
+    <!-- Gruppinbjudan (samtyckesspärr GROUP-1) -->
+    <string name="contact_list_group_invite_title">Gruppinbjudan</string>
+    <string name="contact_list_group_invite_join">Gå med</string>
+    <string name="contact_list_group_invite_joining">Går med…</string>
+    <string name="contact_list_group_invite_message">%1$s har bjudit in dig till gruppen ”%2$s”.</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s har bjudit in dig till ”%2$s”, men du hade tidigare den här gruppen under en ANNAN administratör. Gå bara med om du litar på att %1$s styr vilka som är med i gruppen.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s har bjudit in dig till ”%2$s”, men du hade tidigare den här gruppen under en ANNAN administratör (ursprungligen administrerad av ”%3$s”). Gå bara med om du litar på att %1$s styr vilka som är med i gruppen.</string>
+
+    <!-- Bekräftelse vid radering av kontakt (Android-formulering) -->
+    <string name="contact_list_delete_confirm_title">Radera %1$s?</string>
+    <string name="contact_list_delete_confirm_message">Alla meddelanden förstörs permanent</string>
+
+    <!-- Bekräftelse vid radering av kontakt (iOS-formulering — skiljer sig från Android, hålls byte-exakt per plattform) -->
+    <string name="contact_list_delete_contact_title">Radera kontakt</string>
+    <string name="contact_list_delete_contact_message">Det här raderar kontakten och alla tillhörande meddelanden permanent.</string>
+
+    <!-- Återställ reläåtkomst (samma formulering på båda plattformarna) -->
+    <string name="contact_list_reset_relay_title">Återställa reläåtkomsten?</string>
+    <string name="contact_list_reset_relay_message">Rún hämtar nya åtkomstnycklar för den här konversationen från reläet. Dina meddelanden, din historik och kontakten är kvar precis som de är, och %1$s behöver inte göra någonting.\n\nGör det här om du tror att någon annan haft din telefon medan den var upplåst. Det gör inte det de redan hunnit läsa ogjort — och om telefonen verkligen togs är det säkraste ändå att radera kontakten och parkoppla på nytt personligen.</string>
+    <string name="contact_list_reset_button">Återställ</string>
+    <string name="contact_list_reset_relay_success">Reläåtkomsten är återställd.</string>
+    <string name="contact_list_reset_relay_failure">Kunde inte nå reläet. Rún slutför det här på egen hand.</string>
+
+    <!-- Bekräftelse vid att lämna grupp (Android-formulering) -->
+    <string name="contact_list_leave_group_admin_message_android">Du är admin. När du lämnar gruppen kan ingen längre ändra medlemslistan.</string>
+
+    <!-- Lämna grupp (strängar bara för iOS — rubrik/adminmeddelande skiljer sig från Android; meddelandet för icke-admin och knapparna Lämna/Avbryt är delade, se ovan) -->
+    <string name="contact_list_leave_group_admin_message_ios">Du är gruppens admin. Öppna gruppen, tryck på infoknappen och välj en ny admin — sedan kan du lämna.</string>
+
+    <!-- Blockera / anmäl en kontakt (riktlinje 1.2, endast iOS — Android har ingen blockera/anmäl-funktion) -->
+    <string name="contact_list_block_contact_title">Blockera kontakt</string>
+    <string name="contact_list_block_contact_message">Du får inte längre meddelanden från %1$s, och personen tas bort från din lista.</string>
+    <string name="contact_list_contact_blocked_title">Kontakten är blockerad</string>
+    <string name="contact_list_post_block_report_message">Vill du anmäla kontakten för stötande innehåll eller kränkande beteende? Anmälningar granskas och åtgärdas inom 24 timmar. Din anmälan skickas från din egen e-postapp, så vi ser din e-postadress — och utkastet sparas av den appen, utanför Rún, där det inte raderas om du raderar Rún.</string>
+    <string name="contact_list_block_shared_groups_title">Delade grupper</string>
+    <string name="contact_list_block_shared_groups_message">%1$s är fortfarande medlem i en grupp som ni delar. En blockering tar inte bort personen ur den — personen fortsätter ändå att få dina meddelanden där, från alla andra medlemmar. Lämna en delad grupp nedan, eller blockera %1$s ändå.</string>
+    <string name="contact_list_block_shared_groups_leave_button">Lämna ”%1$s”</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Blockera ändå</string>
+
+    <!-- Meny vid långtryck på kontakt -->
+    <string name="contact_list_memory_label">Minne</string>
+    <string name="contact_list_no_memory_yet">Inget minne än</string>
+    <string name="contact_list_add_memory_button">Lägg till</string>
+    <string name="contact_list_edit_memory_button">Ändra</string>
+    <string name="contact_list_remove_memory_button">Ta bort</string>
+    <string name="contact_list_new_name_button">Nytt namn</string>
+    <string name="contact_list_introduce_to_button">Introducera för…</string>
+    <string name="contact_list_reset_relay_in_progress">Återställer reläåtkomst…</string>
+    <string name="contact_list_reset_relay_button">Återställ reläåtkomst</string>
+    <string name="contact_list_delete_contact_button">Radera kontakt</string>
+
+    <!-- Dialog för personligt minne (minnesregel) -->
+    <string name="contact_list_memory_dialog_subtitle">En privat påminnelse om vem kontakten är. Bara du kan se den.</string>
+    <string name="contact_list_memory_placeholder_android">t.ex. Träffades på konferensen 2025</string>
+    <string name="contact_list_memory_placeholder_ios">t.ex. Träffades på konferensen 2025</string>
+    <string name="contact_list_memory_dialog_title">Personligt minne</string>
+
+    <!-- Kontaktrad / grupprad -->
+    <string name="contact_list_repair_required">Måste parkopplas om</string>
+    <string name="contact_list_waiting_for_inbox">Väntar på deras inkorg…</string>
+    <string name="contact_list_introduced_by">Introducerad av %1$s</string>
+    <string name="contact_list_introduced">Introducerad</string>
+    <string name="contact_list_repair_chip">Parkoppla om</string>
+    <string name="contact_list_unread_messages_description">Olästa meddelanden</string>
+    <string name="contact_list_group_admin_label">Grupp · admin</string>
+    <string name="contact_list_group_label">Grupp</string>
+
+    <!-- Banner om gamla parkopplingar (plural — var en handrullad singular/plural-ternär på båda plattformarna) -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d kontakt behöver parkopplas om. Tryck för att lägga till den igen.</item>
+        <item quantity="other">%1$d kontakter behöver parkopplas om. Tryck för att lägga till dem igen.</item>
+    </plurals>
+    <string name="connect_log_title">Anslutningslogg</string>
+
+    <!-- Statisk Om-ruta (prefixet about_info_ — innehållet ligger inbakat i AboutInfoView i ContactListView.swift; Android-motsvarigheten bor i en separat fil som ägs av ett annat område) -->
+    <string name="about_info_version_label">Version %1$s (%2$s)</string>
+
+    <!-- Ram för push-inställningarnas karusell (prefixet notif_settings_ — innehållet ligger inbakat i PushSettingsView/PushInfoPageView/PushSwitchPageView i ContactListView.swift; Android-motsvarigheten bor i NotificationSettingsModal.kt som ägs av ett annat område) -->
+    <string name="notif_settings_sound_and_alerts">Ljud och notiser</string>
+    <string name="notif_settings_sound_hint">Notiserna låter som i vilken meddelandeapp som helst. Ändra eller tysta dem i notisinställningarna i iOS — Rún åsidosätter aldrig ditt val.</string>
+
+</resources>

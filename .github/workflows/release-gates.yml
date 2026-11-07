@@ -1,0 +1,259 @@
+name: release-gates
+
+# Release gates, mirrored from .githooks/pre-push so the guarantee holds
+# INDEPENDENT of any local hook — a pre-push hook is bypassable with
+# `git push --no-verify` and only ever runs on the developer's machine, so it
+# proves nothing about what actually landed on master.
+#
+# `source-gates` and `secret-scan` are source-level and need only bash +
+# coreutils + git (no Android SDK, no Gradle), so they run in seconds.
+# `unit-tests` is the exception: it needs the JDK and the Android SDK
+# because the same reasoning applies to the repo's behavioural suites — an
+# invariant that only a test enforces is not enforced at all unless something
+# unbypassable runs that test. It is gated on `needs: source-gates` so the
+# wrapper-integrity check completes before any Gradle code executes.
+#
+# The tor.xcframework integrity gate (verify-tor-xcframework.sh)
+# is source-only (it re-hashes the git-tracked framework binaries against the
+# committed .sha256 record) so it now runs here too, not just in the bypassable
+# pre-push hook. The artifact gate (verify-release-artifact.sh) is
+# deliberately NOT here: it needs a built AND signed release APK/AAB (and thus the
+# release keystore, which is intentionally kept out of CI). It stays a release-time
+# gate — run it against the actual artifact when cutting a release. Branch
+# protection (L-c) is a GitHub repo setting, enforced outside this file.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-gates:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a commit SHA (v7.0.1; Node 24 runtime — the Node 20 actions were
+      # deprecated 2026), not a moving tag — supply-chain hygiene, consistent with
+      # this repo's dependency-verification posture.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Debug-hook gating guard (release cleanliness)
+        run: scripts/verify-release-clean.sh
+
+      - name: Network-API source guard (DNS-leak)
+        run: scripts/check-network-api-usage.sh
+
+      # This was the ONE pre-push source gate never mirrored here,
+      # for no stated reason — the header's argument (a hook proves nothing about
+      # what landed on master) applies to it identically. It also scans every
+      # build-type-qualified source set and the Swift/ObjC outside
+      # iosApp/iosApp, which it previously missed entirely.
+      - name: Release-logging source guard
+        run: scripts/check-logging-gated.sh
+
+      - name: Security-dependency freshness gate
+        run: scripts/security-deps-report.sh
+
+      - name: tor.xcframework binary integrity
+        run: scripts/verify-tor-xcframework.sh
+
+      - name: Argon2 vendored-source integrity
+        run: scripts/verify-argon2-src.sh
+
+      # gradle-wrapper.properties pins distributionSha256Sum, but the
+      # jar that ENFORCES that pin — and the gradlew/gradlew.bat launchers — had
+      # no integrity record, the only tracked executable code in the repo without
+      # one. It runs with full developer privileges on every Android build, every
+      # iOS build (an Xcode build phase invokes ./gradlew) and every Xcode Cloud
+      # run. Kept as a repo script rather than the third-party
+      # gradle/actions/wrapper-validation action for the same reason the
+      # secret-scan job below installs gitleaks itself: no unpinned third-party
+      # action, AND the script also runs in .githooks/pre-push, so the developer
+      # machine (the one holding the release keystore) is covered too — CI-only
+      # validation would not be. The recorded jar hash is anchored to Gradle's own
+      # published wrapper checksum; see the record's header.
+      - name: Gradle wrapper launcher integrity
+        run: scripts/verify-gradle-wrapper.sh
+
+  # Until this job existed, NO automated gate ran a single test. The
+  # jobs above are shell-only and never invoke Gradle; the pre-push hook's only
+  # Gradle call is a best-effort `assembleDebug` inside `( set +e … ) || true`
+  # — which builds but tests nothing, and `git push --no-verify` skips even that.
+  # So every behavioural security invariant in the repo was advisory: KvTriState-
+  # GuardTest, SelectorMetaGuardTest, AntiSpliceReplayTest, MetaResiduePurgeTest,
+  # IosUserDefaultsKeysTest, VaultKdfTest, ProcessWipeLatchTest and
+  # PrefsApplySourceGuardTest could all regress onto master with green CI.
+  #
+  # JVM-only suites. Instrumented tests (connectedAndroidTest) need an emulator
+  # and the iOS/simulator suites need a Mac runner — both deliberately out of
+  # scope here; they stay device-side gates.
+  unit-tests:
+    runs-on: ubuntu-latest
+    # Do not EXECUTE gradle-wrapper.jar until source-gates has verified it.
+    needs: source-gates
+    # Gradle can hang on a wedged download; cap it well above a cold ~15 min run
+    # rather than inheriting the 6-hour default.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      # JDK 17: gradle/gradle-daemon-jvm.properties pins toolchainVersion=17 and
+      # gradle.properties sets org.gradle.java.installations.auto-download=false
+      # (an un-checksummed download of the JVM that compiles the crypto is a
+      # supply-chain risk), so Gradle resolves a LOCALLY INSTALLED 17 and fails
+      # closed if none is present. Pinned to a commit SHA (v6.2.0), same
+      # convention as actions/checkout above.
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # compileSdk 37 / build-tools are fetched by AGP on demand, which needs the
+      # SDK licences accepted. Explicit and fail-loud: a runner image without
+      # sdkmanager stops here with a clear message instead of surfacing as a
+      # confusing Gradle error.
+      - name: Accept Android SDK licences
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || { echo "✗ sdkmanager not found at $SDKMANAGER"; exit 1; }
+          # `yes` always dies of SIGPIPE (141) once sdkmanager stops reading, so the
+          # pipeline's status under pipefail is useless — judge sdkmanager's own exit.
+          set +e
+          yes | "$SDKMANAGER" --licenses > /dev/null
+          rc=${PIPESTATUS[1]}
+          set -e
+          [ "$rc" -eq 0 ] || { echo "✗ sdkmanager --licenses failed (exit $rc)"; exit "$rc"; }
+
+      # Native Argon2 (2026-10-07): :shared builds librunargon2.so, and preDebugBuild
+      # fails closed without the NDK (shared/build.gradle.kts runNdkVersion — keep the
+      # two pins in lockstep). CMake 4.4.5 (the externalNativeBuild pin) is not in the
+      # SDK repository, so it comes from Kitware's release tarball, sha256-pinned to
+      # Kitware's published cmake-4.4.5-SHA-256.txt. ninja is linked into the CMake
+      # bin dir so cmake.dir resolves both, like the Homebrew layout used locally.
+      - name: Install NDK r30 + CMake 4.4.5 + ninja
+        run: |
+          set -euo pipefail
+          NDK_VERSION=30.0.16248370
+          CMAKE_VERSION=4.4.5
+          CMAKE_SHA256=ed85135c5a5135b45e50423cb406dea04ca3338da0b8ef3c9ede963559680be0
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;$NDK_VERSION" > /dev/null
+          echo "RUN_NDK_PATH=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+          sudo apt-get install -y -qq ninja-build > /dev/null
+          CMAKE_DIR="$RUNNER_TEMP/cmake-$CMAKE_VERSION"
+          curl -fsSLo "$RUNNER_TEMP/cmake.tgz" \
+            "https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.tar.gz"
+          echo "$CMAKE_SHA256  $RUNNER_TEMP/cmake.tgz" | sha256sum -c -
+          mkdir -p "$CMAKE_DIR"
+          tar xzf "$RUNNER_TEMP/cmake.tgz" -C "$CMAKE_DIR" --strip-components=1
+          ln -s "$(command -v ninja)" "$CMAKE_DIR/bin/ninja"
+          echo "cmake.dir=$CMAKE_DIR" >> local.properties
+
+      # google-services.json is gitignored, so it is absent on a clean CI
+      # checkout; androidApp/build.gradle.kts fails closed on RELEASE variants
+      # only — debug builds warn and continue (FCM unconfigured), which is what
+      # lets these debug suites run here at all.
+      #
+      # Debug variants only, because that is ALL that exists: this AGP creates JVM
+      # unit-test tasks solely for the debug build type — no module has a
+      # testReleaseUnitTest task (verified against
+      # `:shared:tasks --all` and `:androidApp:tasks --all`). Consequence worth
+      # knowing: ProcessWipeLatchTest's release-only one-way-latch branch
+      # (resetForTest() no-ops when isDebugBuild is false) is dead code in every
+      # JVM suite; the release latch is enforced only by the source-level release-
+      # cleanliness gate. If a release unit-test variant ever becomes available,
+      # add it back here deliberately.
+      #
+      # No dependency cache on purpose: dependencies are sha256-pinned by
+      # gradle/verification-metadata.xml, which is the actual integrity guarantee;
+      # a restored cache adds a mutable, unverified store for a few saved minutes.
+      # If this job ever fails with "Dependency verification failed" for a
+      # Linux-only artifact, ADD the checksums deliberately — never relax
+      # verification to make CI green.
+      #
+      # Android Lint rides in the same invocation (open-source plan §5, 2026-11-05):
+      # lintDebug on both modules, warnings as configured in the module build files.
+      # The lint artifacts are already in gradle/verification-metadata.xml.
+      - name: JVM unit tests + Android Lint (shared debug, androidApp debug)
+        run: |
+          ./gradlew --no-daemon \
+            :shared:testDebugUnitTest \
+            :androidApp:testDebugUnitTest \
+            :shared:lintDebug \
+            :androidApp:lintDebug
+
+  # Mirror the local gitleaks pre-commit hook into CI. The hook is
+  # staged-only, local, and bypassable (`git commit --no-verify` / unconfigured
+  # core.hooksPath), so it proves nothing about what landed — and the repo has a
+  # documented leak history. This job scans FULL HISTORY on push and the PR DIFF on
+  # pull_request, using the same .gitleaks.toml the hook uses. gitleaks is installed
+  # from a PINNED release via `go install` (Go is preinstalled on the runner) to
+  # avoid an unpinned third-party action; bump the version deliberately.
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0   # full history so the push scan sees every commit
+      - name: Install gitleaks (pinned)
+        # NOTE: the Go MODULE PATH is github.com/zricethezav/gitleaks/v8 — it stayed
+        # sticky when the repo moved to the gitleaks org, so `go install` MUST use the
+        # zricethezav path (the gitleaks/gitleaks path fails "module declares its path
+        # as …"). Confirmed from the failing Actions run on c01cc66.
+        run: go install github.com/zricethezav/gitleaks/v8@v8.18.4
+      - name: gitleaks scan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          CONF=""; [ -f .gitleaks.toml ] && CONF="--config=.gitleaks.toml"
+          # `git` was renamed FROM `detect` in v8.19.0, and the pinned
+          # v8.18.4 only has `detect`. Probe for the subcommand exactly as the repo's
+          # own .githooks/pre-commit does, so this works whatever version is pinned.
+          if gitleaks git --help >/dev/null 2>&1; then SUB=git; else SUB=detect; fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gitleaks "$SUB" --redact --no-banner $CONF --log-opts="$BASE_SHA..HEAD"
+          else
+            gitleaks "$SUB" --redact --no-banner $CONF
+          fi
+
+  # iOS simulator compile (open-source plan §5, 2026-11-05). The private
+  # development repo gets its iOS build from Xcode Cloud on every push; this job
+  # is what a stranger's clone gets, on GitHub's own macOS image, with exactly the
+  # BUILDING.md command. The macos-26 arm64 image ships Xcode 26, JDK 17
+  # (JAVA_HOME_17_arm64) and an Android SDK at ANDROID_HOME — the shared module's
+  # Android target needs the SDK to CONFIGURE even though no Android task runs;
+  # the native Argon2 wiring is conditional on an NDK r30 being present, so none
+  # is installed here (same as Xcode Cloud). macOS minutes are billed at 10x on a
+  # private repository; remove the `if:` to run it there too.
+  ios-simulator-build:
+    runs-on: macos-26
+    if: ${{ !github.event.repository.private || github.event_name == 'workflow_dispatch' }}
+    needs: source-gates
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Select JDK 17 and point Gradle at the image's Android SDK
+        run: |
+          set -euo pipefail
+          [ -d "$JAVA_HOME_17_arm64" ] || { echo "✗ JAVA_HOME_17_arm64 missing on this image"; exit 1; }
+          echo "JAVA_HOME=$JAVA_HOME_17_arm64" >> "$GITHUB_ENV"
+          [ -d "$ANDROID_HOME" ] || { echo "✗ ANDROID_HOME missing on this image"; exit 1; }
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          xcodebuild -version
+
+      - name: iOS build prerequisites
+        run: iosApp/ci_scripts/test_build_prerequisites.sh
+
+      - name: Build for the iOS Simulator (no signing)
+        run: |
+          xcodebuild build -project iosApp/iosApp.xcodeproj -scheme Run \
+            -destination 'generic/platform=iOS Simulator' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" | tail -n 60
+          test "${PIPESTATUS[0]}" -eq 0

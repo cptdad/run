@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_contact_list.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints -->
+    <string name="connect_tor_phase">Yhdistetään Tor-verkkoon</string>
+    <string name="connect_relay_phase">Yhdistetään välityspalvelimeen</string>
+    <string name="connect_relay_first_time_hint">Ensimmäinen yhteys voi kestää muutaman minuutin.</string>
+    <string name="connect_relay_slow_hint">Tor-verkko voi joskus olla hidas — se on täyden anonymiteetin hinta.</string>
+    <string name="connect_tor_stalled_hint">Yhdistetään yhä…\nTämä verkko saattaa estää yksityisen yhteyden. Kokeile toista Wi-Fi-verkkoa tai mobiilidataa — jatkamme yrittämistä.</string>
+    <string name="connect_mint_stalled_hint">Yhdistetään yhä… Tämä verkko saattaa estää yksityisen yhteyden. Kokeile toista Wi-Fi-verkkoa tai mobiilidataa — jatkamme yrittämistä.</string>
+    <string name="connect_relay_stalled">Välityspalvelimeen ei edelleenkään saada yhteyttä.</string>
+    <string name="connect_reconnect_button">Yhdistä uudelleen</string>
+
+    <!-- iOS-only relay/Tor hints -->
+    <string name="connect_relay_stalled_reopen_hint">Välityspalvelimeen ei edelleenkään saada yhteyttä.\nAvaa Rún uudelleen, jos tämä jatkuu.</string>
+    <string name="connect_relay_relaunch_hint">Suojattu yhteys ei voi palautua tässä istunnossa.\nSulje Rún ja avaa se uudelleen, niin yhteys muodostuu uudestaan.</string>
+    <string name="connect_tor_stalled_long_hint">Yhteyttä ei edelleenkään saada.\nSulje Rún kokonaan ja avaa se uudelleen — se aloittaa uuden yksityisen yhteyden.</string>
+    <string name="connect_tor_reboot_hint">Jos sulkeminen ja uudelleen avaaminen ei ole auttanut, käynnistä iPhone uudelleen.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">Vaihda salalause</string>
+    <string name="contact_list_change_pin">Vaihda PIN-koodi</string>
+    <string name="contact_list_protection_level">Suojaustaso</string>
+    <string name="contact_list_notifications">Ilmoitukset</string>
+    <string name="contact_list_push_notifications">Push-ilmoitukset</string>
+    <string name="contact_list_how_it_works">Näin Rún toimii</string>
+    <string name="contact_list_about">Tietoja</string>
+    <string name="contact_list_blocked_contacts">Estetyt kontaktit</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">Haluatko ottaa push-ilmoitukset käyttöön?</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">Uusi versio saatavilla</string>
+    <string name="nudge_later">Myöhemmin</string>
+    <string name="nudge_open_play_store">Avaa Google Play</string>
+    <string name="nudge_open_app_store">Avaa App Store</string>
+
+    <!-- Referral / vouching (introduce + incoming offer) -->
+    <string name="referral_introduce_title">Kenelle esittelet henkilön %1$s?</string>
+    <string name="referral_connecting">Yhdistetään…</string>
+    <string name="referral_introduce_button">Esittele</string>
+    <string name="referral_introduce_button_count">Esittele (%1$d)</string>
+    <string name="referral_introduce_body">Valitse, kenelle esittelet henkilön %1$s. Esittele vain ihmisiä, jotka tunnet ja joihin luotat.</string>
+    <string name="referral_no_candidates">Ei muita kontakteja esiteltäväksi.</string>
+    <string name="referral_introduce_error">Yhteyttä ei ole vielä — yritä hetken kuluttua uudelleen.</string>
+    <string name="referral_offer_title">Yhteyspyyntö</string>
+    <string name="referral_offer_message">%1$s haluaa esitellä sinut henkilölle ”%2$s”. Hyväksy, niin hänet lisätään kontaktiksi.</string>
+    <string name="referral_approve">Hyväksy</string>
+    <string name="referral_relayed_title">Esittely hyväksytty</string>
+    <string name="referral_relayed_first">%1$s hyväksyi esittelysi henkilölle %2$s. Yhteyden muodostamiseen tarvittavat tiedot on välitetty eteenpäin. Kun myös %2$s hyväksyy, he voivat viestiä keskenään.</string>
+    <string name="referral_relayed_complete_title">Esittely valmis</string>
+    <string name="referral_relayed_complete">Sekä %1$s että %2$s hyväksyivät. Kummallakin on nyt se, mitä toisen tavoittamiseen tarvitaan. Sinä et ole osa heidän keskusteluaan etkä voi lukea sitä.</string>
+    <string name="referral_relayed_queued">%1$s hyväksyi esittelysi henkilölle %2$s. Rún ei juuri nyt saanut yhteyttä välityspalvelimeen ja välittää tiedot eteenpäin automaattisesti, kun seuraavan kerran avaat sovelluksen.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">Ryhmäkutsu</string>
+    <string name="contact_list_group_invite_join">Liity</string>
+    <string name="contact_list_group_invite_joining">Liitytään…</string>
+    <string name="contact_list_group_invite_message">%1$s kutsui sinut ryhmään ”%2$s”.</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s kutsui sinut ryhmään ”%2$s”, mutta sinulla oli tämä ryhmä aiemmin ERI ylläpitäjän alaisuudessa. Liity vain, jos luotat siihen, että %1$s hallitsee tämän ryhmän jäsenyyksiä.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s kutsui sinut ryhmään ”%2$s”, mutta sinulla oli tämä ryhmä aiemmin ERI ylläpitäjän alaisuudessa (alun perin ylläpitäjänä ”%3$s”). Liity vain, jos luotat siihen, että %1$s hallitsee tämän ryhmän jäsenyyksiä.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">Poistetaanko %1$s?</string>
+    <string name="contact_list_delete_confirm_message">Kaikki viestit tuhotaan pysyvästi</string>
+
+    <!-- Delete-contact confirmation (iOS wording) -->
+    <string name="contact_list_delete_contact_title">Poista kontakti</string>
+    <string name="contact_list_delete_contact_message">Tämä poistaa tämän kontaktin ja kaikki siihen liittyvät viestit pysyvästi.</string>
+
+    <!-- Reset relay access -->
+    <string name="contact_list_reset_relay_title">Nollataanko välityspalvelimen käyttöoikeus?</string>
+    <string name="contact_list_reset_relay_message">Rún hakee välityspalvelimelta uudet käyttöavaimet tälle keskustelulle. Viestisi, historiasi ja tämä kontakti pysyvät täsmälleen ennallaan, eikä %1$s joudu tekemään mitään.\n\nTee tämä, jos epäilet jonkun muun pitäneen puhelintasi hallussaan sen ollessa auki. Se ei peru mitään, mitä he ovat jo lukeneet — ja jos puhelin todella vietiin, turvallisin ratkaisu on silti poistaa tämä kontakti ja tehdä paritus uudelleen kasvokkain.</string>
+    <string name="contact_list_reset_button">Nollaa</string>
+    <string name="contact_list_reset_relay_success">Välityspalvelimen käyttöoikeus nollattu.</string>
+    <string name="contact_list_reset_relay_failure">Välityspalvelimeen ei saatu yhteyttä. Rún viimeistelee tämän itsekseen.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">Olet ylläpitäjä. Kun poistut, kukaan ei voi muuttaa jäsenluetteloa.</string>
+
+    <!-- Leave-group (iOS-only strings) -->
+    <string name="contact_list_leave_group_admin_message_ios">Olet ryhmän ylläpitäjä. Avaa ryhmä, napauta info-painiketta ja valitse uusi ylläpitäjä — sitten voit poistua.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only) -->
+    <string name="contact_list_block_contact_title">Estä kontakti</string>
+    <string name="contact_list_block_contact_message">Et enää vastaanota viestejä henkilöltä %1$s, ja hänet poistetaan luettelostasi.</string>
+    <string name="contact_list_contact_blocked_title">Kontakti estetty</string>
+    <string name="contact_list_post_block_report_message">Haluatko ilmoittaa tästä kontaktista loukkaavan sisällön tai väärinkäytön vuoksi? Ilmoitukset käsitellään ja niihin reagoidaan 24 tunnin kuluessa. Ilmoitus lähetetään omasta sähköpostisovelluksestasi, joten näemme sähköpostiosoitteesi — ja luonnos tallentuu kyseiseen sovellukseen Rún-sovelluksen ulkopuolelle, jossa se ei pyyhkiydy, vaikka pyyhkisit Rún-sovelluksen.</string>
+    <string name="contact_list_block_shared_groups_title">Jaetut ryhmät</string>
+    <string name="contact_list_block_shared_groups_message">%1$s on yhä jäsenenä ryhmässä, joka teillä on yhteinen. Estäminen ei poista häntä siitä — hän saa siellä edelleen viestisi kaikkien muiden jäsenten kautta. Poistu jaetusta ryhmästä alta, tai estä %1$s silti.</string>
+    <string name="contact_list_block_shared_groups_leave_button">Poistu ryhmästä ”%1$s”</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Estä silti</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">Muistiinpano</string>
+    <string name="contact_list_no_memory_yet">Ei vielä muistiinpanoa</string>
+    <string name="contact_list_add_memory_button">Lisää</string>
+    <string name="contact_list_edit_memory_button">Muokkaa</string>
+    <string name="contact_list_remove_memory_button">Poista</string>
+    <string name="contact_list_new_name_button">Uusi nimi</string>
+    <string name="contact_list_introduce_to_button">Esittele…</string>
+    <string name="contact_list_reset_relay_in_progress">Nollataan välityspalvelimen käyttöoikeutta…</string>
+    <string name="contact_list_reset_relay_button">Nollaa välityspalvelimen käyttöoikeus</string>
+    <string name="contact_list_delete_contact_button">Poista kontakti</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">Yksityinen muistutus siitä, kuka tämä kontakti on. Vain sinä näet tämän.</string>
+    <string name="contact_list_memory_placeholder_android">esim. Tavattiin konferenssissa 2025</string>
+    <string name="contact_list_memory_placeholder_ios">esim. Tavattiin konferenssissa 2025</string>
+    <string name="contact_list_memory_dialog_title">Henkilökohtainen muistiinpano</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">Paritus uusittava</string>
+    <string name="contact_list_waiting_for_inbox">Odotetaan hänen postilaatikkoaan…</string>
+    <string name="contact_list_introduced_by">%1$s esitteli</string>
+    <string name="contact_list_introduced">Esitelty</string>
+    <string name="contact_list_repair_chip">Parita</string>
+    <string name="contact_list_unread_messages_description">Lukemattomia viestejä</string>
+    <string name="contact_list_group_admin_label">Ryhmä · ylläpitäjä</string>
+    <string name="contact_list_group_label">Ryhmä</string>
+
+    <!-- Stale re-pair banner -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d kontakti vaatii uuden parituksen. Lisää hänet uudelleen napauttamalla.</item>
+        <item quantity="other">%1$d kontaktia vaatii uuden parituksen. Lisää heidät uudelleen napauttamalla.</item>
+    </plurals>
+    <string name="connect_log_title">Yhteysloki</string>
+
+    <!-- About-info static box -->
+    <string name="about_info_version_label">Versio %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome -->
+    <string name="notif_settings_sound_and_alerts">Äänet ja ilmoitukset</string>
+    <string name="notif_settings_sound_hint">Ilmoitukset kuulostavat samalta kuin missä tahansa viestisovelluksessa. Muuta tai vaimenna ne iOS:n ilmoitusasetuksissa — Rún ei koskaan ohita valintaasi.</string>
+
+</resources>

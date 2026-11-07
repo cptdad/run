@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spanish (es) translation of values/strings_groups.xml.
+  Group conversation, group info and create-group screens.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Member count, shared by the group header and the group info header -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d miembro</item>
+        <item quantity="other">%1$d miembros</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d aún fuera de alcance</string>
+    <string name="group_info_admin_suffix">eres el administrador</string>
+
+    <!-- Group conversation -->
+    <string name="group_member_list_differs">⚠ la lista de miembros no coincide</string>
+    <string name="group_delivery_not_delivered">no entregado a %1$d</string>
+    <string name="group_notice_not_delivered">Tu mensaje no llegó a %1$d de los miembros: aún fuera de alcance desde este teléfono, o el relay rechazó su copia. Rún no guarda ninguna copia para enviarla más tarde.</string>
+
+    <!-- Group info -->
+    <string name="group_info_add_member">Añadir miembro</string>
+    <string name="group_info_you">Tú</string>
+    <string name="group_info_not_reachable">Aún no accesible</string>
+    <string name="group_info_no_verified_pairing">Todavía no hay un emparejamiento verificado con este miembro</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Salir del grupo</string>
+    <string name="group_info_make_admin">Hacer administrador</string>
+    <string name="group_info_remove_from_group">Quitar del grupo</string>
+    <string name="group_info_add_member_precondition">Tiene que haberse emparejado en persona con todos los miembros. Tú lo estás avalando.</string>
+    <string name="group_info_add_member_empty">No hay contactos elegibles: todas las personas con las que te has emparejado ya están en el grupo.</string>
+    <string name="group_info_leave_confirm_title_android">¿Salir de %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Salir del grupo</string>
+    <string name="group_info_leave_confirm_admin_message">Eres el administrador. Cede el cargo primero o nadie podrá cambiar la lista de miembros.</string>
+    <string name="group_info_leave_confirm_message">Se avisará a los demás miembros de que has salido.</string>
+    <string name="group_info_leave_unread_warning">Puede que nunca se les muestre a los demás lo que hayas enviado y aún no hayan leído.</string>
+    <string name="group_info_leave_confirm_action">Salir</string>
+    <string name="group_info_choose_admin_title">Elige un administrador nuevo</string>
+    <string name="group_info_choose_admin_subtitle_android">Podrá añadir y quitar miembros cuando salgas.</string>
+    <string name="group_info_choose_admin_nav_title">Administrador nuevo</string>
+    <string name="group_info_choose_admin_subtitle_ios">Elige quién será el administrador nuevo. Podrá añadir y quitar miembros cuando salgas.</string>
+    <string name="group_info_transfer_failed_title">No se ha podido ceder la administración</string>
+    <string name="group_info_transfer_failed_message">No ha cambiado nada: sigues siendo el administrador, así que el grupo se puede seguir gestionando. Inténtalo de nuevo.</string>
+
+    <!-- Create group -->
+    <string name="create_group_title">Grupo nuevo</string>
+    <string name="create_group_name_placeholder">Nombre del grupo</string>
+    <string name="create_group_precondition">Todos los miembros de un grupo tienen que haberse emparejado en persona entre sí. Tú lo avalas al crearlo.</string>
+    <string name="create_group_failed">No se ha podido crear el grupo. Comprueba la conexión y vuelve a intentarlo.</string>
+    <string name="create_group_creating">Creando…</string>
+    <string name="create_group_select_members">Elige miembros</string>
+    <string name="create_group_button_label">Crear grupo (%1$d)</string>
+    <string name="group_private_from">Privado de %1$s · solo tú lo ves</string>
+    <string name="group_private_to">Privado para %1$s</string>
+    <string name="group_private_reply">Responder en privado</string>
+    <string name="group_private_reply_chip">Respuesta privada a %1$s</string>
+    <string name="group_private_reply_chip_close">Terminar respuesta privada</string>
+
+</resources>

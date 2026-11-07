@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  German (de) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete) and
+  create-group screens.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Member count, shared by the group header and the group info header -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d Mitglied</item>
+        <item quantity="other">%1$d Mitglieder</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d noch nicht erreichbar</string>
+    <string name="group_info_admin_suffix">du bist Admin</string>
+
+    <!-- Group conversation -->
+    <string name="group_member_list_differs">⚠ Mitgliederliste weicht ab</string>
+    <string name="group_delivery_not_delivered">nicht zugestellt an %1$d</string>
+    <string name="group_notice_not_delivered">Deine Nachricht hat %1$d der Mitglieder nicht erreicht: von diesem Handy aus noch nicht erreichbar, oder das Relay hat ihre Kopie abgelehnt. Rún behält keine Kopie, um sie später zu senden.</string>
+
+    <!-- Group info -->
+    <string name="group_info_add_member">Mitglied hinzufügen</string>
+    <string name="group_info_you">Du</string>
+    <string name="group_info_not_reachable">Noch nicht erreichbar</string>
+    <string name="group_info_no_verified_pairing">Noch keine verifizierte Kopplung mit diesem Mitglied</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Gruppe verlassen</string>
+    <string name="group_info_make_admin">Zum Admin machen</string>
+    <string name="group_info_remove_from_group">Aus Gruppe entfernen</string>
+    <string name="group_info_add_member_precondition">Diese Person muss sich mit jedem Mitglied persönlich gekoppelt haben. Dafür bürgst du.</string>
+    <string name="group_info_add_member_empty">Keine passenden Kontakte — alle, mit denen du gekoppelt bist, sind schon in der Gruppe.</string>
+    <!-- Leave-confirm dialog title differs by platform (pre-existing) -->
+    <string name="group_info_leave_confirm_title_android">%1$s verlassen?</string>
+    <string name="group_info_leave_confirm_title_ios">Gruppe verlassen</string>
+    <string name="group_info_leave_confirm_admin_message">Du bist Admin. Übertrage die Rolle zuerst, sonst kann niemand mehr die Mitgliederliste ändern.</string>
+    <string name="group_info_leave_confirm_message">Den anderen Mitgliedern wird mitgeteilt, dass du die Gruppe verlassen hast.</string>
+    <string name="group_info_leave_unread_warning">Alles, was du gesendet hast und die anderen noch nicht gelesen haben, wird ihnen womöglich nie angezeigt.</string>
+    <string name="group_info_leave_confirm_action">Verlassen</string>
+    <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
+    <string name="group_info_choose_admin_title">Neuen Admin wählen</string>
+    <string name="group_info_choose_admin_subtitle_android">Diese Person kann nach deinem Weggang Mitglieder hinzufügen und entfernen.</string>
+    <string name="group_info_choose_admin_nav_title">Neuer Admin</string>
+    <string name="group_info_choose_admin_subtitle_ios">Wähle, wer neuer Admin wird. Diese Person kann nach deinem Weggang Mitglieder hinzufügen und entfernen.</string>
+    <!-- iOS-only admin-handoff-failure dialog -->
+    <string name="group_info_transfer_failed_title">Admin-Übergabe fehlgeschlagen</string>
+    <string name="group_info_transfer_failed_message">Es hat sich nichts geändert — du bist weiterhin Admin, die Gruppe bleibt also verwaltbar. Versuch es erneut.</string>
+
+    <!-- Create group -->
+    <string name="create_group_title">Neue Gruppe</string>
+    <string name="create_group_name_placeholder">Gruppenname</string>
+    <string name="create_group_precondition">Alle in einer Gruppe müssen sich persönlich mit allen anderen gekoppelt haben. Dafür bürgst du, wenn du sie erstellst.</string>
+    <string name="create_group_failed">Die Gruppe konnte nicht erstellt werden. Prüfe die Verbindung und versuch es erneut.</string>
+    <string name="create_group_creating">Wird erstellt…</string>
+    <string name="create_group_select_members">Mitglieder wählen</string>
+    <string name="create_group_button_label">Gruppe erstellen (%1$d)</string>
+    <string name="group_private_from">Privat von %1$s · nur du siehst das</string>
+    <string name="group_private_to">Privat an %1$s</string>
+    <string name="group_private_reply">Privat antworten</string>
+    <string name="group_private_reply_chip">Private Antwort an %1$s</string>
+    <string name="group_private_reply_chip_close">Private Antwort beenden</string>
+
+</resources>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German (de) translation of values/strings_conversation.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">Warten auf das Postfach dieses Kontakts — du kannst gleich senden.</string>
+    <string name="conversation_alias_unknown">Unbekannt</string>
+    <string name="conversation_contact_fallback">Kontakt</string>
+    <string name="conversation_fs_stalled_title">Forward Secrecy ist noch nicht aktiviert</string>
+    <string name="conversation_fs_stalled_body">Nachrichten an diesen Kontakt sind weiterhin verschlüsselt, aber sie erhalten noch nicht den zusätzlichen Schutz, der frühere Nachrichten schützt, falls später ein Schlüssel offengelegt wird. Das klärt sich normalerweise, sobald der Kontakt antwortet. Besteht das Problem weiterhin, entferne den Kontakt und füge ihn erneut hinzu.</string>
+    <string name="conversation_ratchet_refused_body">Mit diesem Kontakt konnte kein sicherer Kanal aufgebaut werden. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">Kontakt melden</string>
+    <string name="conversation_report_confirm_message">Meldungen werden innerhalb von 24 Stunden geprüft und bearbeitet. Deine Meldung wird aus deiner eigenen E-Mail-App gesendet, wir sehen also deine E-Mail-Adresse — und der Entwurf wird von dieser App außerhalb von Rún gespeichert, wo er nicht gelöscht wird, wenn du alle Daten in Rún löschst.</string>
+    <string name="conversation_report_confirm_button">An Rún melden</string>
+    <string name="conversation_report_action">Melden</string>
+    <string name="conversation_block_action">Blockieren</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ Screenshot in „Fotos“ gespeichert — dieses Bild ist NICHT verschlüsselt und kann mit iCloud synchronisiert werden.</string>
+    <string name="conversation_group_echo_label">Gruppennachricht in %1$s</string>
+    <string name="conversation_group_echo_open">Gruppe öffnen</string>
+
+</resources>

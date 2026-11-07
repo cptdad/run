@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Contact-list screen: list, empty state, settings menu/sheet, update-nudge
+  modal, push-prompt dialog, referral/introduce dialogs, stale re-pair banner,
+  blocked contacts (iOS-only — Android has no block/report feature, see
+  docs), and the Tor/relay connect status line + stall hints (shared pure
+  helper: RelayConnectHints.kt / AppState.connectStatusLine).
+
+  Key prefixes: contact_list_, nudge_, push_prompt_, referral_, connect_.
+  Two carve-outs live here too because their Swift content is physically
+  inlined inside ContactListView.swift (About-info box + Push-settings
+  carousel chrome) even though their Android counterparts are separate
+  files owned by another area — about_info_ / notif_settings_ prefixes,
+  per the campaign dedupe convention.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints (RelayConnectHints.kt / AppState.connectStatusLine — Android+iOS share these keys byte-for-byte) -->
+    <string name="connect_tor_phase">Connecting to Tor</string>
+    <string name="connect_relay_phase">Connecting to Relay</string>
+    <string name="connect_relay_first_time_hint">The first connection can take a few minutes.</string>
+    <string name="connect_relay_slow_hint">Tor network can sometimes be slow, this is the price for total anonymity</string>
+    <string name="connect_tor_stalled_hint">Still connecting…\nThis network may be blocking the private connection. Try different Wi-Fi or mobile data — we’ll keep trying.</string>
+    <string name="connect_mint_stalled_hint">Still connecting… This network may be blocking the private connection. Try different Wi-Fi or mobile data — we’ll keep trying.</string>
+    <string name="connect_relay_stalled">Still can’t reach the relay.</string>
+    <string name="connect_reconnect_button">Reconnect</string>
+
+    <!-- iOS-only relay/Tor hints (iOS cannot restart Tor in-process — tor_main runs once per process, so it has extra relaunch/tiered-stall copy Android doesn't need) -->
+    <string name="connect_relay_stalled_reopen_hint">Still can’t reach the relay.\nReopen Rún if this keeps happening.</string>
+    <string name="connect_relay_relaunch_hint">The secure connection can’t recover in this session.\nClose and reopen Rún to reconnect.</string>
+    <string name="connect_tor_stalled_long_hint">Still can’t connect.\nClose Rún completely and open it again — that starts a fresh private connection.</string>
+    <string name="connect_tor_reboot_hint">If closing and reopening hasn’t helped, restart your iPhone.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">Change passphrase</string>
+    <string name="contact_list_change_pin">Change pin code</string>
+    <string name="contact_list_protection_level">Protection level</string>
+    <string name="contact_list_notifications">Notifications</string>
+    <string name="contact_list_push_notifications">Push notifications</string>
+    <string name="contact_list_how_it_works">How Rún works</string>
+    <string name="contact_list_about">About</string>
+    <string name="contact_list_blocked_contacts">Blocked contacts</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">Do you want to enable push notifications?</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">New version available</string>
+    <string name="nudge_later">Later</string>
+    <string name="nudge_open_play_store">Open Google Play</string>
+    <string name="nudge_open_app_store">Open App Store</string>
+
+    <!-- Referral / vouching (introduce + incoming offer) -->
+    <string name="referral_introduce_title">Introduce %1$s to…</string>
+    <string name="referral_connecting">Connecting…</string>
+    <string name="referral_introduce_button">Introduce</string>
+    <string name="referral_introduce_button_count">Introduce (%1$d)</string>
+    <string name="referral_introduce_body">Select who to introduce %1$s to. Only introduce people you know and trust.</string>
+    <string name="referral_no_candidates">No other contacts to introduce.</string>
+    <string name="referral_introduce_error">Not connected yet — try again in a moment.</string>
+    <string name="referral_offer_title">Connection request</string>
+    <string name="referral_offer_message">%1$s wants to introduce you to “%2$s”. Approve to add them as a contact.</string>
+    <string name="referral_approve">Approve</string>
+    <!-- Introducer-side modal: shown when an introducee's accept lands on the introducer
+         and is passed on to the other party (ReferralManager.onIntroRelayed). The
+         introducer never learns whether the two sides finalized, so no variant may
+         claim "they are now connected". -->
+    <string name="referral_relayed_title">Introduction accepted</string>
+    <string name="referral_relayed_first">%1$s approved your introduction to %2$s. Their connection details have been passed on. Once %2$s approves too, they can message each other.</string>
+    <string name="referral_relayed_complete_title">Introduction complete</string>
+    <string name="referral_relayed_complete">Both %1$s and %2$s approved. Each now has what they need to reach the other. You have no part in their conversation and cannot read it.</string>
+    <string name="referral_relayed_queued">%1$s approved your introduction to %2$s. Rún could not reach the relay just now and will pass their details on automatically next time you open the app.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">Group invitation</string>
+    <string name="contact_list_group_invite_join">Join</string>
+    <string name="contact_list_group_invite_joining">Joining…</string>
+    <string name="contact_list_group_invite_message">%1$s invited you to the group “%2$s”.</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s invited you to “%2$s”, but you previously had this group under a DIFFERENT administrator. Only join if you trust %1$s to control this group’s membership.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s invited you to “%2$s”, but you previously had this group under a DIFFERENT administrator (originally administered by “%3$s”). Only join if you trust %1$s to control this group’s membership.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">Delete %1$s?</string>
+    <string name="contact_list_delete_confirm_message">All messages will be permanently destroyed</string>
+
+    <!-- Delete-contact confirmation (iOS wording — differs from Android, kept byte-exact per platform) -->
+    <string name="contact_list_delete_contact_title">Delete Contact</string>
+    <string name="contact_list_delete_contact_message">This will permanently delete this contact and all associated messages.</string>
+
+    <!-- Reset relay access (identical wording both platforms) -->
+    <string name="contact_list_reset_relay_title">Reset relay access?</string>
+    <string name="contact_list_reset_relay_message">Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$s doesn\'t have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can\'t undo anything they already read — and if the phone really was taken, the safest fix is still to delete this contact and pair again in person.</string>
+    <string name="contact_list_reset_button">Reset</string>
+    <string name="contact_list_reset_relay_success">Relay access reset.</string>
+    <string name="contact_list_reset_relay_failure">Couldn\'t reach the relay. Rún will finish this on its own.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">You are the admin. After you leave, nobody can change the member list.</string>
+
+    <!-- Leave-group (iOS-only strings — title/admin-message wording differs from Android; the non-admin message and Leave/Cancel buttons are shared, see above) -->
+    <string name="contact_list_leave_group_admin_message_ios">You\'re the group admin. Open the group, tap the info button, and choose a new admin — then you can leave.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only — Android has no block/report feature) -->
+    <string name="contact_list_block_contact_title">Block Contact</string>
+    <string name="contact_list_block_contact_message">You will no longer receive messages from %1$s, and they will be removed from your list.</string>
+    <string name="contact_list_contact_blocked_title">Contact Blocked</string>
+    <string name="contact_list_post_block_report_message">Would you like to report this contact for objectionable content or abuse? Reports are reviewed and acted on within 24 hours. Your report is sent from your own email app, so it will show us your email address — and the draft is stored by that app, outside Rún, where it won\'t be erased if you wipe Rún.</string>
+
+    <!-- Block-time shared-group warning (Guideline 1.2 follow-up, iOS-only — Android has no block feature). Blocking never touches group membership, so a blocked member stays in any group shared with the user; this warns before that becomes invisible. -->
+    <string name="contact_list_block_shared_groups_title">Shared Groups</string>
+    <string name="contact_list_block_shared_groups_message">%1$s is still a member of a group you share. Blocking doesn\'t remove them from it — they\'ll keep receiving your messages there from every other member. Leave a shared group below, or block %1$s anyway.</string>
+    <string name="contact_list_block_shared_groups_leave_button">Leave “%1$s”</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Block Anyway</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">Memory</string>
+    <string name="contact_list_no_memory_yet">No memory yet</string>
+    <string name="contact_list_add_memory_button">Add</string>
+    <string name="contact_list_edit_memory_button">Edit</string>
+    <string name="contact_list_remove_memory_button">Remove</string>
+    <string name="contact_list_new_name_button">New name</string>
+    <string name="contact_list_introduce_to_button">Introduce to…</string>
+    <string name="contact_list_reset_relay_in_progress">Resetting relay access…</string>
+    <string name="contact_list_reset_relay_button">Reset relay access</string>
+    <string name="contact_list_delete_contact_button">Delete contact</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">A private reminder of who this contact is. Only you can see this.</string>
+    <string name="contact_list_memory_placeholder_android">e.g. Met at the conference in 2025</string>
+    <string name="contact_list_memory_placeholder_ios">e.g., Met at the conference in 2025</string>
+    <string name="contact_list_memory_dialog_title">Personal Memory</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">Re-pair required</string>
+    <string name="contact_list_waiting_for_inbox">Waiting for their inbox…</string>
+    <string name="contact_list_introduced_by">Introduced by %1$s</string>
+    <string name="contact_list_introduced">Introduced</string>
+    <string name="contact_list_repair_chip">Re-pair</string>
+    <string name="contact_list_unread_messages_description">Unread messages</string>
+    <string name="contact_list_group_admin_label">Group · admin</string>
+    <string name="contact_list_group_label">Group</string>
+
+    <!-- Stale re-pair banner (plural — was a hand-rolled singular/plural ternary on both platforms) -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d contact needs re-pairing. Tap to add them again.</item>
+        <item quantity="other">%1$d contacts need re-pairing. Tap to add them again.</item>
+    </plurals>
+
+    <!-- Live connection-log panel (triple-tap the "Connecting to…" caption) — ConnectionLogPanel.kt / ConnectionLogPanel.swift -->
+    <string name="connect_log_title">Connection log</string>
+
+    <!-- About-info static box (about_info_ prefix — content is inlined in ContactListView.swift's AboutInfoView; Android's equivalent lives in a separate file owned by another area) -->
+    <string name="about_info_version_label">Version %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome (notif_settings_ prefix — content is inlined in ContactListView.swift's PushSettingsView/PushInfoPageView/PushSwitchPageView; Android's equivalent lives in NotificationSettingsModal.kt owned by another area) -->
+    <string name="notif_settings_sound_and_alerts">Sound &amp; alerts</string>
+    <string name="notif_settings_sound_hint">Alerts sound like any other messenger. Change or silence them in iOS notification settings — Rún never overrides your choice.</string>
+
+</resources>

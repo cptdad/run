@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates (compromised-device, inactivity wipe, passcode warning), EULA, block/report, rune dialog chrome, and the burn-on-read onboarding notice. Mirrored on iOS via L10n.swift. Android sources: PinEntryScreen.kt, PinSetupScreen.kt, PinComponents.kt, ChangePinScreen.kt, RuneDialog.kt, MainActivity.kt, BurnOnReadNotice.kt. iOS sources: PinEntryView.swift, PinSetupView.swift, ChangePinView.swift, ContentView.swift, UserSafety.swift, UIComponents.swift. Some strings differ by wording between platforms (Android says "lock screen", iOS says "passcode"; Android says "rooted", iOS says "jailbroken") — these get separate keys rather than being forced to share one, per the byte-identical-English rule. The EULA / block / report strings (eula_, report_) are iOS-only: Rún's Guideline-1.2 safeguards (Terms of Use, Report, Block) are not implemented on Android.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="pin_erase_vault_title">Да се избрише овој трезор?</string>
+    <string name="pin_erase_vault_message">Трезорот на овој уред не може да се отвори — за него не е зачуван PIN или тајна фраза. Бришењето трајно го отстранува и започнува ново поставување. Ова не може да се поништи.</string>
+    <string name="pin_erase_vault_confirm">Избриши</string>
+    <string name="pin_prompt_passphrase">Внесете тајна фраза</string>
+    <string name="pin_passphrase_placeholder">Тајна фраза</string>
+    <string name="pin_unlock_button">Отклучи</string>
+    <string name="pin_backoff_hint">Обидете се повторно за %1$d с</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Заклучувањето на екранот на вашиот уред се промени, па хардверскиот клуч што го штитеше овој трезор исчезна. Вашиот код за обновување сепак може да го отклучи.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Заклучувањето на екранот на вашиот уред се промени, па хардверскиот клуч што го штитеше овој трезор исчезна. Без код за обновување, овој трезор не може да се отклучи.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Кодот за пристап на вашиот уред се промени, па хардверскиот клуч што го штитеше овој трезор исчезна. Вашиот код за обновување сепак може да го отклучи.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Кодот за пристап на вашиот уред се промени, па хардверскиот клуч што го штитеше овој трезор исчезна. Без код за обновување, овој трезор не може да се отклучи.</string>
+    <string name="pin_use_recovery_code">Користи код за обновување</string>
+    <string name="pin_use_recovery_code_prompt">Не можете да отклучите? Користете код за обновување</string>
+    <string name="pin_orphaned_vault_notice">Овој уред има трезор, но за него не е зачуван PIN или тајна фраза, па ништо не може да го отклучи. Неговата содржина не може да се обнови.</string>
+    <string name="pin_erase_start_over">Избриши и започни одново</string>
+    <string name="pin_strength_too_weak">Премногу слабо</string>
+    <string name="pin_strength_still_weak">Сè уште премногу слабо — додадете зборови</string>
+    <string name="pin_strength_strong">Силно</string>
+    <string name="pin_strength_excellent">Одлично</string>
+    <string name="pin_hardware_lock_not_enabled_title">Хардверското заклучување не е овозможено</string>
+    <string name="pin_hardware_lock_not_enabled_message">Вашиот телефон не го потврди хардверскиот клуч, па вашиот трезор е поставен на пониско ниво на заштита. Можете да го вклучите подоцна од Поставки.</string>
+    <string name="pin_device_key_busy_title">Поставувањето не можеше да заврши</string>
+    <string name="pin_device_key_busy_message">Безбедносниот хардвер на вашиот телефон е зафатен. Заклучете го телефонот, отклучете го и обидете се повторно.</string>
+    <string name="pin_setup_choose_pin">Изберете го вашиот PIN</string>
+    <string name="pin_setup_confirm_pin">Потврдете го вашиот PIN</string>
+    <string name="pin_setup_choose_passphrase">Изберете тајна фраза</string>
+    <string name="pin_setup_confirm_passphrase">Потврдете ја вашата тајна фраза</string>
+    <string name="pin_setup_passphrase_hint">Околу шест случајни зборови. Се впишуваат при секое отклучување — нема PIN и нема биометриска кратенка. Тоа е поентата.</string>
+    <string name="pin_passphrase_placeholder_reenter">Повторно внесете ја тајната фраза</string>
+    <string name="pin_confirm_button">Потврди</string>
+    <string name="pin_change_enter_current_passphrase">Внесете ја тековната тајна фраза</string>
+    <string name="pin_change_enter_current_pin">Внесете го тековниот PIN</string>
+    <string name="pin_change_choose_new_pin">Изберете нов PIN</string>
+    <string name="pin_change_confirm_passphrase">Потврдете ја тајната фраза</string>
+    <string name="pin_change_confirm_new_pin">Потврдете го новиот PIN</string>
+    <string name="gate_compromised_title">Уредот е компромитиран</string>
+    <string name="gate_compromised_body">Изгледа дека на овој уред е направен root. Rún не може да ја гарантира безбедноста на вашите пораки на компромитиран уред.</string>
+    <string name="gate_compromised_body_jailbroken">Изгледа дека на овој уред е направен jailbreak. Rún не може да ја гарантира безбедноста на вашите пораки на компромитиран уред.</string>
+    <string name="gate_compromised_continue">Разбирам — продолжи</string>
+    <string name="gate_reauth_countdown">Проверка на тајната фраза за %1$d…</string>
+    <string name="gate_lock_countdown">Заклучување за %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Допрете каде било за да останете отклучени</string>
+    <string name="gate_passcode_warning_title">Нема код за пристап на уредот</string>
+    <string name="gate_passcode_warning_message">Хардверската заштита на Rún во мирување е послаба без код за пристап на уредот. Поставете еден во Поставки за целосна заштита, па вратете се да го завршите поставувањето. Можете да продолжите и без него.</string>
+    <string name="gate_passcode_warning_open_settings">Отвори Поставки</string>
+    <string name="gate_passcode_warning_continue_anyway">Продолжи и покрај тоа</string>
+    <string name="eula_before_you_start_title">Пред да започнете</string>
+    <string name="eula_terms_of_use_title">Услови за користење</string>
+    <string name="eula_body">Со користење на Rún, се согласувате со овие Услови за користење.\n\nRún е приватна апликација за размена на пораки со целосно шифрирање од крај до крај. Контактите ги додавате лично, со размена на QR-код, а вашите пораки се шифрираат на вашиот уред пред да бидат испратени. Ние не можеме да ги читаме вашите пораки и не хостираме јавен фид, профили, ниту каква било споделена содржина.\n\nНУЛТА ТОЛЕРАНЦИЈА ЗА НЕПРИФАТЛИВА СОДРЖИНА И ЗЛОУПОТРЕБА\nНема толеранција за неприфатлива, незаконска или злоупотребувачка содржина или однесување на Rún. Се согласувате да не го користите Rún за испраќање, барање или поттикнување содржина што е незаконска, вознемирувачка, заканувачка, полна со омраза, сексуално експлоататорска или на друг начин неприфатлива, и да не злоупотребувате, вознемирувате или им наштетувате на други луѓе. Прекршувањето на ова претставува повреда на овие услови.\n\nГРИЖА ЗА ВАШАТА БЕЗБЕДНОСТ\nБидејќи вашите разговори се приватни за вас и луѓето што ги додавате, вие имате контрола над тоа кој може да стапи во контакт со вас:\n\n• Пријава — ако контакт ви испрати неприфатлива содржина или се однесува злоупотребувачки, користете „Пријави“ (во разговор, или со притискање и држење на контактот) за да нè известите. Ние ја разгледуваме секоја пријава во рок од 24 часа и постапуваме по неа — спречувајќи ги злоупотребувачките испраќачи каде што тоа е технички можно и пријавувајќи незаконска содржина до соодветните власти. Бидејќи пораките се шифрирани од крај до крај, ние постапуваме според тоа што ни го кажувате во вашата пријава.\n\n• Блокирање — користете „Блокирај“ за веднаш да скриете контакт, така што повеќе нема да ги гледате ниту нив ниту нивните пораки. Блокирањето не е трајно — можете да го отблокирате контактот во секое време преку менито со поставки.\n\nВие сте одговорни за содржината што ја испраќате и за луѓето што избирате да ги додадете како контакти. Мора да имате доволно години за да склучите обврзувачки договор во вашата земја за да го користите Rún.\n\nБЕЗ ГАРАНЦИЈА\nRún се обезбедува „како што е“, без гаранции од каков било вид, во најголема мера дозволена со закон.\n\nКонтакт: %1$s</string>
+    <string name="eula_agree_button">Се согласувам и продолжувам</string>
+    <string name="eula_decline_alert_title">Потребно е согласување</string>
+    <string name="eula_decline_alert_message">Мора да ги прифатите Условите за користење за да го користите Rún. Тие постојат за да ги заштитат сите и забрануваат неприфатлива содржина и злоупотребувачко однесување.</string>
+    <string name="report_abuse_email_subject">Пријава за злоупотреба на Rún</string>
+    <string name="report_abuse_email_body">Сакам да пријавам контакт за неприфатлива содржина или злоупотребувачко однесување.\n\nКонтакт (името што го дадов на мојот уред): %1$s\n\nШто се случи (опишете со свои зборови):\n\n\n---\nRún ја разгледува секоја пријава во рок од 24 часа и постапува по неа —\nспречувајќи ги злоупотребувачките испраќачи каде што тоа е технички можно\nи пријавувајќи незаконска содржина до соодветните власти.\n\nОваа е-пошта се чува во вашата апликација за е-пошта, надвор од шифрираното складиште на Rún, па затоа\nвклучете само она што не ви пречи да остане таму.</string>
+    <string name="report_email_fallback_title">Пријави по е-пошта</string>
+    <string name="report_email_fallback_message">На овој уред нема поставено апликација за е-пошта. Допрете „Копирај пријава“, а потоа залепете ја во која било е-порака адресирана до %1$s.</string>
+    <string name="report_copy_report_button">Копирај пријава</string>
+    <string name="report_copy_report_clipboard">До: %1$s\nПредмет: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Немате блокирано никого.</string>
+    <string name="report_unblock_button">Отблокирај</string>
+    <string name="burn_notice_title">Согорување по читање</string>
+    <string name="burn_notice_message">Пораките се појавуваат само еднаш — токму тука — и никогаш не се зачувуваат. Кога ќе го напуштите овој разговор, тие исчезнуваат засекогаш.</string>
+</resources>

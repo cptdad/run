@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_conversation.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">Odotetaan tämän kontaktin postilaatikkoa — voit lähettää viestejä hetken kuluttua.</string>
+    <string name="conversation_alias_unknown">Tuntematon</string>
+    <string name="conversation_contact_fallback">Kontakti</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy ei ole vielä aktivoitunut</string>
+    <string name="conversation_fs_stalled_body">Viestit tälle kontaktille ovat yhä salattuja, mutta ne eivät vielä saa lisäsuojaa, joka pitää aiemmat viestit turvassa, jos avain paljastuu myöhemmin. Tämä yleensä korjaantuu, kun kontakti vastaa. Jos ongelma jatkuu, poista kontakti ja lisää se uudelleen.</string>
+    <string name="conversation_ratchet_refused_body">Suojattua kanavaa ei voitu muodostaa tämän kontaktin kanssa. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">Ilmoita kontaktista</string>
+    <string name="conversation_report_confirm_message">Ilmoitukset käsitellään ja niihin reagoidaan 24 tunnin kuluessa. Ilmoitus lähetetään omasta sähköpostisovelluksestasi, joten näemme sähköpostiosoitteesi — ja luonnos tallentuu kyseiseen sovellukseen Rún-sovelluksen ulkopuolelle, jossa se ei pyyhkiydy, vaikka pyyhkisit Rún-sovelluksen.</string>
+    <string name="conversation_report_confirm_button">Ilmoita Rún-tiimille</string>
+    <string name="conversation_report_action">Ilmoita</string>
+    <string name="conversation_block_action">Estä</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ Kuvakaappaus tallennettiin Kuviin — se EI ole salattu ja voi synkronoitua iCloudiin.</string>
+    <string name="conversation_group_echo_label">Ryhmäviesti: %1$s</string>
+    <string name="conversation_group_echo_open">Avaa ryhmä</string>
+
+</resources>

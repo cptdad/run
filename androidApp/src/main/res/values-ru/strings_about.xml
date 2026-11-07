@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_about.xml.
+  About-info modal chrome (AboutInfoModal.kt — the classic app-name/version/ credits box, distinct from the swipeable feature carousel keyed in strings_shared.xml under about_*) and the Donate/Support modal + tip jar (DonateModal.kt, TipJar.kt — Play Billing) and its iOS Support/StoreKit counterpart (SupportView.swift, TipStore.swift). Key prefixes: about_info_, donate_, tip_. NOT localized here on purpose (per the campaign's exclusion list): the app name "Rún", the rune glyph "ᚱ", the maker name "Vikstrom Group AB", the "vgab.eu" URL, credit names/licence names (AboutContent.credits — a name/licence pair, not a sentence), and the "Version X (Y)" numbers themselves (only the surrounding word is a resource).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="about_info_tagline">Приватные сообщения через сеть Tor.</string>
+    <string name="about_info_tor_version">Использует Tor %1$s</string>
+    <string name="about_info_open_source_heading">Создано на основе открытого кода</string>
+    <string name="about_info_clearnet_title">Открыть в браузере?</string>
+    <string name="about_info_clearnet_message">vgab.eu откроется в вашем браузере через обычный интернет — не через Tor. Сайт и ваша сеть смогут увидеть IP-адрес вашего устройства.</string>
+    <string name="donate_title">Поддержать Rún</string>
+    <string name="donate_tab_tip">Чаевые</string>
+    <string name="donate_tab_crypto">Крипто</string>
+    <string name="donate_play_disclosure">Обрабатывается Google Play · привязано к вашему аккаунту Google · никаких других третьих лиц.</string>
+    <string name="donate_tba">Скоро — подробности уточняются</string>
+    <string name="donate_qr_content_description">QR-код адреса для пожертвований в %1$s</string>
+    <string name="donate_copied_confirmation">Скопировано ✓</string>
+    <string name="tip_appeal">У Rún нет ни рекламы, ни инвесторов, и он никогда не продаёт ваши данные. Чаевые — любого размера — помогают ему оставаться бесплатным и независимым.</string>
+    <string name="tip_store_disclosure">Обрабатывается App Store · привязано к вашему Apple ID · никаких других третьих лиц.</string>
+    <string name="tip_thank_you">Спасибо 🖤</string>
+    <string name="tip_thank_you_body">Ваша поддержка помогает Rún оставаться бесплатным и независимым.</string>
+    <string name="tip_unavailable_fallback">Чаевые сейчас недоступны.</string>
+    <string name="tip_error_purchase_failed">Платёж не прошёл. Попробуйте ещё раз.</string>
+    <string name="tip_error_unavailable_device">Чаевые в приложении недоступны на этом устройстве.</string>
+    <string name="tip_error_load_failed">Не удалось загрузить варианты чаевых.</string>
+    <string name="tip_error_not_configured">Чаевые ещё не настроены.</string>
+    <string name="tip_error_checkout_failed">Не удалось открыть оформление покупки Google Play. Попробуйте снова.</string>
+    <string name="tip_tier_small">Угостите меня кофе</string>
+    <string name="tip_tier_medium">Небольшие чаевые</string>
+    <string name="tip_tier_large">Щедрые чаевые</string>
+    <string name="tip_tier_xl">Вы — легенда</string>
+</resources>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete), and create-group screens. Key prefixes: group_, group_info_, create_group_.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d xubin</item>
+        <item quantity="other">%1$d xubnood</item>
+    </plurals>
+    <string name="group_info_not_reachable_suffix">%1$d weli lama gaari karo</string>
+    <string name="group_info_admin_suffix">waxaad tahay maamule</string>
+    <string name="group_member_list_differs">⚠ liiska xubnaha ayaa kala duwan</string>
+    <string name="group_delivery_not_delivered">looma gaarsiin %1$d</string>
+    <string name="group_notice_not_delivered">Fariintaadu ma gaarin %1$d ka mid ah xubnaha: weli lama gaari karo, laga bilaabo taleefankan, ama relay-ga ayaa diiday nuqulkooda. Rún ma hayo nuqul uu mar dambe diro.</string>
+    <string name="group_info_add_member">Ku dar xubin</string>
+    <string name="group_info_you">Adiga</string>
+    <string name="group_info_not_reachable">Weli lama gaari karo</string>
+    <string name="group_info_no_verified_pairing">Weli ma jirto lammaanaan la xaqiijiyay oo aad la leedahay xubintan</string>
+    <string name="group_info_admin_badge">Maamule</string>
+    <string name="group_info_leave_group">Ka bax kooxda</string>
+    <string name="group_info_make_admin">Ka dhig maamule</string>
+    <string name="group_info_remove_from_group">Ka saar kooxda</string>
+    <string name="group_info_add_member_precondition">Waa inay si toos ah ula lammaaneeyaan xubin kasta. Taas waxaad dammaanad u tahay.</string>
+    <string name="group_info_add_member_empty">Ma jiraan xiriiriyayaal ku habboon — qof kasta oo aad la lammaanaysay horeyba ayuu kooxda ku jiraa.</string>
+    <string name="group_info_leave_confirm_title_android">Ka bax %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Ka bax kooxda</string>
+    <string name="group_info_leave_confirm_admin_message">Waxaad tahay maamulaha. Marka hore u wareeji doorkan, haddii kalese qofna ma awoodi doono inuu beddelo liiska xubnaha.</string>
+    <string name="group_info_leave_confirm_message">Xubnaha kale waa loo sheegi doonaa inaad ka baxday.</string>
+    <string name="group_info_leave_unread_warning">Wixii aad dirtay ee kuwa kale aanay weli akhrin, waxaa laga yaabaa in aan weligood loo muujin.</string>
+    <string name="group_info_leave_confirm_action">Ka bax</string>
+    <string name="group_info_choose_admin_title">Dooro maamule cusub</string>
+    <string name="group_info_choose_admin_subtitle_android">Way awoodi doonaan inay ku daraan oo ka saaraan xubno ka dib markaad ka baxdo.</string>
+    <string name="group_info_choose_admin_nav_title">Maamule cusub</string>
+    <string name="group_info_choose_admin_subtitle_ios">Dooro qofka noqonaya maamulaha cusub. Way awoodi doonaan inay ku daraan oo ka saaraan xubno ka dib markaad ka baxdo.</string>
+    <string name="group_info_transfer_failed_title">Lama wareejin karin maamulnimada</string>
+    <string name="group_info_transfer_failed_message">Waxba isma beddelin — weli waxaad tahay maamulaha, sidaas darteed kooxda si fudud ayaa loo maamuli karaa. Mar kale isku day.</string>
+    <string name="create_group_title">Koox cusub</string>
+    <string name="create_group_name_placeholder">Magaca kooxda</string>
+    <string name="create_group_precondition">Qof kasta oo koox ku jira waa inuu si toos ah ula lammaanaadaa qof kale oo dhan. Taas waxaad dammaanad u tahay markaad abuurayso kooxda.</string>
+    <string name="create_group_failed">Lama abuuri karin kooxda. Hubi xidhiidhka kadibna mar kale isku day.</string>
+    <string name="create_group_creating">Waa la abuurayaa…</string>
+    <string name="create_group_select_members">Dooro xubnaha</string>
+    <string name="create_group_button_label">Abuur koox (%1$d)</string>
+    <string name="group_private_from">Gaar ah oo ka timid %1$s · adiga keliya ayaa arki kara</string>
+    <string name="group_private_to">Gaar ah oo loo diray %1$s</string>
+    <string name="group_private_reply">U jawaab si gaar ah</string>
+    <string name="group_private_reply_chip">Jawaab gaar ah oo loo diray %1$s</string>
+    <string name="group_private_reply_chip_close">Soo gabagabee jawaabta gaarka ah</string>
+</resources>

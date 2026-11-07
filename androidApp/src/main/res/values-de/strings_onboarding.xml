@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  German (de) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates, EULA, block/report, rune dialog
+  chrome and the burn-on-read onboarding notice.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">Diesen Tresor löschen?</string>
+    <string name="pin_erase_vault_message">Der Tresor auf diesem Gerät lässt sich nicht öffnen — es ist weder eine PIN noch eine Passphrase dafür gespeichert. Beim Löschen wird er endgültig entfernt und eine neue Einrichtung gestartet. Das lässt sich nicht rückgängig machen.</string>
+    <string name="pin_erase_vault_confirm">Löschen</string>
+    <string name="pin_prompt_passphrase">Passphrase eingeben</string>
+    <string name="pin_passphrase_placeholder">Passphrase</string>
+    <string name="pin_unlock_button">Entsperren</string>
+    <string name="pin_backoff_hint">Erneut versuchen in %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Deine Bildschirmsperre hat sich geändert, deshalb ist der Hardware-Schlüssel für diesen Tresor verloren. Dein Wiederherstellungscode kann ihn noch öffnen.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Deine Bildschirmsperre hat sich geändert, deshalb ist der Hardware-Schlüssel für diesen Tresor verloren. Ohne Wiederherstellungscode lässt sich dieser Tresor nicht mehr öffnen.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Dein Gerätecode hat sich geändert, deshalb ist der Hardware-Schlüssel für diesen Tresor verloren. Dein Wiederherstellungscode kann ihn noch öffnen.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Dein Gerätecode hat sich geändert, deshalb ist der Hardware-Schlüssel für diesen Tresor verloren. Ohne Wiederherstellungscode lässt sich dieser Tresor nicht mehr öffnen.</string>
+    <string name="pin_use_recovery_code">Wiederherstellungscode nutzen</string>
+    <string name="pin_use_recovery_code_prompt">Entsperren klappt nicht? Wiederherstellungscode nutzen</string>
+    <string name="pin_orphaned_vault_notice">Auf diesem Gerät liegt ein Tresor, aber es ist weder eine PIN noch eine Passphrase dafür gespeichert — nichts kann ihn öffnen. Sein Inhalt lässt sich nicht wiederherstellen.</string>
+    <string name="pin_erase_start_over">Löschen und neu beginnen</string>
+
+    <!-- Passphrase strength meter -->
+    <string name="pin_strength_too_weak">Zu schwach</string>
+    <string name="pin_strength_still_weak">Immer noch zu schwach — mehr Wörter</string>
+    <string name="pin_strength_strong">Stark</string>
+    <string name="pin_strength_excellent">Ausgezeichnet</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">Hardware-Sperre nicht aktiv</string>
+    <string name="pin_hardware_lock_not_enabled_message">Dein Telefon hat den Hardware-Schlüssel nicht bestätigt, deshalb wurde dein Tresor mit einer niedrigeren Schutzstufe eingerichtet. Du kannst sie später in den Einstellungen aktivieren.</string>
+    <string name="pin_device_key_busy_title">Einrichtung nicht abgeschlossen</string>
+    <string name="pin_device_key_busy_message">Die sichere Hardware deines Telefons ist beschäftigt. Sperre dein Telefon, entsperre es und versuch es erneut.</string>
+    <string name="pin_setup_choose_pin">Wähle deine PIN</string>
+    <string name="pin_setup_confirm_pin">Bestätige deine PIN</string>
+    <string name="pin_setup_choose_passphrase">Wähle eine Passphrase</string>
+    <string name="pin_setup_confirm_passphrase">Bestätige deine Passphrase</string>
+    <string name="pin_setup_passphrase_hint">Etwa sechs zufällige Wörter. Bei jedem Entsperren einzutippen — es gibt keine PIN und keine biometrische Abkürzung. Genau das ist der Sinn.</string>
+    <string name="pin_passphrase_placeholder_reenter">Passphrase erneut eingeben</string>
+    <string name="pin_confirm_button">Bestätigen</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">Aktuelle Passphrase eingeben</string>
+    <string name="pin_change_enter_current_pin">Aktuelle PIN eingeben</string>
+    <string name="pin_change_choose_new_pin">Neue PIN wählen</string>
+    <string name="pin_change_confirm_passphrase">Passphrase bestätigen</string>
+    <string name="pin_change_confirm_new_pin">Neue PIN bestätigen</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">Gerät kompromittiert</string>
+    <string name="gate_compromised_body">Dieses Gerät scheint gerootet zu sein. Rún kann die Sicherheit deiner Nachrichten auf einem kompromittierten Gerät nicht garantieren.</string>
+    <string name="gate_compromised_body_jailbroken">Dieses Gerät scheint einen Jailbreak zu haben. Rún kann die Sicherheit deiner Nachrichten auf einem kompromittierten Gerät nicht garantieren.</string>
+    <string name="gate_compromised_continue">Ich verstehe — weiter</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">Passphrase-Prüfung in %1$d…</string>
+    <string name="gate_lock_countdown">Sperrt in %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Tippe irgendwohin, um entsperrt zu bleiben</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only) -->
+    <string name="gate_passcode_warning_title">Kein Gerätecode</string>
+    <string name="gate_passcode_warning_message">Ohne Gerätecode ist der Hardware-Schutz von Rún im Ruhezustand schwächer. Lege in den Einstellungen einen fest, um vollen Schutz zu erhalten, und kehre dann zurück, um die Einrichtung abzuschließen. Du kannst auch ohne fortfahren.</string>
+    <string name="gate_passcode_warning_open_settings">Einstellungen öffnen</string>
+    <string name="gate_passcode_warning_continue_anyway">Trotzdem fortfahren</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">Bevor du startest</string>
+    <string name="eula_terms_of_use_title">Nutzungsbedingungen</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">Mit der Nutzung von Rún stimmst du diesen Nutzungsbedingungen zu.\n\nRún ist ein privater, Ende-zu-Ende-verschlüsselter Messenger. Du fügst Kontakte persönlich hinzu, indem ihr einen QR-Code austauscht, und deine Nachrichten werden auf deinem Gerät verschlüsselt, bevor sie gesendet werden. Wir können deine Nachrichten nicht lesen, und wir betreiben weder einen öffentlichen Feed noch Profile oder geteilte Inhalte.\n\nNULLTOLERANZ FÜR ANSTÖSSIGE INHALTE UND MISSBRAUCH\nFür anstößige, rechtswidrige oder missbräuchliche Inhalte und Verhaltensweisen gibt es auf Rún keinerlei Toleranz. Du verpflichtest dich, Rún nicht zu nutzen, um Inhalte zu senden, anzufordern oder zu erbitten, die rechtswidrig, belästigend, bedrohlich, hasserfüllt, sexuell ausbeuterisch oder auf andere Weise anstößig sind, und andere Menschen nicht zu missbrauchen, zu belästigen oder zu schädigen. Ein Verstoß dagegen ist ein Bruch dieser Bedingungen.\n\nWIE DU DICH SCHÜTZT\nWeil deine Unterhaltungen privat zwischen dir und den Personen bleiben, die du hinzufügst, bestimmst du selbst, wer dich kontaktieren kann:\n\n• Melden — wenn ein Kontakt dir anstößige Inhalte sendet oder sich missbräuchlich verhält, nutze „Melden“ (in einer Unterhaltung oder durch langes Drücken auf den Kontakt), um uns zu benachrichtigen. Wir prüfen jede Meldung innerhalb von 24 Stunden und handeln — wir sperren missbräuchliche Absender, soweit uns das technisch möglich ist, und melden rechtswidrige Inhalte den zuständigen Behörden. Da Nachrichten Ende-zu-Ende-verschlüsselt sind, handeln wir auf Grundlage dessen, was du uns in deiner Meldung mitteilst.\n\n• Blockieren — nutze „Blockieren“, um einen Kontakt sofort auszublenden, sodass du weder ihn noch seine Nachrichten siehst. Das Blockieren lässt sich rückgängig machen — du kannst es jederzeit im Einstellungsmenü aufheben.\n\nDu bist verantwortlich für die Inhalte, die du sendest, und für die Personen, die du als Kontakte hinzufügst. Um Rún zu nutzen, musst du alt genug sein, um in deinem Land eine bindende Vereinbarung zu schließen.\n\nKEINE GEWÄHRLEISTUNG\nRún wird „wie besehen“ bereitgestellt, ohne Gewährleistung jeglicher Art, soweit gesetzlich zulässig.\n\nKontakt: %1$s</string>
+    <string name="eula_agree_button">Zustimmen &amp; fortfahren</string>
+    <string name="eula_decline_alert_title">Zustimmung erforderlich</string>
+    <string name="eula_decline_alert_message">Du musst die Nutzungsbedingungen akzeptieren, um Rún zu nutzen. Sie sind dafür da, alle zu schützen, und verbieten anstößige Inhalte und missbräuchliches Verhalten.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">Rún-Missbrauchsmeldung</string>
+    <string name="report_abuse_email_body">Ich möchte einen Kontakt wegen anstößiger Inhalte oder missbräuchlichen Verhaltens melden.\n\nKontakt (der Name, den ich ihm auf meinem Gerät gegeben habe): %1$s\n\nWas passiert ist (bitte in eigenen Worten beschreiben):\n\n\n---\nRún prüft jede Meldung innerhalb von 24 Stunden und handelt — wir sperren\nmissbräuchliche Absender, soweit technisch möglich, und melden rechtswidrige\nInhalte den zuständigen Behörden.\n\nDiese E-Mail wird von deiner Mail-App außerhalb des verschlüsselten\nSpeichers von Rún abgelegt, gib also nur an, was du dort dauerhaft liegen lassen möchtest.</string>
+    <string name="report_email_fallback_title">Per E-Mail melden</string>
+    <string name="report_email_fallback_message">Auf diesem Gerät ist keine E-Mail-App eingerichtet. Tippe auf „Meldung kopieren“ und füge sie in eine beliebige E-Mail an %1$s ein.</string>
+    <string name="report_copy_report_button">Meldung kopieren</string>
+    <string name="report_copy_report_clipboard">An: %1$s\nBetreff: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Du hast niemanden blockiert.</string>
+    <string name="report_unblock_button">Blockierung aufheben</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">Nach dem Lesen verbrannt</string>
+    <string name="burn_notice_message">Nachrichten erscheinen ein einziges Mal — genau hier — und werden nie gespeichert. Wenn du diese Unterhaltung verlässt, sind sie für immer weg.</string>
+
+</resources>

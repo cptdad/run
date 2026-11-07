@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spanish (es) translation of values/strings_system.xml (system-level strings
+     for BOTH platforms: notification channel, APNs body, Info.plist usage). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Mensajes</string>
+    <string name="notification_title">Notificación</string>
+    <string name="apns_notification_body">Notificación</string>
+    <string name="tor_keepalive_channel_name">Conexión en espera</string>
+    <string name="tor_keepalive_notification_title">Manteniendo la conexión lista</string>
+    <string name="infoplist_camera_usage">La cámara se usa para escanear códigos QR al intercambiar contactos.</string>
+    <string name="infoplist_faceid_usage">Face ID desbloquea tu caja fuerte cifrada cuando el desbloqueo vinculado al hardware está activado.</string>
+    <string name="infoplist_local_network_usage">El acceso a la red local solo se usa cuando configuras un proxy Tor externo en tu red local.</string>
+</resources>

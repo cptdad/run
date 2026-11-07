@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- The DEBUG-only e2e on-demand notification-poll trigger
+             (DebugPollTrigger, `adb shell am broadcast -n com.vg.run/.DebugPollTrigger`)
+             was removed along with the WorkManager background poll itself —
+             notifications are FCM-only now. This manifest has no debug-only
+             entries left; kept as an empty override point. -->
+    </application>
+</manifest>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic (ar) translation of values/strings_contact_list.xml.
+  Contact-list screen: list, empty state, settings menu/sheet, update-nudge
+  modal, push-prompt dialog, referral dialogs, stale re-pair banner, blocked
+  contacts and the Tor/relay connect status line + stall hints.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints -->
+    <string name="connect_tor_phase">جارٍ الاتصال بـ Tor</string>
+    <string name="connect_relay_phase">جارٍ الاتصال بالمُرحّل</string>
+    <string name="connect_relay_first_time_hint">قد يستغرق الاتصال الأول بضع دقائق.</string>
+    <string name="connect_relay_slow_hint">قد تكون شبكة Tor بطيئة أحيانًا — وهذا هو ثمن إخفاء الهوية الكامل.</string>
+    <string name="connect_tor_stalled_hint">ما زال الاتصال جاريًا…\nقد تكون هذه الشبكة تحجب الاتصال الخاص. جرّب شبكة Wi-Fi أخرى أو بيانات الهاتف — وسنواصل المحاولة.</string>
+    <string name="connect_mint_stalled_hint">ما زال الاتصال جاريًا… قد تكون هذه الشبكة تحجب الاتصال الخاص. جرّب شبكة Wi-Fi أخرى أو بيانات الهاتف — وسنواصل المحاولة.</string>
+    <string name="connect_relay_stalled">ما زال الوصول إلى المُرحّل متعذرًا.</string>
+    <string name="connect_reconnect_button">إعادة الاتصال</string>
+
+    <!-- iOS-only relay/Tor hints -->
+    <string name="connect_relay_stalled_reopen_hint">ما زال الوصول إلى المُرحّل متعذرًا.\nأعد فتح Rún إذا تكرر هذا.</string>
+    <string name="connect_relay_relaunch_hint">يتعذّر على الاتصال الآمن التعافي في هذه الجلسة.\nأغلق Rún وأعد فتحه لإعادة الاتصال.</string>
+    <string name="connect_tor_stalled_long_hint">ما زال الاتصال متعذرًا.\nأغلق Rún تمامًا ثم افتحه من جديد — هذا يبدأ اتصالًا خاصًا جديدًا.</string>
+    <string name="connect_tor_reboot_hint">إذا لم يُجدِ الإغلاق وإعادة الفتح، أعد تشغيل iPhone.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">تغيير عبارة المرور</string>
+    <string name="contact_list_change_pin">تغيير رمز PIN</string>
+    <string name="contact_list_protection_level">مستوى الحماية</string>
+    <string name="contact_list_notifications">الإشعارات</string>
+    <string name="contact_list_push_notifications">الإشعارات الفورية</string>
+    <string name="contact_list_how_it_works">كيف يعمل Rún</string>
+    <string name="contact_list_about">حول</string>
+    <string name="contact_list_blocked_contacts">جهات الاتصال المحظورة</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">هل تريد تفعيل الإشعارات الفورية؟</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">يتوفر إصدار جديد</string>
+    <string name="nudge_later">لاحقًا</string>
+    <string name="nudge_open_play_store">فتح Google Play</string>
+    <string name="nudge_open_app_store">فتح App Store</string>
+
+    <!-- Referral / vouching (introduce + incoming offer) -->
+    <string name="referral_introduce_title">تقديم %1$s إلى…</string>
+    <string name="referral_connecting">جارٍ الاتصال…</string>
+    <string name="referral_introduce_button">تقديم</string>
+    <string name="referral_introduce_button_count">تقديم (%1$d)</string>
+    <string name="referral_introduce_body">اختر لمن تريد تقديم %1$s. لا تقدّم إلا أشخاصًا تعرفهم وتثق بهم.</string>
+    <string name="referral_no_candidates">لا توجد جهات اتصال أخرى لتقديمها.</string>
+    <string name="referral_introduce_error">لم يكتمل الاتصال بعد — حاول مجددًا بعد لحظات.</string>
+    <string name="referral_offer_title">طلب تواصل</string>
+    <string name="referral_offer_message">يريد %1$s تقديمك إلى «%2$s». وافق لإضافته كجهة اتصال.</string>
+    <string name="referral_approve">موافقة</string>
+    <string name="referral_relayed_title">تمت الموافقة على التقديم</string>
+    <string name="referral_relayed_first">وافق %1$s على التقديم إلى %2$s. وقد مُرِّرت تفاصيل الاتصال. وبمجرد موافقة %2$s أيضًا، يمكنهما مراسلة بعضهما.</string>
+    <string name="referral_relayed_complete_title">اكتمل التقديم</string>
+    <string name="referral_relayed_complete">وافق كلٌّ من %1$s و%2$s. ولدى كلٍّ منهما الآن ما يلزم للوصول إلى الآخر. لا دخل لك في محادثتهما ولا يمكنك قراءتها.</string>
+    <string name="referral_relayed_queued">وافق %1$s على التقديم إلى %2$s. تعذّر على Rún الوصول إلى المُرحّل الآن، وسيمرّر التفاصيل تلقائيًا في المرة القادمة التي تفتح فيها التطبيق.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">دعوة إلى مجموعة</string>
+    <string name="contact_list_group_invite_join">انضمام</string>
+    <string name="contact_list_group_invite_joining">جارٍ الانضمام…</string>
+    <string name="contact_list_group_invite_message">دعاك %1$s إلى المجموعة «%2$s».</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ دعاك %1$s إلى «%2$s»، لكن هذه المجموعة كانت لديك سابقًا تحت مشرف مختلف تمامًا. لا تنضم إلا إذا كنت تأتمن %1$s على التحكم في عضوية هذه المجموعة.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ دعاك %1$s إلى «%2$s»، لكن هذه المجموعة كانت لديك سابقًا تحت مشرف مختلف تمامًا (كان يديرها في الأصل «%3$s»). لا تنضم إلا إذا كنت تأتمن %1$s على التحكم في عضوية هذه المجموعة.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">هل تريد حذف %1$s؟</string>
+    <string name="contact_list_delete_confirm_message">ستُدمَّر كل الرسائل نهائيًا</string>
+
+    <!-- Delete-contact confirmation (iOS wording) -->
+    <string name="contact_list_delete_contact_title">حذف جهة الاتصال</string>
+    <string name="contact_list_delete_contact_message">سيؤدي هذا إلى حذف جهة الاتصال هذه وكل الرسائل المرتبطة بها نهائيًا.</string>
+
+    <!-- Reset relay access -->
+    <string name="contact_list_reset_relay_title">هل تريد إعادة تعيين الوصول إلى المُرحّل؟</string>
+    <string name="contact_list_reset_relay_message">سيحصل Rún على مفاتيح وصول جديدة لهذه المحادثة من المُرحّل. تبقى رسائلك وسجلّك وجهة الاتصال هذه كما هي تمامًا، ولا يحتاج %1$s إلى فعل أي شيء.\n\nافعل هذا إذا كنت تعتقد أن شخصًا آخر أمسك بهاتفك وهو غير مقفل. لا يُلغي هذا أي شيء قرأه ذلك الشخص بالفعل — وإذا كان الهاتف قد أُخذ فعلًا، فالحل الأسلم يبقى حذف جهة الاتصال هذه والاقتران من جديد شخصيًا.</string>
+    <string name="contact_list_reset_button">إعادة تعيين</string>
+    <string name="contact_list_reset_relay_success">تمت إعادة تعيين الوصول إلى المُرحّل.</string>
+    <string name="contact_list_reset_relay_failure">تعذّر الوصول إلى المُرحّل. سيكمل Rún هذا بنفسه.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">أنت المشرف. بعد مغادرتك، لن يستطيع أحد تغيير قائمة الأعضاء.</string>
+
+    <!-- Leave-group (iOS-only wording) -->
+    <string name="contact_list_leave_group_admin_message_ios">أنت مشرف المجموعة. افتح المجموعة، وانقر على زر المعلومات، واختر مشرفًا جديدًا — بعدها يمكنك المغادرة.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only) -->
+    <string name="contact_list_block_contact_title">حظر جهة الاتصال</string>
+    <string name="contact_list_block_contact_message">لن تستلم رسائل من %1$s بعد الآن، وستُزال جهة الاتصال هذه من قائمتك.</string>
+    <string name="contact_list_contact_blocked_title">تم حظر جهة الاتصال</string>
+    <string name="contact_list_post_block_report_message">هل تريد الإبلاغ عن جهة الاتصال هذه بسبب محتوى مرفوض أو إساءة؟ تُراجَع البلاغات ويُتَّخذ إجراء بشأنها خلال 24 ساعة. يُرسَل بلاغك من تطبيق البريد الإلكتروني الخاص بك، لذا سيُظهر لنا عنوان بريدك الإلكتروني — وتُخزَّن المسودة في ذلك التطبيق، خارج Rún، حيث لن تُمحى إذا محوت Rún.</string>
+    <string name="contact_list_block_shared_groups_title">المجموعات المشتركة</string>
+    <string name="contact_list_block_shared_groups_message">لا يزال %1$s عضوًا في مجموعة تشترك فيها معه. الحظر لا يزيله منها — سيظل يتلقى رسائلك هناك عبر بقية الأعضاء. غادر مجموعة مشتركة أدناه، أو احظر %1$s على أي حال.</string>
+    <string name="contact_list_block_shared_groups_leave_button">غادر «%1$s»</string>
+    <string name="contact_list_block_shared_groups_anyway_button">احظر على أي حال</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">الذكرى</string>
+    <string name="contact_list_no_memory_yet">لا ذكرى بعد</string>
+    <string name="contact_list_add_memory_button">إضافة</string>
+    <string name="contact_list_edit_memory_button">تعديل</string>
+    <string name="contact_list_remove_memory_button">إزالة</string>
+    <string name="contact_list_new_name_button">اسم جديد</string>
+    <string name="contact_list_introduce_to_button">تقديم إلى…</string>
+    <string name="contact_list_reset_relay_in_progress">جارٍ إعادة تعيين الوصول إلى المُرحّل…</string>
+    <string name="contact_list_reset_relay_button">إعادة تعيين الوصول إلى المُرحّل</string>
+    <string name="contact_list_delete_contact_button">حذف جهة الاتصال</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">تذكير خاص بهوية جهة الاتصال هذه. لا يراه أحد سواك.</string>
+    <string name="contact_list_memory_placeholder_android">مثال: التقينا في مؤتمر عام 2025</string>
+    <string name="contact_list_memory_placeholder_ios">مثال: التقينا في مؤتمر عام 2025</string>
+    <string name="contact_list_memory_dialog_title">ذكرى شخصية</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">إعادة الاقتران مطلوبة</string>
+    <string name="contact_list_waiting_for_inbox">في انتظار صندوق وارد جهة الاتصال…</string>
+    <string name="contact_list_introduced_by">قدّمه %1$s</string>
+    <string name="contact_list_introduced">مُقدَّم</string>
+    <string name="contact_list_repair_chip">إعادة اقتران</string>
+    <string name="contact_list_unread_messages_description">رسائل غير مقروءة</string>
+    <string name="contact_list_group_admin_label">مجموعة · مشرف</string>
+    <string name="contact_list_group_label">مجموعة</string>
+
+    <!-- Stale re-pair banner. Arabic has six plural categories; the
+         exact-count categories (zero/one/two) use grammatical word forms
+         without the numeral. -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="zero">لا توجد جهات اتصال تحتاج إلى إعادة الاقتران.</item>
+        <item quantity="one">جهة اتصال واحدة تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
+        <item quantity="two">جهتا اتصال تحتاجان إلى إعادة الاقتران. انقر لإضافتهما من جديد.</item>
+        <item quantity="few">%1$d جهات اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
+        <item quantity="many">%1$d جهة اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
+        <item quantity="other">%1$d جهة اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
+    </plurals>
+    <string name="connect_log_title">سجل الاتصال</string>
+
+    <!-- About-info static box -->
+    <string name="about_info_version_label">الإصدار %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome -->
+    <string name="notif_settings_sound_and_alerts">الصوت والتنبيهات</string>
+    <string name="notif_settings_sound_hint">تصدر التنبيهات صوتًا مثل أي تطبيق مراسلة آخر. غيّرها أو أسكتها من إعدادات الإشعارات في iOS — لا يتجاوز Rún اختيارك أبدًا.</string>
+
+</resources>

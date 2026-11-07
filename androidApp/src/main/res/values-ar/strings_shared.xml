@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic (ar) translation of values/strings_shared.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About carousel -->
+    <string name="about_welcome_title">مرحبًا بك في Rún</string>
+    <string name="about_welcome_body">مراسلة لا تترك شيئًا يُصادَر أو يُتعقَّب أو يُطلَب قضائيًا — لا حسابات، ولا أرقام، ولا أثر. الاسم من اللغة النوردية القديمة: «rún» — السرّ والمعرفة الخفية، وأصل كلمة «rune» (الحرف الروني)، وهو في الغيلية الأيرلندية والاسكتلندية الحبيب المؤتمَن على حفظ السر.</string>
+    <string name="about_tor_intro_title">موجَّه عبر Tor</string>
+    <string name="about_tor_intro_body">كل ما يرسله Rún يمرّ عبر Tor — شبكة عالمية تمرّر حركة بياناتك عبر عدة محطات، فتُخفي عنوان IP الخاص بك وموقعك. حتى مُرحّل Rún نفسه لا يعرف من أنت ولا أين أنت، وRún لا يتصل بأي طريقة أخرى.</string>
+    <string name="about_tor_runestone_title">الأحمر يعني Tor</string>
+    <string name="about_tor_runestone_body">راقب حجر الرونات — اللون الأحمر يعني أنك على Tor. تنبض حلقته بقوة أكبر كلما اقتربت، وتثبت حمراء بمجرد أن يردّ المُرحّل، ثم يضيء حرف R.</string>
+    <string name="about_e2e_title">مشفّر من طرف إلى طرف</string>
+    <string name="about_e2e_body">كل رسالة مُحكمة الإغلاق بمفتاح لا يملكه سواك أنت وجهة اتصالك، ومع استمرار المحادثة يتقدّم هذا المفتاح خطوة بعد خطوة — فحتى لو انكشف مفتاح واحد تبقى البقية مُحكمة الإغلاق.</string>
+    <string name="about_relay_title">مُرحّل لا يستطيع القراءة</string>
+    <string name="about_relay_body">مُرحّل Rún بسيط عن قصد — لا حسابات، ولا شيء يمكن قراءته، مجرد كتل محشوّة في صناديق وارد مرقّمة يمرّرها كما هي، وحجمها بعد الحشو لا يكشف شيئًا عن محتواها. ولا يبقى شيء بعد التسليم — تُمحى الرسائل من صندوق الوارد عند قراءتها، ويُستردّ الصندوق نفسه بعد فترة طويلة من الصمت.</string>
+    <string name="about_relay_runestone_title">الرمز ᚱ الأبيض يعني المُرحّل</string>
+    <string name="about_relay_runestone_body">عندما يتوهّج الرمز ᚱ في وسطه باللون الأبيض، يكون Rún قد وصل إلى المُرحّل — ويمكن للرسائل أن تُرسَل وتصل. أما الأحمر من دون ᚱ الأبيض فيعني أن Tor يعمل لكن الوصول إلى المُرحّل لم يتحقق بعد.</string>
+    <string name="about_contacts_title">جهات اتصال تختارها بنفسك</string>
+    <string name="about_contacts_body">لا بريد إلكتروني ولا تسجيل — ولا يمكن لأي غريب إضافتك. تلتقيان شخصيًا ويمسح كل منكما رمز QR الخاص بالآخر. تحصل كل جهة اتصال على اسم رمزي عشوائي؛ وأضف ملاحظة خاصة لا يراها سواك، فلا يعرف أحد غيرك من تكون حقًا.</string>
+    <string name="about_referrals_title">تقديمات بالتزكية</string>
+    <string name="about_referrals_body">لا يوجد دليل بمن يستخدم Rún. بدلًا من ذلك، يمكن لشخص تثق به أصلًا أن يقدّمك إلى شخص يثق هو به — وأنت من يقرر القبول أو الرفض. الثقة تنتقل من شخص إلى شخص، ولا تمرّ أبدًا عبر خادم.</string>
+    <string name="about_groups_title">محادثات جماعية</string>
+    <string name="about_groups_body">المجموعة لا توجد إلا على هواتف أعضائها — لا حساب للمجموعة، ولا قائمة أعضاء، ولا شيء على المُرحّل يمكن مصادرته. تُرسَل كل رسالة سرًّا إلى كل عضو على حدة، فلا يعرف المُرحّل أبدًا اسم المجموعة ولا من فيها ولا كلمة مما يُقال. لكنه يرى رسالة واحدة تذهب إلى عدة صناديق وارد في آن واحد — وهذا يكفي ليعرف أن هناك مجموعة وكم صندوقًا بلغته، لكن ليس أبدًا لمن هي.</string>
+    <string name="about_vanish_title">الرسائل تتلاشى</string>
+    <string name="about_vanish_body">هذا هو «الحرق عند القراءة»: الرسائل تعيش في الذاكرة وحدها ولا تُكتب على القرص أبدًا. أغلق التطبيق أو غادر محادثة، فتختفي إلى الأبد.</string>
+    <string name="about_quiet_title">صامت افتراضيًا</string>
+    <string name="about_quiet_body">لا إعلانات ولا تحليلات ولا ملفات تعريف — أبدًا، ولا إشعارات بشكل افتراضي: لا يتصل Rún بمُرحّله، عبر Tor، إلا عندما تفتحه. يمكنك تفعيل التنبيهات الفورية إن شئت — وهي إيقاظ بلا محتوى عبر خدمة الإشعارات الفورية من Apple أو Google، أو عبر خدمة تثبّتها بنفسك، لا يكشف سوى توقيت تقريبي، لا الرسالة ولا مُرسلها — وتبقى معطّلة ما لم تشغّلها بنفسك.</string>
+    <string name="about_lockwipe_title">يقفل نفسه ويمحو بياناته</string>
+    <string name="about_lockwipe_body">عند تركه خاملًا أو إرساله إلى الخلفية، يقفل Rún نفسه — وتفتح قفله من جديد برمز PIN أو عبارة المرور. أما المحاولات الخاطئة الكثيرة، أو فترة طويلة من عدم الاستخدام، فتذهب أبعد من ذلك: يمحو المفاتيح وكل البيانات محوًا لا رجعة فيه. ومتى يحدث كل ذلك يحدده مستوى الحماية الذي تختاره.</string>
+    <string name="about_screen_privacy_title">خصوصية الشاشة</string>
+    <string name="about_screen_privacy_body_android">لقطات الشاشة وتسجيل الشاشة ومعاينة التطبيقات الأخيرة كلها محجوبة، فلا يتسرّب شيء إلى معرض الصور أو مبدّل التطبيقات.</string>
+    <string name="about_screen_privacy_body_ios">معاينة مبدّل التطبيقات وتسجيل الشاشة مُغطّيان. لا يستطيع iOS منع لقطة الشاشة اليدوية، فكن حذرًا في المحادثات الحساسة — وسيحذّرك Rún إذا التُقطت واحدة.</string>
+    <string name="about_forensic_title">آمن من التحليل الجنائي</string>
+    <string name="about_forensic_body">الهاتف المُصادَر لا يُسلّم شيئًا مفيدًا. كل شيء مخزّن مُحكم الإغلاق بواسطة SQLCipher، والمحو يمسح المفاتيح نفسها — فلا يبقى سوى ضجيج، بلا ذاكرة مؤقتة ولا بقايا. أما صعوبة الفتح فأنت من يختارها: «جيد» يعتمد على رمز PIN؛ و«آمن» يربط المفتاح بشريحة الأمان في هذا الهاتف خلف بصمتك أو وجهك؛ و«الحد الأقصى» يستبدل برمز PIN عبارةَ مرور لا يعرفها سواك — فيبقى الهاتف مغلقًا حتى لو نُسخ نسخًا كاملًا.</string>
+    <string name="about_ready_title">جاهز متى كنت جاهزًا</string>
+    <string name="about_ready_body">هذا هو Rún — هادئ وخاص وسرّه بيدك. أضف شخصًا وجهًا لوجه، وابدأ محادثة لا يراها أحد سواكما.</string>
+
+    <!-- Donate / Support modal -->
+    <string name="donate_appeal">لا إعلانات في Rún ولا مستثمرين، ولا يبيع بياناتك أبدًا. كل تبرع — كبيرًا كان أم صغيرًا — يساعد على إبقائه مجانيًا للجميع، إلى الأبد.</string>
+
+    <!-- Notification education carousel -->
+    <string name="notif_edu_vendor_title">تنتقل الإشعارات عبر خوادم %1$s. وهي لا تحتوي أبدًا على رسائلك — بل فقط على أن رسالة جديدة بانتظارك.</string>
+    <string name="notif_edu_vendor_deep">يرسل المُرحّل إشارة إيقاظ بلا محتوى عبر %1$s — بلا مرسل ولا نص ولا عدد — ولا يعرض Rún سوى تنبيه عام بعنوان «إشعار». ولا يُجلب شيء ولا يُفك تشفيره حتى تفتح Rún وتفتح القفل. وتعمل %3$s بالطريقة نفسها؛ ولا أحد من المزوّدَين أكثر خصوصية من الآخر.\n\nويعرف المُرحّل شيئًا أيضًا: تُسجَّل كل صناديق واردك تحت عنوان الإشعارات الفورية الوحيد الذي أصدرته %2$s لهذا الهاتف، فيستطيع المُرحّل معرفة المحادثات التي تتشارك جهازًا واحدًا. ومن يستطيع إجبار كل من %2$s والمُرحّل على الإفصاح قد يربطك بمحادثاتك. ولهذا يظل هذا الخيار متوقفًا حتى تُفعّله بنفسك.</string>
+    <string name="notif_edu_timing_title">لا تعرف %1$s سوى وقت وصول الرسائل إليك — لا من أرسلها ولا ما تقوله. ومع الوقت، تكفي هذه الطوابع الزمنية وحدها لتبيّن متى تتواصل.</string>
+    <string name="notif_edu_timing_deep">تنطلق إشارة إيقاظ في كل مرة تصلك فيها رسالة، فترى %1$s نمطًا متواصلًا — كم مرة، وفي أي ساعات — مرتبطًا بتثبيت Rún على هذا الهاتف. يخفي Tor هذا التوقيت عادةً؛ وتشغيل الإشعارات يقايض جزءًا منه بالتسليم الفوري.</string>
+    <string name="notif_edu_content_safe_title">لا تصل رسائلك إلى %1$s أبدًا. يجلبها Rún عبر Tor ويفكّ تشفيرها على هذا الهاتف فقط بعد أن تفتح القفل.</string>
+    <string name="notif_edu_content_safe_deep">لا تحمل إشارة الإيقاظ شيئًا ولا تطلق أي نشاط شبكي من تلقاء نفسها. تبقى رسائلك مشفّرة على المُرحّل حتى تفتح Rún، فيجلبها عبر Tor ويفكّ تشفيرها محليًا بالمفتاح المشتق من رمز PIN أو عبارة مرورك. لا تستلم %1$s أي بايت من رسائلك أبدًا ولا تخزّنه ولا تمرّره.</string>
+    <string name="notif_edu_switch_title">تشغيل الإشعارات</string>
+    <string name="notif_edu_switch_label">إشعارات فورية (عبر %1$s)</string>
+    <string name="notif_vendor_name_android">Google</string>
+    <string name="notif_vendor_name_ios">Apple</string>
+    <string name="notif_service_name_android">خدمة Firebase Cloud Messaging (FCM) من Google</string>
+    <string name="notif_service_name_ios">خدمة الإشعارات الفورية من Apple (APNs)</string>
+    <string name="notif_cross_ref_label_android">إشعارات iOS الفورية (APNs)</string>
+    <string name="notif_cross_ref_label_ios">إشعارات Android الفورية (FCM)</string>
+
+    <!-- UnifiedPush (Google-free) education carousel -->
+    <string name="notif_edu_up_distributor_title">لا يحتوي هذا الهاتف على خدمات Google، لذا يسلّم إشارة الإيقاظ تطبيق منفصل تختاره بنفسك — موزّع UnifiedPush مثل ntfy.</string>
+    <string name="notif_edu_up_distributor_deep">يبقي تطبيق الموزّع اتصالًا واحدًا مفتوحًا بخادم إشعارات ويسلّم كل إشارة إيقاظ إلى Rún. ولا يتغيّر شيء في رسائلك: الإشارة لا تحمل أي رسالة، وما زال Rún يجلب كل شيء ويفكّ تشفيره عبر Tor بعد أن تفتح القفل.</string>
+    <string name="notif_edu_up_parties_title">طرفان يعرفان متى يجري التواصل معك — تطبيق الموزّع وخادم الإشعارات التابع له — دون أن يعرفا من كتب ولا ماذا كتب. وتكفي هذه الطوابع الزمنية وحدها لتبيّن متى تتواصل.</string>
+    <string name="notif_edu_up_parties_deep">هذا طرف إضافي واحد مقارنة بنسخة Google. يرى الموزّع كل إشارة إيقاظ لأنه هو من يسلّمها؛ ويراها خادم الإشعارات لأنه يمرّرها، وعلى خادم عام يرى أيضًا عنوان IP لهذا الهاتف. ولا يرى أي منهما مرسلًا أو رسالة أو عددًا. يخفي Tor هذا التوقيت عادةً؛ والإشعارات تقايض جزءًا منه بالتسليم الفوري. وإذا شغّلت خادم إشعارات خاصًا بك، فالطرف الثاني هو أنت.</string>
+    <string name="notif_edu_up_content_safe_title">لا تصل رسائلك إلى الموزّع ولا إلى خادمه أبدًا. كل إشارة إيقاظ مشفّرة لهذا الهاتف ولا تحمل شيئًا؛ يجلب Rún رسائلك عبر Tor ويفكّ تشفيرها بعد أن تفتح القفل.</string>
+    <string name="notif_edu_up_content_safe_deep">كل إشارة إيقاظ مشفّرة إلى زوج مفاتيح لا يغادر هذا الهاتف أبدًا (Web Push، وفق RFC 8291)، فمن يعرف عنوان نقطة النهاية الخاصة بك لا يستطيع تزوير تنبيه جديد — ومع أن خادم الإشعارات الفورية قد يعيد إرسال إشارة سبق أن استلمتها، فإن Rún يحدّ من عدد المرات التي يمكن فيها لإشارة مكرّرة أن تُظهر الإشعار — وكل إشارة بالحجم الثابت نفسه. تبقى رسائلك مشفّرة على المُرحّل حتى تفتح Rún، فيجلبها عبر Tor ويفكّ تشفيرها محليًا بالمفتاح المشتق من رمز PIN أو عبارة مرورك.</string>
+
+    <!-- Protection level chooser -->
+    <string name="protection_title">اختر مستوى الحماية ضد هجمات التحليل الجنائي</string>
+    <string name="protection_empty_state">اختر مستوى للمتابعة. لن يُختار لك أي مستوى.</string>
+    <string name="protection_stop_reason_prefix">لا يمكن اختيار هذا المستوى.</string>
+    <string name="protection_tier_name_casual">جيد</string>
+    <string name="protection_tier_name_private">آمن</string>
+    <string name="protection_tier_name_maximum">الحد الأقصى</string>
+    <string name="protection_tier_tagline_casual">رمز PIN من ستة أرقام لفتح Rún. يمكن لأدوات التحليل الجنائي كسره بالقوة الغاشمة خلال ساعات، لذا يعتمد Rún اعتمادًا كاملًا على حماية الهاتف. على Android، تبقى اقتراحات لوحة المفاتيح والرموز التعبيرية مفعّلة، لذا قد تتعلّم لوحة المفاتيح كلمات تكتبها.</string>
+    <string name="protection_tier_tagline_private">رمز PIN من ستة أرقام، لكن مفتاح الخزنة مختوم داخل شريحة الأمان في الهاتف ولا يُطلَق إلا ببصمتك أو وجهك. الهاتف المُصادَر يقاوم هجمات القوة الغاشمة الجنائية حتى لو كُسر رمز دخوله. على Android، تبقى اقتراحات لوحة المفاتيح والرموز التعبيرية مفعّلة، لذا قد تتعلّم لوحة المفاتيح كلمات تكتبها.</string>
+    <string name="protection_tier_tagline_maximum">عبارة مرور طويلة بدلًا من رمز PIN — قوية بما يكفي حتى لا تستطيع أي أداة تحليل جنائي كسرها بالقوة الغاشمة، حتى من هاتف غير مقفل. تعمل لوحة المفاتيح في وضع كلمة المرور: لا يُتعلَّم أي شيء مما تكتبه ولا يُقترح، وعلى Android لا يتوفّر مفتاح الرموز التعبيرية.</string>
+    <string name="protection_forced_notice_title">لا يوجد في هاتفك %1$s</string>
+    <string name="protection_forced_notice_body">من دونه، تكون عبارة مرورك هي الشيء الوحيد بين رسائلك وأي شخص يمسك بهذا الهاتف. لذا يعمل Rún هنا على «الحد الأقصى».\n\nيطلب عبارة المرور تلك في كل مرة، ويقفل بعد 60 ثانية من الخمول، وعند فتح Rún في المرة التالية بعد 7 أيام من عدم الاستخدام يمحو كل شيء — نهائيًا.\n\nعيّن رمز دخول لهاتفك لاختيار مستوى ألطف.</string>
+    <string name="protection_device_lock_term_android">قفل شاشة</string>
+    <string name="protection_device_lock_term_ios">رمز دخول</string>
+    <string name="protection_stop_no_lock">لا يوجد في هاتفك %1$s، و«الحد الأقصى» وحده يستطيع حماية Rún هنا.</string>
+    <string name="protection_stop_no_chip">لا توجد في هذا الهاتف شريحة أمان.</string>
+    <string name="protection_stop_no_biometrics">المقاييس الحيوية غير متوفرة. أعدّ Face ID أو بصمة الإصبع.</string>
+
+    <!-- Conversation rune whisper vocabulary -->
+    <string name="runes_consulting">جارٍ استشارة الرونات…</string>
+    <string name="runes_whisper">الرونات تهمس</string>
+    <string name="runes_silent">الرونات صامتة</string>
+
+    <!-- Group departure notices -->
+    <string name="group_notice_left">غادر %1$s المجموعة</string>
+    <string name="group_notice_removed">تمت إزالة %1$s من المجموعة</string>
+    <string name="group_notice_member_fallback">أحد الأعضاء</string>
+    <string name="menu_terms_contact">الشروط والتواصل</string>
+    <string name="terms_contact_report_line">الإبلاغ عن محتوى مرفوض أو إساءة</string>
+    <string name="terms_contact_enforcement">تُراجَع البلاغات ويُتَّخذ إجراء بشأنها خلال 24 ساعة: يُحذف المحتوى المخالف ويُمنَع المستخدمون المسيئون.</string>
+
+</resources>

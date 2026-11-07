@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  German (de) translation of values/strings_contact_list.xml.
+  Contact-list screen: list, empty state, settings menu/sheet, update-nudge
+  modal, push-prompt dialog, referral dialogs, stale re-pair banner, blocked
+  contacts and the Tor/relay connect status line + stall hints.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints -->
+    <string name="connect_tor_phase">Verbindung zu Tor</string>
+    <string name="connect_relay_phase">Verbindung zum Relay</string>
+    <string name="connect_relay_first_time_hint">Die erste Verbindung kann einige Minuten dauern.</string>
+    <string name="connect_relay_slow_hint">Das Tor-Netzwerk kann manchmal langsam sein — das ist der Preis für vollständige Anonymität.</string>
+    <string name="connect_tor_stalled_hint">Verbindung läuft noch…\nDieses Netzwerk blockiert möglicherweise die private Verbindung. Versuch ein anderes WLAN oder mobile Daten — wir versuchen es weiter.</string>
+    <string name="connect_mint_stalled_hint">Verbindung läuft noch… Dieses Netzwerk blockiert möglicherweise die private Verbindung. Versuch ein anderes WLAN oder mobile Daten — wir versuchen es weiter.</string>
+    <string name="connect_relay_stalled">Das Relay ist weiterhin nicht erreichbar.</string>
+    <string name="connect_reconnect_button">Neu verbinden</string>
+
+    <!-- iOS-only relay/Tor hints -->
+    <string name="connect_relay_stalled_reopen_hint">Das Relay ist weiterhin nicht erreichbar.\nÖffne Rún neu, wenn das öfter passiert.</string>
+    <string name="connect_relay_relaunch_hint">Die sichere Verbindung lässt sich in dieser Sitzung nicht wiederherstellen.\nSchließe Rún und öffne es erneut, um dich neu zu verbinden.</string>
+    <string name="connect_tor_stalled_long_hint">Die Verbindung klappt weiterhin nicht.\nSchließe Rún vollständig und öffne es erneut — das startet eine neue private Verbindung.</string>
+    <string name="connect_tor_reboot_hint">Wenn Schließen und erneutes Öffnen nicht geholfen hat, starte dein iPhone neu.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">Passphrase ändern</string>
+    <string name="contact_list_change_pin">PIN-Code ändern</string>
+    <string name="contact_list_protection_level">Schutzstufe</string>
+    <string name="contact_list_notifications">Benachrichtigungen</string>
+    <string name="contact_list_push_notifications">Push-Benachrichtigungen</string>
+    <string name="contact_list_how_it_works">So funktioniert Rún</string>
+    <string name="contact_list_about">Über</string>
+    <string name="contact_list_blocked_contacts">Blockierte Kontakte</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">Möchtest du Push-Benachrichtigungen aktivieren?</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">Neue Version verfügbar</string>
+    <string name="nudge_later">Später</string>
+    <string name="nudge_open_play_store">Google Play öffnen</string>
+    <string name="nudge_open_app_store">App Store öffnen</string>
+
+    <!-- Referral / vouching (introduce + incoming offer) -->
+    <string name="referral_introduce_title">%1$s vorstellen…</string>
+    <string name="referral_connecting">Verbinden…</string>
+    <string name="referral_introduce_button">Vorstellen</string>
+    <string name="referral_introduce_button_count">Vorstellen (%1$d)</string>
+    <string name="referral_introduce_body">Wähle, wem du %1$s vorstellen möchtest. Stelle nur Menschen vor, die du kennst und denen du vertraust.</string>
+    <string name="referral_no_candidates">Keine weiteren Kontakte zum Vorstellen.</string>
+    <string name="referral_introduce_error">Noch nicht verbunden — versuch es gleich erneut.</string>
+    <string name="referral_offer_title">Verbindungsanfrage</string>
+    <string name="referral_offer_message">%1$s möchte dich „%2$s“ vorstellen. Bestätige, um die Person als Kontakt hinzuzufügen.</string>
+    <string name="referral_approve">Bestätigen</string>
+    <string name="referral_relayed_title">Vorstellung bestätigt</string>
+    <string name="referral_relayed_first">%1$s hat bestätigt, %2$s vorgestellt zu werden. Die Verbindungsdaten wurden weitergegeben. Sobald %2$s ebenfalls bestätigt, können die beiden einander schreiben.</string>
+    <string name="referral_relayed_complete_title">Vorstellung abgeschlossen</string>
+    <string name="referral_relayed_complete">%1$s und %2$s haben beide bestätigt. Jede Seite hat jetzt, was sie braucht, um die andere zu erreichen. Du bist an ihrem Gespräch nicht beteiligt und kannst es nicht mitlesen.</string>
+    <string name="referral_relayed_queued">%1$s hat bestätigt, %2$s vorgestellt zu werden. Rún konnte das Relay gerade nicht erreichen und gibt die Verbindungsdaten automatisch weiter, wenn du die App das nächste Mal öffnest.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">Gruppeneinladung</string>
+    <string name="contact_list_group_invite_join">Beitreten</string>
+    <string name="contact_list_group_invite_joining">Tritt bei…</string>
+    <string name="contact_list_group_invite_message">%1$s hat dich in die Gruppe „%2$s“ eingeladen.</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s hat dich zu „%2$s“ eingeladen, aber du hattest diese Gruppe zuvor unter einem ANDEREN Administrator. Tritt nur bei, wenn du darauf vertraust, dass %1$s über die Mitglieder dieser Gruppe bestimmt.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s hat dich zu „%2$s“ eingeladen, aber du hattest diese Gruppe zuvor unter einem ANDEREN Administrator (ursprünglich verwaltet von „%3$s“). Tritt nur bei, wenn du darauf vertraust, dass %1$s über die Mitglieder dieser Gruppe bestimmt.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">%1$s löschen?</string>
+    <string name="contact_list_delete_confirm_message">Alle Nachrichten werden endgültig vernichtet</string>
+
+    <!-- Delete-contact confirmation (iOS wording) -->
+    <string name="contact_list_delete_contact_title">Kontakt löschen</string>
+    <string name="contact_list_delete_contact_message">Dadurch werden dieser Kontakt und alle zugehörigen Nachrichten endgültig gelöscht.</string>
+
+    <!-- Reset relay access -->
+    <string name="contact_list_reset_relay_title">Relay-Zugang zurücksetzen?</string>
+    <string name="contact_list_reset_relay_message">Rún holt sich für diese Unterhaltung neue Zugangsschlüssel vom Relay. Deine Nachrichten, dein Verlauf und dieser Kontakt bleiben genau so, wie sie sind, und %1$s muss nichts tun.\n\nMach das, wenn du glaubst, dass jemand anderes dein Telefon in der Hand hatte, während es entsperrt war. Das macht nicht rückgängig, was diese Person bereits gelesen hat — und wenn das Telefon wirklich in fremden Händen war, bleibt der sicherste Weg, diesen Kontakt zu löschen und euch persönlich neu zu koppeln.</string>
+    <string name="contact_list_reset_button">Zurücksetzen</string>
+    <string name="contact_list_reset_relay_success">Relay-Zugang zurückgesetzt.</string>
+    <string name="contact_list_reset_relay_failure">Das Relay war nicht erreichbar. Rún schließt das von selbst ab.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">Du bist Admin. Nachdem du gegangen bist, kann niemand mehr die Mitgliederliste ändern.</string>
+
+    <!-- Leave-group (iOS-only wording) -->
+    <string name="contact_list_leave_group_admin_message_ios">Du bist Gruppen-Admin. Öffne die Gruppe, tippe auf die Info-Schaltfläche und wähle einen neuen Admin — dann kannst du gehen.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only) -->
+    <string name="contact_list_block_contact_title">Kontakt blockieren</string>
+    <string name="contact_list_block_contact_message">Du erhältst keine Nachrichten mehr von %1$s, und der Kontakt wird aus deiner Liste entfernt.</string>
+    <string name="contact_list_contact_blocked_title">Kontakt blockiert</string>
+    <string name="contact_list_post_block_report_message">Möchtest du diesen Kontakt wegen anstößiger Inhalte oder Missbrauch melden? Meldungen werden innerhalb von 24 Stunden geprüft und bearbeitet. Deine Meldung wird aus deiner eigenen E-Mail-App gesendet, wir sehen also deine E-Mail-Adresse — und der Entwurf wird von dieser App außerhalb von Rún gespeichert, wo er nicht gelöscht wird, wenn du alle Daten in Rún löschst.</string>
+    <string name="contact_list_block_shared_groups_title">Gemeinsame Gruppen</string>
+    <string name="contact_list_block_shared_groups_message">%1$s ist weiterhin Mitglied einer Gruppe, die ihr gemeinsam habt. Eine Blockierung entfernt die Person nicht daraus — sie bekommt deine Nachrichten dort weiterhin von allen anderen Mitgliedern. Verlasse unten eine gemeinsame Gruppe, oder blockiere %1$s trotzdem.</string>
+    <string name="contact_list_block_shared_groups_leave_button">„%1$s“ verlassen</string>
+    <string name="contact_list_block_shared_groups_anyway_button">Trotzdem blockieren</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">Erinnerung</string>
+    <string name="contact_list_no_memory_yet">Noch keine Erinnerung</string>
+    <string name="contact_list_add_memory_button">Hinzufügen</string>
+    <string name="contact_list_edit_memory_button">Bearbeiten</string>
+    <string name="contact_list_remove_memory_button">Entfernen</string>
+    <string name="contact_list_new_name_button">Neuer Name</string>
+    <string name="contact_list_introduce_to_button">Jemandem vorstellen…</string>
+    <string name="contact_list_reset_relay_in_progress">Relay-Zugang wird zurückgesetzt…</string>
+    <string name="contact_list_reset_relay_button">Relay-Zugang zurücksetzen</string>
+    <string name="contact_list_delete_contact_button">Kontakt löschen</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">Eine private Notiz dazu, wer dieser Kontakt ist. Nur du kannst sie sehen.</string>
+    <string name="contact_list_memory_placeholder_android">z. B. Auf der Konferenz 2025 getroffen</string>
+    <string name="contact_list_memory_placeholder_ios">z. B. Auf der Konferenz 2025 getroffen</string>
+    <string name="contact_list_memory_dialog_title">Persönliche Erinnerung</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">Neu koppeln nötig</string>
+    <string name="contact_list_waiting_for_inbox">Warten auf das Postfach…</string>
+    <string name="contact_list_introduced_by">Vorgestellt von %1$s</string>
+    <string name="contact_list_introduced">Vorgestellt</string>
+    <string name="contact_list_repair_chip">Neu koppeln</string>
+    <string name="contact_list_unread_messages_description">Ungelesene Nachrichten</string>
+    <string name="contact_list_group_admin_label">Gruppe · Admin</string>
+    <string name="contact_list_group_label">Gruppe</string>
+
+    <!-- Stale re-pair banner -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d Kontakt muss neu gekoppelt werden. Tippe, um ihn erneut hinzuzufügen.</item>
+        <item quantity="other">%1$d Kontakte müssen neu gekoppelt werden. Tippe, um sie erneut hinzuzufügen.</item>
+    </plurals>
+    <string name="connect_log_title">Verbindungsprotokoll</string>
+
+    <!-- About-info static box -->
+    <string name="about_info_version_label">Version %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome -->
+    <string name="notif_settings_sound_and_alerts">Ton &amp; Hinweise</string>
+    <string name="notif_settings_sound_hint">Hinweise klingen wie bei jedem anderen Messenger. Du kannst sie in den Benachrichtigungseinstellungen von iOS ändern oder stummschalten — Rún überschreibt deine Wahl nie.</string>
+
+</resources>

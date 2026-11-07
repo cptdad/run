@@ -1,0 +1,123 @@
+name: codeql
+
+# CodeQL code scanning (open-source plan §5, 2026-11-05). Two analyses:
+#   java-kotlin — manual build mode (Kotlin has no build-free extractor), using
+#                 the same JDK + SDK + NDK/CMake provisioning as release-gates'
+#                 unit-tests job, then the debug Kotlin compile of both modules;
+#   swift       — manual build mode on the macOS image with the BUILDING.md
+#                 simulator command.
+# Both run only on the PUBLIC repository: uploading results needs code scanning,
+# which GitHub enables for public repositories at no cost and for private ones
+# only with Advanced Security. Actions pinned to commit SHAs like release-gates.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '17 4 * * 1'   # Mondays 04:17 UTC — catches new CodeQL queries
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  java-kotlin:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.private }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Gradle wrapper launcher integrity
+        run: scripts/verify-gradle-wrapper.sh
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Accept Android SDK licences
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || { echo "✗ sdkmanager not found at $SDKMANAGER"; exit 1; }
+          set +e
+          yes | "$SDKMANAGER" --licenses > /dev/null
+          rc=${PIPESTATUS[1]}
+          set -e
+          [ "$rc" -eq 0 ] || { echo "✗ sdkmanager --licenses failed (exit $rc)"; exit "$rc"; }
+
+      # Same pins as release-gates.yml — keep the two in lockstep.
+      - name: Install NDK r30 + CMake 4.4.5 + ninja
+        run: |
+          set -euo pipefail
+          NDK_VERSION=30.0.16248370
+          CMAKE_VERSION=4.4.5
+          CMAKE_SHA256=ed85135c5a5135b45e50423cb406dea04ca3338da0b8ef3c9ede963559680be0
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;$NDK_VERSION" > /dev/null
+          echo "RUN_NDK_PATH=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+          sudo apt-get install -y -qq ninja-build > /dev/null
+          CMAKE_DIR="$RUNNER_TEMP/cmake-$CMAKE_VERSION"
+          curl -fsSLo "$RUNNER_TEMP/cmake.tgz" \
+            "https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.tar.gz"
+          echo "$CMAKE_SHA256  $RUNNER_TEMP/cmake.tgz" | sha256sum -c -
+          mkdir -p "$CMAKE_DIR"
+          tar xzf "$RUNNER_TEMP/cmake.tgz" -C "$CMAKE_DIR" --strip-components=1
+          ln -s "$(command -v ninja)" "$CMAKE_DIR/bin/ninja"
+          echo "cmake.dir=$CMAKE_DIR" >> local.properties
+
+      # codeql-action pinned to the commit of release codeql-bundle-v2.27.4.
+      - uses: github/codeql-action/init@52cf1852265d99e9bea071b03366fc777a602909
+        with:
+          languages: java-kotlin
+          build-mode: manual
+
+      - name: Compile (debug Kotlin, both modules)
+        run: |
+          ./gradlew --no-daemon \
+            :shared:compileDebugKotlinAndroid \
+            :androidApp:compileDebugKotlin
+
+      - uses: github/codeql-action/analyze@52cf1852265d99e9bea071b03366fc777a602909
+        with:
+          category: /language:java-kotlin
+
+  swift:
+    runs-on: macos-26
+    if: ${{ !github.event.repository.private }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Select JDK 17 and point Gradle at the image's Android SDK
+        run: |
+          set -euo pipefail
+          echo "JAVA_HOME=$JAVA_HOME_17_arm64" >> "$GITHUB_ENV"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - uses: github/codeql-action/init@52cf1852265d99e9bea071b03366fc777a602909
+        with:
+          languages: swift
+          build-mode: manual
+
+      - name: Build for the iOS Simulator (no signing)
+        run: |
+          xcodebuild build -project iosApp/iosApp.xcodeproj -scheme Run \
+            -destination 'generic/platform=iOS Simulator' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" | tail -n 60
+          test "${PIPESTATUS[0]}" -eq 0
+
+      - uses: github/codeql-action/analyze@52cf1852265d99e9bea071b03366fc777a602909
+        with:
+          category: /language:swift

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spanish (es) translation of values/strings_protection.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser -->
+    <string name="protection_pick_a_level">Elige un nivel para continuar</string>
+    <string name="protection_apply_button">Aplicar</string>
+    <string name="protection_level_accessibility_label">Nivel de protección %1$s</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">Seguridad base del dispositivo</string>
+    <string name="protection_device_panel_detected_label">DETECTADO</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Base del dispositivo · AFU</string>
+
+    <!-- Settings apply flow -->
+    <string name="protection_downgrade_title">¿Reducir tu protección?</string>
+    <string name="protection_downgrade_message_android">Cambiar a %1$s hace que tu teléfono sea más fácil de forzar si te lo quitan. ¿Continuar?</string>
+    <string name="protection_downgrade_message_ios">Cambiar a %1$s hace que tu teléfono sea más fácil de forzar si te lo quitan.</string>
+    <string name="protection_downgrade_keep">Mantener el actual</string>
+    <string name="protection_downgrade_reduce">Reducir</string>
+    <string name="protection_persist_failed_title">No se ha podido guardar ese nivel</string>
+    <string name="protection_persist_failed_message">No se ha cambiado nada: la clave del dispositivo estaba ocupada. Inténtalo de nuevo.</string>
+    <string name="protection_lever_b_failed_message">Tu teléfono no ha confirmado la clave de hardware, así que tu caja fuerte queda con un nivel de protección más bajo del que elegiste. Puedes volver a intentarlo desde Ajustes.</string>
+    <string name="protection_lever_b_reharden_notice">Tu clave de protección necesita una actualización. Desactiva y vuelve a activar Seguro para reforzarla.</string>
+    <string name="protection_enabling_title">Asegurando tu caja fuerte…</string>
+    <string name="protection_enabling_body_android">Puede que tu teléfono te pida confirmar con su bloqueo de pantalla.</string>
+    <string name="protection_enabling_body_ios">Puede que tu teléfono te pida confirmar con Face ID o con su código.</string>
+    <string name="protection_forced_explainer_intro">Sin él, el propio teléfono no puede proteger las claves de Rún, así que aquí Rún necesita su protección más fuerte. Dos formas de seguir:</string>
+    <string name="protection_forced_explainer_cta_title_android">Configura un bloqueo de pantalla</string>
+    <string name="protection_forced_explainer_cta_body_android">Vale un PIN, un patrón, una contraseña o una huella. Con cualquiera de ellos tendrás disponibles todos los niveles de protección.</string>
+    <string name="protection_forced_open_settings_button">Abrir ajustes de bloqueo de pantalla</string>
+    <string name="protection_forced_explainer_outro_android">O crea ahora una frase de contraseña aquí abajo: Máximo bloquea Rún por sí mismo, sin necesidad de bloqueo de pantalla. Con cuatro o cinco palabras al azar tendrás una fuerte.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Configura un código de dispositivo</string>
+    <string name="protection_forced_explainer_cta_body_ios">Abre Ajustes → Face ID y código → Activar código y vuelve a Rún. Con un código tendrás disponibles todos los niveles de protección.</string>
+    <string name="protection_forced_explainer_outro_ios">O crea ahora una frase de contraseña aquí abajo: Máximo bloquea Rún por sí mismo, sin necesidad de código de dispositivo. Con cuatro o cinco palabras al azar tendrás una fuerte.</string>
+
+    <!-- Post-unlock migration screen -->
+    <string name="protection_migration_finish_maximum">%1$s necesita una frase de contraseña, y esta pantalla no la configura, así que tu caja fuerte se queda en %2$s por ahora. Para terminar, abre Ajustes › Nivel de protección y elige %1$s otra vez: eso configura tu frase de contraseña y aplica sus tiempos.</string>
+    <string name="protection_migration_finish_private">Aquí no hemos podido activar el bloqueo por hardware de %1$s, así que tu caja fuerte se queda en %2$s por ahora. Para terminar, abre Ajustes › Nivel de protección y elige %1$s otra vez: eso activa el bloqueo por hardware y aplica sus tiempos.</string>
+    <string name="protection_migration_finish_same">Los tiempos de %1$s ya están aplicados. Para terminar de activar su desbloqueo más fuerte, abre Ajustes › Nivel de protección.</string>
+    <string name="protection_migration_almost_there_title">Ya casi está</string>
+
+    <!-- Recovery code display -->
+    <string name="protection_recovery_code_title">Tu código de recuperación</string>
+    <string name="protection_recovery_code_body_android">Apúntalo y guárdalo en un sitio seguro, lejos del teléfono. Si tu huella o el código de tu dispositivo cambian y te dejan fuera, este código junto con tu PIN restaura tus mensajes. No podemos volver a mostrártelo.</string>
+    <string name="protection_recovery_code_body_ios">Apúntalo y guárdalo en un sitio seguro, lejos del teléfono. Si tu Face ID o el código de tu dispositivo cambian y te dejan fuera, este código junto con tu PIN restaura tus mensajes. No podemos volver a mostrártelo.</string>
+    <string name="protection_recovery_ack_label">Lo he apuntado</string>
+    <string name="protection_recovery_ack_hint_android">Marca “Lo he apuntado” para continuar.</string>
+    <string name="protection_recovery_ack_hint_ios">Activa “Lo he apuntado” para continuar.</string>
+
+    <!-- Recovery code entry -->
+    <string name="protection_recovery_entry_title">Recupera con tu código</string>
+    <string name="protection_recovery_entry_subtitle">Introduce el código de recuperación que guardaste y tu %1$s. Esto restaura tus mensajes. Si este teléfono todavía puede usar el bloqueo por hardware, se vuelve a activar con este mismo código, así que guárdalo en un lugar seguro.</string>
+    <string name="protection_recovery_code_placeholder">Código de recuperación</string>
+    <string name="protection_recovery_wrong_credential">No coinciden. Revisa el código de recuperación y tu %1$s, y vuelve a intentarlo.</string>
+    <string name="protection_recovery_generic_error">Ahora mismo no se ha podido recuperar: no hay ningún código de recuperación guardado o la clave del dispositivo está ocupada. Inténtalo de nuevo.</string>
+    <string name="protection_recovery_attempt_record_failed">No se ha podido registrar el intento: la clave del dispositivo está ocupada. Inténtalo de nuevo.</string>
+    <string name="protection_recovery_button_recovering">Recuperando…</string>
+    <string name="protection_recovery_button_recover">Recuperar</string>
+
+    <!-- Credential-type vocabulary -->
+    <string name="protection_credential_type_passphrase">frase de contraseña</string>
+    <string name="protection_credential_type_pin">PIN</string>
+
+</resources>

@@ -1,0 +1,364 @@
+#!/bin/sh
+# Pre-push hook: validate builds before pushing.
+# Install with: git config core.hooksPath .githooks
+
+set -e
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# FIRST: the Gradle wrapper launcher. Everything below this line ends
+# up running it — the iOS build check invokes gradlew through an Xcode build
+# phase, and the deploy stage runs ./gradlew directly — so verify the code that
+# executes before executing it.
+echo "=== Pre-push: Gradle wrapper launcher integrity ==="
+"$REPO_ROOT/scripts/verify-gradle-wrapper.sh"
+
+echo ""
+echo "=== Pre-push: build prerequisite checks ==="
+"$REPO_ROOT/iosApp/ci_scripts/test_build_prerequisites.sh"
+
+echo ""
+echo "=== Pre-push: gate canaries (the gates fail on planted violations; each < 3 s) ==="
+# BEFORE the source gates below: a gate that stays green on a planted violation is broken, and
+# its later "OK" would be meaningless. Also canaries the export identifier gate and the shared
+# checksum library behind the integrity gates.
+"$REPO_ROOT/scripts/test-source-gates.sh"
+"$REPO_ROOT/scripts/test-checksum-verify.sh"
+# Not shipped in the public snapshot (it plants the gate's own canary strings), so skip when absent.
+if [ -f "$REPO_ROOT/scripts/test-export-gate.sh" ]; then "$REPO_ROOT/scripts/test-export-gate.sh"; fi
+
+echo ""
+echo "=== Pre-push: network-API source guard (DNS-leak) ==="
+"$REPO_ROOT/scripts/check-network-api-usage.sh"
+
+echo ""
+echo "=== Pre-push: release-logging source guard ==="
+"$REPO_ROOT/scripts/check-logging-gated.sh"
+
+echo ""
+echo "=== Pre-push: debug-hook gating guard (release cleanliness) ==="
+"$REPO_ROOT/scripts/verify-release-clean.sh"
+
+echo ""
+echo "=== Pre-push: security-dependency freshness gate ==="
+"$REPO_ROOT/scripts/security-deps-report.sh"
+
+echo ""
+echo "=== Pre-push: tor.xcframework binary integrity ==="
+"$REPO_ROOT/scripts/verify-tor-xcframework.sh"
+
+echo ""
+echo "=== Pre-push: Argon2 vendored-source integrity ==="
+"$REPO_ROOT/scripts/verify-argon2-src.sh"
+
+echo ""
+echo "=== Pre-push: release-artifact signer identity ==="
+# Wire the signer-identity gate into the pipeline instead of leaving it a
+# manual step. The release .aab/.apk is (re)built around a push, not before it,
+# so verify whatever release artifact is present — fail-closed on a wrong/
+# unsigned key — and skip (not fail) when none has been built yet.
+# This hook is NOT the authoritative artifact gate and
+# never could be — it inspects whatever artifact happens to sit in build/outputs
+# at push time (a STALE one, or none at all, in which case it SKIPS rather than
+# fails), and the push precedes the release .aab rebuild. The AUTHORITATIVE gate
+# is `fastlane android_release`, which now runs scripts/verify-release-artifact.sh
+# against the exact .aab it is about to hand to supply and aborts the lane on any
+# non-zero exit. This pass stays as early warning on a pre-built artifact.
+# ONE universal build (2026-08-04 flavor collapse): Play Store ships the
+# .aab (bundleRelease); direct distribution ships the .apk (assembleRelease).
+REL_ART="$(ls -t "$REPO_ROOT"/androidApp/build/outputs/bundle/release/*.aab \
+                 "$REPO_ROOT"/androidApp/build/outputs/apk/release/*.apk 2>/dev/null | head -1)"
+if [ -n "$REL_ART" ]; then
+  echo "verifying signer of $REL_ART"
+  "$REPO_ROOT/scripts/verify-release-artifact.sh" "$REL_ART"
+else
+  echo "  no release artifact built yet — skipping (rebuild+verify the .aab before upload)"
+fi
+
+# Prove the .aab gate is fail-closed against post-signing tampering
+# (self-skips when no signed .aab is present).
+"$REPO_ROOT/scripts/test-verify-release-artifact.sh"
+
+echo ""
+echo "=== Pre-push: l10n generated-output freshness (Android strings_*.xml -> iOS catalogs/Swift/Kotlin) ==="
+"$REPO_ROOT/scripts/verify-l10n-fresh.sh"
+
+echo ""
+echo "=== Pre-push: sync single-source runestone assets ==="
+# Fan the canonical assets/runestone/ PNGs out to both platforms' asset stores
+# BEFORE the iOS build below (xcodebuild reads Assets.xcassets, and does not run
+# the Android preBuild sync). Idempotent — a no-op when already in sync.
+"$REPO_ROOT/scripts/sync-runestone-assets.sh" || echo "  WARNING: runestone asset sync failed (continuing)"
+
+echo ""
+echo "=== Pre-push: iOS build check ==="
+if ! xcodebuild build \
+  -project "$REPO_ROOT/iosApp/iosApp.xcodeproj" \
+  -scheme Run \
+  -destination 'generic/platform=iOS Simulator' \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO \
+  -quiet 2>&1; then
+  echo "ERROR: iOS build failed. Push aborted."
+  exit 1
+fi
+
+echo "iOS build check passed."
+
+# ---------------------------------------------------------------------------
+# Auto-bump the unified version (patch / last digit) on every push.
+#
+# version.properties (repo root) is the single source of truth — Android reads
+# it at build time; we also mirror it into iosApp/iosApp/Info.plist here so iOS
+# stays in sync. Only the PATCH (third number) and the build number bump
+# automatically; MAJOR and MINOR are edited by hand in version.properties.
+#
+# A commit made in a pre-push hook is NOT part of the push in progress (git has
+# already resolved the refs) — it rides the NEXT push. So each push delivers
+# the version committed before it and stages the next bump; the shipped version
+# still increments by one per push. (Your branch sits one commit ahead of the
+# remote between pushes — that's the staged bump.)
+#
+# Best-effort: a failure here warns but never blocks the push.
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== Pre-push: auto-bump patch version ==="
+# A remote with multiple push URLs (this repo pushes to GitHub + a second remote) invokes
+# the pre-push hook ONCE PER URL. Without a guard the bump would fire twice per
+# `git push`. All per-URL invocations share the same parent (the `git push`
+# process), so dedupe on $PPID: only the first invocation of a given push bumps.
+BUMP_LOCK="$REPO_ROOT/.git/last-push-bump-ppid"
+if [ "$(cat "$BUMP_LOCK" 2>/dev/null)" = "$PPID" ]; then
+  echo "  already bumped for this push (multi-URL remote) — skipping"
+  exit 0
+fi
+echo "$PPID" > "$BUMP_LOCK" 2>/dev/null || true
+(
+  set +e
+  VERSION_FILE="$REPO_ROOT/version.properties"
+  INFO_PLIST="$REPO_ROOT/iosApp/iosApp/Info.plist"
+  [ -f "$VERSION_FILE" ] || { echo "  no version.properties — skipping"; exit 0; }
+
+  name=$(sed -n 's/^versionName=//p' "$VERSION_FILE" | tr -d '[:space:]')
+  code=$(sed -n 's/^versionCode=//p' "$VERSION_FILE" | tr -d '[:space:]')
+  case "$name" in *.*.*) : ;; *) echo "  versionName '$name' is not major.minor.patch — skipping"; exit 0 ;; esac
+  major=${name%%.*}; rest=${name#*.}; minor=${rest%%.*}; patch=${rest#*.}
+  case "$patch" in ''|*[!0-9]*) echo "  non-numeric patch '$patch' — skipping"; exit 0 ;; esac
+  case "$code" in ''|*[!0-9]*) code=0 ;; esac
+
+  newname="$major.$minor.$((patch + 1))"
+  newcode=$((code + 1))
+
+  tmp=$(mktemp) || exit 0
+  sed -E "s/^versionName=.*/versionName=$newname/; s/^versionCode=.*/versionCode=$newcode/" \
+    "$VERSION_FILE" > "$tmp" && mv "$tmp" "$VERSION_FILE"
+
+  if [ -x /usr/libexec/PlistBuddy ] && [ -f "$INFO_PLIST" ]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $newname" "$INFO_PLIST"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $newcode" "$INFO_PLIST"
+  fi
+
+  # Commit ONLY the two version files. `git add` +
+  # a bare `git commit` swept whatever else happened to be staged into the
+  # "chore: bump version" commit — that is how the 2026-07-19 security batch
+  # ended up inside an unrelated art commit (92fabf7), and how a gitleaks-
+  # blocked commit could be mislabeled "nothing to commit". --only stages and
+  # commits exactly these paths and leaves the rest of the index untouched.
+  # The Play changelogs are named by versionCode (gen-store-metadata.py writes
+  # fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt), so the
+  # bump above invalidates the committed set: the l10n gate's
+  # gen-store-metadata --check fails on the SECOND push URL (which sees the
+  # bumped versionCode) with "changelogs/<newcode>.txt: missing" (observed
+  # 2026-09-03, push to GitHub rejected after the LAN push had succeeded).
+  # Regenerate and ship exactly those files inside the bump commit — nothing
+  # else the generator touches depends on the version, so restrict to
+  # <newcode>.txt (same --only discipline as the version-file commit above).
+  CHANGELOGS=""
+  if command -v python3 >/dev/null 2>&1 \
+     && (cd "$REPO_ROOT" && python3 scripts/l10n/gen-store-metadata.py >/dev/null 2>&1); then
+    for f in "$REPO_ROOT"/fastlane/metadata/android/*/changelogs/"$newcode".txt; do
+      [ -f "$f" ] && CHANGELOGS="$CHANGELOGS $f"
+    done
+    # shellcheck disable=SC2086
+    [ -n "$CHANGELOGS" ] && git add -- $CHANGELOGS
+  else
+    echo "  WARNING: gen-store-metadata.py failed — Play changelogs for $newcode not regenerated"
+  fi
+
+  # shellcheck disable=SC2086
+  if [ -f "$INFO_PLIST" ]; then
+    git commit -q --only "$VERSION_FILE" "$INFO_PLIST" $CHANGELOGS \
+      -m "chore: bump version to $newname ($newcode)"
+  else
+    git commit -q --only "$VERSION_FILE" $CHANGELOGS \
+      -m "chore: bump version to $newname ($newcode)"
+  fi
+  if [ $? -eq 0 ]; then
+    echo "  Bumped to $newname ($newcode) — committed locally; ships on your NEXT push."
+  else
+    echo "  nothing to commit — version unchanged"
+  fi
+) || echo "  WARNING: version bump skipped (push continues)."
+
+# ---------------------------------------------------------------------------
+# Deploy to connected PHYSICAL devices on every push.
+# Best-effort by design: a missing device, locked phone, or
+# failed build WARNS but never blocks the push — pushing from a machine
+# without the bench devices must keep working. Runs once per push (we are
+# below the PPID dedupe guard, after the version bump, so the installed
+# build matches local HEAD).
+#
+# Side benefit: the iOS device build also refreshes iosApp/build/Run-device.app,
+# which the cross:multi e2e suite installs from — so the suite can no longer
+# run against a stale binary (the 2026-06-12 noReset trap).
+#
+# Devices are enumerated through the e2e device pool when node is available,
+# and any phone a running suite holds a LEASE on is skipped with a printed
+# reason — reinstalling under a live suite is that same stale-binary trap from
+# the other direction.
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== Pre-push: deploy to physical devices ==="
+(
+  set +e
+
+  # Local build number — read AFTER the bump above, so it matches what the
+  # builds below produce. Devices are only flashed when this is NEWER than
+  # what they run: deploy only newer versions.
+  LOCAL_CODE=$(sed -n 's/^versionCode=//p' "$REPO_ROOT/version.properties" | tr -d '[:space:]')
+  case "$LOCAL_CODE" in ''|*[!0-9]*) echo "  no readable versionCode — deploy skipped"; exit 0 ;; esac
+  echo "  local build: $LOCAL_CODE"
+
+  # --- device pool: enumeration + the hands-off list -------------------------
+  # The e2e device pool (e2e-tests/scripts/device-pool.mjs) knows two things
+  # `adb devices` / xctrace cannot tell us: which phones are in the bench
+  # allowlist (device-pool.json), and which ones a RUNNING e2e suite currently
+  # holds a LEASE on. Deploying onto a leased phone replaces the binary under a
+  # live suite — the same stale-binary/noReset trap this stage exists to prevent
+  # (see the comments at the top and in the iOS section), just from the other
+  # end. So: prefer the pool for enumeration, and NEVER touch a leased device.
+  # Best-effort like everything here — no node, no pool CLI, or an unreadable
+  # store just falls back to the raw adb/xctrace enumeration.
+  POOL_CLI="$REPO_ROOT/e2e-tests/scripts/device-pool.mjs"
+  POOL_OK=""
+  LEASED=""
+  if command -v node >/dev/null 2>&1 && [ -f "$POOL_CLI" ]; then
+    POOL_STATUS=$(node "$POOL_CLI" status --json 2>/dev/null)
+    if [ -n "$POOL_STATUS" ]; then
+      POOL_OK=1
+      # STALE = dead owner (reaped later), never a reason to hold back a deploy.
+      LEASED=$(printf '%s' "$POOL_STATUS" | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{let j;try{j=JSON.parse(s)}catch(e){return};for(const l of j.leases||[])if(l.state!=="STALE")console.log(l.udid+"="+l.suite)})')
+    fi
+  fi
+  if [ -z "$POOL_OK" ]; then
+    echo "  pool: unavailable — falling back to raw adb/xctrace enumeration (no lease check)"
+  elif [ -n "$LEASED" ]; then
+    echo "  pool: $(printf '%s\n' "$LEASED" | wc -l | tr -d ' ') device(s) held by a running e2e suite — those are skipped below"
+  fi
+
+  # Echoes the suite holding $1, empty when the device is free.
+  leased_by() { [ -n "$LEASED" ] && printf '%s\n' "$LEASED" | sed -n "s/^$1=//p" | head -1; }
+
+  # --- Android: install the debug APK on attached devices running < LOCAL_CODE ---
+  ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
+  if [ -x "$ADB" ]; then
+    ANDROID_SERIALS=""
+    [ -n "$POOL_OK" ] && ANDROID_SERIALS=$(node "$POOL_CLI" list --platform android --udids-only 2>/dev/null)
+    [ -z "$ANDROID_SERIALS" ] && ANDROID_SERIALS=$("$ADB" devices 2>/dev/null | awk 'NR>1 && $2=="device" {print $1}')
+    ANDROID_TARGETS=""
+    for s in $ANDROID_SERIALS; do
+      holder=$(leased_by "$s")
+      if [ -n "$holder" ]; then
+        echo "  Android: $s is LEASED by a running e2e suite ($holder) — not deploying (it would swap the binary under a live run)"
+        continue
+      fi
+      installed=$("$ADB" -s "$s" shell dumpsys package com.vg.run 2>/dev/null \
+        | sed -nE 's/.*versionCode=([0-9]+).*/\1/p' | head -1)
+      case "$installed" in ''|*[!0-9]*) installed=0 ;; esac   # not installed → deploy
+      if [ "$installed" -lt "$LOCAL_CODE" ]; then
+        ANDROID_TARGETS="$ANDROID_TARGETS $s"
+      else
+        echo "  Android: $s already at build $installed — skipping"
+      fi
+    done
+    if [ -n "$ANDROID_TARGETS" ]; then
+      echo "  Android: building debug APK..."
+      if (cd "$REPO_ROOT" && ./gradlew -q :androidApp:assembleDebug); then
+        APK="$REPO_ROOT/androidApp/build/outputs/apk/debug/androidApp-debug.apk"
+        for s in $ANDROID_TARGETS; do
+          if "$ADB" -s "$s" install -r "$APK" >/dev/null 2>&1; then
+            echo "  Android: installed build $LOCAL_CODE on $s"
+          else
+            echo "  WARNING: Android install FAILED on $s"
+          fi
+        done
+      else
+        echo "  WARNING: APK build failed — Android deploy skipped"
+      fi
+    elif [ -z "$ANDROID_SERIALS" ]; then
+      echo "  Android: no device attached — skipping"
+    fi
+  else
+    echo "  Android: adb not found — skipping"
+  fi
+
+  # --- iOS: device build + install on connected iPhones running < LOCAL_CODE ---
+  # Pool first (allowlisted phones only); otherwise the raw xctrace fallback —
+  # physical devices only: take the pre-Simulators section of xctrace's list
+  # and keep lines shaped "Name (os-version) (udid)" — the host Mac has no
+  # os-version parenthesis and drops out.
+  IOS_UDIDS=""
+  [ -n "$POOL_OK" ] && IOS_UDIDS=$(node "$POOL_CLI" list --platform ios --udids-only 2>/dev/null)
+  [ -z "$IOS_UDIDS" ] && IOS_UDIDS=$(xcrun xctrace list devices 2>/dev/null \
+    | sed -n '/^== Simulators/q;p' \
+    | sed -nE 's/.*\([0-9.]+\) \(([0-9A-Fa-f-]+)\)$/\1/p')
+  IOS_TARGETS=""
+  for u in $IOS_UDIDS; do
+    holder=$(leased_by "$u")
+    if [ -n "$holder" ]; then
+      echo "  iOS: $u is LEASED by a running e2e suite ($holder) — not deploying (it would swap the binary under a live run)"
+      continue
+    fi
+    installed=$(xcrun devicectl device info apps --device "$u" 2>/dev/null \
+      | awk '$2 == "com.vg.run" {print $4}' | head -1)
+    case "$installed" in ''|*[!0-9]*) installed=0 ;; esac     # not installed → deploy
+    if [ "$installed" -lt "$LOCAL_CODE" ]; then
+      IOS_TARGETS="$IOS_TARGETS $u"
+    else
+      echo "  iOS: $u already at build $installed — skipping"
+    fi
+  done
+  if [ -n "$IOS_TARGETS" ]; then
+    # DerivedData OUTSIDE /tmp: macOS reaps /tmp files older than 3 days,
+    # which corrupts DDPs (the 2026-06-12 stale-.pcm / gutted-WDA incident).
+    IOS_DDP="$HOME/Library/Caches/run-ios-device-ddp"
+    echo "  iOS: building device app..."
+    if xcodebuild build \
+        -project "$REPO_ROOT/iosApp/iosApp.xcodeproj" \
+        -scheme Run \
+        -configuration Debug \
+        -destination 'generic/platform=iOS' \
+        -derivedDataPath "$IOS_DDP" \
+        -allowProvisioningUpdates \
+        -quiet 2>&1; then
+      # Refresh the cross:multi suite's install source too — the suite can
+      # no longer run against a stale binary (the 2026-06-12 noReset trap).
+      rm -rf "$REPO_ROOT/iosApp/build/Run-device.app"
+      cp -R "$IOS_DDP/Build/Products/Debug-iphoneos/Run.app" \
+            "$REPO_ROOT/iosApp/build/Run-device.app"
+      for u in $IOS_TARGETS; do
+        if xcrun devicectl device install app --device "$u" \
+             "$REPO_ROOT/iosApp/build/Run-device.app" >/dev/null 2>&1; then
+          echo "  iOS: installed build $LOCAL_CODE on $u"
+        else
+          echo "  WARNING: iOS install FAILED on $u (device locked/untrusted?)"
+        fi
+      done
+    else
+      echo "  WARNING: iOS device build failed — iOS deploy skipped"
+    fi
+  elif [ -z "$IOS_UDIDS" ]; then
+    echo "  iOS: no physical device connected — skipping"
+  fi
+) || true
+echo "=== Pre-push: deploy stage done ==="

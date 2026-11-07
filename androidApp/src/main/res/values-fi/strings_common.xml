@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Finnish (fi) translation of values/strings_common.xml (human-reviewed 2026-09-03).
+  Generic UI vocabulary shared by every screen on BOTH platforms.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Peruuta</string>
+    <string name="common_close">Sulje</string>
+    <string name="common_done">Valmis</string>
+    <string name="common_back">Takaisin</string>
+    <string name="common_delete">Poista</string>
+    <string name="common_retry">Yritä uudelleen</string>
+    <string name="common_continue">Jatka</string>
+    <string name="common_copy">Kopioi</string>
+    <string name="common_copied">Kopioitu</string>
+    <string name="common_save">Tallenna</string>
+    <string name="common_yes">Kyllä</string>
+    <string name="common_no">Ei</string>
+    <string name="common_got_it">Selvä</string>
+    <string name="common_understood">Ymmärretty</string>
+    <string name="common_decline">Kieltäydy</string>
+    <string name="common_not_now">Ei nyt</string>
+    <string name="common_open">Avaa</string>
+    <string name="common_settings">Asetukset</string>
+    <string name="common_loading">Ladataan…</string>
+    <string name="common_message_placeholder">Viesti</string>
+    <string name="common_conversation_interrupted">Keskustelu keskeytyi</string>
+    <string name="common_screenshot_notice">%1$s saattoi ottaa kuvakaappauksen</string>
+    <string name="common_time_yesterday">Eilen %1$s</string>
+</resources>

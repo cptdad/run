@@ -1,0 +1,93 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+Thumbs.db
+/build
+/androidApp/build
+/shared/build
+/fuzz/build
+# Jazzer's GENERATED working corpus: machine-produced inputs it re-derives on
+# every `:fuzz:fuzz` run. The corpus that belongs in git is the hand-written
+# SEED corpus (fuzz/src/test/resources/**) plus any crash reproducer Jazzer
+# writes there — see fuzz/README.md.
+/fuzz/.cifuzz-corpus
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.apk
+*.aab
+*.hprof
+# Android signing material — NEVER commit (rotated 2026-06-01 after the old
+# key + passwords leaked via git history; see project memory). Keep local-only.
+keystore.properties
+*.jks
+*.keystore
+# relay.properties holds the relay .onion. It now comes from the environment
+# (RELAY_ONION_URL); a local relay.properties is an optional, gitignored dev
+# fallback (env var takes precedence). See relay.properties.example.
+relay.properties
+# Firebase client config (FCM vendor-push tier — notification-levels-plan.md
+# §2b). Client config, not a secret, but kept out of git the same way as
+# keystore.properties: present locally, absent on fresh clones/CI. The
+# google-services Gradle plugin is applied with missingGoogleServicesStrategy
+# = IGNORE plus a per-variant guard (androidApp/build.gradle.kts): RELEASE
+# builds fail loudly when the file is absent/invalid (never silently ship
+# without Firebase config); debug builds warn and continue (CI runs unit
+# suites without the file; such a debug APK just has FCM unconfigured).
+# Split by build type so debug resolves the DEV Firebase project and release
+# resolves PROD automatically (no manual swap): src/debug = dev,
+# src/release = prod.
+androidApp/src/*/google-services.json
+*.xcuserstate
+xcuserdata/
+/.idea/
+/.kotlin/
+/.claude/
+/iosApp/build/
+/iosApp/run/
+/run/
+/e2e-tests/node_modules/
+# package-lock.json is NOT ignored. Every
+# devDependency here uses a `^` range, so an ignored lockfile meant a fresh
+# clone resolved a completely unpinned Appium/WDIO toolchain — the one unpinned
+# surface in an otherwise checksum-pinned build (Gradle dependency verification,
+# vendored Argon2, pinned tor.xcframework), and one that gets device-level shell
+# access via `relaxedSecurity`. Commit the lockfile and install with `npm ci`.
+/e2e-tests/build/
+# Local test relay's crash-resume journal.
+/e2e-tests/.local-relay-state.json
+/e2e-tests/.local-relay-state.json.corrupt
+# Local-only security review notes and planning files. They describe findings
+# before they are fixed and must never be committed or pushed.
+SECURITY_AUDIT.md
+*-security-audit*.txt
+code-review*.txt
+SECURITY_REVIEW*.md
+notification-implementation-plan.txt
+docs/*-security-audit-prompt.txt
+
+# graphify knowledge-graph output (generated)
+graphify-out/
+
+# fastlane runtime artifacts (metadata trees ARE committed; these are not)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/*.p8
+fastlane/*service-account*.json
+fastlane/.env*
+
+# Device-extraction AFU test captures (security-tests/device-extraction/):
+# adb backups, memory/logcat dumps, screenshots, and search results all
+# contain real seeded PINs/passphrases/canary plaintext and must never be
+# committed. See security-tests/device-extraction/RUNBOOK.md.
+/security-tests/device-extraction/out/

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian (fa) translation of values/strings_contact_list.xml.
+  Contact-list screen: list, empty state, settings menu/sheet, update-nudge
+  modal, push-prompt dialog, referral dialogs, stale re-pair banner, blocked
+  contacts and the Tor/relay connect status line + stall hints.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Pre-connect relay status line + stall hints -->
+    <string name="connect_tor_phase">در حال اتصال به Tor</string>
+    <string name="connect_relay_phase">در حال اتصال به رله</string>
+    <string name="connect_relay_first_time_hint">اولین اتصال ممکن است چند دقیقه طول بکشد.</string>
+    <string name="connect_relay_slow_hint">شبکه Tor گاهی ممکن است کند باشد — این بهای گمنامی کامل است.</string>
+    <string name="connect_tor_stalled_hint">همچنان در حال اتصال…\nشاید این شبکه ارتباط خصوصی را مسدود می‌کند. یک وای‌فای دیگر یا اینترنت همراه را امتحان کنید — ما به تلاش ادامه می‌دهیم.</string>
+    <string name="connect_mint_stalled_hint">همچنان در حال اتصال… شاید این شبکه ارتباط خصوصی را مسدود می‌کند. یک وای‌فای دیگر یا اینترنت همراه را امتحان کنید — ما به تلاش ادامه می‌دهیم.</string>
+    <string name="connect_relay_stalled">هنوز نمی‌توانیم به رله برسیم.</string>
+    <string name="connect_reconnect_button">اتصال دوباره</string>
+
+    <!-- iOS-only relay/Tor hints -->
+    <string name="connect_relay_stalled_reopen_hint">هنوز نمی‌توانیم به رله برسیم.\nاگر این وضعیت ادامه داشت، Rún را دوباره باز کنید.</string>
+    <string name="connect_relay_relaunch_hint">اتصال امن در این نشست دیگر ترمیم نمی‌شود.\nRún را ببندید و دوباره باز کنید تا اتصال برقرار شود.</string>
+    <string name="connect_tor_stalled_long_hint">هنوز اتصال برقرار نمی‌شود.\nRún را کاملاً ببندید و دوباره باز کنید — این کار یک ارتباط خصوصی تازه آغاز می‌کند.</string>
+    <string name="connect_tor_reboot_hint">اگر بستن و باز کردن دوباره کمکی نکرد، iPhone خود را دوباره راه‌اندازی کنید.</string>
+
+    <!-- Settings menu / sheet (cogwheel) -->
+    <string name="contact_list_change_passphrase">تغییر عبارت عبور</string>
+    <string name="contact_list_change_pin">تغییر کد PIN</string>
+    <string name="contact_list_protection_level">سطح حفاظت</string>
+    <string name="contact_list_notifications">اعلان‌ها</string>
+    <string name="contact_list_push_notifications">اعلان‌های فوری</string>
+    <string name="contact_list_how_it_works">Rún چگونه کار می‌کند</string>
+    <string name="contact_list_about">درباره</string>
+    <string name="contact_list_blocked_contacts">مخاطبان مسدود</string>
+
+    <!-- First-open push-notification prompt -->
+    <string name="push_prompt_message">می‌خواهید اعلان‌های فوری را فعال کنید؟</string>
+
+    <!-- In-app update nudge -->
+    <string name="nudge_message">نسخهٔ جدیدی موجود است</string>
+    <string name="nudge_later">بعداً</string>
+    <string name="nudge_open_play_store">باز کردن Google Play</string>
+    <string name="nudge_open_app_store">باز کردن App Store</string>
+
+    <!-- Referral / vouching (introduce + incoming offer) -->
+    <string name="referral_introduce_title">معرفی %1$s به…</string>
+    <string name="referral_connecting">در حال اتصال…</string>
+    <string name="referral_introduce_button">معرفی</string>
+    <string name="referral_introduce_button_count">معرفی (%1$d)</string>
+    <string name="referral_introduce_body">انتخاب کنید %1$s را به چه کسانی معرفی کنید. فقط کسانی را معرفی کنید که می‌شناسید و به آن‌ها اعتماد دارید.</string>
+    <string name="referral_no_candidates">مخاطب دیگری برای معرفی نیست.</string>
+    <string name="referral_introduce_error">هنوز متصل نیستید — چند لحظهٔ دیگر دوباره تلاش کنید.</string>
+    <string name="referral_offer_title">درخواست ارتباط</string>
+    <string name="referral_offer_message">%1$s می‌خواهد شما را به «%2$s» معرفی کند. برای افزودن او به مخاطبان، تأیید کنید.</string>
+    <string name="referral_approve">تأیید</string>
+    <string name="referral_relayed_title">معرفی تأیید شد</string>
+    <string name="referral_relayed_first">%1$s معرفی به %2$s را تأیید کرد. اطلاعات اتصال او ارسال شد. به‌محض اینکه %2$s هم تأیید کند، می‌توانند به هم پیام بدهند.</string>
+    <string name="referral_relayed_complete_title">معرفی کامل شد</string>
+    <string name="referral_relayed_complete">هم %1$s و هم %2$s تأیید کردند. حالا هرکدام آنچه را برای رسیدن به دیگری لازم دارند در اختیار دارند. شما در گفت‌وگوی آن‌ها نقشی ندارید و نمی‌توانید آن را بخوانید.</string>
+    <string name="referral_relayed_queued">%1$s معرفی به %2$s را تأیید کرد. Rún همین حالا نتوانست به رله برسد و دفعهٔ بعد که برنامه را باز کنید، اطلاعات را به‌طور خودکار می‌فرستد.</string>
+
+    <!-- Group invite (GROUP-1 consent gate) -->
+    <string name="contact_list_group_invite_title">دعوت به گروه</string>
+    <string name="contact_list_group_invite_join">پیوستن</string>
+    <string name="contact_list_group_invite_joining">در حال پیوستن…</string>
+    <string name="contact_list_group_invite_message">%1$s شما را به گروه «%2$s» دعوت کرده است.</string>
+    <string name="contact_list_group_invite_mismatch">⚠️ %1$s شما را به «%2$s» دعوت کرده است، اما این گروه را قبلاً زیر نظر مدیر «دیگری» داشتید. فقط در صورتی بپیوندید که به %1$s برای کنترل عضویت این گروه اعتماد دارید.</string>
+    <string name="contact_list_group_invite_mismatch_with_prior">⚠️ %1$s شما را به «%2$s» دعوت کرده است، اما این گروه را قبلاً زیر نظر مدیر «دیگری» داشتید (در اصل با مدیریت «%3$s»). فقط در صورتی بپیوندید که به %1$s برای کنترل عضویت این گروه اعتماد دارید.</string>
+
+    <!-- Delete-contact confirmation (Android wording) -->
+    <string name="contact_list_delete_confirm_title">%1$s حذف شود؟</string>
+    <string name="contact_list_delete_confirm_message">همهٔ پیام‌ها برای همیشه از بین می‌روند</string>
+
+    <!-- Delete-contact confirmation (iOS wording) -->
+    <string name="contact_list_delete_contact_title">حذف مخاطب</string>
+    <string name="contact_list_delete_contact_message">این کار این مخاطب و همهٔ پیام‌های مرتبط با او را برای همیشه حذف می‌کند.</string>
+
+    <!-- Reset relay access -->
+    <string name="contact_list_reset_relay_title">بازنشانی دسترسی رله؟</string>
+    <string name="contact_list_reset_relay_message">Rún برای این گفتگو کلیدهای دسترسی تازه‌ای از رله می‌گیرد. پیام‌ها، تاریخچه و این مخاطب دقیقاً همان‌طور که هستند می‌مانند و %1$s لازم نیست کاری بکند.\n\nاگر فکر می‌کنید کس دیگری در حالی که قفل گوشی باز بوده آن را در دست داشته، این کار را انجام دهید. این کار چیزی را که او قبلاً خوانده پس نمی‌گیرد — و اگر گوشی واقعاً دست کسی بوده، امن‌ترین راه همچنان این است که این مخاطب را حذف کنید و دوباره حضوری جفت‌سازی کنید.</string>
+    <string name="contact_list_reset_button">بازنشانی</string>
+    <string name="contact_list_reset_relay_success">دسترسی رله بازنشانی شد.</string>
+    <string name="contact_list_reset_relay_failure">رله در دسترس نبود. Rún خودش این کار را کامل می‌کند.</string>
+
+    <!-- Leave-group confirmation (Android wording) -->
+    <string name="contact_list_leave_group_admin_message_android">شما مدیر هستید. پس از رفتن شما، هیچ‌کس نمی‌تواند فهرست اعضا را تغییر دهد.</string>
+
+    <!-- Leave-group (iOS-only wording) -->
+    <string name="contact_list_leave_group_admin_message_ios">شما مدیر گروه هستید. گروه را باز کنید، روی دکمهٔ اطلاعات ضربه بزنید و مدیر جدیدی انتخاب کنید — سپس می‌توانید بروید.</string>
+
+    <!-- Block / Report a contact (Guideline 1.2, iOS-only) -->
+    <string name="contact_list_block_contact_title">مسدود کردن مخاطب</string>
+    <string name="contact_list_block_contact_message">دیگر پیامی از %1$s دریافت نمی‌کنید و او از فهرست شما حذف می‌شود.</string>
+    <string name="contact_list_contact_blocked_title">مخاطب مسدود شد</string>
+    <string name="contact_list_post_block_report_message">می‌خواهید این مخاطب را به دلیل محتوای نامناسب یا آزار گزارش کنید؟ گزارش‌ها ظرف ۲۴ ساعت بررسی و رسیدگی می‌شوند. گزارش شما از برنامهٔ ایمیل خودتان ارسال می‌شود، بنابراین نشانی ایمیل شما را خواهیم دید — و پیش‌نویس در همان برنامه، بیرون از Rún، ذخیره می‌ماند؛ جایی که با پاک کردن Rún از بین نمی‌رود.</string>
+    <string name="contact_list_block_shared_groups_title">گروه‌های مشترک</string>
+    <string name="contact_list_block_shared_groups_message">%1$s هنوز عضو گروهی است که با او مشترک دارید. مسدود کردن، او را از آن گروه بیرون نمی‌کند — او همچنان پیام‌های شما را از طریق دیگر اعضا در آنجا دریافت خواهد کرد. یکی از گروه‌های مشترک را در پایین ترک کنید، یا %1$s را در هر صورت مسدود کنید.</string>
+    <string name="contact_list_block_shared_groups_leave_button">ترک «%1$s»</string>
+    <string name="contact_list_block_shared_groups_anyway_button">به هر حال مسدود کنید</string>
+
+    <!-- Long-press contact menu -->
+    <string name="contact_list_memory_label">یادآور</string>
+    <string name="contact_list_no_memory_yet">هنوز یادآوری ثبت نشده</string>
+    <string name="contact_list_add_memory_button">افزودن</string>
+    <string name="contact_list_edit_memory_button">ویرایش</string>
+    <string name="contact_list_remove_memory_button">برداشتن</string>
+    <string name="contact_list_new_name_button">نام جدید</string>
+    <string name="contact_list_introduce_to_button">معرفی به…</string>
+    <string name="contact_list_reset_relay_in_progress">در حال بازنشانی دسترسی رله…</string>
+    <string name="contact_list_reset_relay_button">بازنشانی دسترسی رله</string>
+    <string name="contact_list_delete_contact_button">حذف مخاطب</string>
+
+    <!-- Personal-memory (mnemonic) edit dialog -->
+    <string name="contact_list_memory_dialog_subtitle">یادآوری خصوصی از اینکه این مخاطب کیست. فقط شما آن را می‌بینید.</string>
+    <string name="contact_list_memory_placeholder_android">مثلاً در کنفرانس ۲۰۲۵ آشنا شدیم</string>
+    <string name="contact_list_memory_placeholder_ios">مثلاً در کنفرانس ۲۰۲۵ آشنا شدیم</string>
+    <string name="contact_list_memory_dialog_title">یادآور شخصی</string>
+
+    <!-- Contact row / group row -->
+    <string name="contact_list_repair_required">نیاز به جفت‌سازی دوباره</string>
+    <string name="contact_list_waiting_for_inbox">در انتظار صندوق ورودی او…</string>
+    <string name="contact_list_introduced_by">معرفی‌شده توسط %1$s</string>
+    <string name="contact_list_introduced">معرفی‌شده</string>
+    <string name="contact_list_repair_chip">جفت‌سازی دوباره</string>
+    <string name="contact_list_unread_messages_description">پیام‌های خوانده‌نشده</string>
+    <string name="contact_list_group_admin_label">گروه · مدیر</string>
+    <string name="contact_list_group_label">گروه</string>
+
+    <!-- Stale re-pair banner -->
+    <plurals name="contact_list_repair_banner">
+        <item quantity="one">%1$d مخاطب به جفت‌سازی دوباره نیاز دارد. برای افزودن دوباره ضربه بزنید.</item>
+        <item quantity="other">%1$d مخاطب به جفت‌سازی دوباره نیاز دارند. برای افزودن دوباره ضربه بزنید.</item>
+    </plurals>
+    <string name="connect_log_title">گزارش اتصال</string>
+
+    <!-- About-info static box -->
+    <string name="about_info_version_label">نسخهٔ %1$s (%2$s)</string>
+
+    <!-- Push-settings carousel chrome -->
+    <string name="notif_settings_sound_and_alerts">صدا و هشدارها</string>
+    <string name="notif_settings_sound_hint">هشدارها مثل هر پیام‌رسان دیگری صدا می‌دهند. می‌توانید آن‌ها را در تنظیمات اعلان iOS تغییر دهید یا بی‌صدا کنید — Rún هرگز انتخاب شما را نادیده نمی‌گیرد.</string>
+
+</resources>

@@ -1,0 +1,46 @@
+# Gradle wrapper LAUNCHER integrity record (build-assurance audit Q3).
+#
+# gradle/wrapper/gradle-wrapper.properties pins distributionSha256Sum — but the
+# jar that ENFORCES that pin, and the gradlew/gradlew.bat launchers that start
+# it, had no integrity record of their own: the only tracked executable code in
+# the repo without one, while iosApp/Frameworks/tor.xcframework and the vendored
+# Argon2 C sources both have one. This code runs with full developer privileges
+# on every Android build, every iOS build (an Xcode build phase invokes
+# ./gradlew) and every Xcode Cloud run — including on the machine that holds the
+# release keystore (kept outside the repo tree). A trojaned jar could simply skip
+# its own distribution-checksum check; a trojaned gradlew never invokes the jar
+# at all (same sink, sibling path).
+#
+# Checked by scripts/verify-gradle-wrapper.sh — wired into .githooks/pre-push and
+# the release-gates `source-gates` CI job (which runs BEFORE the unit-tests job
+# executes ./gradlew).
+#
+# Regenerate ONLY after a deliberate `gradle wrapper` upgrade:
+#   scripts/verify-gradle-wrapper.sh --update
+# (the comment header is preserved) and then RE-ANCHOR the jar line against
+# Gradle's published wrapper checksum before committing.
+#
+# ---------------------------------------------------------------------------
+# TRUST ANCHOR — the jar line is NOT trust-on-first-use. 76805e32… is the
+# checksum Gradle itself publishes for its wrapper jar; verified 2026-08-01
+# against BOTH of
+#   https://downloads.gradle.org/distributions/gradle-9.1.0-wrapper.jar.sha256
+#   https://downloads.gradle.org/distributions/gradle-9.0.0-wrapper.jar.sha256
+# (Gradle reuses one wrapper jar across a release line, so several versions
+# publish the same digest). The checked-in jar is therefore an unmodified,
+# officially published Gradle wrapper jar — not merely "unchanged since someone
+# committed it".
+#
+# NOTE the jar is from the 9.0/9.1 line while distributionUrl pins
+# gradle-9.3.1-bin.zip. That is normal and supported — the wrapper jar is
+# forward compatible and is NOT required to match the distribution it downloads
+# (Gradle 9.3.1 publishes b3a875dd…). Do not "fix" the mismatch by swapping in
+# the 9.3.1 jar without regenerating it via `gradle wrapper` and re-anchoring.
+#
+# gradlew / gradlew.bat have no upstream-published checksum, so those two lines
+# are repo-pinned (tamper-evident from this record forward), not
+# upstream-anchored. Paths are relative to the repo root.
+# ---------------------------------------------------------------------------
+7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d  gradle/wrapper/gradle-wrapper.jar
+a5a5c199ba02189ae8c46a334223371a20599d9c298ef65e7540ede4a3f72d59  gradlew
+d539676c48b596afda64c963ec8f7ee56c7b3fe7e3b81d1dbe2d1a1e3dd9e9f8  gradlew.bat

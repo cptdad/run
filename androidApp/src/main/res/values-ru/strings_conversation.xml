@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_conversation.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="conversation_pending_banner">Ожидание почтового ящика этого контакта — вы сможете отправить сообщение через мгновение.</string>
+    <string name="conversation_alias_unknown">Неизвестный</string>
+    <string name="conversation_contact_fallback">Контакт</string>
+    <string name="conversation_fs_stalled_title">Прямая секретность ещё не включилась</string>
+    <string name="conversation_fs_stalled_body">Сообщения этому контакту по-прежнему зашифрованы, но они пока не получают дополнительную защиту, которая сохраняет прежние сообщения в безопасности, если ключ будет раскрыт позже. Обычно это проходит само, как только контакт ответит. Если проблема сохраняется, удалите контакт и добавьте его заново.</string>
+    <string name="conversation_ratchet_refused_body">Не удалось установить защищённый канал с этим контактом. Сообщения не отправляются. Удалите контакт и выполните сопряжение заново.</string>
+    <string name="conversation_report_confirm_title">Пожаловаться на контакт</string>
+    <string name="conversation_report_confirm_message">Жалобы рассматриваются, и меры по ним принимаются в течение 24 часов. Жалоба отправляется из вашего собственного почтового приложения, поэтому мы увидим ваш адрес электронной почты — а черновик остаётся в этом приложении, вне Rún, и не будет удалён, если вы сотрёте данные Rún.</string>
+    <string name="conversation_report_confirm_button">Пожаловаться в Rún</string>
+    <string name="conversation_report_action">Пожаловаться</string>
+    <string name="conversation_block_action">Заблокировать</string>
+    <string name="conversation_screenshot_warning_banner">⚠ Снимок экрана сохранён в Фото — это изображение НЕ зашифровано и может синхронизироваться с iCloud.</string>
+    <string name="conversation_group_echo_label">Сообщение в группе %1$s</string>
+    <string name="conversation_group_echo_open">Открыть группу</string>
+</resources>

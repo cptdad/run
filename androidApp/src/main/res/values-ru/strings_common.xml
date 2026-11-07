@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_common.xml.
+  Generic UI vocabulary shared by every screen on BOTH platforms (the l10n generator mirrors this file into the iOS String Catalog / L10n.swift). Only add a key here when the exact English literal is used by more than one feature area; area-specific copy lives in strings_<area>.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">ОК</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_done">Готово</string>
+    <string name="common_back">Назад</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_retry">Повторить</string>
+    <string name="common_continue">Продолжить</string>
+    <string name="common_copy">Копировать</string>
+    <string name="common_copied">Скопировано</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_yes">Да</string>
+    <string name="common_no">Нет</string>
+    <string name="common_got_it">Понятно</string>
+    <string name="common_understood">Я понимаю</string>
+    <string name="common_decline">Отклонить</string>
+    <string name="common_not_now">Не сейчас</string>
+    <string name="common_open">Открыть</string>
+    <string name="common_settings">Настройки</string>
+    <string name="common_loading">Загрузка…</string>
+    <string name="common_message_placeholder">Сообщение</string>
+    <string name="common_conversation_interrupted">Переписка прервана</string>
+    <string name="common_screenshot_notice">%1$s: возможно, сделан снимок экрана</string>
+    <string name="common_time_yesterday">Вчера %1$s</string>
+</resources>

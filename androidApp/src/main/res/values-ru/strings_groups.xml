@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete), and create-group screens. Key prefixes: group_, group_info_, create_group_.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d участник</item>
+        <item quantity="few">%1$d участника</item>
+        <item quantity="many">%1$d участников</item>
+        <item quantity="other">%1$d участников</item>
+    </plurals>
+    <string name="group_info_not_reachable_suffix">пока недоступно: %1$d</string>
+    <string name="group_info_admin_suffix">вы администратор</string>
+    <string name="group_member_list_differs">⚠ список участников отличается</string>
+    <string name="group_delivery_not_delivered">не доставлено: %1$d</string>
+    <string name="group_notice_not_delivered">Ваше сообщение не дошло до некоторых участников (%1$d): они пока недоступны с этого телефона, или ретранслятор отклонил их копию. Rún не хранит копию, чтобы отправить её позже.</string>
+    <string name="group_info_add_member">Добавить участника</string>
+    <string name="group_info_you">Вы</string>
+    <string name="group_info_not_reachable">Пока недоступен</string>
+    <string name="group_info_no_verified_pairing">Пока нет подтверждённого сопряжения с этим участником</string>
+    <string name="group_info_admin_badge">Администратор</string>
+    <string name="group_info_leave_group">Покинуть группу</string>
+    <string name="group_info_make_admin">Назначить администратором</string>
+    <string name="group_info_remove_from_group">Удалить из группы</string>
+    <string name="group_info_add_member_precondition">Новый участник должен лично выполнить сопряжение с каждым участником группы. Вы ручаетесь за это.</string>
+    <string name="group_info_add_member_empty">Нет подходящих контактов — все, с кем вы сопряжены, уже в группе.</string>
+    <string name="group_info_leave_confirm_title_android">Покинуть %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Покинуть группу</string>
+    <string name="group_info_leave_confirm_admin_message">Вы администратор. Сначала передайте эту роль, иначе никто не сможет изменять список участников.</string>
+    <string name="group_info_leave_confirm_message">Остальные участники узнают, что вы покинули группу.</string>
+    <string name="group_info_leave_unread_warning">Всё, что вы отправили и что остальные ещё не прочитали, может так и не быть им показано.</string>
+    <string name="group_info_leave_confirm_action">Покинуть</string>
+    <string name="group_info_choose_admin_title">Выберите нового администратора</string>
+    <string name="group_info_choose_admin_subtitle_android">Новый администратор сможет добавлять и удалять участников после того, как вы покинете группу.</string>
+    <string name="group_info_choose_admin_nav_title">Новый администратор</string>
+    <string name="group_info_choose_admin_subtitle_ios">Выберите, кто станет новым администратором. Он сможет добавлять и удалять участников после того, как вы покинете группу.</string>
+    <string name="group_info_transfer_failed_title">Не удалось передать права администратора</string>
+    <string name="group_info_transfer_failed_message">Ничего не изменилось — вы всё ещё администратор, поэтому группой по-прежнему можно управлять. Попробуйте снова.</string>
+    <string name="create_group_title">Новая группа</string>
+    <string name="create_group_name_placeholder">Название группы</string>
+    <string name="create_group_precondition">Все участники группы должны лично выполнить сопряжение друг с другом. Создавая группу, вы ручаетесь за это.</string>
+    <string name="create_group_failed">Не удалось создать группу. Проверьте соединение и попробуйте снова.</string>
+    <string name="create_group_creating">Создание…</string>
+    <string name="create_group_select_members">Выберите участников</string>
+    <string name="create_group_button_label">Создать группу (%1$d)</string>
+    <string name="group_private_from">Лично от %1$s · видно только вам</string>
+    <string name="group_private_to">Лично для %1$s</string>
+    <string name="group_private_reply">Ответить лично</string>
+    <string name="group_private_reply_chip">Личный ответ для %1$s</string>
+    <string name="group_private_reply_chip_close">Завершить личный ответ</string>
+</resources>

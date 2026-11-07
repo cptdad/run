@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_system.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Пораки</string>
+    <string name="notification_title">Известување</string>
+    <string name="apns_notification_body">Известување</string>
+    <string name="tor_keepalive_channel_name">Подготвеност на врската</string>
+    <string name="tor_keepalive_notification_title">Врската се одржува подготвена</string>
+    <string name="infoplist_camera_usage">Камерата се користи за скенирање QR-кодови при размена на контакти.</string>
+    <string name="infoplist_faceid_usage">Face ID го отклучува вашиот шифриран трезор кога е овозможено хардверски врзано отклучување.</string>
+    <string name="infoplist_local_network_usage">Пристапот до локалната мрежа се користи само кога ќе поставите надворешен Tor прокси во вашата локална мрежа.</string>
+</resources>

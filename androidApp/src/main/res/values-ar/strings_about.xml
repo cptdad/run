@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic (ar) translation of values/strings_about.xml.
+  Not localized on purpose: the app name Rún, the rune glyph ᚱ, the maker
+  name Vikstrom Group AB, the vgab.eu URL and the version numbers.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">مراسلة خاصة، موجَّهة عبر Tor.</string>
+    <string name="about_info_tor_version">يعمل بإصدار Tor %1$s</string>
+    <string name="about_info_open_source_heading">مبني على المصدر المفتوح</string>
+    <string name="about_info_clearnet_title">هل تريد الفتح في المتصفح؟</string>
+    <string name="about_info_clearnet_message">يُفتح vgab.eu في متصفحك عبر الإنترنت العادي — لا عبر Tor. يمكن للموقع ولشبكتك رؤية عنوان IP لجهازك.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">دعم Rún</string>
+    <string name="donate_tab_tip">إكرامية</string>
+    <string name="donate_tab_crypto">عملات رقمية</string>
+    <string name="donate_play_disclosure">تُعالَج عبر Google Play · مرتبطة بحساب Google الخاص بك · لا طرف ثالث آخر.</string>
+    <string name="donate_tba">قريبًا</string>
+    <string name="donate_qr_content_description">رمز QR لعنوان التبرع بـ %1$s</string>
+    <string name="donate_copied_confirmation">تم النسخ ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">لا إعلانات في Rún ولا مستثمرين، ولا يبيع بياناتك أبدًا. أي إكرامية — مهما كان حجمها — تساعد على إبقائه مجانيًا ومستقلًا.</string>
+    <string name="tip_store_disclosure">تُعالَج عبر App Store · مرتبطة بحساب Apple ID الخاص بك · لا طرف ثالث آخر.</string>
+    <string name="tip_thank_you">شكرًا لك 🖤</string>
+    <string name="tip_thank_you_body">دعمك يبقي Rún مجانيًا ومستقلًا.</string>
+    <string name="tip_unavailable_fallback">الإكراميات غير متاحة حاليًا.</string>
+    <string name="tip_error_purchase_failed">لم تكتمل الإكرامية. حاول مجددًا.</string>
+    <string name="tip_error_unavailable_device">الإكراميات داخل التطبيق غير متاحة على هذا الجهاز.</string>
+    <string name="tip_error_load_failed">تعذّر تحميل الإكراميات حاليًا.</string>
+    <string name="tip_error_not_configured">الإكراميات لم تُجهَّز بعد.</string>
+    <string name="tip_error_checkout_failed">تعذّر فتح الدفع عبر Google Play. حاول مجددًا.</string>
+    <string name="tip_tier_small">اشترِ لي قهوة</string>
+    <string name="tip_tier_medium">إكرامية صغيرة</string>
+    <string name="tip_tier_large">إكرامية سخية</string>
+    <string name="tip_tier_xl">أنت أسطورة</string>
+
+</resources>

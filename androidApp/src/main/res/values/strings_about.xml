@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  About-info modal chrome (AboutInfoModal.kt — the classic app-name/version/
+  credits box, distinct from the swipeable feature carousel keyed in
+  strings_shared.xml under about_*) and the Donate/Support modal + tip jar
+  (DonateModal.kt, TipJar.kt — Play Billing) and its iOS Support/StoreKit
+  counterpart (SupportView.swift, TipStore.swift). Key prefixes:
+  about_info_, donate_, tip_.
+
+  NOT localized here on purpose (per the campaign's exclusion list): the app
+  name "Rún", the rune glyph "ᚱ", the maker name "Vikstrom Group AB", the
+  "vgab.eu" URL, credit names/licence names (AboutContent.credits — a
+  name/licence pair, not a sentence), and the "Version X (Y)" numbers
+  themselves (only the surrounding word is a resource).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal (AboutInfoModal.kt) -->
+    <string name="about_info_tagline">Private messaging, routed through Tor.</string>
+    <string name="about_info_tor_version">Runs Tor %1$s</string>
+    <string name="about_info_open_source_heading">Built on open source</string>
+    <string name="about_info_clearnet_title">Open in browser?</string>
+    <string name="about_info_clearnet_message">vgab.eu opens in your browser over the normal internet — not Tor. The website and your network can see your device\'s IP address.</string>
+
+    <!-- Donate / Support modal chrome (DonateModal.kt); DonateContent.appeal
+         itself is already keyed in strings_shared.xml — do not re-add it. -->
+    <string name="donate_title">Support Rún</string>
+    <string name="donate_tab_tip">Tip</string>
+    <string name="donate_tab_crypto">Crypto</string>
+    <string name="donate_play_disclosure">Processed by Google Play · ties to your Google account · no other third party.</string>
+    <string name="donate_tba">TBA — coming soon</string>
+    <string name="donate_qr_content_description">%1$s donation address QR</string>
+    <string name="donate_copied_confirmation">Copied ✓</string>
+
+    <!-- Play Billing tip jar (TipJar.kt) + iOS StoreKit tip jar (SupportView.swift) -->
+    <string name="tip_appeal">Rún has no ads, no investors, and never sells your data. A tip — any size — helps keep it free and independent.</string>
+    <string name="tip_store_disclosure">Processed by the App Store · ties to your Apple ID · no other third party.</string>
+    <string name="tip_thank_you">Thank you 🖤</string>
+    <string name="tip_thank_you_body">Your support keeps Rún free and independent.</string>
+    <string name="tip_unavailable_fallback">Tips aren\'t available right now.</string>
+    <string name="tip_error_purchase_failed">Tip didn\'t go through. Try again.</string>
+    <string name="tip_error_unavailable_device">In-app tips aren\'t available on this device.</string>
+    <string name="tip_error_load_failed">Couldn\'t load tips right now.</string>
+    <string name="tip_error_not_configured">Tips aren\'t set up yet.</string>
+    <string name="tip_error_checkout_failed">Couldn\'t open Google Play checkout. Try again.</string>
+    <string name="tip_tier_small">Buy me a coffee</string>
+    <string name="tip_tier_medium">Small tip</string>
+    <string name="tip_tier_large">Generous tip</string>
+    <string name="tip_tier_xl">You\'re a legend</string>
+
+</resources>

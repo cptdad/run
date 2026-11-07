@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_conversation.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="conversation_pending_banner">Се чека сандачето на овој контакт — наскоро ќе можете да испраќате.</string>
+    <string name="conversation_alias_unknown">Непознато</string>
+    <string name="conversation_contact_fallback">Контакт</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy сè уште не започна</string>
+    <string name="conversation_fs_stalled_body">Пораките до овој контакт и понатаму се шифрирани, но сè уште ја немаат дополнителната заштита што ги чува безбедни претходните пораки ако подоцна се открие некој клуч. Ова обично се решава штом контактот ќе одговори. Ако состојбата продолжи, избришете го контактот и додајте го повторно.</string>
+    <string name="conversation_ratchet_refused_body">Не можеше да се воспостави безбеден канал со овој контакт. Пораките не се испраќаат. Избришете го контактот и спарете се повторно.</string>
+    <string name="conversation_report_confirm_title">Пријави контакт</string>
+    <string name="conversation_report_confirm_message">Пријавите се разгледуваат и се постапува по нив во рок од 24 часа. Вашата пријава се испраќа преку вашата апликација за е-пошта, па затоа ние ќе ја видиме вашата адреса на е-пошта — а нацрт-пораката ја чува таа апликација, надвор од Rún, каде што нема да биде избришана ако го избришете Rún.</string>
+    <string name="conversation_report_confirm_button">Пријави до Rún</string>
+    <string name="conversation_report_action">Пријави</string>
+    <string name="conversation_block_action">Блокирај</string>
+    <string name="conversation_screenshot_warning_banner">⚠ Снимката од екранот е зачувана во Photos — таа слика НЕ Е шифрирана и може да се синхронизира со iCloud.</string>
+    <string name="conversation_group_echo_label">Порака од група во %1$s</string>
+    <string name="conversation_group_echo_open">Отвори ја групата</string>
+</resources>

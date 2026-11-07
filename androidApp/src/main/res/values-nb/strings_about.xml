@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Om-boksen -->
+    <string name="about_info_tagline">Private meldinger, rutet gjennom Tor.</string>
+    <string name="about_info_tor_version">Kjører Tor %1$s</string>
+    <string name="about_info_open_source_heading">Bygget på åpen kildekode</string>
+    <string name="about_info_clearnet_title">Åpne i nettleseren?</string>
+    <string name="about_info_clearnet_message">vgab.eu åpnes i nettleseren din over vanlig internett – ikke Tor. Nettstedet og nettverket ditt kan se IP-adressen til enheten din.</string>
+
+    <!-- Støtte-/donasjonsvindu -->
+    <string name="donate_title">Støtt Rún</string>
+    <string name="donate_tab_tip">Driks</string>
+    <string name="donate_tab_crypto">Krypto</string>
+    <string name="donate_play_disclosure">Behandles av Google Play · knyttes til Google-kontoen din · ingen andre tredjeparter.</string>
+    <string name="donate_tba">Kommer snart</string>
+    <string name="donate_qr_content_description">QR-kode med donasjonsadresse for %1$s</string>
+    <string name="donate_copied_confirmation">Kopiert ✓</string>
+
+    <!-- Driks i appen -->
+    <string name="tip_appeal">Rún har ingen annonser, ingen investorer, og selger aldri dataene dine. En driks – uansett størrelse – bidrar til å holde appen gratis og uavhengig.</string>
+    <string name="tip_store_disclosure">Behandles av App Store · knyttes til Apple-ID-en din · ingen andre tredjeparter.</string>
+    <string name="tip_thank_you">Takk 🖤</string>
+    <string name="tip_thank_you_body">Støtten din holder Rún gratis og uavhengig.</string>
+    <string name="tip_unavailable_fallback">Driks er ikke tilgjengelig akkurat nå.</string>
+    <string name="tip_error_purchase_failed">Driksen gikk ikke gjennom. Prøv igjen.</string>
+    <string name="tip_error_unavailable_device">Driks i appen er ikke tilgjengelig på denne enheten.</string>
+    <string name="tip_error_load_failed">Kunne ikke laste driksalternativene nå.</string>
+    <string name="tip_error_not_configured">Driks er ikke satt opp ennå.</string>
+    <string name="tip_error_checkout_failed">Kunne ikke åpne betalingen i Google Play. Prøv igjen.</string>
+    <string name="tip_tier_small">Spander en kaffe</string>
+    <string name="tip_tier_medium">Liten driks</string>
+    <string name="tip_tier_large">Raus driks</string>
+    <string name="tip_tier_xl">Du er en legende</string>
+
+</resources>

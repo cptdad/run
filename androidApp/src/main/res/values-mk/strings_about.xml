@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_about.xml.
+  About-info modal chrome (AboutInfoModal.kt — the classic app-name/version/ credits box, distinct from the swipeable feature carousel keyed in strings_shared.xml under about_*) and the Donate/Support modal + tip jar (DonateModal.kt, TipJar.kt — Play Billing) and its iOS Support/StoreKit counterpart (SupportView.swift, TipStore.swift). Key prefixes: about_info_, donate_, tip_. NOT localized here on purpose (per the campaign's exclusion list): the app name "Rún", the rune glyph "ᚱ", the maker name "Vikstrom Group AB", the "vgab.eu" URL, credit names/licence names (AboutContent.credits — a name/licence pair, not a sentence), and the "Version X (Y)" numbers themselves (only the surrounding word is a resource).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="about_info_tagline">Приватни пораки, насочени преку Tor.</string>
+    <string name="about_info_tor_version">Работи со Tor %1$s</string>
+    <string name="about_info_open_source_heading">Изградено на отворен код</string>
+    <string name="about_info_clearnet_title">Да се отвори во прелистувач?</string>
+    <string name="about_info_clearnet_message">vgab.eu се отвора во вашиот прелистувач преку обичниот интернет — не преку Tor. Веб-страницата и вашата мрежа можат да ја видат IP-адресата на вашиот уред.</string>
+    <string name="donate_title">Поддршка за Rún</string>
+    <string name="donate_tab_tip">Бакшиш</string>
+    <string name="donate_tab_crypto">Крипто</string>
+    <string name="donate_play_disclosure">Обработено од Google Play · поврзано со вашата Google-сметка · нема друга трета страна.</string>
+    <string name="donate_tba">Наскоро</string>
+    <string name="donate_qr_content_description">QR-код за адресата за донации на %1$s</string>
+    <string name="donate_copied_confirmation">Копирано ✓</string>
+    <string name="tip_appeal">Rún нема реклами, нема инвеститори и никогаш не ги продава вашите податоци. Секој бакшиш — без разлика на износот — помага да остане бесплатен и независен.</string>
+    <string name="tip_store_disclosure">Обработено од App Store · поврзано со вашиот Apple ID · нема друга трета страна.</string>
+    <string name="tip_thank_you">Ви благодариме 🖤</string>
+    <string name="tip_thank_you_body">Вашата поддршка го одржува Rún бесплатен и независен.</string>
+    <string name="tip_unavailable_fallback">Бакшишите моментално не се достапни.</string>
+    <string name="tip_error_purchase_failed">Бакшишот не помина. Обидете се повторно.</string>
+    <string name="tip_error_unavailable_device">Бакшишите во апликацијата не се достапни на овој уред.</string>
+    <string name="tip_error_load_failed">Бакшишите не можеа да се вчитаат во моментов.</string>
+    <string name="tip_error_not_configured">Бакшишите сè уште не се поставени.</string>
+    <string name="tip_error_checkout_failed">Не можеше да се отвори наплатата на Google Play. Обидете се повторно.</string>
+    <string name="tip_tier_small">Почестете ме со кафе</string>
+    <string name="tip_tier_medium">Мал бакшиш</string>
+    <string name="tip_tier_large">Дарежлив бакшиш</string>
+    <string name="tip_tier_xl">Вие сте легенда</string>
+</resources>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German (de) translation of values/strings_settings.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Language picker chrome. The language names themselves are rendered by
+         the OS in their own language and are not translated here. -->
+    <string name="settings_language">Sprache</string>
+    <string name="language_option_system">Systemstandard</string>
+
+    <!-- Notification settings modal chrome -->
+    <string name="notif_settings_carousel_back">‹ Zurück</string>
+    <string name="notif_settings_carousel_next">Weiter ›</string>
+    <string name="notif_settings_technical_details">Technische Details</string>
+    <string name="notif_settings_sound_row_label">Ton &amp; Vibration</string>
+    <string name="notif_settings_sound_row_hint">Hinweise klingen wie bei jedem anderen Messenger. Du kannst sie in den Benachrichtigungseinstellungen von Android ändern oder stummschalten — Rún überschreibt deine Wahl nie.</string>
+    <string name="notif_settings_register_error_generic">Die Registrierung für Benachrichtigungen ist fehlgeschlagen. Prüfe deine Verbindung und versuch es erneut.</string>
+    <string name="notif_settings_register_error_no_distributor">Es wurde kein Benachrichtigungs-Distributor ausgewählt. Installiere ntfy aus F-Droid und versuch es erneut.</string>
+    <string name="notif_settings_register_error_distributor_selection">Die Verbindung zu deinem Benachrichtigungs-Distributor ist fehlgeschlagen. Schließe Rún vollständig, öffne es erneut und versuch es noch einmal.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Der Push-Server dieses Distributors wird noch nicht unterstützt — er benötigt VAPID. ntfy funktioniert; du kannst es aus F-Droid installieren.</string>
+    <string name="notif_settings_register_error_distributor_refused">Dein Benachrichtigungs-Distributor hat die Registrierung abgelehnt. Öffne ihn, prüfe seine Einrichtung und versuch es erneut.</string>
+    <string name="notif_settings_register_error_no_endpoint">Dein Benachrichtigungs-Distributor hat nicht rechtzeitig geantwortet. Öffne ihn, stelle sicher, dass er verbunden ist, und versuch es erneut.</string>
+    <string name="notif_settings_no_distributor_message">Dieses Telefon hat keine Google-Dienste, deshalb brauchen Benachrichtigungen eine UnifiedPush-Distributor-App. Installiere eine — ntfy ist die empfohlene Wahl — komm dann hierher zurück und schalte Benachrichtigungen ein.</string>
+    <string name="notif_settings_no_distributor_link_label">ntfy bei F-Droid holen</string>
+    <string name="notif_settings_unregistered_notice">Dein Benachrichtigungs-Distributor liefert nicht mehr an Rún, deshalb wurden Benachrichtigungen ausgeschaltet. Schalte sie wieder ein, um die Verbindung neu herzustellen.</string>
+    <string name="settings_language_restart_title">Zum Anwenden neu starten</string>
+    <string name="settings_language_restart_message">Rún muss neu starten, um die App-Sprache auf %1$s umzustellen. Fortfahren?</string>
+    <string name="settings_report_bug">Fehler melden</string>
+    <string name="settings_debug_mode">Debug-Modus</string>
+    <string name="settings_debug_mode_on">Debug-Modus (an)</string>
+    <string name="debug_mode_title">Debug-Modus</string>
+    <string name="debug_mode_message">Sende anonyme Diagnoseprotokolle an das Relay, um die Entwicklung zu unterstützen. Die Protokolle enthalten nie etwas, das dich oder dieses Gerät identifiziert: keine Namen, keine Nachrichteninhalte, keine Adressen, keine Schlüssel, keine Postfach- oder Kontakt-IDs.</string>
+    <string name="debug_mode_message_off">Der Debug-Modus ist an. Schalte ihn aus, um keine anonymen Diagnoseprotokolle mehr zu senden.</string>
+    <string name="debug_mode_turn_on">Einschalten</string>
+    <string name="debug_mode_turn_off">Ausschalten</string>
+    <string name="ext_proxy_title">Externer Tor-Proxy</string>
+    <string name="ext_proxy_description">Leite den gesamten Relay-Datenverkehr über einen SOCKS5-Proxy, den du selbst betreibst, etwa Orbot oder Tor in deinem eigenen Netzwerk, statt über das eingebaute Tor von Rún. Solange diese Option aktiv ist, startet das eingebaute Tor nie. Ist der Proxy nicht erreichbar, bleibt Rún offline. Es gibt keinen Ausweichweg.</string>
+    <string name="ext_proxy_toggle">Externen Proxy verwenden</string>
+    <string name="ext_proxy_host_label">IP-Adresse des Proxys</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Gib eine IP-Adresse auf diesem Telefon oder in deinem lokalen Netzwerk ein: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x oder 169.254.x.x. Hostnamen sind nicht erlaubt.</string>
+    <string name="ext_proxy_error_port">Gib einen Port von 1 bis 65535 ein.</string>
+    <string name="ext_proxy_error_save">Die Einstellung konnte nicht gespeichert werden. Versuche es erneut.</string>
+    <string name="ext_proxy_lan_warning">Der Datenverkehr zwischen diesem Telefon und dem Proxy ist nicht verschlüsselt. Wer diese Adresse beobachten oder imitieren kann, auch in anderen Netzwerken, denen dieses Telefon später beitritt, erhält die Zugriffs-Token für deine Konversations-Postfächer. Diese Person könnte die Postfächer löschen oder übernehmen, aber deine Nachrichten nicht lesen. Nutze das nur in einem Netzwerk, das du kontrollierst, und schalte den Modus aus, wenn du es verlässt.</string>
+    <string name="ext_proxy_loopback_warning">Solange die Proxy-App (z. B. Orbot) nicht läuft, kann jede andere App auf diesem Telefon ihren Port belegen und dieselben Zugriffs-Token erhalten. Stelle die Proxy-App auf einen Nicht-Standard-Port ein und lass sie laufen.</string>
+    <string name="ext_proxy_next_launch">Änderungen werden wirksam, wenn du Rún das nächste Mal öffnest.</string>
+    <string name="ext_proxy_saved">Gespeichert. Schließe Rún und öffne es erneut, um die Änderung zu übernehmen.</string>
+    <string name="ext_proxy_connecting">Verbindung über deinen externen Proxy</string>
+    <string name="ext_proxy_status_checking">Externer Proxy wird verwendet: Prüfung läuft</string>
+    <string name="ext_proxy_status_reachable">Externer Proxy wird verwendet</string>
+    <string name="ext_proxy_status_unreachable">Externer Proxy nicht erreichbar</string>
+    <string name="ext_proxy_status_invalid">Die Einstellung für den externen Proxy ist ungültig. Korrigiere sie in den Einstellungen.</string>
+    <string name="ext_proxy_status_unreadable">Die Einstellung für den externen Proxy konnte nicht gelesen werden. Nachrichten sind nicht verfügbar.</string>
+    <string name="report_bug_title">Beschreibe den Fehler (du bist anonym)</string>
+    <string name="report_bug_placeholder">Was ist passiert, und was hast du erwartet?</string>
+    <string name="report_bug_send">Senden</string>
+    <string name="report_bug_failed">Der Fehlerbericht konnte nicht gesendet werden — prüfe die Verbindung und versuch es erneut.</string>
+    <string name="report_bug_thanks">Danke, dass du hilfst, Rún besser zu machen</string>
+</resources>

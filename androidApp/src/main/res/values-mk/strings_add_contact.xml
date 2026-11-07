@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Macedonian (mk) translation of values/strings_add_contact.xml.
+  Add Contact — QR scan/show, code entry, alias naming, referral/introduction offers, camera permission copy (AddContactScreen.kt / AddContactView.swift).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="add_contact_title">Додај контакт</string>
+    <string name="add_contact_nav_title">Додај контакт</string>
+    <string name="add_contact_choice_heading">Додајте контакт</string>
+    <string name="add_contact_choice_subtitle">Вие и вашиот контакт разменувате кодови. Изберете како да започнете — ќе ги направите и двете.</string>
+    <string name="add_contact_choice_show">Прикажи го мојот код</string>
+    <string name="add_contact_choice_scan">Скенирај код</string>
+    <string name="add_contact_show_heading">Прикажете го ова на вашиот контакт</string>
+    <string name="add_contact_show_hint_scanned">Нека го скенираат ова, па завршете.</string>
+    <string name="add_contact_show_hint_pending">Нека го скенираат ова. Потоа ќе го скенирате нивниот.</string>
+    <string name="add_contact_next">Следно</string>
+    <string name="add_contact_show_first_android">Го прикажав →</string>
+    <string name="add_contact_show_first_ios">Го прикажав</string>
+    <string name="add_contact_scan_heading">Скенирајте го QR-кодот на вашиот контакт</string>
+    <string name="add_contact_camera_permission">Потребна е дозвола за камера за скенирање</string>
+    <string name="add_contact_invalid_qr">Невалиден формат на QR-код</string>
+    <string name="add_contact_scan_deadlock">Скенирајте го кодот на нивниот екран „Речиси готово“</string>
+    <string name="add_contact_mint_failed_relay">Не можеше да се стигне до релето</string>
+    <string name="add_contact_solving_pow">Се решава доказ за работа…</string>
+    <string name="add_contact_setting_up_inbox">Се поставува сандаче…</string>
+    <string name="add_contact_mint_failed_prefix">Ковањето не успеа: %1$s</string>
+    <string name="add_contact_mint_ready">Сандачето е подготвено</string>
+    <string name="add_contact_done_heading">✓ Контактот е додаден</string>
+    <string name="add_contact_saved_as">Зачувано како: %1$s</string>
+    <string name="add_contact_scan_back_hint">Сега нека вашиот контакт го скенира вашиот код. Ќе можете да си пишувате веднаш штом тоа го стори.</string>
+    <string name="add_contact_keep_waiting">Продолжете да чекате</string>
+    <string name="add_contact_cancel_pairing">Откажете го спарувањето</string>
+    <string name="add_contact_cancel_pairing_title">Да се откаже спарувањето?</string>
+    <string name="add_contact_cancel_pairing_message">Ова го брише наполовина завршениот контакт и ги затвора неговите сандачиња. Двајцата ќе треба да започнете одново со нови кодови.</string>
+    <string name="add_contact_qr_preparing">Се подготвува вашиот код…</string>
+    <string name="add_contact_announce_hint">Наскоро ќе можат да ви пишуваат — вашето сандаче се доставува автоматски.</string>
+    <string name="add_contact_mnemonic_label">Лична белешка (незадолжително)</string>
+    <string name="add_contact_mnemonic_placeholder">на пр. Се запознавме на конференцијата во Осло</string>
+    <string name="add_contact_scan_back_title">Речиси готово</string>
+    <string name="add_contact_your_code">Вашиот код</string>
+    <string name="add_contact_their_code">Нивниот код</string>
+    <string name="add_contact_paste_placeholder">Залепете го кодот на контактот тука</string>
+    <string name="add_contact_copied_bang">Копирано!</string>
+    <string name="add_contact_invalid_code">Невалиден код</string>
+    <string name="add_contact_paste_not_ready">Сандачето сè уште се поставува — обидете се повторно за момент</string>
+    <string name="add_contact_inbox_in_use">Контактот не можеше да се додаде — едно од сандачињата во нивниот код веќе се користи тука. Ако повторно додавате некого што веќе го имате, прво избришете го стариот контакт, па обидете се повторно.</string>
+</resources>

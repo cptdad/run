@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_about.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">Yksityistä viestintää Tor-verkon kautta.</string>
+    <string name="about_info_tor_version">Käyttää Tor-versiota %1$s</string>
+    <string name="about_info_open_source_heading">Rakennettu avoimen lähdekoodin varaan</string>
+    <string name="about_info_clearnet_title">Avataanko selaimessa?</string>
+    <string name="about_info_clearnet_message">vgab.eu avautuu selaimessasi tavallisen internetin kautta — ei Tor-verkon kautta. Sivusto ja verkkosi näkevät laitteesi IP-osoitteen.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">Tue Rún-sovellusta</string>
+    <string name="donate_tab_tip">Tippi</string>
+    <string name="donate_tab_crypto">Krypto</string>
+    <string name="donate_play_disclosure">Käsittelijänä Google Play · yhdistyy Google-tiliisi · ei muita kolmansia osapuolia.</string>
+    <string name="donate_tba">Ilmoitetaan myöhemmin — tulossa pian</string>
+    <string name="donate_qr_content_description">%1$s-lahjoitusosoitteen QR-koodi</string>
+    <string name="donate_copied_confirmation">Kopioitu ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">Rún ei näytä mainoksia eikä sillä ole sijoittajia, eikä se koskaan myy tietojasi. Tippi — minkä kokoinen tahansa — auttaa pitämään sen ilmaisena ja riippumattomana.</string>
+    <string name="tip_store_disclosure">Käsittelijänä App Store · yhdistyy Apple ID:hesi · ei muita kolmansia osapuolia.</string>
+    <string name="tip_thank_you">Kiitos 🖤</string>
+    <string name="tip_thank_you_body">Tukesi pitää Rún-sovelluksen ilmaisena ja riippumattomana.</string>
+    <string name="tip_unavailable_fallback">Tipit eivät ole juuri nyt käytettävissä.</string>
+    <string name="tip_error_purchase_failed">Tippi ei mennyt läpi. Yritä uudelleen.</string>
+    <string name="tip_error_unavailable_device">Sovelluksen sisäiset tipit eivät ole käytettävissä tällä laitteella.</string>
+    <string name="tip_error_load_failed">Tippejä ei voitu ladata juuri nyt.</string>
+    <string name="tip_error_not_configured">Tippejä ei ole vielä otettu käyttöön.</string>
+    <string name="tip_error_checkout_failed">Google Play -kassaa ei voitu avata. Yritä uudelleen.</string>
+    <string name="tip_tier_small">Tarjoa kahvit</string>
+    <string name="tip_tier_medium">Pieni tippi</string>
+    <string name="tip_tier_large">Antelias tippi</string>
+    <string name="tip_tier_xl">Olet legenda</string>
+
+</resources>

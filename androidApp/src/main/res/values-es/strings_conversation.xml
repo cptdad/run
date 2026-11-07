@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spanish (es) translation of values/strings_conversation.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">Esperando el buzón de este contacto; podrás enviar en un momento.</string>
+    <string name="conversation_alias_unknown">Desconocido</string>
+    <string name="conversation_contact_fallback">Contacto</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy aún no se ha activado</string>
+    <string name="conversation_fs_stalled_body">Los mensajes a este contacto siguen cifrados, pero todavía no cuentan con la protección adicional que mantiene a salvo los mensajes anteriores si una clave se expone más adelante. Esto suele resolverse en cuanto responda. Si persiste, elimina el contacto y vuelve a añadirlo.</string>
+    <string name="conversation_ratchet_refused_body">No se ha podido establecer un canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">Denunciar contacto</string>
+    <string name="conversation_report_confirm_message">Las denuncias se revisan y se atienden en menos de 24 horas. Tu denuncia se envía desde tu propia app de correo, así que nos mostrará tu dirección de correo; y el borrador lo guarda esa app, fuera de Rún, donde no se borrará si borras Rún.</string>
+    <string name="conversation_report_confirm_button">Denunciar ante Rún</string>
+    <string name="conversation_report_action">Denunciar</string>
+    <string name="conversation_block_action">Bloquear</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ Captura guardada en Fotos: esa imagen NO está cifrada y puede sincronizarse con iCloud.</string>
+    <string name="conversation_group_echo_label">Mensaje de grupo en %1$s</string>
+    <string name="conversation_group_echo_open">Abrir grupo</string>
+
+</resources>

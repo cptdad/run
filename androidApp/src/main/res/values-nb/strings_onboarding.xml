@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN-inntasting (opplåsing) -->
+    <string name="pin_erase_vault_title">Slette dette hvelvet?</string>
+    <string name="pin_erase_vault_message">Hvelvet på denne enheten kan ikke åpnes – ingen PIN eller passfrase er lagret for det. Sletting fjerner det permanent og starter et nytt oppsett. Dette kan ikke angres.</string>
+    <string name="pin_erase_vault_confirm">Slett</string>
+    <string name="pin_prompt_passphrase">Skriv inn passfrasen</string>
+    <string name="pin_passphrase_placeholder">Passfrase</string>
+    <string name="pin_unlock_button">Lås opp</string>
+    <string name="pin_backoff_hint">Prøv igjen om %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Låseskjermen på enheten er endret, så maskinvarenøkkelen som beskytter dette hvelvet, er borte. Gjenopprettingskoden din kan fortsatt åpne det.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Låseskjermen på enheten er endret, så maskinvarenøkkelen som beskytter dette hvelvet, er borte. Uten en gjenopprettingskode kan hvelvet ikke åpnes.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Koden på enheten er endret, så maskinvarenøkkelen som beskytter dette hvelvet, er borte. Gjenopprettingskoden din kan fortsatt åpne det.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Koden på enheten er endret, så maskinvarenøkkelen som beskytter dette hvelvet, er borte. Uten en gjenopprettingskode kan hvelvet ikke åpnes.</string>
+    <string name="pin_use_recovery_code">Bruk gjenopprettingskode</string>
+    <string name="pin_use_recovery_code_prompt">Får du ikke låst opp? Bruk gjenopprettingskode</string>
+    <string name="pin_orphaned_vault_notice">Enheten har et hvelv, men ingen PIN eller passfrase er lagret for det, så ingenting kan åpne det. Innholdet kan ikke gjenopprettes.</string>
+    <string name="pin_erase_start_over">Slett og start på nytt</string>
+
+    <!-- Styrkemåler for passfrase -->
+    <string name="pin_strength_too_weak">For svak</string>
+    <string name="pin_strength_still_weak">Fortsatt for svak – legg til ord</string>
+    <string name="pin_strength_strong">Sterk</string>
+    <string name="pin_strength_excellent">Utmerket</string>
+
+    <!-- Oppsett av PIN / legitimasjon (første gang) -->
+    <string name="pin_hardware_lock_not_enabled_title">Maskinvarelås ikke aktivert</string>
+    <string name="pin_hardware_lock_not_enabled_message">Telefonen bekreftet ikke maskinvarenøkkelen, så hvelvet ditt er satt opp med et lavere beskyttelsesnivå. Du kan slå det på senere i Innstillinger.</string>
+    <string name="pin_device_key_busy_title">Kunne ikke fullføre oppsettet</string>
+    <string name="pin_device_key_busy_message">Sikkerhetsmaskinvaren i telefonen er opptatt. Lås telefonen, lås den opp igjen, og prøv på nytt.</string>
+    <string name="pin_setup_choose_pin">Velg PIN-koden din</string>
+    <string name="pin_setup_confirm_pin">Bekreft PIN-koden din</string>
+    <string name="pin_setup_choose_passphrase">Velg en passfrase</string>
+    <string name="pin_setup_confirm_passphrase">Bekreft passfrasen din</string>
+    <string name="pin_setup_passphrase_hint">Rundt seks tilfeldige ord. Skrives inn hver gang du låser opp – ingen PIN, ingen biometrisk snarvei. Det er hele poenget.</string>
+    <string name="pin_passphrase_placeholder_reenter">Skriv passfrasen på nytt</string>
+    <string name="pin_confirm_button">Bekreft</string>
+
+    <!-- Bytt PIN / legitimasjon -->
+    <string name="pin_change_enter_current_passphrase">Skriv inn nåværende passfrase</string>
+    <string name="pin_change_enter_current_pin">Skriv inn nåværende PIN</string>
+    <string name="pin_change_choose_new_pin">Velg ny PIN</string>
+    <string name="pin_change_confirm_passphrase">Bekreft passfrasen</string>
+    <string name="pin_change_confirm_new_pin">Bekreft ny PIN</string>
+
+    <!-- Oppstartssperrer: kompromittert enhet (root/jailbreak) -->
+    <string name="gate_compromised_title">Enheten er kompromittert</string>
+    <string name="gate_compromised_body">Denne enheten ser ut til å være rootet. Rún kan ikke garantere sikkerheten til meldingene dine på en kompromittert enhet.</string>
+    <string name="gate_compromised_body_jailbroken">Denne enheten ser ut til å være jailbreaket. Rún kan ikke garantere sikkerheten til meldingene dine på en kompromittert enhet.</string>
+    <string name="gate_compromised_continue">Jeg forstår – fortsett</string>
+
+    <!-- Oppstartssperrer: advarsel om å forlate samtalen feil vei -->
+
+    <!-- Oppstartssperrer: nedtelling til lås / ny autentisering -->
+    <string name="gate_reauth_countdown">Passfrasesjekk om %1$d…</string>
+    <string name="gate_lock_countdown">Låser om %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Trykk hvor som helst for å forbli ulåst</string>
+
+    <!-- Oppstartssperrer: ingen kode på enheten (kun iOS) -->
+    <string name="gate_passcode_warning_title">Ingen kode på enheten</string>
+    <string name="gate_passcode_warning_message">Maskinvarebeskyttelsen av lagrede data i Rún er svakere uten en kode på enheten. Angi en i Innstillinger for full beskyttelse, og kom tilbake for å fullføre oppsettet. Du kan fortsette uten.</string>
+    <string name="gate_passcode_warning_open_settings">Åpne Innstillinger</string>
+    <string name="gate_passcode_warning_continue_anyway">Fortsett likevel</string>
+
+    <!-- Bruksvilkår (kun iOS) -->
+    <string name="eula_before_you_start_title">Før du starter</string>
+    <string name="eula_terms_of_use_title">Bruksvilkår</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">Ved å bruke Rún godtar du disse bruksvilkårene.\n\nRún er en privat, ende-til-ende-kryptert meldingsapp. Du legger til kontakter ansikt til ansikt ved å utveksle en QR-kode, og meldingene dine krypteres på enheten din før de sendes. Vi kan ikke lese meldingene dine, og vi har ingen offentlig strøm, ingen profiler og ikke noe delt innhold.\n\nNULLTOLERANSE FOR STØTENDE INNHOLD OG MISBRUK\nDet finnes ingen toleranse for støtende, ulovlig eller krenkende innhold eller oppførsel på Rún. Du godtar å ikke bruke Rún til å sende, be om eller oppfordre til innhold som er ulovlig, trakasserende, truende, hatefullt, seksuelt utnyttende eller på annen måte støtende, og å ikke misbruke, trakassere eller skade andre mennesker. Å bryte dette er et brudd på disse vilkårene.\n\nSLIK HOLDER DU DEG TRYGG\nFordi samtalene dine er private mellom deg og dem du legger til, bestemmer du selv hvem som kan kontakte deg:\n\n• Rapporter – hvis en kontakt sender deg støtende innhold eller oppfører seg krenkende, bruk «Rapporter» (i en samtale, eller ved å trykke og holde på kontakten) for å varsle oss. Vi gjennomgår hver rapport innen 24 timer og følger den opp – vi stenger ute krenkende avsendere der vi teknisk kan, og melder ulovlig innhold til rette myndigheter. Fordi meldinger er ende-til-ende-krypterte, handler vi ut fra det du forteller oss i rapporten.\n\n• Blokker – bruk «Blokker» for å skjule en kontakt umiddelbart, slik at du ikke lenger ser vedkommende eller meldingene deres. Blokkering kan angres – du kan oppheve den når som helst fra innstillingsmenyen.\n\nDu er ansvarlig for innholdet du sender, og for hvem du velger å legge til som kontakter. Du må være gammel nok til å inngå en bindende avtale i landet ditt for å bruke Rún.\n\nINGEN GARANTI\nRún leveres «som den er», uten garantier av noe slag, så langt loven tillater.\n\nKontakt: %1$s</string>
+    <string name="eula_agree_button">Godta og fortsett</string>
+    <string name="eula_decline_alert_title">Du må godta vilkårene</string>
+    <string name="eula_decline_alert_message">Du må godta bruksvilkårene for å bruke Rún. De finnes for å holde alle trygge, og de forbyr støtende innhold og krenkende oppførsel.</string>
+
+    <!-- Rapportering / blokkering (kun iOS) -->
+    <string name="report_abuse_email_subject">Rún-misbruksrapport</string>
+    <string name="report_abuse_email_body">Jeg vil rapportere en kontakt for støtende innhold eller krenkende oppførsel.\n\nKontakt (navnet jeg ga vedkommende på enheten min): %1$s\n\nHva skjedde (beskriv gjerne med egne ord):\n\n\n---\nRún gjennomgår hver rapport innen 24 timer og følger den opp – vi stenger ute\nkrenkende avsendere der det er teknisk mulig, og melder ulovlig innhold til\nrette myndigheter.\n\nDenne e-posten lagres av e-postappen din, utenfor den krypterte lagringen\ntil Rún, så ta bare med det du er komfortabel med å oppbevare der.</string>
+    <string name="report_email_fallback_title">Rapporter via e-post</string>
+    <string name="report_email_fallback_message">Ingen e-postapp er satt opp på denne enheten. Trykk Kopier rapport, og lim den inn i en e-post til %1$s.</string>
+    <string name="report_copy_report_button">Kopier rapport</string>
+    <string name="report_copy_report_clipboard">Til: %1$s\nEmne: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Du har ikke blokkert noen.</string>
+    <string name="report_unblock_button">Opphev blokkering</string>
+
+    <!-- Introduksjon til brenn ved lesing -->
+    <string name="burn_notice_title">Brenn ved lesing</string>
+    <string name="burn_notice_message">Meldinger vises én gang – akkurat her – og lagres aldri. Når du forlater denne samtalen, er de borte for godt.</string>
+
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_conversation.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="conversation_pending_banner">Waxaa la sugayaa sanduuqa xiriiriyahan — dhowaan waad awoodi doontaa inaad fariin dirto.</string>
+    <string name="conversation_alias_unknown">Lama yaqaan</string>
+    <string name="conversation_contact_fallback">Xiriiriye</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy weli ma hirgelin</string>
+    <string name="conversation_fs_stalled_body">Fariimaha aad u dirto xiriiriyahan weli waa sirsan yihiin, laakiin weli ma helayaan ilaalinta dheeraadka ah ee fariimihii hore badbaado ku haysa haddii fure goor dambe la ogaado. Inta badan arrintani way dhammaataa marka xiriiriyuhu jawaabo. Haddii ay sii jirto, xiriiriyaha tirtir, kadibna mar kale ku dar.</string>
+    <string name="conversation_ratchet_refused_body">Lama samayn karin kanaal ammaan ah oo aad xiriiriyahan la leedahay. Fariimaha lama dirayo. Xiriiriyaha tirtir, kadibna lammaanaanta mar kale samee.</string>
+    <string name="conversation_report_confirm_title">Ka warbixi xiriiriyaha</string>
+    <string name="conversation_report_confirm_message">Warbixinnada waa la eegaa oo tallaabo waa laga qaadaa 24 saacadood gudahood. Warbixintaadu waxay ka soo baxdaa app-kaaga email-ka, sidaas darteed waxay noo tusi doontaa cinwaankaaga email-ka — qoraalka qabyada ahna waxaa kaydiya app-kaas, oo ka baxsan Rún, halkaas oo aan laga tirtiri doonin haddii aad Rún tirtirto.</string>
+    <string name="conversation_report_confirm_button">U warbixi Rún</string>
+    <string name="conversation_report_action">Warbixi</string>
+    <string name="conversation_block_action">Xannib</string>
+    <string name="conversation_screenshot_warning_banner">⚠ Sawirka shaashadda waxaa lagu kaydiyay Sawirrada — sawirkaasi MA AHA mid sirsiiman, wuxuuna iCloud la sync gareyn karaa.</string>
+    <string name="conversation_group_echo_label">Fariin kooxeed oo ku jirta %1$s</string>
+    <string name="conversation_group_echo_open">Fur kooxda</string>
+</resources>

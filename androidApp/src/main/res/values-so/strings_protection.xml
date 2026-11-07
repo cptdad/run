@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_protection.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="protection_pick_a_level">Dooro heer si aad u sii wadato</string>
+    <string name="protection_apply_button">Dabaq</string>
+    <string name="protection_level_accessibility_label">Ilaalinta %1$s</string>
+    <string name="protection_device_panel_title">Ammaanka aasaasiga ah ee qalabka</string>
+    <string name="protection_device_panel_detected_label">LA HELAY</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Heerka aasaasiga ah ee qalabka · AFU</string>
+    <string name="protection_downgrade_title">Dhimi ilaalintaada?</string>
+    <string name="protection_downgrade_message_android">U beddelka %1$s wuxuu ka dhigayaa taleefankaaga mid si fudud loo jabin karo haddii la qaato. Sii wad?</string>
+    <string name="protection_downgrade_message_ios">U beddelka %1$s wuxuu ka dhigayaa taleefankaaga mid si fudud loo jabin karo haddii la qaato.</string>
+    <string name="protection_downgrade_keep">Haye heerka hadda</string>
+    <string name="protection_downgrade_reduce">Dhimi</string>
+    <string name="protection_persist_failed_title">Heerkaas lama kaydin karin</string>
+    <string name="protection_persist_failed_message">Waxba iskuma beddelin — furaha qalabku wuu mashquulsanaa. Isku day mar kale.</string>
+    <string name="protection_lever_b_failed_message">Taleefankaagu ma xaqiijin furaha qalabka, sidaas darteed khasnaddaadu waxay ku dhisan tahay heer ilaalin ka hooseeya kii aad dooratay. Mar kale waxaad ka isku dayi kartaa Dejinta.</string>
+    <string name="protection_lever_b_reharden_notice">Furaha ilaalintaada wuxuu u baahan yahay horumarin. Dami oo mar kale shid Ammaan si aad mar kale u adkeyso.</string>
+    <string name="protection_enabling_title">Waa la ammaanayaa khasnaddaada…</string>
+    <string name="protection_enabling_body_android">Taleefankaagu wuxuu kaa codsan karaa inaad ku xaqiijiso qufulka shaashaddiisa.</string>
+    <string name="protection_enabling_body_ios">Taleefankaagu wuxuu kaa codsan karaa inaad ku xaqiijiso Face ID ama passcode-kiisa.</string>
+    <string name="protection_forced_explainer_intro">Haddaanad lahayn mid, taleefanka laftiisu ma ilaalin karo furayaasha Rún — sidaas darteed Rún halkan wuxuu u baahan yahay ilaalintiisa ugu xoogan. Laba dariiqo ayaa jira:</string>
+    <string name="protection_forced_explainer_cta_title_android">Deji quful shaashadeed</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN, qaab, eray sir ah, ama far-raad — dhammaantood way ku filan yihiin. Heer ilaalineed kasta ayaa la heli karaa marka taleefankaagu leeyahay mid ka mid ah kuwaas.</string>
+    <string name="protection_forced_open_settings_button">Fur dejinta qufulka shaashadda</string>
+    <string name="protection_forced_explainer_outro_android">Ama hadda samee weedh sir ah oo hoos ka muuqata — Ugu sarreeya wuxuu xidhaa Rún laftiisa, quful shaashadeed looma baahna. Afar ama shan eray oo random ah ayaa sameeya mid xoog leh.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Deji passcode-ka qalabka</string>
+    <string name="protection_forced_explainer_cta_body_ios">Fur Settings → Face ID &amp; Passcode → Turn Passcode On, kadibna ku soo noqo Rún. Heer ilaalineed kasta ayaa la heli karaa marka taleefankaagu leeyahay mid.</string>
+    <string name="protection_forced_explainer_outro_ios">Ama hadda samee weedh sir ah oo hoos ka muuqata — Ugu sarreeya wuxuu xidhaa Rún laftiisa, passcode-ka qalabka looma baahna. Afar ama shan eray oo random ah ayaa sameeya mid xoog leh.</string>
+    <string name="protection_migration_finish_maximum">%1$s wuxuu u baahan yahay weedh sir ah, shaashaddanna mid ma dejin karto — sidaas darteed khasnaddaadu waxay hadda sii ahaan doontaa %2$s. Si aad u dhammaystirto, fur Dejinta › Heerka ilaalinta oo dooro %1$s mar kale — taasi waxay dejinaysaa weedhda sirta ah waxayna dabaqaysaa waqtiyadeeda.</string>
+    <string name="protection_migration_finish_private">Halkan kuma shidin karin qufulka qalabka ee %1$s, sidaas darteed khasnaddaadu waxay hadda sii ahaan doontaa %2$s. Si aad u dhammaystirto, fur Dejinta › Heerka ilaalinta oo dooro %1$s mar kale — taasi waxay shidaysaa qufulka qalabka waxayna dabaqaysaa waqtiyadeeda.</string>
+    <string name="protection_migration_finish_same">Waqtiyada %1$s hadda waa la dejiyay. Si aad u dhammaystirto shidista furitaankiisa xoogan, fur Dejinta › Heerka ilaalinta.</string>
+    <string name="protection_migration_almost_there_title">Ku dhawaad dhammaatay</string>
+    <string name="protection_recovery_code_title">Koodhkaaga soo-celinta</string>
+    <string name="protection_recovery_code_body_android">Tan qor, kaydina meel ammaan ah oo ka duwan taleefankaaga. Haddii far-raadkaaga ama passcode-ka qalabku isbeddelo oo kaa xidho, koodhkan iyo PIN-kaaga ayaa soo celinaya fariimahaaga. Mar dambe ma tusi karno.</string>
+    <string name="protection_recovery_code_body_ios">Tan qor, kaydina meel ammaan ah oo ka duwan taleefankaaga. Haddii Face ID ama passcode-ka qalabku isbeddelo oo kaa xidho, koodhkan iyo PIN-kaaga ayaa soo celinaya fariimahaaga. Mar dambe ma tusi karno.</string>
+    <string name="protection_recovery_ack_label">Waan qoray</string>
+    <string name="protection_recovery_ack_hint_android">Calaamadee “Waan qoray” si aad u sii wadato.</string>
+    <string name="protection_recovery_ack_hint_ios">Shid “Waan qoray” si aad u sii wadato.</string>
+    <string name="protection_recovery_entry_title">Koodhkaaga ku soo celi</string>
+    <string name="protection_recovery_entry_subtitle">Geli koodhka soo-celinta ee aad kaydisay iyo %1$s aad isticmaasho. Tani waxay soo celinaysaa fariimahaaga. Haddii taleefankani weli isticmaali karo qufulka qalabka, wuxuu dib u shidmayaa isla koodhkan, markaa koodhka meel ammaan ah ku hay.</string>
+    <string name="protection_recovery_code_placeholder">Koodhka soo-celinta</string>
+    <string name="protection_recovery_wrong_credential">Koodhkaas iyo %1$s ma saxna. Labadaba hubi oo isku day mar kale.</string>
+    <string name="protection_recovery_generic_error">Hadda lama soo celin karin — ama koodh soo-celineed lama hayo, ama furaha qalabku wuu mashquulsan yahay. Isku day mar kale.</string>
+    <string name="protection_recovery_attempt_record_failed">Isku daygii lama duubi karin — furaha qalabku wuu mashquulsan yahay. Isku day mar kale.</string>
+    <string name="protection_recovery_button_recovering">Waa la soo celinayaa…</string>
+    <string name="protection_recovery_button_recover">Soo celi</string>
+    <string name="protection_credential_type_passphrase">weedh sir ah</string>
+    <string name="protection_credential_type_pin">PIN</string>
+</resources>

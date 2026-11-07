@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic (ar) translation of values/strings_groups.xml.
+  Group conversation, group info (members/invites/kick/leave/delete) and
+  create-group screens.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Member count, shared by the group header and the group info header.
+         Arabic has six plural categories; the exact-count categories
+         (zero/one/two) use grammatical word forms without the numeral. -->
+    <plurals name="group_info_members">
+        <item quantity="zero">لا أعضاء</item>
+        <item quantity="one">عضو واحد</item>
+        <item quantity="two">عضوان</item>
+        <item quantity="few">%1$d أعضاء</item>
+        <item quantity="many">%1$d عضوًا</item>
+        <item quantity="other">%1$d عضو</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">لم يُتَح الوصول بعد إلى %1$d منهم</string>
+    <string name="group_info_admin_suffix">أنت المشرف</string>
+
+    <!-- Group conversation -->
+    <string name="group_member_list_differs">⚠ قائمة الأعضاء مختلفة</string>
+    <string name="group_delivery_not_delivered">لم تُسلَّم إلى %1$d</string>
+    <string name="group_notice_not_delivered">لم تصل رسالتك إلى %1$d من الأعضاء: لا يمكن الوصول إليهم بعد من هذا الهاتف، أو رفض المُرحّل نسختهم. لا يحتفظ Rún بأي نسخة لإرسالها لاحقًا.</string>
+
+    <!-- Group info -->
+    <string name="group_info_add_member">إضافة عضو</string>
+    <string name="group_info_you">أنت</string>
+    <string name="group_info_not_reachable">لا يمكن الوصول إليه بعد</string>
+    <string name="group_info_no_verified_pairing">لا يوجد اقتران موثَّق مع هذا العضو بعد</string>
+    <string name="group_info_admin_badge">مشرف</string>
+    <string name="group_info_leave_group">مغادرة المجموعة</string>
+    <string name="group_info_make_admin">تعيين كمشرف</string>
+    <string name="group_info_remove_from_group">إزالة من المجموعة</string>
+    <string name="group_info_add_member_precondition">يجب أن يكون قد اقترن شخصيًا مع كل عضو. وأنت تزكّي ذلك.</string>
+    <string name="group_info_add_member_empty">لا جهات اتصال مؤهلة — كل من اقترنت به موجود في المجموعة بالفعل.</string>
+    <!-- Leave-confirm dialog title differs by platform (pre-existing) -->
+    <string name="group_info_leave_confirm_title_android">هل تريد مغادرة %1$s؟</string>
+    <string name="group_info_leave_confirm_title_ios">مغادرة المجموعة</string>
+    <string name="group_info_leave_confirm_admin_message">أنت المشرف. انقل الدور أولًا، وإلا فلن يستطيع أحد تغيير قائمة الأعضاء.</string>
+    <string name="group_info_leave_confirm_message">سيُبلَّغ بقية الأعضاء بأنك غادرت.</string>
+    <string name="group_info_leave_unread_warning">ما أرسلته ولم يقرأه الآخرون بعد قد لا يُعرض عليهم أبدًا.</string>
+    <string name="group_info_leave_confirm_action">مغادرة</string>
+    <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
+    <string name="group_info_choose_admin_title">اختر مشرفًا جديدًا</string>
+    <string name="group_info_choose_admin_subtitle_android">سيتمكن من إضافة الأعضاء وإزالتهم بعد مغادرتك.</string>
+    <string name="group_info_choose_admin_nav_title">مشرف جديد</string>
+    <string name="group_info_choose_admin_subtitle_ios">اختر من يصبح المشرف الجديد. سيتمكن من إضافة الأعضاء وإزالتهم بعد مغادرتك.</string>
+    <!-- iOS-only admin-handoff-failure dialog -->
+    <string name="group_info_transfer_failed_title">تعذّر تسليم الإشراف</string>
+    <string name="group_info_transfer_failed_message">لم يتغيّر شيء — ما زلت أنت المشرف، فالمجموعة تبقى قابلة للإدارة. حاول مجددًا.</string>
+
+    <!-- Create group -->
+    <string name="create_group_title">مجموعة جديدة</string>
+    <string name="create_group_name_placeholder">اسم المجموعة</string>
+    <string name="create_group_precondition">يجب أن يكون كل شخص في المجموعة قد اقترن شخصيًا مع كل الآخرين. وأنت تزكّي ذلك عندما تنشئها.</string>
+    <string name="create_group_failed">تعذّر إنشاء المجموعة. تحقق من الاتصال وحاول مجددًا.</string>
+    <string name="create_group_creating">جارٍ الإنشاء…</string>
+    <string name="create_group_select_members">اختر الأعضاء</string>
+    <string name="create_group_button_label">إنشاء المجموعة (%1$d)</string>
+    <string name="group_private_from">خاصة من %1$s · أنت وحدك ترى هذا</string>
+    <string name="group_private_to">خاصة إلى %1$s</string>
+    <string name="group_private_reply">الرد بشكل خاص</string>
+    <string name="group_private_reply_chip">رد خاص على %1$s</string>
+    <string name="group_private_reply_chip_close">إنهاء الرد الخاص</string>
+
+</resources>

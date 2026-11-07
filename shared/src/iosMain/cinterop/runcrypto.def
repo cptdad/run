@@ -1,0 +1,52 @@
+package = runcrypto
+linkerOpts = -lSystem
+
+---
+
+#include <stdint.h>
+#include <stddef.h>
+
+/* SHA-256 (CommonCrypto / libSystem — always available on iOS) */
+unsigned char *CC_SHA256(const void *data, unsigned int len, unsigned char *md);
+#define CC_SHA256_DIGEST_LENGTH 32
+
+/*
+ * AES-GCM oneshot functions — available as stable SPI on iOS 13+.
+ * These are in CommonCryptorSPI.h (included by the iOS 13+ SDK umbrella header).
+ * kCCAlgorithmAES = 0, kCCSuccess = 0.
+ */
+int CCCryptorGCMOneshotEncrypt(
+    int         alg,
+    const void *key,       size_t keyLength,
+    const void *iv,        size_t ivLength,
+    const void *aData,     size_t aDataLength,
+    const void *in,        size_t inLength,
+    void       *out,
+    void       *tag,       size_t *tagLength
+);
+
+int CCCryptorGCMOneshotDecrypt(
+    int         alg,
+    const void *key,       size_t keyLength,
+    const void *iv,        size_t ivLength,
+    const void *aData,     size_t aDataLength,
+    const void *in,        size_t inLength,
+    void       *out,
+    const void *tag,       size_t tagLength,
+    uint32_t   *valid
+);
+
+/* HMAC (CommonCrypto) */
+void CCHmac(unsigned int algorithm, const void *key, size_t keyLength,
+            const void *data, size_t dataLength, void *macOut);
+#define kCCHmacAlgSHA256 2
+#define CC_SHA256_DIGEST_LENGTH_HMAC 32
+
+/* PBKDF2 (CommonCrypto) */
+int CCKeyDerivationPBKDF(unsigned int algorithm,
+                         const char *password, size_t passwordLen,
+                         const uint8_t *salt, size_t saltLen,
+                         unsigned int prf, unsigned int rounds,
+                         uint8_t *derivedKey, size_t derivedKeyLen);
+#define kCCPBKDF2 2
+#define kCCPRFHmacAlgSHA256 3

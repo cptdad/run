@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Nycklar som bara används på iOS bor också här (usage-description-strängar
+         för Info.plist och den innehållslösa APNs-notistexten) — filen är den enda
+         källan för BÅDA plattformarnas systemnära strängar utanför konversationer.
+         scripts/l10n/gen-l10n.mjs hoppar över infoplist_*-nycklar när
+         Localizable.xcstrings/L10n.swift genereras och skickar dem till
+         InfoPlist.xcstrings i stället; apns_notification_body genereras under
+         katalognyckeln "Notification" (se tabellen KEY OVERRIDE i generatorn) så
+         att en framtida APNs loc-key: "Notification" faller tillbaka på literalen
+         i äldre klienter. -->
+    <string name="notification_channel_name">Meddelanden</string>
+    <string name="notification_title">Notis</string>
+    <string name="apns_notification_body">Notis</string>
+    <string name="tor_keepalive_channel_name">Anslutningsberedskap</string>
+    <string name="tor_keepalive_notification_title">Håller anslutningen redo</string>
+    <string name="infoplist_camera_usage">Kameran används för att skanna QR-koder vid kontaktutbyte.</string>
+    <string name="infoplist_faceid_usage">Face ID låser upp ditt krypterade valv när hårdvarubunden upplåsning är påslagen.</string>
+    <string name="infoplist_local_network_usage">Lokal nätverksåtkomst används bara när du anger en extern Tor-proxy i ditt lokala nätverk.</string>
+</resources>

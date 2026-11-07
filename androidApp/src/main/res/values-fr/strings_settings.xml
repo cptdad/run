@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French (fr) translation of values/strings_settings.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Language picker -->
+    <string name="settings_language">Langue</string>
+    <string name="language_option_system">Langue du système</string>
+
+    <!-- Notification settings modal chrome -->
+    <string name="notif_settings_carousel_back">‹ Retour</string>
+    <string name="notif_settings_carousel_next">Suivant ›</string>
+    <string name="notif_settings_technical_details">Détails techniques</string>
+    <string name="notif_settings_sound_row_label">Son et vibration</string>
+    <string name="notif_settings_sound_row_hint">Les alertes sonnent comme celles de n\'importe quelle messagerie. Modifiez-les ou coupez-les dans les paramètres de notifications d\'Android — Rún ne remplace jamais votre choix.</string>
+    <string name="notif_settings_register_error_generic">Impossible de s\'inscrire aux notifications. Vérifiez votre connexion et réessayez.</string>
+    <string name="notif_settings_register_error_no_distributor">Aucun distributeur de notifications n\'a été sélectionné. Installez ntfy depuis F-Droid, puis réessayez.</string>
+    <string name="notif_settings_register_error_distributor_selection">Impossible de se connecter à votre distributeur de notifications. Fermez complètement Rún et rouvrez-la, puis réessayez.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Le serveur push de ce distributeur n\'est pas encore pris en charge — il exige VAPID. ntfy fonctionne ; vous pouvez l\'installer depuis F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Votre distributeur de notifications a refusé l\'inscription. Ouvrez-le, vérifiez sa configuration, puis réessayez.</string>
+    <string name="notif_settings_register_error_no_endpoint">Votre distributeur de notifications n\'a pas répondu à temps. Ouvrez-le, assurez-vous qu\'il est connecté, puis réessayez.</string>
+    <string name="notif_settings_no_distributor_message">Ce téléphone ne contient aucun service Google : les notifications nécessitent donc une application distributrice UnifiedPush. Installez-en une — ntfy est le choix recommandé — puis revenez ici pour activer les notifications.</string>
+    <string name="notif_settings_no_distributor_link_label">Obtenir ntfy sur F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Votre distributeur de notifications a cessé de livrer à Rún : les notifications ont donc été désactivées. Réactivez-les pour vous reconnecter.</string>
+    <string name="settings_language_restart_title">Redémarrer pour appliquer</string>
+    <string name="settings_language_restart_message">Rún doit redémarrer pour changer la langue de l\'application en %1$s. Continuer ?</string>
+    <string name="settings_report_bug">Signaler un bug</string>
+    <string name="settings_debug_mode">Mode débogage</string>
+    <string name="settings_debug_mode_on">Mode débogage (activé)</string>
+    <string name="debug_mode_title">Mode débogage</string>
+    <string name="debug_mode_message">Envoyez des journaux de diagnostic anonymes au relais pour aider au développement. Les journaux ne contiennent jamais rien qui permette de vous identifier, vous ou cet appareil : aucun nom, aucun contenu de message, aucune adresse, aucune clé, aucun identifiant de boîte de réception ou de contact.</string>
+    <string name="debug_mode_message_off">Le mode débogage est activé. Désactivez-le pour ne plus envoyer de journaux de diagnostic anonymes.</string>
+    <string name="debug_mode_turn_on">Activer</string>
+    <string name="debug_mode_turn_off">Désactiver</string>
+    <string name="ext_proxy_title">Proxy Tor externe</string>
+    <string name="ext_proxy_description">Faites passer tout le trafic du relais par un proxy SOCKS5 que vous gérez, comme Orbot ou Tor sur votre propre réseau, au lieu du Tor intégré de Rún. Tant que cette option est activée, le Tor intégré ne démarre jamais. Si le proxy est injoignable, Rún reste hors ligne. Il n\'y a aucun repli.</string>
+    <string name="ext_proxy_toggle">Utiliser un proxy externe</string>
+    <string name="ext_proxy_host_label">Adresse IP du proxy</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Saisissez une adresse IP de ce téléphone ou de votre réseau local : 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x ou 169.254.x.x. Les noms d\'hôte ne sont pas autorisés.</string>
+    <string name="ext_proxy_error_port">Saisissez un port de 1 à 65535.</string>
+    <string name="ext_proxy_error_save">Impossible d\'enregistrer le réglage. Réessayez.</string>
+    <string name="ext_proxy_lan_warning">Le trafic entre ce téléphone et le proxy n\'est pas chiffré. Quiconque peut observer ou usurper cette adresse, y compris sur d\'autres réseaux que ce téléphone rejoindra plus tard, obtient les jetons d\'accès à vos boîtes de réception de conversation. Cette personne pourrait supprimer ou prendre le contrôle de ces boîtes, mais ne peut pas lire vos messages. Utilisez ce mode uniquement sur un réseau que vous contrôlez, et désactivez-le en le quittant.</string>
+    <string name="ext_proxy_loopback_warning">Tant que l\'application proxy (comme Orbot) n\'est pas lancée, n\'importe quelle autre application de ce téléphone peut prendre son port et recevoir les mêmes jetons d\'accès. Configurez l\'application proxy sur un port non standard et laissez-la en marche.</string>
+    <string name="ext_proxy_next_launch">Les modifications prennent effet à la prochaine ouverture de Rún.</string>
+    <string name="ext_proxy_saved">Enregistré. Fermez puis rouvrez Rún pour l\'appliquer.</string>
+    <string name="ext_proxy_connecting">Connexion via votre proxy externe</string>
+    <string name="ext_proxy_status_checking">Proxy externe utilisé : vérification</string>
+    <string name="ext_proxy_status_reachable">Proxy externe utilisé</string>
+    <string name="ext_proxy_status_unreachable">Proxy externe injoignable</string>
+    <string name="ext_proxy_status_invalid">Le réglage du proxy externe n\'est pas valide. Corrigez-le dans les Réglages.</string>
+    <string name="ext_proxy_status_unreadable">Le réglage du proxy externe n\'a pas pu être lu. La messagerie est indisponible.</string>
+    <string name="report_bug_title">Décrivez le bug (vous êtes anonyme)</string>
+    <string name="report_bug_placeholder">Que s\'est-il passé, et à quoi vous attendiez-vous ?</string>
+    <string name="report_bug_send">Envoyer</string>
+    <string name="report_bug_failed">Impossible d\'envoyer le rapport — vérifiez la connexion et réessayez.</string>
+    <string name="report_bug_thanks">Merci de contribuer à améliorer Rún</string>
+</resources>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian (fa) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates, EULA, block/report, rune dialog
+  chrome and the burn-on-read onboarding notice.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">این گاوصندوق پاک شود؟</string>
+    <string name="pin_erase_vault_message">گاوصندوق روی این دستگاه باز نمی‌شود — نه PIN برای آن ذخیره شده و نه عبارت عبور. با پاک کردن، برای همیشه حذف می‌شود و یک راه‌اندازی تازه آغاز می‌گردد. این کار قابل بازگشت نیست.</string>
+    <string name="pin_erase_vault_confirm">پاک کردن</string>
+    <string name="pin_prompt_passphrase">عبارت عبور را وارد کنید</string>
+    <string name="pin_passphrase_placeholder">عبارت عبور</string>
+    <string name="pin_unlock_button">باز کردن قفل</string>
+    <string name="pin_backoff_hint">پس از %1$d ثانیه دوباره امتحان کنید</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">قفل صفحهٔ دستگاه شما تغییر کرده، بنابراین کلید سخت‌افزاریِ محافظ این گاوصندوق از بین رفته است. کد بازیابی شما هنوز می‌تواند آن را باز کند.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">قفل صفحهٔ دستگاه شما تغییر کرده، بنابراین کلید سخت‌افزاریِ محافظ این گاوصندوق از بین رفته است. بدون کد بازیابی، این گاوصندوق باز نخواهد شد.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">رمز دستگاه شما تغییر کرده، بنابراین کلید سخت‌افزاریِ محافظ این گاوصندوق از بین رفته است. کد بازیابی شما هنوز می‌تواند آن را باز کند.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">رمز دستگاه شما تغییر کرده، بنابراین کلید سخت‌افزاریِ محافظ این گاوصندوق از بین رفته است. بدون کد بازیابی، این گاوصندوق باز نخواهد شد.</string>
+    <string name="pin_use_recovery_code">استفاده از کد بازیابی</string>
+    <string name="pin_use_recovery_code_prompt">قفل باز نمی‌شود؟ از کد بازیابی استفاده کنید</string>
+    <string name="pin_orphaned_vault_notice">روی این دستگاه گاوصندوقی هست، اما نه PIN برای آن ذخیره شده و نه عبارت عبور؛ پس هیچ چیز نمی‌تواند آن را باز کند. محتوای آن قابل بازیابی نیست.</string>
+    <string name="pin_erase_start_over">پاک کردن و شروع دوباره</string>
+
+    <!-- Passphrase strength meter -->
+    <string name="pin_strength_too_weak">خیلی ضعیف</string>
+    <string name="pin_strength_still_weak">هنوز خیلی ضعیف است — واژه اضافه کنید</string>
+    <string name="pin_strength_strong">قوی</string>
+    <string name="pin_strength_excellent">عالی</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">قفل سخت‌افزاری فعال نشد</string>
+    <string name="pin_hardware_lock_not_enabled_message">گوشی شما کلید سخت‌افزاری را تأیید نکرد، بنابراین گاوصندوق شما با سطح حفاظت پایین‌تری راه‌اندازی شد. می‌توانید بعداً از تنظیمات آن را روشن کنید.</string>
+    <string name="pin_device_key_busy_title">راه‌اندازی کامل نشد</string>
+    <string name="pin_device_key_busy_message">سخت‌افزار امن گوشی شما مشغول است. گوشی را قفل کنید، قفل آن را باز کنید و دوباره تلاش کنید.</string>
+    <string name="pin_setup_choose_pin">PIN خود را انتخاب کنید</string>
+    <string name="pin_setup_confirm_pin">PIN خود را تأیید کنید</string>
+    <string name="pin_setup_choose_passphrase">یک عبارت عبور انتخاب کنید</string>
+    <string name="pin_setup_confirm_passphrase">عبارت عبور خود را تأیید کنید</string>
+    <string name="pin_setup_passphrase_hint">حدود شش واژهٔ تصادفی. در هر بار باز کردن قفل باید تایپ شود — نه PIN در کار است و نه میان‌بر بیومتریک. نکته دقیقاً همین است.</string>
+    <string name="pin_passphrase_placeholder_reenter">عبارت عبور را دوباره وارد کنید</string>
+    <string name="pin_confirm_button">تأیید</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">عبارت عبور فعلی را وارد کنید</string>
+    <string name="pin_change_enter_current_pin">PIN فعلی را وارد کنید</string>
+    <string name="pin_change_choose_new_pin">PIN جدید را انتخاب کنید</string>
+    <string name="pin_change_confirm_passphrase">عبارت عبور را تأیید کنید</string>
+    <string name="pin_change_confirm_new_pin">PIN جدید را تأیید کنید</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">دستگاه به خطر افتاده است</string>
+    <string name="gate_compromised_body">به نظر می‌رسد این دستگاه روت شده است. Rún نمی‌تواند امنیت پیام‌های شما را روی یک دستگاه به‌خطرافتاده تضمین کند.</string>
+    <string name="gate_compromised_body_jailbroken">به نظر می‌رسد این دستگاه جیلبریک شده است. Rún نمی‌تواند امنیت پیام‌های شما را روی یک دستگاه به‌خطرافتاده تضمین کند.</string>
+    <string name="gate_compromised_continue">متوجه‌ام — ادامه</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">بررسی عبارت عبور در %1$d…</string>
+    <string name="gate_lock_countdown">قفل شدن در %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">برای باز ماندن قفل، جایی از صفحه ضربه بزنید</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only) -->
+    <string name="gate_passcode_warning_title">رمز دستگاه تنظیم نشده</string>
+    <string name="gate_passcode_warning_message">بدون رمز دستگاه، حفاظت سخت‌افزاری Rún در حالت سکون ضعیف‌تر است. برای حفاظت کامل، در تنظیمات یک رمز تعیین کنید و سپس برای پایان راه‌اندازی برگردید. می‌توانید بدون آن هم ادامه دهید.</string>
+    <string name="gate_passcode_warning_open_settings">باز کردن تنظیمات</string>
+    <string name="gate_passcode_warning_continue_anyway">در هر صورت ادامه</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">پیش از شروع</string>
+    <string name="eula_terms_of_use_title">شرایط استفاده</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">با استفاده از Rún با این شرایط استفاده موافقت می‌کنید.\n\nRún یک پیام‌رسان خصوصی با رمزگذاری سرتاسری است. مخاطبان را حضوری و با تبادل کد QR اضافه می‌کنید، و پیام‌های شما پیش از ارسال روی دستگاه خودتان رمزگذاری می‌شوند. ما نمی‌توانیم پیام‌های شما را بخوانیم و هیچ فید عمومی، پروفایل یا محتوای اشتراکی‌ای میزبانی نمی‌کنیم.\n\nتحمل صفر در برابر محتوای نامناسب و آزار\nهیچ‌گونه تحملی برای محتوا یا رفتار نامناسب، غیرقانونی یا آزارگرانه در Rún وجود ندارد. شما می‌پذیرید که از Rún برای ارسال، درخواست یا طلب محتوایی که غیرقانونی، آزاردهنده، تهدیدآمیز، نفرت‌پراکن، بهره‌کشانهٔ جنسی یا به هر شکل دیگری نامناسب است استفاده نکنید، و دیگران را آزار ندهید و به آن‌ها آسیب نرسانید. نقض این بند، نقض این شرایط است.\n\nمراقبت از خودتان\nچون گفتگوهای شما فقط به شما و کسانی که اضافه می‌کنید تعلق دارد، خودتان تعیین می‌کنید چه کسی می‌تواند با شما تماس بگیرد:\n\n• گزارش — اگر مخاطبی برای شما محتوای نامناسب فرستاد یا رفتاری آزارگرانه داشت، از «گزارش» (در یک گفتگو، یا با نگه داشتن انگشت روی مخاطب) استفاده کنید تا به ما خبر دهید. ما هر گزارش را ظرف ۲۴ ساعت بررسی می‌کنیم و به آن رسیدگی می‌کنیم — فرستنده‌های آزارگر را تا جایی که از نظر فنی برایمان ممکن باشد محروم می‌کنیم و محتوای غیرقانونی را به مراجع ذی‌صلاح گزارش می‌دهیم. چون پیام‌ها رمزگذاری سرتاسری دارند، بر پایهٔ آنچه در گزارش خود به ما می‌گویید عمل می‌کنیم.\n\n• مسدود کردن — از «مسدود کردن» استفاده کنید تا مخاطبی بلافاصله پنهان شود و دیگر نه او را ببینید و نه پیام‌هایش را. مسدود کردن برگشت‌پذیر است — هر زمان می‌توانید از منوی تنظیمات رفع مسدودی کنید.\n\nمسئولیت محتوایی که می‌فرستید و کسانی که به‌عنوان مخاطب اضافه می‌کنید با شماست. برای استفاده از Rún باید به سنی رسیده باشید که در کشور شما بستن توافق الزام‌آور مجاز باشد.\n\nبدون ضمانت\nRún «همان‌گونه که هست» ارائه می‌شود، بدون هیچ‌گونه ضمانتی، تا بیشترین حدی که قانون اجازه می‌دهد.\n\nتماس: %1$s</string>
+    <string name="eula_agree_button">موافقم و ادامه می‌دهم</string>
+    <string name="eula_decline_alert_title">پذیرش لازم است</string>
+    <string name="eula_decline_alert_message">برای استفاده از Rún باید شرایط استفاده را بپذیرید. این شرایط برای امنیت همه وجود دارند و محتوای نامناسب و رفتار آزارگرانه را ممنوع می‌کنند.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">گزارش سوءاستفاده در Rún</string>
+    <string name="report_abuse_email_body">می‌خواهم مخاطبی را به دلیل محتوای نامناسب یا رفتار آزارگرانه گزارش کنم.\n\nمخاطب (نامی که روی دستگاهم به او داده‌ام): %1$s\n\nچه اتفاقی افتاد (لطفاً با واژه‌های خودتان شرح دهید):\n\n\n---\nRún هر گزارش را ظرف ۲۴ ساعت بررسی می‌کند و به آن رسیدگی می‌کند —\nفرستنده‌های آزارگر را تا جایی که از نظر فنی ممکن باشد محروم می‌کند و\nمحتوای غیرقانونی را به مراجع ذی‌صلاح گزارش می‌دهد.\n\nاین ایمیل در برنامهٔ ایمیل شما و بیرون از حافظهٔ رمزگذاری‌شدهٔ Rún ذخیره\nمی‌شود، پس فقط چیزی را بنویسید که با ماندنش در آنجا مشکلی ندارید.</string>
+    <string name="report_email_fallback_title">گزارش از راه ایمیل</string>
+    <string name="report_email_fallback_message">هیچ برنامهٔ ایمیلی روی این دستگاه راه‌اندازی نشده است. روی «کپی گزارش» ضربه بزنید و آن را در ایمیلی به نشانی %1$s بچسبانید.</string>
+    <string name="report_copy_report_button">کپی گزارش</string>
+    <string name="report_copy_report_clipboard">گیرنده: %1$s\nموضوع: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">کسی را مسدود نکرده‌اید.</string>
+    <string name="report_unblock_button">رفع مسدودی</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">سوختن پس از خواندن</string>
+    <string name="burn_notice_message">پیام‌ها فقط یک بار ظاهر می‌شوند — همین‌جا — و هرگز ذخیره نمی‌شوند. وقتی این گفتگو را ترک کنید، برای همیشه از بین می‌روند.</string>
+
+</resources>

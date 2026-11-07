@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Meldinger</string>
+    <string name="notification_title">Varsel</string>
+    <string name="apns_notification_body">Varsel</string>
+    <string name="tor_keepalive_channel_name">Tilkoblingsberedskap</string>
+    <string name="tor_keepalive_notification_title">Holder tilkoblingen klar</string>
+    <string name="infoplist_camera_usage">Kameraet brukes til å skanne QR-koder når du utveksler kontaktkoder.</string>
+    <string name="infoplist_faceid_usage">Face ID låser opp det krypterte hvelvet ditt når maskinvarebundet opplåsing er slått på.</string>
+    <string name="infoplist_local_network_usage">Tilgang til lokalt nettverk brukes bare når du angir en ekstern Tor-proxy på ditt lokale nettverk.</string>
+</resources>

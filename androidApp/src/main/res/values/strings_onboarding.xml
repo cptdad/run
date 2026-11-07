@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PIN entry/setup/change, launch gates (compromised-device, inactivity wipe,
+  passcode warning), EULA, block/report, rune dialog chrome, and the
+  burn-on-read onboarding notice. Mirrored on iOS via L10n.swift.
+
+  Android sources: PinEntryScreen.kt, PinSetupScreen.kt, PinComponents.kt,
+  ChangePinScreen.kt, RuneDialog.kt, MainActivity.kt, BurnOnReadNotice.kt.
+  iOS sources: PinEntryView.swift, PinSetupView.swift, ChangePinView.swift,
+  ContentView.swift, UserSafety.swift, UIComponents.swift.
+
+  Some strings differ by wording between platforms (Android says "lock
+  screen", iOS says "passcode"; Android says "rooted", iOS says
+  "jailbroken") — these get separate keys rather than being forced to
+  share one, per the byte-identical-English rule. The EULA / block / report
+  strings (eula_, report_) are iOS-only: Rún's Guideline-1.2 safeguards
+  (Terms of Use, Report, Block) are not implemented on Android.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">Erase this vault?</string>
+    <string name="pin_erase_vault_message">The vault on this device cannot be opened — no PIN or passphrase is stored for it. Erasing deletes it permanently and starts a new setup. This cannot be undone.</string>
+    <string name="pin_erase_vault_confirm">Erase</string>
+    <string name="pin_prompt_passphrase">Enter passphrase</string>
+    <string name="pin_passphrase_placeholder">Passphrase</string>
+    <string name="pin_unlock_button">Unlock</string>
+    <string name="pin_backoff_hint">Try again in %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Your device lock screen changed, so the hardware key protecting this vault is gone. Your recovery code can still open it.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Your device lock screen changed, so the hardware key protecting this vault is gone. Without a recovery code this vault cannot be opened.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Your device passcode changed, so the hardware key protecting this vault is gone. Your recovery code can still open it.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Your device passcode changed, so the hardware key protecting this vault is gone. Without a recovery code this vault cannot be opened.</string>
+    <string name="pin_use_recovery_code">Use recovery code</string>
+    <string name="pin_use_recovery_code_prompt">Can’t unlock? Use recovery code</string>
+    <string name="pin_orphaned_vault_notice">This device has a vault, but no PIN or passphrase is stored for it, so nothing can open it. Its contents cannot be recovered.</string>
+    <string name="pin_erase_start_over">Erase and start over</string>
+
+    <!-- Passphrase strength meter (shared by entry/setup/change) -->
+    <string name="pin_strength_too_weak">Too weak</string>
+    <string name="pin_strength_still_weak">Still too weak — add words</string>
+    <string name="pin_strength_strong">Strong</string>
+    <string name="pin_strength_excellent">Excellent</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">Hardware lock not enabled</string>
+    <string name="pin_hardware_lock_not_enabled_message">Your phone didn’t confirm the hardware key, so your vault is set up at a lower protection level. You can turn it on later from Settings.</string>
+    <string name="pin_device_key_busy_title">Couldn’t finish setup</string>
+    <string name="pin_device_key_busy_message">Your phone’s secure hardware is busy. Lock your phone, unlock it, and try again.</string>
+    <string name="pin_setup_choose_pin">Choose your PIN</string>
+    <string name="pin_setup_confirm_pin">Confirm your PIN</string>
+    <string name="pin_setup_choose_passphrase">Choose a passphrase</string>
+    <string name="pin_setup_confirm_passphrase">Confirm your passphrase</string>
+    <string name="pin_setup_passphrase_hint">Six or so random words. Typed at every unlock — there is no PIN and no biometric shortcut. That’s the point.</string>
+    <string name="pin_passphrase_placeholder_reenter">Re-enter passphrase</string>
+    <string name="pin_confirm_button">Confirm</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">Enter current passphrase</string>
+    <string name="pin_change_enter_current_pin">Enter current PIN</string>
+    <string name="pin_change_choose_new_pin">Choose new PIN</string>
+    <string name="pin_change_confirm_passphrase">Confirm passphrase</string>
+    <string name="pin_change_confirm_new_pin">Confirm new PIN</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">Device Compromised</string>
+    <string name="gate_compromised_body">This device appears to be rooted. Rún cannot guarantee the security of your messages on a compromised device.</string>
+    <string name="gate_compromised_body_jailbroken">This device appears to be jailbroken. Rún cannot guarantee the security of your messages on a compromised device.</string>
+    <string name="gate_compromised_continue">I understand — continue</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">Passphrase check in %1$d…</string>
+    <string name="gate_lock_countdown">Locking in %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Tap anywhere to stay unlocked</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only — VS-2) -->
+    <string name="gate_passcode_warning_title">No device passcode</string>
+    <string name="gate_passcode_warning_message">Rún\'s at-rest hardware protection is weaker without a device passcode. Set one in Settings for full protection, then return to finish setup. You can continue without one.</string>
+    <string name="gate_passcode_warning_open_settings">Open Settings</string>
+    <string name="gate_passcode_warning_continue_anyway">Continue anyway</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">Before you start</string>
+    <string name="eula_terms_of_use_title">Terms of Use</string>
+    <string name="eula_body">By using Rún you agree to these Terms of Use.\n\nRún is a private, end-to-end encrypted messenger. You add contacts in person by exchanging a QR code, and your messages are encrypted on your device before they are sent. We cannot read your messages and we do not host a public feed, profiles, or any shared content.\n\nZERO TOLERANCE FOR OBJECTIONABLE CONTENT AND ABUSE\nThere is no tolerance for objectionable, illegal, or abusive content or behaviour on Rún. You agree not to use Rún to send, request, or solicit content that is unlawful, harassing, threatening, hateful, sexually exploitative, or otherwise objectionable, and not to abuse, harass, or harm other people. Violating this is a breach of these terms.\n\nKEEPING YOURSELF SAFE\nBecause your conversations are private to you and the people you add, you are in control of who can contact you:\n\n• Report — if a contact sends you objectionable content or behaves abusively, use \"Report\" (in a conversation, or by pressing and holding the contact) to notify us. We review every report within 24 hours and act on it — barring abusive senders where we are technically able to, and reporting illegal content to the appropriate authorities. Because messages are end-to-end encrypted, we act on what you tell us in your report.\n\n• Block — use \"Block\" to immediately hide a contact so you no longer see them or their messages. Blocking is reversible — you can unblock any time from the settings menu.\n\nYou are responsible for the content you send and for the people you choose to add as contacts. You must be old enough to form a binding agreement in your country to use Rún.\n\nNO WARRANTY\nRún is provided \"as is\", without warranties of any kind, to the fullest extent permitted by law.\n\nContact: %1$s</string>
+    <string name="eula_agree_button">I Agree &amp; Continue</string>
+    <string name="eula_decline_alert_title">Agreement required</string>
+    <string name="eula_decline_alert_message">You must accept the Terms of Use to use Rún. They exist to keep everyone safe and forbid objectionable content and abusive behaviour.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">Rún abuse report</string>
+    <string name="report_abuse_email_body">I want to report a contact for objectionable content or abusive behaviour.\n\nContact (the name I gave them on my device): %1$s\n\nWhat happened (please describe in your own words):\n\n\n---\nRún reviews every report within 24 hours and acts on it — barring abusive\nsenders where technically possible and reporting illegal content to the\nappropriate authorities.\n\nThis email is stored by your mail app, outside Rún\'s encrypted storage, so\nplease include only what you are comfortable keeping there.</string>
+    <string name="report_email_fallback_title">Report by email</string>
+    <string name="report_email_fallback_message">No email app is set up on this device. Tap Copy report, then paste it into any email addressed to %1$s.</string>
+    <string name="report_copy_report_button">Copy report</string>
+    <string name="report_copy_report_clipboard">To: %1$s\nSubject: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">You haven\'t blocked anyone.</string>
+    <string name="report_unblock_button">Unblock</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">Burn on read</string>
+    <string name="burn_notice_message">Messages appear once — right here — and are never saved. When you leave this conversation, they are gone for good.</string>
+
+</resources>

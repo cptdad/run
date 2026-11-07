@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spanish (es) translation of values/strings_about.xml.
+  About-info modal chrome, Donate/Support modal and tip jar.
+  Not translated on purpose: "Rún", the rune glyph "ᚱ", "Vikstrom Group AB",
+  the "vgab.eu" URL and the credit/licence names.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">Mensajería privada, enrutada a través de Tor.</string>
+    <string name="about_info_tor_version">Usa Tor %1$s</string>
+    <string name="about_info_open_source_heading">Construido sobre código abierto</string>
+    <string name="about_info_clearnet_title">¿Abrir en el navegador?</string>
+    <string name="about_info_clearnet_message">vgab.eu se abre en tu navegador por internet normal, no por Tor. La web y tu red pueden ver la dirección IP de tu dispositivo.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">Apoya a Rún</string>
+    <string name="donate_tab_tip">Propina</string>
+    <string name="donate_tab_crypto">Cripto</string>
+    <string name="donate_play_disclosure">Lo procesa Google Play · queda ligado a tu cuenta de Google · ningún otro tercero.</string>
+    <string name="donate_tba">Por anunciar — próximamente</string>
+    <string name="donate_qr_content_description">QR de la dirección de donación de %1$s</string>
+    <string name="donate_copied_confirmation">Copiado ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">Rún no tiene anuncios ni inversores, y nunca vende tus datos. Una propina, del tamaño que sea, ayuda a mantenerlo gratuito e independiente.</string>
+    <string name="tip_store_disclosure">Lo procesa la App Store · queda ligado a tu Apple ID · ningún otro tercero.</string>
+    <string name="tip_thank_you">Gracias 🖤</string>
+    <string name="tip_thank_you_body">Tu apoyo mantiene Rún gratuito e independiente.</string>
+    <string name="tip_unavailable_fallback">Ahora mismo no se pueden dar propinas.</string>
+    <string name="tip_error_purchase_failed">La propina no se ha completado. Inténtalo de nuevo.</string>
+    <string name="tip_error_unavailable_device">Las propinas dentro de la app no están disponibles en este dispositivo.</string>
+    <string name="tip_error_load_failed">Ahora mismo no se han podido cargar las propinas.</string>
+    <string name="tip_error_not_configured">Las propinas todavía no están configuradas.</string>
+    <string name="tip_error_checkout_failed">No se ha podido abrir el pago de Google Play. Inténtalo de nuevo.</string>
+    <string name="tip_tier_small">Invítame a un café</string>
+    <string name="tip_tier_medium">Propina pequeña</string>
+    <string name="tip_tier_large">Propina generosa</string>
+    <string name="tip_tier_xl">Eres una leyenda</string>
+
+</resources>

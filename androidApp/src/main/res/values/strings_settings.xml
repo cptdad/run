@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Language picker (androidApp/src/main/java/com/vg/run/LanguagePickerModal.kt,
+         AppLocale.kt) — per-app language override entry point. The list of
+         languages themselves is NOT translated here: LanguagePickerModal renders
+         each supported tag's name in its OWN language via
+         Locale.forLanguageTag(tag).getDisplayName(Locale.forLanguageTag(tag)), so
+         this file only needs the chrome strings below in every locale. -->
+    <string name="settings_language">Language</string>
+    <string name="language_option_system">System default</string>
+
+    <!-- Notification settings modal chrome (NotificationSettingsModal.kt) —
+         carousel navigation shared by BOTH the FCM (shared commonMain copy)
+         and UnifiedPush (Android-local copy) education pages, plus the
+         cause-specific registration-error and no-distributor copy. iOS's
+         equivalent carousel chrome lives in ContactListView.swift under the
+         same notif_settings_ prefix. -->
+    <string name="notif_settings_carousel_back">‹ Back</string>
+    <string name="notif_settings_carousel_next">Next ›</string>
+    <string name="notif_settings_technical_details">Technical details</string>
+    <string name="notif_settings_sound_row_label">Sound &amp; vibration</string>
+    <string name="notif_settings_sound_row_hint">Alerts sound like any other messenger. Change or silence them in Android\'s notification settings — Rún never overrides your choice.</string>
+    <string name="notif_settings_register_error_generic">Couldn\'t register for notifications. Check your connection and try again.</string>
+    <string name="notif_settings_register_error_no_distributor">No notification distributor was selected. Install ntfy from F-Droid, then try again.</string>
+    <string name="notif_settings_register_error_distributor_selection">Couldn\'t connect to your notification distributor. Close Rún fully and reopen it, then try again.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">This distributor\'s push server isn\'t supported yet — it requires VAPID. ntfy works; you can install it from F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Your notification distributor refused the registration. Open it, check it\'s set up, and try again.</string>
+    <string name="notif_settings_register_error_no_endpoint">Your notification distributor didn\'t respond in time. Open it, make sure it\'s connected, and try again.</string>
+    <string name="notif_settings_no_distributor_message">This phone has no Google services, so notifications need a UnifiedPush distributor app. Install one — ntfy is the recommended choice — then come back here and turn notifications on.</string>
+    <string name="notif_settings_no_distributor_link_label">Get ntfy on F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Your notification distributor stopped delivering to Rún, so notifications were turned off. Turn them back on to reconnect.</string>
+    <string name="settings_language_restart_title">Restart to Apply</string>
+    <string name="settings_language_restart_message">Rún needs to restart to switch the app\'s language to %1$s. Continue?</string>
+
+    <!-- Anonymous "Report bug" (ContactListScreen.kt settings menu /
+         ContactListView.swift settings sheet + BugReportSender.kt, commonMain).
+         No auth, no PoW, no capability token — deliberately anonymous; nothing
+         about the report is persisted on the device. See docs/vault-relay-
+         internals.md for the transport this rides (same relay client as
+         everything else, Tor SOCKS in release). -->
+    <string name="settings_report_bug">Report bug</string>
+    <!-- Debug mode: user-consented anonymous diagnostic log upload (settings row + consent dialog) -->
+    <string name="settings_debug_mode">Debug mode</string>
+    <string name="settings_debug_mode_on">Debug mode (on)</string>
+    <string name="debug_mode_title">Debug mode</string>
+    <string name="debug_mode_message">Send anonymous diagnostic logs to the relay to help development. The logs never include anything that identifies you or this device: no names, no message content, no addresses, no keys, no inbox or contact ids.</string>
+    <string name="debug_mode_message_off">Debug mode is on. Turn it off to stop sending anonymous diagnostic logs.</string>
+    <string name="debug_mode_turn_on">Turn on</string>
+    <string name="debug_mode_turn_off">Turn off</string>
+    <!-- External SOCKS proxy mode (ExternalProxySettingsModal.kt / ExternalTorProxy.kt,
+         commonMain; iOS ExternalProxy settings screen): route all relay traffic through
+         a SOCKS5 proxy the user runs (Orbot, Tor on their own network) instead of the
+         built-in Tor. Applies at the next launch. ext_proxy_title is also the settings
+         row label; ext_proxy_connecting / ext_proxy_status_* also appear on the
+         connecting screen. -->
+    <string name="ext_proxy_title">External Tor proxy</string>
+    <string name="ext_proxy_description">Send all relay traffic through a SOCKS5 proxy you run, such as Orbot or Tor on your own network, instead of Rún\'s built-in Tor. While this is on, the built-in Tor never starts. If the proxy can\'t be reached, Rún stays offline. It never falls back.</string>
+    <string name="ext_proxy_toggle">Use an external proxy</string>
+    <string name="ext_proxy_host_label">Proxy IP address</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Enter an IP address on this phone or your local network: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x or 169.254.x.x. Host names aren\'t allowed.</string>
+    <string name="ext_proxy_error_port">Enter a port from 1 to 65535.</string>
+    <string name="ext_proxy_error_save">Couldn\'t save the setting. Try again.</string>
+    <string name="ext_proxy_lan_warning">Traffic between this phone and the proxy is not encrypted. Anyone who can watch or impersonate this address, including on other networks this phone joins later, gets the access tokens to your conversation inboxes. They could delete or take over those inboxes, but can\'t read your messages. Use this only on a network you control, and turn the mode off when you leave it.</string>
+    <string name="ext_proxy_loopback_warning">While the proxy app (such as Orbot) isn\'t running, any other app on this phone can take its port and receive the same access tokens. Set the proxy app to a non-default port and keep it running.</string>
+    <string name="ext_proxy_next_launch">Changes take effect the next time you open Rún.</string>
+    <string name="ext_proxy_saved">Saved. Close and reopen Rún to apply it.</string>
+    <string name="ext_proxy_connecting">Connecting through your external proxy</string>
+    <string name="ext_proxy_status_checking">Using external proxy: checking</string>
+    <string name="ext_proxy_status_reachable">Using external proxy</string>
+    <string name="ext_proxy_status_unreachable">External proxy unreachable</string>
+    <string name="ext_proxy_status_invalid">External proxy setting is invalid. Fix it in Settings.</string>
+    <string name="ext_proxy_status_unreadable">External proxy setting couldn\'t be read. Messaging is unavailable.</string>
+    <string name="report_bug_title">Describe the bug (you are anonymous)</string>
+    <string name="report_bug_placeholder">What happened, and what did you expect?</string>
+    <string name="report_bug_send">Send</string>
+    <string name="report_bug_failed">Couldn\'t send the report — check the connection and try again.</string>
+    <string name="report_bug_thanks">Thank you for helping to improve Rún</string>
+</resources>

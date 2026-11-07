@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Generiskt UI-ordförråd som delas av alla skärmar på BÅDA plattformarna
+  (l10n-generatorn speglar filen till iOS String Catalog / L10n.swift).
+  Lägg bara till en nyckel här när exakt samma literal används av mer än ett
+  funktionsområde; områdesspecifik text bor i strings_<område>.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Avbryt</string>
+    <string name="common_close">Stäng</string>
+    <string name="common_done">Klar</string>
+    <string name="common_back">Tillbaka</string>
+    <string name="common_delete">Radera</string>
+    <string name="common_retry">Försök igen</string>
+    <string name="common_continue">Fortsätt</string>
+    <string name="common_copy">Kopiera</string>
+    <string name="common_copied">Kopierat</string>
+    <string name="common_save">Spara</string>
+    <string name="common_yes">Ja</string>
+    <string name="common_no">Nej</string>
+    <string name="common_got_it">Uppfattat</string>
+    <string name="common_understood">Jag förstår</string>
+    <string name="common_decline">Avböj</string>
+    <string name="common_not_now">Inte nu</string>
+    <string name="common_open">Öppna</string>
+    <string name="common_settings">Inställningar</string>
+    <string name="common_loading">Laddar…</string>
+    <string name="common_message_placeholder">Meddelande</string>
+    <string name="common_conversation_interrupted">Konversationen avbröts</string>
+    <string name="common_screenshot_notice">%1$s kan ha tagit en skärmdump</string>
+    <string name="common_time_yesterday">I går %1$s</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- iOS-only keys live here too (Info.plist usage-description strings and
+         the APNs contentless notification body) — this file is the single
+         source of truth for BOTH platforms' system-level, non-conversation
+         strings. scripts/l10n/gen-l10n.mjs skips infoplist_* keys when
+         emitting Localizable.xcstrings/L10n.swift and routes them into
+         InfoPlist.xcstrings instead; apns_notification_body is emitted under
+         the catalog key "Notification" (see the KEY OVERRIDE table in the
+         generator) so a future APNs loc-key: "Notification" degrades to the
+         literal on old clients. -->
+    <string name="notification_channel_name">Messages</string>
+    <string name="notification_title">Notification</string>
+    <string name="apns_notification_body">Notification</string>
+    <string name="tor_keepalive_channel_name">Connection standby</string>
+    <string name="tor_keepalive_notification_title">Keeping the connection ready</string>
+    <string name="infoplist_camera_usage">Camera is used to scan QR codes during contact exchange.</string>
+    <string name="infoplist_faceid_usage">Face ID unlocks your encrypted vault when hardware-bound unlock is enabled.</string>
+    <string name="infoplist_local_network_usage">Local network access is used only when you set an external Tor proxy on your local network.</string>
+</resources>

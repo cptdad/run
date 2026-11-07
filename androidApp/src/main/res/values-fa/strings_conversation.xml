@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Persian (fa) translation of values/strings_conversation.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen -->
+    <string name="conversation_pending_banner">در انتظار صندوق ورودی این مخاطب — به‌زودی می‌توانید پیام بفرستید.</string>
+    <string name="conversation_alias_unknown">ناشناس</string>
+    <string name="conversation_contact_fallback">مخاطب</string>
+    <string name="conversation_fs_stalled_title">محرمانگی پیشرو هنوز فعال نشده است</string>
+    <string name="conversation_fs_stalled_body">پیام‌هایی که به این مخاطب می‌فرستید همچنان رمزگذاری می‌شوند، اما هنوز از آن حفاظت اضافی برخوردار نیستند که اگر بعداً کلیدی لو برود، پیام‌های گذشته را ایمن نگه می‌دارد. معمولاً به‌محض اینکه مخاطب پاسخ بدهد، این وضعیت برطرف می‌شود. اگر ادامه داشت، مخاطب را حذف کنید و دوباره اضافه کنید.</string>
+    <string name="conversation_ratchet_refused_body">برقراری کانال امن با این مخاطب ممکن نشد. پیام‌ها ارسال نمی‌شوند. مخاطب را حذف کنید و دوباره جفت‌سازی کنید.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">گزارش مخاطب</string>
+    <string name="conversation_report_confirm_message">گزارش‌ها ظرف ۲۴ ساعت بررسی و رسیدگی می‌شوند. گزارش شما از برنامهٔ ایمیل خودتان ارسال می‌شود، بنابراین نشانی ایمیل شما را خواهیم دید — و پیش‌نویس در همان برنامه، بیرون از Rún، ذخیره می‌ماند؛ جایی که با پاک کردن Rún از بین نمی‌رود.</string>
+    <string name="conversation_report_confirm_button">گزارش به Rún</string>
+    <string name="conversation_report_action">گزارش</string>
+    <string name="conversation_block_action">مسدود کردن</string>
+
+    <!-- iOS-only manual-screenshot warning banner -->
+    <string name="conversation_screenshot_warning_banner">⚠ اسکرین‌شات در «عکس‌ها» ذخیره شد — آن تصویر رمزگذاری نشده است و می‌تواند با iCloud همگام شود.</string>
+    <string name="conversation_group_echo_label">پیام گروهی در %1$s</string>
+    <string name="conversation_group_echo_open">باز کردن گروه</string>
+
+</resources>

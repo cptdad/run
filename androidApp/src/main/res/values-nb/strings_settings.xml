@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Språkvelger -->
+    <string name="settings_language">Språk</string>
+    <string name="language_option_system">Systemstandard</string>
+
+    <!-- Karusell for varselinnstillinger -->
+    <string name="notif_settings_carousel_back">‹ Tilbake</string>
+    <string name="notif_settings_carousel_next">Neste ›</string>
+    <string name="notif_settings_technical_details">Tekniske detaljer</string>
+    <string name="notif_settings_sound_row_label">Lyd og vibrasjon</string>
+    <string name="notif_settings_sound_row_hint">Varsler høres ut som i alle andre meldingsapper. Endre eller demp dem i varselinnstillingene i Android – Rún overstyrer aldri valget ditt.</string>
+    <string name="notif_settings_register_error_generic">Kunne ikke registrere deg for varsler. Sjekk forbindelsen og prøv igjen.</string>
+    <string name="notif_settings_register_error_no_distributor">Ingen varseldistributør ble valgt. Installer ntfy fra F-Droid, og prøv igjen.</string>
+    <string name="notif_settings_register_error_distributor_selection">Kunne ikke koble til varseldistributøren din. Lukk Rún helt, åpne appen på nytt, og prøv igjen.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Push-serveren til denne distributøren støttes ikke ennå – den krever VAPID. ntfy fungerer, og du kan installere den fra F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Varseldistributøren din avviste registreringen. Åpne den, sjekk at den er satt opp, og prøv igjen.</string>
+    <string name="notif_settings_register_error_no_endpoint">Varseldistributøren din svarte ikke i tide. Åpne den, sjekk at den er tilkoblet, og prøv igjen.</string>
+    <string name="notif_settings_no_distributor_message">Denne telefonen har ingen Google-tjenester, så varsler krever en UnifiedPush-distributørapp. Installer en – ntfy er den anbefalte – og kom så tilbake hit og slå på varsler.</string>
+    <string name="notif_settings_no_distributor_link_label">Hent ntfy på F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Varseldistributøren din sluttet å levere til Rún, så varsler ble slått av. Slå dem på igjen for å koble til på nytt.</string>
+    <string name="settings_language_restart_title">Start på nytt for å bytte språk</string>
+    <string name="settings_language_restart_message">Rún må starte på nytt for å bytte appens språk til %1$s. Fortsette?</string>
+    <string name="settings_report_bug">Rapporter feil</string>
+    <string name="settings_debug_mode">Feilsøkingsmodus</string>
+    <string name="settings_debug_mode_on">Feilsøkingsmodus (på)</string>
+    <string name="debug_mode_title">Feilsøkingsmodus</string>
+    <string name="debug_mode_message">Send anonyme diagnoselogger til relayet for å hjelpe utviklingen. Loggene inneholder aldri noe som identifiserer deg eller denne enheten: ingen navn, ikke noe meldingsinnhold, ingen adresser, ingen nøkler, ingen innboks- eller kontakt-ID-er.</string>
+    <string name="debug_mode_message_off">Feilsøkingsmodus er på. Slå den av for å slutte å sende anonyme diagnoselogger.</string>
+    <string name="debug_mode_turn_on">Slå på</string>
+    <string name="debug_mode_turn_off">Slå av</string>
+    <string name="ext_proxy_title">Ekstern Tor-proxy</string>
+    <string name="ext_proxy_description">Send all relay-trafikk gjennom en SOCKS5-proxy du selv driver, for eksempel Orbot eller Tor på ditt eget nettverk, i stedet for den innebygde Tor-en i Rún. Så lenge dette er på, starter den innebygde Tor aldri. Hvis proxyen ikke kan nås, forblir Rún frakoblet. Det finnes ingen reserveløsning.</string>
+    <string name="ext_proxy_toggle">Bruk en ekstern proxy</string>
+    <string name="ext_proxy_host_label">IP-adresse til proxyen</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Skriv inn en IP-adresse på denne telefonen eller ditt lokale nettverk: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x eller 169.254.x.x. Vertsnavn er ikke tillatt.</string>
+    <string name="ext_proxy_error_port">Skriv inn en port fra 1 til 65535.</string>
+    <string name="ext_proxy_error_save">Kunne ikke lagre innstillingen. Prøv igjen.</string>
+    <string name="ext_proxy_lan_warning">Trafikken mellom denne telefonen og proxyen er ikke kryptert. Alle som kan overvåke eller utgi seg for å være denne adressen, også på andre nettverk telefonen kobler til senere, får tilgangstokenene til innboksene i samtalene dine. De kan slette eller overta innboksene, men ikke lese meldingene dine. Bruk dette bare på et nettverk du kontrollerer, og slå av modusen når du forlater det.</string>
+    <string name="ext_proxy_loopback_warning">Mens proxy-appen (for eksempel Orbot) ikke kjører, kan en hvilken som helst annen app på denne telefonen overta porten og få de samme tilgangstokenene. Sett proxy-appen til en port som ikke er standard, og la den kjøre.</string>
+    <string name="ext_proxy_next_launch">Endringer trer i kraft neste gang du åpner Rún.</string>
+    <string name="ext_proxy_saved">Lagret. Lukk og åpne Rún på nytt for å ta den i bruk.</string>
+    <string name="ext_proxy_connecting">Kobler til via den eksterne proxyen din</string>
+    <string name="ext_proxy_status_checking">Bruker ekstern proxy: sjekker</string>
+    <string name="ext_proxy_status_reachable">Bruker ekstern proxy</string>
+    <string name="ext_proxy_status_unreachable">Ekstern proxy er utilgjengelig</string>
+    <string name="ext_proxy_status_invalid">Innstillingen for ekstern proxy er ugyldig. Rett den i Innstillinger.</string>
+    <string name="ext_proxy_status_unreadable">Innstillingen for ekstern proxy kunne ikke leses. Meldinger er utilgjengelige.</string>
+    <string name="report_bug_title">Beskriv feilen (du er anonym)</string>
+    <string name="report_bug_placeholder">Hva skjedde, og hva forventet du?</string>
+    <string name="report_bug_send">Send</string>
+    <string name="report_bug_failed">Kunne ikke sende rapporten – sjekk forbindelsen og prøv igjen.</string>
+    <string name="report_bug_thanks">Takk for at du hjelper med å forbedre Rún</string>
+</resources>

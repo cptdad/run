@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gruppkonversation, gruppinfo (medlemmar/inbjudningar/ta bort/lämna/radera)
+  och skapa grupp. Nyckelprefix: group_, group_info_, create_group_.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Delas av grupprubriken (GroupConversationScreen) och gruppinfons rubrik
+         (GroupInfoScreen) — antal medlemmar, i stället för den naiva
+         "${n} members"-hopslagningen. -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d medlem</item>
+        <item quantity="other">%1$d medlemmar</item>
+    </plurals>
+    <!-- Läggs efter medlemsantalet med avgränsaren " · " som sätts i koden -->
+    <string name="group_info_not_reachable_suffix">%1$d går inte att nå än</string>
+    <string name="group_info_admin_suffix">du är admin</string>
+
+    <!-- Gruppkonversation (GroupConversationScreen.kt / GroupViews.swift) -->
+    <string name="group_member_list_differs">⚠ medlemslistan skiljer sig</string>
+    <string name="group_delivery_not_delivered">inte levererat till %1$d</string>
+    <string name="group_notice_not_delivered">Ditt meddelande nådde inte %1$d av medlemmarna: de går inte att nå än från den här telefonen, eller så nekade reläet deras kopia. Rún sparar ingen kopia att skicka senare.</string>
+
+    <!-- Gruppinfo (GroupInfoScreen.kt / GroupViews.swift GroupInfoView) -->
+    <string name="group_info_add_member">Lägg till medlem</string>
+    <string name="group_info_you">Du</string>
+    <string name="group_info_not_reachable">Går inte att nå än</string>
+    <string name="group_info_no_verified_pairing">Ingen verifierad parkoppling med den här medlemmen än</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Lämna gruppen</string>
+    <string name="group_info_make_admin">Gör till admin</string>
+    <string name="group_info_remove_from_group">Ta bort ur gruppen</string>
+    <string name="group_info_add_member_precondition">Personen måste ha parkopplat personligen med varje medlem. Du går i god för det.</string>
+    <string name="group_info_add_member_empty">Inga möjliga kontakter — alla du har parkopplat med är redan med i gruppen.</string>
+    <!-- Rubriken i bekräftelsedialogen skiljer sig sedan tidigare per plattform:
+         Android infogar gruppnamnet, iOS visar ett statiskt "Lämna gruppen" —
+         hålls byte-identisk per plattform, förenas inte här (utanför
+         lokaliseringens omfattning). -->
+    <string name="group_info_leave_confirm_title_android">Lämna %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Lämna gruppen</string>
+    <string name="group_info_leave_confirm_admin_message">Du är admin. Överlämna rollen först, annars kan ingen ändra medlemslistan.</string>
+    <string name="group_info_leave_confirm_message">De andra medlemmarna får veta att du lämnade gruppen.</string>
+    <string name="group_info_leave_unread_warning">Det du har skickat som de andra inte har läst än kanske aldrig visas för dem.</string>
+    <string name="group_info_leave_confirm_action">Lämna</string>
+    <!-- Väljaren för ny admin: Android använder separat rubrik och underrubrik;
+         iOS slår ihop dem till en mening och använder en annan navigeringsrubrik.
+         Hålls byte-identisk per plattform (skillnad som fanns sedan tidigare). -->
+    <string name="group_info_choose_admin_title">Välj ny admin</string>
+    <string name="group_info_choose_admin_subtitle_android">Personen kan lägga till och ta bort medlemmar när du har lämnat gruppen.</string>
+    <string name="group_info_choose_admin_nav_title">Ny admin</string>
+    <string name="group_info_choose_admin_subtitle_ios">Välj vem som blir ny admin. Personen kan lägga till och ta bort medlemmar när du har lämnat gruppen.</string>
+    <!-- Dialog om misslyckad adminöverlämning, bara på iOS (ingen Android-motsvarighet
+         finns i dag — skillnad som fanns sedan tidigare, utanför omfattningen här). -->
+    <string name="group_info_transfer_failed_title">Kunde inte överlämna adminrollen</string>
+    <string name="group_info_transfer_failed_message">Inget ändrades — du är fortfarande admin, så gruppen går att hantera. Försök igen.</string>
+
+    <!-- Skapa grupp (CreateGroupScreen.kt / GroupViews.swift CreateGroupView) -->
+    <string name="create_group_title">Ny grupp</string>
+    <string name="create_group_name_placeholder">Gruppnamn</string>
+    <string name="create_group_precondition">Alla i en grupp måste ha parkopplat personligen med alla andra. Du går i god för det när du skapar den.</string>
+    <string name="create_group_failed">Kunde inte skapa gruppen. Kontrollera anslutningen och försök igen.</string>
+    <string name="create_group_creating">Skapar…</string>
+    <string name="create_group_select_members">Välj medlemmar</string>
+    <string name="create_group_button_label">Skapa grupp (%1$d)</string>
+    <string name="group_private_from">Privat från %1$s · bara du ser detta</string>
+    <string name="group_private_to">Privat till %1$s</string>
+    <string name="group_private_reply">Svara privat</string>
+    <string name="group_private_reply_chip">Privat svar till %1$s</string>
+    <string name="group_private_reply_chip_close">Avsluta privat svar</string>
+
+</resources>

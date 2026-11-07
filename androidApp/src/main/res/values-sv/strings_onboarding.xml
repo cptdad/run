@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PIN-inmatning/uppsättning/byte, startspärrar (komprometterad enhet,
+  inaktivitetsradering, lösenkodsvarning), användarvillkor, blockera/anmäl,
+  rundialogens ram och notisen om brinner vid läsning. Speglas på iOS via
+  L10n.swift.
+
+  Android-källor: PinEntryScreen.kt, PinSetupScreen.kt, PinComponents.kt,
+  ChangePinScreen.kt, RuneDialog.kt, MainActivity.kt, BurnOnReadNotice.kt.
+  iOS-källor: PinEntryView.swift, PinSetupView.swift, ChangePinView.swift,
+  ContentView.swift, UserSafety.swift, UIComponents.swift.
+
+  Vissa strängar är formulerade olika per plattform (Android säger
+  "skärmlås", iOS säger "lösenkod"; Android säger "rootad", iOS säger
+  "jailbreakad") — de får egna nycklar i stället för att tvingas dela en.
+  Strängarna för villkor/blockera/anmäl (eula_, report_) finns bara på iOS:
+  Rúns skyddsåtgärder enligt riktlinje 1.2 (användarvillkor, anmäl,
+  blockera) är inte implementerade på Android.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN-inmatning (upplåsning) -->
+    <string name="pin_erase_vault_title">Radera det här valvet?</string>
+    <string name="pin_erase_vault_message">Valvet på den här enheten går inte att öppna — ingen PIN-kod och ingen lösenfras finns sparad för det. Att radera tar bort det permanent och startar en ny konfiguration. Det går inte att ångra.</string>
+    <string name="pin_erase_vault_confirm">Radera</string>
+    <string name="pin_prompt_passphrase">Ange lösenfras</string>
+    <string name="pin_passphrase_placeholder">Lösenfras</string>
+    <string name="pin_unlock_button">Lås upp</string>
+    <string name="pin_backoff_hint">Försök igen om %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Enhetens skärmlås har ändrats, så hårdvarunyckeln som skyddar valvet är borta. Din återställningskod kan fortfarande öppna det.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Enhetens skärmlås har ändrats, så hårdvarunyckeln som skyddar valvet är borta. Utan en återställningskod går valvet inte att öppna.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Enhetens lösenkod har ändrats, så hårdvarunyckeln som skyddar valvet är borta. Din återställningskod kan fortfarande öppna det.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Enhetens lösenkod har ändrats, så hårdvarunyckeln som skyddar valvet är borta. Utan en återställningskod går valvet inte att öppna.</string>
+    <string name="pin_use_recovery_code">Använd återställningskod</string>
+    <string name="pin_use_recovery_code_prompt">Kan du inte låsa upp? Använd återställningskod</string>
+    <string name="pin_orphaned_vault_notice">Enheten har ett valv, men ingen PIN-kod och ingen lösenfras finns sparad för det, så inget kan öppna det. Innehållet går inte att få tillbaka.</string>
+    <string name="pin_erase_start_over">Radera och börja om</string>
+
+    <!-- Styrkemätare för lösenfras (delas av inmatning/uppsättning/byte) -->
+    <string name="pin_strength_too_weak">För svag</string>
+    <string name="pin_strength_still_weak">Fortfarande för svag — lägg till ord</string>
+    <string name="pin_strength_strong">Stark</string>
+    <string name="pin_strength_excellent">Utmärkt</string>
+
+    <!-- PIN-/inloggningsuppsättning (första starten) -->
+    <string name="pin_hardware_lock_not_enabled_title">Hårdvarulåset är inte på</string>
+    <string name="pin_hardware_lock_not_enabled_message">Telefonen bekräftade inte hårdvarunyckeln, så ditt valv sattes upp på en lägre skyddsnivå. Du kan slå på den senare i Inställningar.</string>
+    <string name="pin_device_key_busy_title">Kunde inte slutföra konfigurationen</string>
+    <string name="pin_device_key_busy_message">Telefonens säkra hårdvara är upptagen. Lås telefonen, lås upp den och försök igen.</string>
+    <string name="pin_setup_choose_pin">Välj din PIN-kod</string>
+    <string name="pin_setup_confirm_pin">Bekräfta din PIN-kod</string>
+    <string name="pin_setup_choose_passphrase">Välj en lösenfras</string>
+    <string name="pin_setup_confirm_passphrase">Bekräfta din lösenfras</string>
+    <string name="pin_setup_passphrase_hint">Ungefär sex slumpmässiga ord. Skrivs in vid varje upplåsning — ingen PIN-kod och ingen biometrisk genväg. Det är hela poängen.</string>
+    <string name="pin_passphrase_placeholder_reenter">Ange lösenfrasen igen</string>
+    <string name="pin_confirm_button">Bekräfta</string>
+
+    <!-- Byt PIN-kod / inloggning -->
+    <string name="pin_change_enter_current_passphrase">Ange nuvarande lösenfras</string>
+    <string name="pin_change_enter_current_pin">Ange nuvarande PIN-kod</string>
+    <string name="pin_change_choose_new_pin">Välj ny PIN-kod</string>
+    <string name="pin_change_confirm_passphrase">Bekräfta lösenfrasen</string>
+    <string name="pin_change_confirm_new_pin">Bekräfta den nya PIN-koden</string>
+
+    <!-- Startspärr: komprometterad enhet (root/jailbreak) -->
+    <string name="gate_compromised_title">Enheten är komprometterad</string>
+    <string name="gate_compromised_body">Enheten verkar vara rootad. Rún kan inte garantera säkerheten för dina meddelanden på en komprometterad enhet.</string>
+    <string name="gate_compromised_body_jailbroken">Enheten verkar vara jailbreakad. Rún kan inte garantera säkerheten för dina meddelanden på en komprometterad enhet.</string>
+    <string name="gate_compromised_continue">Jag förstår — fortsätt</string>
+
+    <!-- Startspärr: varning om att lämna på fel sätt -->
+
+    <!-- Startspärr: nedräkning för låsning / ny autentisering -->
+    <string name="gate_reauth_countdown">Lösenfraskontroll om %1$d…</string>
+    <string name="gate_lock_countdown">Låser om %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Tryck var som helst för att förbli upplåst</string>
+
+    <!-- Startspärr: varning om saknad lösenkod (endast iOS — VS-2) -->
+    <string name="gate_passcode_warning_title">Ingen lösenkod på enheten</string>
+    <string name="gate_passcode_warning_message">Rún får ett svagare hårdvaruskydd av data i vila utan en lösenkod på enheten. Ställ in en i Inställningar för fullt skydd och kom sedan tillbaka för att slutföra konfigurationen. Du kan fortsätta utan.</string>
+    <string name="gate_passcode_warning_open_settings">Öppna Inställningar</string>
+    <string name="gate_passcode_warning_continue_anyway">Fortsätt ändå</string>
+
+    <!-- Användarvillkor (endast iOS — riktlinje 1.2) -->
+    <string name="eula_before_you_start_title">Innan du börjar</string>
+    <string name="eula_terms_of_use_title">Användarvillkor</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">Genom att använda Rún godkänner du dessa användarvillkor.\n\nRún är en privat, end-to-end-krypterad meddelandeapp. Du lägger till kontakter personligen genom att utbyta en QR-kod, och dina meddelanden krypteras på din enhet innan de skickas. Vi kan inte läsa dina meddelanden och vi driver inget offentligt flöde, inga profiler och inget delat innehåll.\n\nNOLLTOLERANS MOT STÖTANDE INNEHÅLL OCH KRÄNKANDE BETEENDE\nDet finns ingen tolerans för stötande, olagligt eller kränkande innehåll eller beteende på Rún. Du godkänner att inte använda Rún för att skicka, begära eller efterfråga innehåll som är olagligt, trakasserande, hotfullt, hatiskt, sexuellt exploaterande eller på annat sätt stötande, och att inte kränka, trakassera eller skada andra människor. Att bryta mot detta är ett brott mot dessa villkor.\n\nSÅ SKYDDAR DU DIG SJÄLV\nEftersom dina konversationer är privata mellan dig och dem du lägger till bestämmer du själv vem som kan kontakta dig:\n\n• Anmäl — om en kontakt skickar stötande innehåll eller beter sig kränkande, använd \"Anmäl\" (i en konversation, eller genom att hålla in kontakten) för att meddela oss. Vi granskar varje anmälan inom 24 timmar och agerar på den — vi stänger ute avsändare som missbrukar tjänsten där vi tekniskt kan, och anmäler olagligt innehåll till behöriga myndigheter. Eftersom meddelanden är end-to-end-krypterade agerar vi utifrån det du berättar i din anmälan.\n\n• Blockera — använd \"Blockera\" för att omedelbart dölja en kontakt så att du inte längre ser personen eller dess meddelanden. Blockering går att ångra — du kan häva den när som helst från inställningsmenyn.\n\nDu ansvarar för det innehåll du skickar och för de personer du väljer att lägga till som kontakter. Du måste vara gammal nog att ingå ett bindande avtal i ditt land för att använda Rún.\n\nINGEN GARANTI\nRún tillhandahålls \"i befintligt skick\", utan garantier av något slag, i den utsträckning lagen tillåter.\n\nKontakt: %1$s</string>
+    <string name="eula_agree_button">Jag godkänner och fortsätter</string>
+    <string name="eula_decline_alert_title">Godkännande krävs</string>
+    <string name="eula_decline_alert_message">Du måste godkänna användarvillkoren för att använda Rún. De finns för att hålla alla trygga och förbjuder stötande innehåll och kränkande beteende.</string>
+
+    <!-- Anmäl missbruk / blockera (endast iOS — riktlinje 1.2) -->
+    <string name="report_abuse_email_subject">Rún-anmälan om kränkande beteende</string>
+    <string name="report_abuse_email_body">Jag vill anmäla en kontakt för stötande innehåll eller kränkande beteende.\n\nKontakt (namnet jag gav personen på min enhet): %1$s\n\nVad som hände (beskriv gärna med egna ord):\n\n\n---\nRún granskar varje anmälan inom 24 timmar och agerar på den — vi stänger ute\navsändare som missbrukar tjänsten där det är tekniskt möjligt och anmäler\nolagligt innehåll till behöriga myndigheter.\n\nDet här mejlet sparas av din e-postapp, utanför den krypterade lagringen i Rún, så\nta bara med sådant du är bekväm med att ha kvar där.</string>
+    <string name="report_email_fallback_title">Anmäl via e-post</string>
+    <string name="report_email_fallback_message">Ingen e-postapp är konfigurerad på den här enheten. Tryck på Kopiera anmälan och klistra sedan in den i ett mejl till %1$s.</string>
+    <string name="report_copy_report_button">Kopiera anmälan</string>
+    <string name="report_copy_report_clipboard">Till: %1$s\nÄmne: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Du har inte blockerat någon.</string>
+    <string name="report_unblock_button">Häv blockering</string>
+
+    <!-- Notis om brinner vid läsning -->
+    <string name="burn_notice_title">Brinner vid läsning</string>
+    <string name="burn_notice_message">Meddelanden visas en gång — här — och sparas aldrig. När du lämnar konversationen är de borta för gott.</string>
+
+</resources>

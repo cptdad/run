@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian (fa) translation of values/strings_common.xml.
+  Generic UI vocabulary shared by every screen on BOTH platforms.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">تأیید</string>
+    <string name="common_cancel">لغو</string>
+    <string name="common_close">بستن</string>
+    <string name="common_done">تمام</string>
+    <string name="common_back">بازگشت</string>
+    <string name="common_delete">حذف</string>
+    <string name="common_retry">تلاش دوباره</string>
+    <string name="common_continue">ادامه</string>
+    <string name="common_copy">کپی</string>
+    <string name="common_copied">کپی شد</string>
+    <string name="common_save">ذخیره</string>
+    <string name="common_yes">بله</string>
+    <string name="common_no">خیر</string>
+    <string name="common_got_it">متوجه شدم</string>
+    <string name="common_understood">فهمیدم</string>
+    <string name="common_decline">رد کردن</string>
+    <string name="common_not_now">حالا نه</string>
+    <string name="common_open">باز کردن</string>
+    <string name="common_settings">تنظیمات</string>
+    <string name="common_loading">در حال بارگذاری…</string>
+    <string name="common_message_placeholder">پیام</string>
+    <string name="common_conversation_interrupted">گفتگو قطع شد</string>
+    <string name="common_screenshot_notice">%1$s ممکن است اسکرین‌شات گرفته باشد</string>
+    <string name="common_time_yesterday">دیروز %1$s</string>
+</resources>

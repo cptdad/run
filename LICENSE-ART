@@ -1,0 +1,37 @@
+Licence for the artwork in this repository
+===========================================
+
+This file covers the ARTWORK, not the code. The code is under the GNU GPL v3 or later
+(see LICENSE). The artwork is:
+
+  - the app icon in all its sizes (androidApp/src/main/res/mipmap-*, the iOS asset
+    catalogue AppIcon sets),
+  - the runestone artwork and its variants (assets/runestone/**, and the copies the
+    build places in the Android and iOS resource trees),
+  - the pairing, onboarding and store illustrations derived from them.
+
+Copyright (c) 2026 the Rún maintainer (cptdad12@proton.me). All rights reserved, except
+as granted below.
+
+Grant
+-----
+
+The artwork is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+4.0 International licence (CC BY-NC-ND 4.0), https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+In plain terms you may copy and redistribute the artwork unchanged, for example by cloning
+or mirroring this repository, as long as you credit the project and do not use it
+commercially. You may not modify it or create derivative works, and you may not use it as
+the icon or branding of another app.
+
+Fonts
+-----
+
+The Metamorphous typeface (assets/fonts/) is not ours. It is distributed under the SIL
+Open Font License 1.1 with its Reserved Font Name; see the OFL text next to the font files.
+
+Forks
+-----
+
+A fork of the code must replace the icon and the runestone artwork with its own and use a
+different name. See TRADEMARK.md.

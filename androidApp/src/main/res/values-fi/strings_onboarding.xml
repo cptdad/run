@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Finnish (fi) translation of values/strings_onboarding.xml (human-reviewed 2026-09-03).
+  PIN entry/setup/change, launch gates, EULA, block/report, rune dialog
+  chrome, and the burn-on-read onboarding notice.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">Pyyhitäänkö tämä holvi?</string>
+    <string name="pin_erase_vault_message">Tämän laitteen holvia ei voi avata — sille ei ole tallennettu PIN-koodia eikä salalausetta. Pyyhkiminen poistaa sen pysyvästi ja aloittaa uuden käyttöönoton. Tätä ei voi perua.</string>
+    <string name="pin_erase_vault_confirm">Pyyhi</string>
+    <string name="pin_prompt_passphrase">Syötä salalause</string>
+    <string name="pin_passphrase_placeholder">Salalause</string>
+    <string name="pin_unlock_button">Avaa lukitus</string>
+    <string name="pin_backoff_hint">Yritä uudelleen %1$d s kuluttua</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Laitteesi näytön lukitus muuttui, joten tätä holvia suojannut laitteistoavain on poissa. Palautuskoodisi voi silti avata sen.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Laitteesi näytön lukitus muuttui, joten tätä holvia suojannut laitteistoavain on poissa. Ilman palautuskoodia tätä holvia ei voi avata.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Laitteesi pääsykoodi muuttui, joten tätä holvia suojannut laitteistoavain on poissa. Palautuskoodisi voi silti avata sen.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Laitteesi pääsykoodi muuttui, joten tätä holvia suojannut laitteistoavain on poissa. Ilman palautuskoodia tätä holvia ei voi avata.</string>
+    <string name="pin_use_recovery_code">Käytä palautuskoodia</string>
+    <string name="pin_use_recovery_code_prompt">Etkö saa avattua? Käytä palautuskoodia</string>
+    <string name="pin_orphaned_vault_notice">Tällä laitteella on holvi, mutta sille ei ole tallennettu PIN-koodia eikä salalausetta, joten mikään ei voi avata sitä. Sen sisältöä ei voi palauttaa.</string>
+    <string name="pin_erase_start_over">Pyyhi ja aloita alusta</string>
+
+    <!-- Passphrase strength meter -->
+    <string name="pin_strength_too_weak">Liian heikko</string>
+    <string name="pin_strength_still_weak">Yhä liian heikko — lisää sanoja</string>
+    <string name="pin_strength_strong">Vahva</string>
+    <string name="pin_strength_excellent">Erinomainen</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">Laitteistolukitus ei ole käytössä</string>
+    <string name="pin_hardware_lock_not_enabled_message">Puhelimesi ei vahvistanut laitteistoavainta, joten holvisi otettiin käyttöön matalammalla suojaustasolla. Voit ottaa sen käyttöön myöhemmin asetuksista.</string>
+    <string name="pin_device_key_busy_title">Käyttöönottoa ei voitu viimeistellä</string>
+    <string name="pin_device_key_busy_message">Puhelimesi suojattu laitteisto on varattu. Lukitse puhelimesi, avaa se ja yritä uudelleen.</string>
+    <string name="pin_setup_choose_pin">Valitse PIN-koodisi</string>
+    <string name="pin_setup_confirm_pin">Vahvista PIN-koodisi</string>
+    <string name="pin_setup_choose_passphrase">Valitse salalause</string>
+    <string name="pin_setup_confirm_passphrase">Vahvista salalauseesi</string>
+    <string name="pin_setup_passphrase_hint">Noin kuusi satunnaista sanaa. Kirjoitat sen joka avauskerralla — PIN-koodia tai biometrista oikotietä ei ole. Juuri se on tarkoitus.</string>
+    <string name="pin_passphrase_placeholder_reenter">Syötä salalause uudelleen</string>
+    <string name="pin_confirm_button">Vahvista</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">Syötä nykyinen salalause</string>
+    <string name="pin_change_enter_current_pin">Syötä nykyinen PIN-koodi</string>
+    <string name="pin_change_choose_new_pin">Valitse uusi PIN-koodi</string>
+    <string name="pin_change_confirm_passphrase">Vahvista salalause</string>
+    <string name="pin_change_confirm_new_pin">Vahvista uusi PIN-koodi</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">Laite vaarantunut</string>
+    <string name="gate_compromised_body">Tämä laite näyttää olevan rootattu. Rún ei voi taata viestiesi turvallisuutta vaarantuneella laitteella.</string>
+    <string name="gate_compromised_body_jailbroken">Tämä laite näyttää olevan jailbreakattu. Rún ei voi taata viestiesi turvallisuutta vaarantuneella laitteella.</string>
+    <string name="gate_compromised_continue">Ymmärrän — jatka</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">Salalauseen tarkistus %1$d…</string>
+    <string name="gate_lock_countdown">Lukitaan %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Pidä auki napauttamalla mitä tahansa kohtaa</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only) -->
+    <string name="gate_passcode_warning_title">Ei laitteen pääsykoodia</string>
+    <string name="gate_passcode_warning_message">Rún-sovelluksen levossa olevan datan laitteistosuojaus on heikompi ilman laitteen pääsykoodia. Aseta pääsykoodi asetuksissa saadaksesi täyden suojan ja palaa sitten viimeistelemään käyttöönotto. Voit myös jatkaa ilman.</string>
+    <string name="gate_passcode_warning_open_settings">Avaa asetukset</string>
+    <string name="gate_passcode_warning_continue_anyway">Jatka silti</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">Ennen kuin aloitat</string>
+    <string name="eula_terms_of_use_title">Käyttöehdot</string>
+    <!-- LEGAL REVIEW PENDING -->
+    <string name="eula_body">Käyttämällä Rún-sovellusta hyväksyt nämä käyttöehdot.\n\nRún on yksityinen, päästä päähän -salattu viestisovellus. Lisäät kontakteja kasvokkain vaihtamalla QR-koodin, ja viestisi salataan laitteellasi, ennen kuin ne lähetetään. Emme voi lukea viestejäsi emmekä ylläpidä julkista syötettä, profiileja tai mitään jaettua sisältöä.\n\nNOLLATOLERANSSI LOUKKAAVALLE SISÄLLÖLLE JA VÄÄRINKÄYTÖLLE\nRún-sovelluksessa ei suvaita lainkaan loukkaavaa, laitonta tai häiritsevää sisältöä tai käytöstä. Sitoudut siihen, ettet käytä Rún-sovellusta sellaisen sisällön lähettämiseen, pyytämiseen tai houkuttelemiseen, joka on laitonta, häiritsevää, uhkaavaa, vihamielistä, seksuaalisesti hyväksikäyttävää tai muutoin loukkaavaa, etkä muiden ihmisten kaltoinkohteluun, häirintään tai vahingoittamiseen. Tämän rikkominen on näiden ehtojen rikkomista.\n\nOMASTA TURVALLISUUDESTA HUOLEHTIMINEN\nKoska keskustelusi ovat vain sinun ja lisäämiesi ihmisten välisiä, päätät itse, kuka voi olla sinuun yhteydessä:\n\n• Ilmoita — jos kontakti lähettää sinulle loukkaavaa sisältöä tai käyttäytyy häiritsevästi, kerro siitä meille toiminnolla ”Ilmoita” (keskustelussa tai painamalla kontaktia pitkään). Käsittelemme jokaisen ilmoituksen 24 tunnin kuluessa ja ryhdymme toimiin — estämme häiritsevät lähettäjät silloin, kun se on teknisesti mahdollista ja ilmoitamme laittomasta sisällöstä asianmukaisille viranomaisille. Koska viestit ovat päästä päähän -salattuja, toimimme sen perusteella, mitä kerrot ilmoituksessasi.\n\n• Estä — toiminnolla ”Estä” piilotat kontaktin välittömästi, jolloin et enää näe häntä etkä hänen viestejään. Esto on peruttavissa — voit poistaa sen milloin tahansa asetusvalikosta.\n\nVastaat itse lähettämästäsi sisällöstä ja siitä, kenet valitset kontakteiksesi. Sinun on oltava riittävän vanha tehdäksesi maassasi sitovan sopimuksen, jotta voit käyttää Rún-sovellusta.\n\nEI TAKUUTA\nRún tarjotaan ”sellaisena kuin se on”, ilman minkäänlaisia takuita, siinä laajuudessa kuin laki sen sallii.\n\nYhteystiedot: %1$s</string>
+    <string name="eula_agree_button">Hyväksyn ja jatkan</string>
+    <string name="eula_decline_alert_title">Hyväksyntä vaaditaan</string>
+    <string name="eula_decline_alert_message">Sinun on hyväksyttävä käyttöehdot, jotta Rún on käytettävissäsi. Ne ovat olemassa kaikkien turvallisuuden vuoksi ja kieltävät loukkaavan sisällön ja häiritsevän käytöksen.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">Rún-väärinkäyttöilmoitus</string>
+    <string name="report_abuse_email_body">Haluan ilmoittaa kontaktista loukkaavan sisällön tai häiritsevän käytöksen vuoksi.\n\nKontakti (nimi, jonka annoin hänelle laitteellani): %1$s\n\nMitä tapahtui (kuvaile omin sanoin):\n\n\n---\nRún käsittelee jokaisen ilmoituksen 24 tunnin kuluessa ja ryhtyy toimiin — estää\nhäiritsevät lähettäjät silloin, kun se on teknisesti mahdollista ja ilmoittaa\nlaittomasta sisällöstä asianmukaisille viranomaisille.\n\nSähköpostisovelluksesi tallentaa viestin Rún-sovelluksen salatun tallennustilan\nulkopuolelle, joten kirjoita siihen vain sellaista, minkä säilymisen siellä hyväksyt.</string>
+    <string name="report_email_fallback_title">Ilmoita sähköpostitse</string>
+    <string name="report_email_fallback_message">Tälle laitteelle ei ole määritetty sähköpostisovellusta. Napauta Kopioi ilmoitus ja liitä se mihin tahansa sähköpostiin, jonka osoitteena on %1$s.</string>
+    <string name="report_copy_report_button">Kopioi ilmoitus</string>
+    <string name="report_copy_report_clipboard">Vastaanottaja: %1$s\nAihe: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Et ole estänyt ketään.</string>
+    <string name="report_unblock_button">Poista esto</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">Palaa luettaessa</string>
+    <string name="burn_notice_message">Viestit näkyvät kerran — juuri tässä — eikä niitä tallenneta koskaan. Kun poistut tästä keskustelusta, ne ovat lopullisesti poissa.</string>
+
+</resources>

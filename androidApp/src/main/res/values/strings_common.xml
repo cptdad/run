@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Generic UI vocabulary shared by every screen on BOTH platforms (the l10n
+  generator mirrors this file into the iOS String Catalog / L10n.swift).
+  Only add a key here when the exact English literal is used by more than one
+  feature area; area-specific copy lives in strings_<area>.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_close">Close</string>
+    <string name="common_done">Done</string>
+    <string name="common_back">Back</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_continue">Continue</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_copied">Copied</string>
+    <string name="common_save">Save</string>
+    <string name="common_yes">Yes</string>
+    <string name="common_no">No</string>
+    <string name="common_got_it">Got it</string>
+    <string name="common_understood">Understood</string>
+    <string name="common_decline">Decline</string>
+    <string name="common_not_now">Not now</string>
+    <string name="common_open">Open</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_message_placeholder">Message</string>
+    <string name="common_conversation_interrupted">Conversation interrupted</string>
+    <string name="common_screenshot_notice">%1$s may have taken a screenshot</string>
+    <string name="common_time_yesterday">Yesterday %1$s</string>
+</resources>

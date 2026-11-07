@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  German (de) translation of values/strings_about.xml.
+  Not localized on purpose: the app name Rún, the rune glyph ᚱ, the maker
+  name Vikstrom Group AB, the vgab.eu URL and the version numbers.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">Private Nachrichten, über Tor geleitet.</string>
+    <string name="about_info_tor_version">Nutzt Tor %1$s</string>
+    <string name="about_info_open_source_heading">Auf Open Source gebaut</string>
+    <string name="about_info_clearnet_title">Im Browser öffnen?</string>
+    <string name="about_info_clearnet_message">vgab.eu öffnet sich in deinem Browser über das normale Internet — nicht über Tor. Die Website und dein Netzwerk sehen die IP-Adresse deines Geräts.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">Rún unterstützen</string>
+    <string name="donate_tab_tip">Trinkgeld</string>
+    <string name="donate_tab_crypto">Krypto</string>
+    <string name="donate_play_disclosure">Abgewickelt über Google Play · verknüpft mit deinem Google-Konto · keine weiteren Dritten.</string>
+    <string name="donate_tba">Folgt in Kürze</string>
+    <string name="donate_qr_content_description">QR-Code der %1$s-Spendenadresse</string>
+    <string name="donate_copied_confirmation">Kopiert ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">Rún hat keine Werbung, keine Investoren und verkauft niemals deine Daten. Ein Trinkgeld — in beliebiger Höhe — hilft, die App kostenlos und unabhängig zu halten.</string>
+    <string name="tip_store_disclosure">Abgewickelt über den App Store · verknüpft mit deiner Apple-ID · keine weiteren Dritten.</string>
+    <string name="tip_thank_you">Danke 🖤</string>
+    <string name="tip_thank_you_body">Deine Unterstützung hält Rún kostenlos und unabhängig.</string>
+    <string name="tip_unavailable_fallback">Trinkgeld ist gerade nicht verfügbar.</string>
+    <string name="tip_error_purchase_failed">Das Trinkgeld ist nicht durchgegangen. Versuch es erneut.</string>
+    <string name="tip_error_unavailable_device">In-App-Trinkgeld ist auf diesem Gerät nicht verfügbar.</string>
+    <string name="tip_error_load_failed">Die Trinkgeld-Optionen konnten gerade nicht geladen werden.</string>
+    <string name="tip_error_not_configured">Trinkgeld ist noch nicht eingerichtet.</string>
+    <string name="tip_error_checkout_failed">Der Bezahlvorgang von Google Play ließ sich nicht öffnen. Versuch es erneut.</string>
+    <string name="tip_tier_small">Spendier mir einen Kaffee</string>
+    <string name="tip_tier_medium">Kleines Trinkgeld</string>
+    <string name="tip_tier_large">Großzügiges Trinkgeld</string>
+    <string name="tip_tier_xl">Du bist eine Legende</string>
+
+</resources>

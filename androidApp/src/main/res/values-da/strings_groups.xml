@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_groups.xml.
+  Machine-translated 2026-08-27, pending human review.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Member count shared by the group header and the group info header -->
+    <plurals name="group_info_members">
+        <item quantity="one">%1$d medlem</item>
+        <item quantity="other">%1$d medlemmer</item>
+    </plurals>
+    <!-- Appended after the member count with a " · " separator added in code -->
+    <string name="group_info_not_reachable_suffix">%1$d kan ikke nås endnu</string>
+    <string name="group_info_admin_suffix">du er admin</string>
+
+    <!-- Group conversation (GroupConversationScreen.kt / GroupViews.swift) -->
+    <string name="group_member_list_differs">⚠ medlemslisten afviger</string>
+    <string name="group_delivery_not_delivered">ikke leveret til %1$d</string>
+    <string name="group_notice_not_delivered">Din besked nåede ikke frem til %1$d af medlemmerne: de kan ikke nås endnu fra denne telefon, eller relæet afviste deres kopi. Rún gemmer ingen kopi til at sende senere.</string>
+
+    <!-- Group info (GroupInfoScreen.kt / GroupViews.swift GroupInfoView) -->
+    <string name="group_info_add_member">Tilføj medlem</string>
+    <string name="group_info_you">Dig</string>
+    <string name="group_info_not_reachable">Kan ikke nås endnu</string>
+    <string name="group_info_no_verified_pairing">Ingen bekræftet parring med dette medlem endnu</string>
+    <string name="group_info_admin_badge">Admin</string>
+    <string name="group_info_leave_group">Forlad gruppen</string>
+    <string name="group_info_make_admin">Gør til admin</string>
+    <string name="group_info_remove_from_group">Fjern fra gruppen</string>
+    <string name="group_info_add_member_precondition">De skal være parret ansigt til ansigt med hvert eneste medlem. Det går du god for.</string>
+    <string name="group_info_add_member_empty">Ingen mulige kontakter — alle, du er parret med, er allerede i gruppen.</string>
+    <!-- Leave-confirm dialog title differs by platform (pre-existing) -->
+    <string name="group_info_leave_confirm_title_android">Forlad %1$s?</string>
+    <string name="group_info_leave_confirm_title_ios">Forlad gruppen</string>
+    <string name="group_info_leave_confirm_admin_message">Du er admin. Overdrag rollen først, ellers kan ingen ændre medlemslisten.</string>
+    <string name="group_info_leave_confirm_message">De andre medlemmer får besked om, at du har forladt gruppen.</string>
+    <string name="group_info_leave_unread_warning">Det, du har sendt, og som de andre ikke har læst endnu, bliver måske aldrig vist for dem.</string>
+    <string name="group_info_leave_confirm_action">Forlad</string>
+    <!-- Choose-new-admin picker: Android title + subtitle, iOS one sentence -->
+    <string name="group_info_choose_admin_title">Vælg ny admin</string>
+    <string name="group_info_choose_admin_subtitle_android">De kan tilføje og fjerne medlemmer, når du har forladt gruppen.</string>
+    <string name="group_info_choose_admin_nav_title">Ny admin</string>
+    <string name="group_info_choose_admin_subtitle_ios">Vælg, hvem der skal være ny admin. De kan tilføje og fjerne medlemmer, når du har forladt gruppen.</string>
+    <!-- iOS-only admin-handoff-failure dialog -->
+    <string name="group_info_transfer_failed_title">Kunne ikke overdrage admin</string>
+    <string name="group_info_transfer_failed_message">Intet blev ændret — du er stadig admin, så gruppen kan stadig styres. Prøv igen.</string>
+
+    <!-- Create group (CreateGroupScreen.kt / GroupViews.swift CreateGroupView) -->
+    <string name="create_group_title">Ny gruppe</string>
+    <string name="create_group_name_placeholder">Gruppenavn</string>
+    <string name="create_group_precondition">Alle i en gruppe skal være parret ansigt til ansigt med hinanden. Det går du god for, når du opretter den.</string>
+    <string name="create_group_failed">Gruppen kunne ikke oprettes. Tjek forbindelsen, og prøv igen.</string>
+    <string name="create_group_creating">Opretter…</string>
+    <string name="create_group_select_members">Vælg medlemmer</string>
+    <string name="create_group_button_label">Opret gruppe (%1$d)</string>
+    <string name="group_private_from">Privat fra %1$s · kun du kan se dette</string>
+    <string name="group_private_to">Privat til %1$s</string>
+    <string name="group_private_reply">Svar privat</string>
+    <string name="group_private_reply_chip">Privat svar til %1$s</string>
+    <string name="group_private_reply_chip_close">Afslut privat svar</string>
+
+</resources>

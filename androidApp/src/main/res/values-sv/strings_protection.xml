@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Val av skyddsnivå (ProtectionLevelScreen.kt / ProtectionLevelView.swift).
+         Rubrik/nivånamn/slogans/tvingad-notis/tomt läge har en enda källa i
+         delade ProtectionLevelContent och är redan nycklade i strings_shared.xml. -->
+    <string name="protection_pick_a_level">Välj en nivå för att fortsätta</string>
+    <string name="protection_apply_button">Verkställ</string>
+    <string name="protection_level_accessibility_label">Skyddsnivå %1$s</string>
+
+    <!-- Panel för enhetens grundsäkerhet (tillfälligt avstängd bakom en flagga på
+         båda plattformarna, men texten följer fortfarande med i binären). -->
+    <string name="protection_device_panel_title">Enhetens grundsäkerhet</string>
+    <string name="protection_device_panel_detected_label">UPPTÄCKT</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Enhetens grundnivå · AFU</string>
+
+    <!-- Tillämpningsflödet i inställningarna (ProtectionLevelSettingsScreen.kt /
+         ProtectionLevelSettingsView i ProtectionLevelView.swift): bekräftelse vid
+         sänkning, dialoger för misslyckat sparande / misslyckad spak B, mellanläget
+         medan spak B slås på, och förklaringen till den tvingade vägen. -->
+    <string name="protection_downgrade_title">Sänka ditt skydd?</string>
+    <string name="protection_downgrade_message_android">Byter du till %1$s blir telefonen lättare att knäcka om den beslagtas. Fortsätta?</string>
+    <string name="protection_downgrade_message_ios">Byter du till %1$s blir telefonen lättare att knäcka om den beslagtas.</string>
+    <string name="protection_downgrade_keep">Behåll nuvarande</string>
+    <string name="protection_downgrade_reduce">Sänk</string>
+    <string name="protection_persist_failed_title">Kunde inte spara nivån</string>
+    <string name="protection_persist_failed_message">Inget ändrades — enhetsnyckeln var upptagen. Försök igen.</string>
+    <string name="protection_lever_b_failed_message">Telefonen bekräftade inte hårdvarunyckeln, så ditt valv ligger på en lägre skyddsnivå än den du valde. Du kan försöka igen från Inställningar.</string>
+    <string name="protection_lever_b_reharden_notice">Din skyddsnyckel behöver uppgraderas. Stäng av och slå på Säker igen för att härda den på nytt.</string>
+    <string name="protection_enabling_title">Säkrar ditt valv…</string>
+    <string name="protection_enabling_body_android">Telefonen kan be dig bekräfta med skärmlåset.</string>
+    <string name="protection_enabling_body_ios">Telefonen kan be dig bekräfta med Face ID eller lösenkoden.</string>
+    <string name="protection_forced_explainer_intro">Utan det kan telefonen själv inte skydda nycklarna i Rún — därför behöver Rún sitt starkaste skydd här. Två vägar framåt:</string>
+    <string name="protection_forced_explainer_cta_title_android">Ställ in ett skärmlås</string>
+    <string name="protection_forced_explainer_cta_body_android">PIN-kod, mönster, lösenord eller fingeravtryck räknas alla. Alla skyddsnivåer blir tillgängliga så snart telefonen har ett.</string>
+    <string name="protection_forced_open_settings_button">Öppna skärmlåsinställningar</string>
+    <string name="protection_forced_explainer_outro_android">Eller skapa en lösenfras nedan — Maximal låser Rún självt, inget skärmlås behövs. Fyra eller fem slumpmässiga ord ger en stark fras.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Ställ in en lösenkod på enheten</string>
+    <string name="protection_forced_explainer_cta_body_ios">Öppna Inställningar → Face ID och lösenkod → Slå på lösenkod, och kom sedan tillbaka till Rún. Alla skyddsnivåer blir tillgängliga så snart telefonen har en.</string>
+    <string name="protection_forced_explainer_outro_ios">Eller skapa en lösenfras nedan — Maximal låser Rún självt, ingen lösenkod behövs. Fyra eller fem slumpmässiga ord ger en stark fras.</string>
+
+    <!-- Migreringsskärm efter upplåsning (ProtectionLevelMigrationScreen.kt /
+         ProtectionLevelMigrationView i ProtectionLevelView.swift). %1$s är alltid
+         den valda nivåns namn (upprepat), %2$s den ärligt sparade nivåns namn. -->
+    <string name="protection_migration_finish_maximum">%1$s kräver en lösenfras, och den ställs inte in här — så ditt valv stannar på %2$s tills vidare. Slutför genom att öppna Inställningar › Skyddsnivå och välja %1$s igen — då ställer du in din lösenfras och nivåns tider börjar gälla.</string>
+    <string name="protection_migration_finish_private">Vi kunde inte slå på hårdvarulåset för %1$s här, så ditt valv stannar på %2$s tills vidare. Slutför genom att öppna Inställningar › Skyddsnivå och välja %1$s igen — då slås hårdvarulåset på och nivåns tider börjar gälla.</string>
+    <string name="protection_migration_finish_same">Tiderna för %1$s gäller nu. Öppna Inställningar › Skyddsnivå för att slutföra och slå på den starkare upplåsningen.</string>
+    <string name="protection_migration_almost_there_title">Nästan klart</string>
+
+    <!-- Visning av återställningskod (RecoveryCodeScreen.kt / RecoveryCodeView i
+         ProtectionLevelView.swift) — visas en gång, direkt efter att spak B slagits på. -->
+    <string name="protection_recovery_code_title">Din återställningskod</string>
+    <string name="protection_recovery_code_body_android">Skriv ner den och förvara den säkert, skilt från telefonen. Om ditt fingeravtryck eller enhetens lösenkod någon gång ändras och låser ute dig återställer den här koden plus din PIN-kod dina meddelanden. Vi kan inte visa den igen.</string>
+    <string name="protection_recovery_code_body_ios">Skriv ner den och förvara den säkert, skilt från telefonen. Om ditt Face ID eller enhetens lösenkod någon gång ändras och låser ute dig återställer den här koden plus din PIN-kod dina meddelanden. Vi kan inte visa den igen.</string>
+    <string name="protection_recovery_ack_label">Jag har skrivit ner den</string>
+    <string name="protection_recovery_ack_hint_android">Kryssa i ”Jag har skrivit ner den” för att fortsätta.</string>
+    <string name="protection_recovery_ack_hint_ios">Slå på ”Jag har skrivit ner den” för att fortsätta.</string>
+
+    <!-- Inmatning av återställningskod (RecoveryEntryScreen.kt / RecoveryEntryView i
+         ProtectionLevelView.swift) — nödutgången när spak B låser ute användaren.
+         %1$s i underrubriken/felmeddelandena är ordet för inloggningstypen
+         (protection_credential_type_passphrase / _pin). -->
+    <string name="protection_recovery_entry_title">Återställ med din kod</string>
+    <string name="protection_recovery_entry_subtitle">Ange återställningskoden du sparade plus din %1$s. Det återställer dina meddelanden. Om telefonen fortfarande kan använda hårdvarulåset slås det på igen med samma kod, så förvara koden säkert.</string>
+    <string name="protection_recovery_code_placeholder">Återställningskod</string>
+    <string name="protection_recovery_wrong_credential">Koden och din %1$s stämde inte. Kontrollera båda och försök igen.</string>
+    <string name="protection_recovery_generic_error">Kunde inte återställa just nu — ingen återställningskod finns sparad, eller så är enhetsnyckeln upptagen. Försök igen.</string>
+    <string name="protection_recovery_attempt_record_failed">Kunde inte registrera försöket — enhetsnyckeln är upptagen. Försök igen.</string>
+    <string name="protection_recovery_button_recovering">Återställer…</string>
+    <string name="protection_recovery_button_recover">Återställ</string>
+
+    <!-- Ordförråd för inloggningstyp, delat av underrubrik/felmeddelanden vid
+         återställning och platshållaren i inloggningsfältet. -->
+    <string name="protection_credential_type_passphrase">lösenfras</string>
+    <string name="protection_credential_type_pin">PIN-kod</string>
+
+</resources>

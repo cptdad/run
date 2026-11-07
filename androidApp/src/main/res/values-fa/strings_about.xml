@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian (fa) translation of values/strings_about.xml.
+  Not localized on purpose: the app name Rún, the rune glyph ᚱ, the maker
+  name Vikstrom Group AB, the vgab.eu URL and the version numbers.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">پیام‌رسانی خصوصی، از مسیر Tor.</string>
+    <string name="about_info_tor_version">از Tor %1$s استفاده می‌کند</string>
+    <string name="about_info_open_source_heading">ساخته‌شده بر پایهٔ متن‌باز</string>
+    <string name="about_info_clearnet_title">در مرورگر باز شود؟</string>
+    <string name="about_info_clearnet_message">vgab.eu در مرورگر شما و از راه اینترنت معمولی باز می‌شود — نه Tor. وب‌سایت و شبکهٔ شما نشانی IP دستگاهتان را می‌بینند.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">از Rún حمایت کنید</string>
+    <string name="donate_tab_tip">انعام</string>
+    <string name="donate_tab_crypto">رمزارز</string>
+    <string name="donate_play_disclosure">پرداخت از راه Google Play · متصل به حساب Google شما · بدون هیچ شخص ثالث دیگری.</string>
+    <string name="donate_tba">به‌زودی</string>
+    <string name="donate_qr_content_description">کد QR نشانی کمک مالی %1$s</string>
+    <string name="donate_copied_confirmation">کپی شد ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">Rún نه تبلیغ دارد، نه سرمایه‌گذار، و هرگز داده‌های شما را نمی‌فروشد. یک انعام — به هر اندازه — به رایگان و مستقل ماندن آن کمک می‌کند.</string>
+    <string name="tip_store_disclosure">پرداخت از راه App Store · متصل به Apple ID شما · بدون هیچ شخص ثالث دیگری.</string>
+    <string name="tip_thank_you">سپاسگزاریم 🖤</string>
+    <string name="tip_thank_you_body">حمایت شما Rún را رایگان و مستقل نگه می‌دارد.</string>
+    <string name="tip_unavailable_fallback">انعام فعلاً در دسترس نیست.</string>
+    <string name="tip_error_purchase_failed">انعام انجام نشد. دوباره تلاش کنید.</string>
+    <string name="tip_error_unavailable_device">انعام درون‌برنامه‌ای روی این دستگاه در دسترس نیست.</string>
+    <string name="tip_error_load_failed">فعلاً امکان بارگیری گزینه‌های انعام نبود.</string>
+    <string name="tip_error_not_configured">انعام هنوز راه‌اندازی نشده است.</string>
+    <string name="tip_error_checkout_failed">صفحهٔ پرداخت Google Play باز نشد. دوباره تلاش کنید.</string>
+    <string name="tip_tier_small">یک قهوه مهمانم کنید</string>
+    <string name="tip_tier_medium">انعام کوچک</string>
+    <string name="tip_tier_large">انعام سخاوتمندانه</string>
+    <string name="tip_tier_xl">شما فوق‌العاده‌اید</string>
+
+</resources>

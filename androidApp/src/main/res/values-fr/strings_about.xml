@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  French (fr) translation of values/strings_about.xml.
+  NOT localized on purpose: the app name "Rún", the rune glyph "ᚱ", the maker
+  name "Vikstrom Group AB", the "vgab.eu" URL and the credit/licence names.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal -->
+    <string name="about_info_tagline">Messagerie privée, routée via Tor.</string>
+    <string name="about_info_tor_version">Utilise Tor %1$s</string>
+    <string name="about_info_open_source_heading">Fondée sur l\'open source</string>
+    <string name="about_info_clearnet_title">Ouvrir dans le navigateur ?</string>
+    <string name="about_info_clearnet_message">vgab.eu s\'ouvre dans votre navigateur, sur l\'internet ordinaire — pas via Tor. Le site et votre réseau peuvent voir l\'adresse IP de votre appareil.</string>
+
+    <!-- Donate / Support modal chrome -->
+    <string name="donate_title">Soutenir Rún</string>
+    <string name="donate_tab_tip">Pourboire</string>
+    <string name="donate_tab_crypto">Crypto</string>
+    <string name="donate_play_disclosure">Traité par Google Play · lié à votre compte Google · aucun autre tiers.</string>
+    <string name="donate_tba">À annoncer — bientôt disponible</string>
+    <string name="donate_qr_content_description">QR de l\'adresse de don %1$s</string>
+    <string name="donate_copied_confirmation">Copié ✓</string>
+
+    <!-- Play Billing tip jar + iOS StoreKit tip jar -->
+    <string name="tip_appeal">Rún n\'a ni publicité, ni investisseurs, et ne vend jamais vos données. Un pourboire — quel qu\'il soit — aide à la garder gratuite et indépendante.</string>
+    <string name="tip_store_disclosure">Traité par l\'App Store · lié à votre identifiant Apple · aucun autre tiers.</string>
+    <string name="tip_thank_you">Merci 🖤</string>
+    <string name="tip_thank_you_body">Votre soutien permet à Rún de rester gratuite et indépendante.</string>
+    <string name="tip_unavailable_fallback">Les pourboires ne sont pas disponibles pour le moment.</string>
+    <string name="tip_error_purchase_failed">Le pourboire n\'a pas abouti. Réessayez.</string>
+    <string name="tip_error_unavailable_device">Les pourboires intégrés ne sont pas disponibles sur cet appareil.</string>
+    <string name="tip_error_load_failed">Impossible de charger les pourboires pour le moment.</string>
+    <string name="tip_error_not_configured">Les pourboires ne sont pas encore configurés.</string>
+    <string name="tip_error_checkout_failed">Impossible d\'ouvrir le paiement Google Play. Réessayez.</string>
+    <string name="tip_tier_small">Offrez-moi un café</string>
+    <string name="tip_tier_medium">Petit pourboire</string>
+    <string name="tip_tier_large">Pourboire généreux</string>
+    <string name="tip_tier_xl">Vous êtes une légende</string>
+
+</resources>

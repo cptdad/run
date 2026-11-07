@@ -1,0 +1,43 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# pre-commit — secret scan (gitleaks)
+#
+# Blocks committing credentials / keys / tokens into the repo. Installed via:
+#   git config core.hooksPath .githooks
+#
+# Scans ONLY the staged changes (fast). Requires gitleaks (`brew install gitleaks`).
+# Config: .gitleaks.toml at the repo root.
+# Emergency bypass (discouraged): git commit --no-verify
+# ---------------------------------------------------------------------------
+set -u
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "✖ pre-commit: gitleaks is not installed — commit blocked."
+    echo "  This repo scans every commit for secrets (credentials have leaked here before)."
+    echo "  Install:  brew install gitleaks"
+    echo "  Bypass once (NOT recommended):  git commit --no-verify"
+    exit 1
+fi
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CONF=""
+[ -f "$REPO_ROOT/.gitleaks.toml" ] && CONF="--config=$REPO_ROOT/.gitleaks.toml"
+
+# gitleaks renamed `protect --staged` to `git --staged` in newer releases;
+# use whichever the installed binary supports.
+if gitleaks git --help >/dev/null 2>&1; then
+    SCAN="git"
+else
+    SCAN="protect"
+fi
+
+if gitleaks "$SCAN" --staged --redact --no-banner $CONF; then
+    exit 0
+fi
+
+echo ""
+echo "✖ pre-commit: gitleaks found potential secrets in your staged changes — commit blocked."
+echo "  Review the (redacted) findings above. If it is a genuine false positive,"
+echo "  add a scoped allowlist entry to .gitleaks.toml, then re-commit."
+echo "  Emergency bypass (NOT recommended):  git commit --no-verify"
+exit 1

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_about.xml.
+  Machine-translated 2026-08-27, pending human review.
+  Not localized: the app name "Rún", the rune glyph "ᚱ", "Vikstrom Group AB",
+  the "vgab.eu" URL and the credit/licence names.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- About-info modal (AboutInfoModal.kt) -->
+    <string name="about_info_tagline">Private beskeder, sendt gennem Tor.</string>
+    <string name="about_info_tor_version">Kører Tor %1$s</string>
+    <string name="about_info_open_source_heading">Bygget på open source</string>
+    <string name="about_info_clearnet_title">Åbn i browseren?</string>
+    <string name="about_info_clearnet_message">vgab.eu åbnes i din browser over det almindelige internet — ikke Tor. Websitet og dit netværk kan se din enheds IP-adresse.</string>
+
+    <!-- Donate / Support modal chrome (DonateModal.kt) -->
+    <string name="donate_title">Støt Rún</string>
+    <string name="donate_tab_tip">Tip</string>
+    <string name="donate_tab_crypto">Krypto</string>
+    <string name="donate_play_disclosure">Behandles af Google Play · knyttes til din Google-konto · ingen anden tredjepart.</string>
+    <string name="donate_tba">Kommer snart</string>
+    <string name="donate_qr_content_description">QR-kode med %1$s-donationsadresse</string>
+    <string name="donate_copied_confirmation">Kopieret ✓</string>
+
+    <!-- Play Billing tip jar (TipJar.kt) + iOS StoreKit tip jar (SupportView.swift) -->
+    <string name="tip_appeal">Rún har ingen reklamer, ingen investorer og sælger aldrig dine data. Et tip — uanset størrelsen — hjælper med at holde appen gratis og uafhængig.</string>
+    <string name="tip_store_disclosure">Behandles af App Store · knyttes til dit Apple-id · ingen anden tredjepart.</string>
+    <string name="tip_thank_you">Tak 🖤</string>
+    <string name="tip_thank_you_body">Din støtte holder Rún gratis og uafhængig.</string>
+    <string name="tip_unavailable_fallback">Tips er ikke tilgængelige lige nu.</string>
+    <string name="tip_error_purchase_failed">Dit tip gik ikke igennem. Prøv igen.</string>
+    <string name="tip_error_unavailable_device">Tips i appen er ikke tilgængelige på denne enhed.</string>
+    <string name="tip_error_load_failed">Kunne ikke indlæse tips lige nu.</string>
+    <string name="tip_error_not_configured">Tips er ikke sat op endnu.</string>
+    <string name="tip_error_checkout_failed">Kunne ikke åbne betaling i Google Play. Prøv igen.</string>
+    <string name="tip_tier_small">Køb mig en kaffe</string>
+    <string name="tip_tier_medium">Lille tip</string>
+    <string name="tip_tier_large">Gavmildt tip</string>
+    <string name="tip_tier_xl">Du er en legende</string>
+
+</resources>

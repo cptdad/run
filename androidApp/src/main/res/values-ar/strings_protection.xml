@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic (ar) translation of values/strings_protection.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Protection level chooser -->
+    <string name="protection_pick_a_level">اختر مستوى للمتابعة</string>
+    <string name="protection_apply_button">تطبيق</string>
+    <string name="protection_level_accessibility_label">مستوى الحماية %1$s</string>
+
+    <!-- Device base security panel -->
+    <string name="protection_device_panel_title">الأمان الأساسي للجهاز</string>
+    <string name="protection_device_panel_detected_label">المُكتشَف</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">خط أساس الجهاز · AFU</string>
+
+    <!-- Settings apply flow -->
+    <string name="protection_downgrade_title">هل تريد تخفيض حمايتك؟</string>
+    <string name="protection_downgrade_message_android">التبديل إلى «%1$s» يجعل هاتفك أسهل اختراقًا إذا أُخذ منك. هل تريد المتابعة؟</string>
+    <string name="protection_downgrade_message_ios">التبديل إلى «%1$s» يجعل هاتفك أسهل اختراقًا إذا أُخذ منك.</string>
+    <string name="protection_downgrade_keep">الإبقاء على الحالي</string>
+    <string name="protection_downgrade_reduce">تخفيض</string>
+    <string name="protection_persist_failed_title">تعذّر حفظ هذا المستوى</string>
+    <string name="protection_persist_failed_message">لم يتغيّر شيء — كان مفتاح الجهاز مشغولًا. حاول مجددًا.</string>
+    <string name="protection_lever_b_failed_message">لم يؤكد هاتفك مفتاح العتاد، لذا ضُبطت خزنتك على مستوى حماية أدنى مما اخترته. يمكنك المحاولة مجددًا من الإعدادات.</string>
+    <string name="protection_lever_b_reharden_notice">يحتاج مفتاح الحماية لديك إلى ترقية. أطفئ «آمن» ثم شغّله من جديد لإعادة تحصينه.</string>
+    <string name="protection_enabling_title">جارٍ تأمين خزنتك…</string>
+    <string name="protection_enabling_body_android">قد يطلب منك هاتفك التأكيد بقفل الشاشة.</string>
+    <string name="protection_enabling_body_ios">قد يطلب منك هاتفك التأكيد بواسطة Face ID أو رمز الدخول.</string>
+    <string name="protection_forced_explainer_intro">من دونه، لا يستطيع الهاتف نفسه حماية مفاتيح Rún — لذا يحتاج Rún هنا إلى أقوى حماية لديه. أمامك طريقان:</string>
+    <string name="protection_forced_explainer_cta_title_android">عيّن قفل شاشة</string>
+    <string name="protection_forced_explainer_cta_body_android">رمز PIN أو نمط أو كلمة مرور أو بصمة — كلها تفي بالغرض. تتاح كل مستويات الحماية متى صار لهاتفك واحد منها.</string>
+    <string name="protection_forced_open_settings_button">فتح إعدادات قفل الشاشة</string>
+    <string name="protection_forced_explainer_outro_android">أو أنشئ عبارة مرور الآن أدناه — الحد الأقصى يقفل Rún نفسه، بلا حاجة إلى قفل شاشة. أربع أو خمس كلمات عشوائية تصنع عبارة قوية.</string>
+    <string name="protection_forced_explainer_cta_title_ios">عيّن رمز دخول للجهاز</string>
+    <string name="protection_forced_explainer_cta_body_ios">افتح الإعدادات ثم «Face ID ورمز الدخول» ثم «تشغيل رمز الدخول»، ثم عد إلى Rún. تتاح كل مستويات الحماية متى صار لهاتفك رمز دخول.</string>
+    <string name="protection_forced_explainer_outro_ios">أو أنشئ عبارة مرور الآن أدناه — الحد الأقصى يقفل Rún نفسه، بلا حاجة إلى رمز دخول للجهاز. أربع أو خمس كلمات عشوائية تصنع عبارة قوية.</string>
+
+    <!-- Post-unlock migration screen -->
+    <string name="protection_migration_finish_maximum">يحتاج «%1$s» إلى عبارة مرور، وهذه الشاشة لا تعيّنها — لذا تبقى خزنتك على «%2$s» حاليًا. للإكمال، افتح الإعدادات ثم «مستوى الحماية» واختر «%1$s» مرة أخرى — هذا يعيّن عبارة مرورك ويطبّق توقيتاته.</string>
+    <string name="protection_migration_finish_private">تعذّر هنا تشغيل قفل العتاد الخاص بـ«%1$s»، لذا تبقى خزنتك على «%2$s» حاليًا. للإكمال، افتح الإعدادات ثم «مستوى الحماية» واختر «%1$s» مرة أخرى — هذا يشغّل قفل العتاد ويطبّق توقيتاته.</string>
+    <string name="protection_migration_finish_same">ضُبطت الآن توقيتات «%1$s». لإكمال تشغيل الفتح الأقوى، افتح الإعدادات ثم «مستوى الحماية».</string>
+    <string name="protection_migration_almost_there_title">أوشكت على الانتهاء</string>
+
+    <!-- Recovery code display -->
+    <string name="protection_recovery_code_title">رمز الاسترداد الخاص بك</string>
+    <string name="protection_recovery_code_body_android">اكتبه واحتفظ به في مكان آمن بعيدًا عن هاتفك. إذا تغيّرت بصمتك أو رمز دخول جهازك يومًا ومنعك ذلك من فتح الخزنة، فهذا الرمز مع رمز PIN يستعيد رسائلك. لا يمكننا عرضه مرة أخرى.</string>
+    <string name="protection_recovery_code_body_ios">اكتبه واحتفظ به في مكان آمن بعيدًا عن هاتفك. إذا تغيّر Face ID أو رمز دخول جهازك يومًا ومنعك ذلك من فتح الخزنة، فهذا الرمز مع رمز PIN يستعيد رسائلك. لا يمكننا عرضه مرة أخرى.</string>
+    <string name="protection_recovery_ack_label">لقد كتبته</string>
+    <string name="protection_recovery_ack_hint_android">ضع علامة على «لقد كتبته» للمتابعة.</string>
+    <string name="protection_recovery_ack_hint_ios">فعّل «لقد كتبته» للمتابعة.</string>
+
+    <!-- Recovery code entry -->
+    <string name="protection_recovery_entry_title">الاسترداد برمزك</string>
+    <string name="protection_recovery_entry_subtitle">أدخل رمز الاسترداد الذي حفظته مع %1$s. هذا يستعيد رسائلك. وإذا كان هذا الهاتف لا يزال قادرًا على استخدام قفل العتاد، فسيُعاد تشغيله بالرمز نفسه، لذا احتفظ بالرمز في مكان آمن.</string>
+    <string name="protection_recovery_code_placeholder">رمز الاسترداد</string>
+    <string name="protection_recovery_wrong_credential">هذا الرمز و%1$s لم يتطابقا. تحقق من كليهما وحاول مجددًا.</string>
+    <string name="protection_recovery_generic_error">تعذّر الاسترداد الآن — لا يوجد رمز استرداد محفوظ، أو مفتاح الجهاز مشغول. حاول مجددًا.</string>
+    <string name="protection_recovery_attempt_record_failed">تعذّر تسجيل المحاولة — مفتاح الجهاز مشغول. حاول مجددًا.</string>
+    <string name="protection_recovery_button_recovering">جارٍ الاسترداد…</string>
+    <string name="protection_recovery_button_recover">استرداد</string>
+
+    <!-- Credential-type vocabulary -->
+    <string name="protection_credential_type_passphrase">عبارة المرور</string>
+    <string name="protection_credential_type_pin">رمز PIN</string>
+
+</resources>

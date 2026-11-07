@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spanish (es) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates, EULA, block/report, rune dialog
+  chrome and the burn-on-read onboarding notice.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- PIN entry (unlock) screen -->
+    <string name="pin_erase_vault_title">¿Borrar esta caja fuerte?</string>
+    <string name="pin_erase_vault_message">La caja fuerte de este dispositivo no se puede abrir: no hay ningún PIN ni frase de contraseña guardados para ella. Al borrarla se elimina de forma permanente y empieza una configuración nueva. Esto no se puede deshacer.</string>
+    <string name="pin_erase_vault_confirm">Borrar</string>
+    <string name="pin_prompt_passphrase">Introduce la frase de contraseña</string>
+    <string name="pin_passphrase_placeholder">Frase de contraseña</string>
+    <string name="pin_unlock_button">Desbloquear</string>
+    <string name="pin_backoff_hint">Inténtalo de nuevo en %1$d s</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">La pantalla de bloqueo de tu dispositivo ha cambiado, así que la clave de hardware que protegía esta caja fuerte ya no existe. Tu código de recuperación todavía puede abrirla.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">La pantalla de bloqueo de tu dispositivo ha cambiado, así que la clave de hardware que protegía esta caja fuerte ya no existe. Sin un código de recuperación, esta caja fuerte no se puede abrir.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">El código de tu dispositivo ha cambiado, así que la clave de hardware que protegía esta caja fuerte ya no existe. Tu código de recuperación todavía puede abrirla.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">El código de tu dispositivo ha cambiado, así que la clave de hardware que protegía esta caja fuerte ya no existe. Sin un código de recuperación, esta caja fuerte no se puede abrir.</string>
+    <string name="pin_use_recovery_code">Usar el código de recuperación</string>
+    <string name="pin_use_recovery_code_prompt">¿No puedes desbloquear? Usa el código de recuperación</string>
+    <string name="pin_orphaned_vault_notice">Este dispositivo tiene una caja fuerte, pero no hay ningún PIN ni frase de contraseña guardados para ella, así que nada puede abrirla. Su contenido no se puede recuperar.</string>
+    <string name="pin_erase_start_over">Borrar y empezar de cero</string>
+
+    <!-- Passphrase strength meter (shared by entry/setup/change) -->
+    <string name="pin_strength_too_weak">Demasiado débil</string>
+    <string name="pin_strength_still_weak">Todavía demasiado débil: añade palabras</string>
+    <string name="pin_strength_strong">Fuerte</string>
+    <string name="pin_strength_excellent">Excelente</string>
+
+    <!-- PIN / credential setup (first run) -->
+    <string name="pin_hardware_lock_not_enabled_title">Bloqueo por hardware no activado</string>
+    <string name="pin_hardware_lock_not_enabled_message">Tu teléfono no ha confirmado la clave de hardware, así que tu caja fuerte se configura con un nivel de protección más bajo. Puedes activarlo más tarde desde Ajustes.</string>
+    <string name="pin_device_key_busy_title">No se ha podido terminar la configuración</string>
+    <string name="pin_device_key_busy_message">El hardware seguro de tu teléfono está ocupado. Bloquea el teléfono, desbloquéalo y vuelve a intentarlo.</string>
+    <string name="pin_setup_choose_pin">Elige tu PIN</string>
+    <string name="pin_setup_confirm_pin">Confirma tu PIN</string>
+    <string name="pin_setup_choose_passphrase">Elige una frase de contraseña</string>
+    <string name="pin_setup_confirm_passphrase">Confirma tu frase de contraseña</string>
+    <string name="pin_setup_passphrase_hint">Unas seis palabras al azar. Se escribe en cada desbloqueo: no hay PIN ni atajo biométrico. De eso se trata.</string>
+    <string name="pin_passphrase_placeholder_reenter">Repite la frase de contraseña</string>
+    <string name="pin_confirm_button">Confirmar</string>
+
+    <!-- Change PIN / credential -->
+    <string name="pin_change_enter_current_passphrase">Introduce la frase de contraseña actual</string>
+    <string name="pin_change_enter_current_pin">Introduce el PIN actual</string>
+    <string name="pin_change_choose_new_pin">Elige un PIN nuevo</string>
+    <string name="pin_change_confirm_passphrase">Confirma la frase de contraseña</string>
+    <string name="pin_change_confirm_new_pin">Confirma el PIN nuevo</string>
+
+    <!-- Launch gates: compromised-device (root/jailbreak) -->
+    <string name="gate_compromised_title">Dispositivo comprometido</string>
+    <string name="gate_compromised_body">Este dispositivo parece tener acceso root. Rún no puede garantizar la seguridad de tus mensajes en un dispositivo comprometido.</string>
+    <string name="gate_compromised_body_jailbroken">Este dispositivo parece tener jailbreak. Rún no puede garantizar la seguridad de tus mensajes en un dispositivo comprometido.</string>
+    <string name="gate_compromised_continue">Lo entiendo, continuar</string>
+
+    <!-- Launch gates: lock / re-auth countdown overlay -->
+    <string name="gate_reauth_countdown">Se pedirá la frase de contraseña en %1$d…</string>
+    <string name="gate_lock_countdown">Se bloquea en %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Toca en cualquier sitio para seguir desbloqueado</string>
+
+    <!-- Launch gates: no-device-passcode warning (iOS only — VS-2) -->
+    <string name="gate_passcode_warning_title">Sin código de dispositivo</string>
+    <string name="gate_passcode_warning_message">La protección por hardware de Rún para los datos en reposo es más débil sin un código de dispositivo. Configura uno en Ajustes para tener protección completa y vuelve para terminar la configuración. Puedes continuar sin él.</string>
+    <string name="gate_passcode_warning_open_settings">Abrir Ajustes</string>
+    <string name="gate_passcode_warning_continue_anyway">Continuar igualmente</string>
+
+    <!-- EULA (iOS only — Guideline 1.2) -->
+    <string name="eula_before_you_start_title">Antes de empezar</string>
+    <string name="eula_terms_of_use_title">Términos de uso</string>
+    <!-- LEGAL REVIEW PENDING (machine translation) -->
+    <string name="eula_body">Al usar Rún aceptas estos Términos de uso.\n\nRún es una app de mensajería privada con cifrado de extremo a extremo. Añades contactos en persona intercambiando un código QR, y tus mensajes se cifran en tu dispositivo antes de enviarse. No podemos leer tus mensajes y no alojamos ningún feed público, perfiles ni contenido compartido.\n\nTOLERANCIA CERO CON EL CONTENIDO OBJETABLE Y EL ABUSO\nEn Rún no hay ninguna tolerancia con el contenido o el comportamiento objetable, ilegal o abusivo. Aceptas no usar Rún para enviar, pedir ni solicitar contenido ilícito, de acoso, amenazante, de odio, sexualmente explotador o de cualquier otro modo objetable, ni para abusar de otras personas, acosarlas o hacerles daño. Incumplir esto supone una violación de estos términos.\n\nCÓMO MANTENERTE A SALVO\nComo tus conversaciones son privadas entre tú y las personas que añades, tú controlas quién puede contactar contigo:\n\n• Denunciar: si un contacto te envía contenido objetable o se comporta de forma abusiva, usa “Denunciar” (dentro de una conversación o manteniendo pulsado el contacto) para avisarnos. Revisamos todas las denuncias en menos de 24 horas y actuamos: vetamos a los remitentes abusivos siempre que nos sea técnicamente posible y denunciamos el contenido ilegal a las autoridades competentes. Como los mensajes tienen cifrado de extremo a extremo, actuamos según lo que nos cuentes en tu denuncia.\n\n• Bloquear: usa “Bloquear” para ocultar un contacto al instante y dejar de verlo a él y a sus mensajes. El bloqueo es reversible: puedes desbloquear cuando quieras desde el menú de ajustes.\n\nEres responsable del contenido que envías y de las personas que eliges añadir como contactos. Para usar Rún debes tener la edad suficiente para asumir un acuerdo vinculante en tu país.\n\nSIN GARANTÍA\nRún se ofrece “tal cual”, sin garantías de ningún tipo, en la máxima medida permitida por la ley.\n\nContacto: %1$s</string>
+    <string name="eula_agree_button">Acepto y continuar</string>
+    <string name="eula_decline_alert_title">Es necesario aceptar</string>
+    <string name="eula_decline_alert_message">Debes aceptar los Términos de uso para usar Rún. Existen para mantener a salvo a todo el mundo y prohíben el contenido objetable y el comportamiento abusivo.</string>
+
+    <!-- Abuse report / block (iOS only — Guideline 1.2) -->
+    <string name="report_abuse_email_subject">Denuncia de abuso en Rún</string>
+    <string name="report_abuse_email_body">Quiero denunciar a un contacto por contenido objetable o comportamiento abusivo.\n\nContacto (el nombre que le puse en mi dispositivo): %1$s\n\nQué ha pasado (descríbelo con tus palabras):\n\n\n---\nEn Rún revisamos todas las denuncias en menos de 24 horas y actuamos:\nvetamos a los remitentes abusivos siempre que es técnicamente posible y\ndenunciamos el contenido ilegal a las autoridades competentes.\n\nEste correo lo guarda tu app de correo, fuera del almacenamiento cifrado de Rún,\nasí que incluye solo lo que no te importe conservar ahí.</string>
+    <string name="report_email_fallback_title">Denunciar por correo</string>
+    <string name="report_email_fallback_message">No hay ninguna app de correo configurada en este dispositivo. Toca Copiar denuncia y pégala en cualquier correo dirigido a %1$s.</string>
+    <string name="report_copy_report_button">Copiar denuncia</string>
+    <string name="report_copy_report_clipboard">Para: %1$s\nAsunto: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">No has bloqueado a nadie.</string>
+    <string name="report_unblock_button">Desbloquear</string>
+
+    <!-- Burn-on-read onboarding notice -->
+    <string name="burn_notice_title">Arde al leerse</string>
+    <string name="burn_notice_message">Los mensajes aparecen una vez, aquí mismo, y nunca se guardan. Cuando sales de esta conversación, desaparecen para siempre.</string>
+
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates (compromised-device, inactivity wipe, passcode warning), EULA, block/report, rune dialog chrome, and the burn-on-read onboarding notice. Mirrored on iOS via L10n.swift. Android sources: PinEntryScreen.kt, PinSetupScreen.kt, PinComponents.kt, ChangePinScreen.kt, RuneDialog.kt, MainActivity.kt, BurnOnReadNotice.kt. iOS sources: PinEntryView.swift, PinSetupView.swift, ChangePinView.swift, ContentView.swift, UserSafety.swift, UIComponents.swift. Some strings differ by wording between platforms (Android says "lock screen", iOS says "passcode"; Android says "rooted", iOS says "jailbroken") — these get separate keys rather than being forced to share one, per the byte-identical-English rule. The EULA / block / report strings (eula_, report_) are iOS-only: Rún's Guideline-1.2 safeguards (Terms of Use, Report, Block) are not implemented on Android.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="pin_erase_vault_title">Tirtir khasnaddan?</string>
+    <string name="pin_erase_vault_message">Khasnadda taleefankan lama furi karo — PIN ama weedh sir ah lama kaydin. Tirtiriddu si joogto ah ayay u baabbi\'inaysaa, waxayna bilaabaysaa dejin cusub. Tan lama soo celin karo.</string>
+    <string name="pin_erase_vault_confirm">Tirtir</string>
+    <string name="pin_prompt_passphrase">Geli weedhda sirta ah</string>
+    <string name="pin_passphrase_placeholder">Weedh sir ah</string>
+    <string name="pin_unlock_button">Fur</string>
+    <string name="pin_backoff_hint">Isku day mar kale %1$d ilbiriqsi kadib</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Qufulka shaashadda ee qalabkaaga ayaa isbeddelay, sidaas darteed furaha qalabka ee ilaalinayay khasnaddan wuu lumay. Koodhka soo-celinta ayaa weli furi kara.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Qufulka shaashadda ee qalabkaaga ayaa isbeddelay, sidaas darteed furaha qalabka ee ilaalinayay khasnaddan wuu lumay. Haddii aan jirin koodh soo-celin, khasnaddan lama furi karo.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Passcode-ka qalabkaaga ayaa isbeddelay, sidaas darteed furaha qalabka ee ilaalinayay khasnaddan wuu lumay. Koodhka soo-celinta ayaa weli furi kara.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Passcode-ka qalabkaaga ayaa isbeddelay, sidaas darteed furaha qalabka ee ilaalinayay khasnaddan wuu lumay. Haddii aan jirin koodh soo-celin, khasnaddan lama furi karo.</string>
+    <string name="pin_use_recovery_code">Isticmaal koodhka soo-celinta</string>
+    <string name="pin_use_recovery_code_prompt">Ma furi kartid? Isticmaal koodhka soo-celinta</string>
+    <string name="pin_orphaned_vault_notice">Qalabkan wuxuu leeyahay khasnad, laakiin PIN ama weedh sir ah lama kaydin, sidaas darteed waxba ma furi karo. Waxa ku jira lama soo celin karo.</string>
+    <string name="pin_erase_start_over">Tirtir oo dib u bilow</string>
+    <string name="pin_strength_too_weak">Aad u daciif ah</string>
+    <string name="pin_strength_still_weak">Weli aad ayuu u daciif yahay — ku dar erayo</string>
+    <string name="pin_strength_strong">Xoog leh</string>
+    <string name="pin_strength_excellent">Aad u fiican</string>
+    <string name="pin_hardware_lock_not_enabled_title">Qufulka qalabka lama shidin</string>
+    <string name="pin_hardware_lock_not_enabled_message">Taleefankaagu ma xaqiijin furaha qalabka, sidaas darteed khasnaddaadu waxay ku dhisan tahay heer ilaalin oo hooseeya. Waxaad mar dambe ka shidi kartaa Dejinta.</string>
+    <string name="pin_device_key_busy_title">Dejinta lama dhammaystiri karin</string>
+    <string name="pin_device_key_busy_message">Qalabka ammaanka ee taleefankaagu waa mashquul. Xir taleefankaaga, dib u fur, kadibna mar kale isku day.</string>
+    <string name="pin_setup_choose_pin">Dooro PIN-kaaga</string>
+    <string name="pin_setup_confirm_pin">Xaqiiji PIN-kaaga</string>
+    <string name="pin_setup_choose_passphrase">Dooro weedh sir ah</string>
+    <string name="pin_setup_confirm_passphrase">Xaqiiji weedhdaada sirta ah</string>
+    <string name="pin_setup_passphrase_hint">Lix eray oo random ah ama wax ku dhow. Waxaa lagu qoraa mar kasta oo la furayo — ma jiro PIN, mana jiro jid gaaban oo biometric ah. Taasi waa ujeeddada.</string>
+    <string name="pin_passphrase_placeholder_reenter">Mar kale geli weedhda sirta ah</string>
+    <string name="pin_confirm_button">Xaqiiji</string>
+    <string name="pin_change_enter_current_passphrase">Geli weedhda sirta ah ee hadda jirta</string>
+    <string name="pin_change_enter_current_pin">Geli PIN-ka hadda jira</string>
+    <string name="pin_change_choose_new_pin">Dooro PIN cusub</string>
+    <string name="pin_change_confirm_passphrase">Xaqiiji weedhda sirta ah</string>
+    <string name="pin_change_confirm_new_pin">Xaqiiji PIN-ka cusub</string>
+    <string name="gate_compromised_title">Qalabka waa la jebiyey</string>
+    <string name="gate_compromised_body">Qalabkani wuxuu u muuqdaa mid la root gareeyay. Rún ma dammaanad qaadi karto ammaanka fariimahaaga marka qalabku uu yahay mid la jebiyey.</string>
+    <string name="gate_compromised_body_jailbroken">Qalabkani wuxuu u muuqdaa mid la jailbreak gareeyay. Rún ma dammaanad qaadi karto ammaanka fariimahaaga marka qalabku uu yahay mid la jebiyey.</string>
+    <string name="gate_compromised_continue">Waan fahmay — sii wad</string>
+    <string name="gate_reauth_countdown">Hubinta weedhda sirta ah %1$d gudahood…</string>
+    <string name="gate_lock_countdown">Wuu xidhmayaa %1$d gudahood…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Taabo meel kasta si aad u sii furnaato</string>
+    <string name="gate_passcode_warning_title">Qalabku passcode ma leh</string>
+    <string name="gate_passcode_warning_message">Ilaalinta qalabka ee Rún u leeyahay xogta kaydsan way ka liidataa haddii aanu jirin passcode qalabeed. Dejinta gal oo passcode samee si aad u hesho ilaalin buuxda, kadibna soo noqo si aad u dhammaystirto dejinta. Waxaad sii wadi kartaa iyada oo aan passcode la dejin.</string>
+    <string name="gate_passcode_warning_open_settings">Fur Dejinta</string>
+    <string name="gate_passcode_warning_continue_anyway">Sii wad si kastaba ha ahaatee</string>
+    <string name="eula_before_you_start_title">Ka hor intaadan bilaabin</string>
+    <string name="eula_terms_of_use_title">Shuruudaha Isticmaalka</string>
+    <string name="eula_body">Isticmaalka Rún waxaad ku ogolaataa Shuruudahan Isticmaalka.\n\nRún waa fariin-gudbiye gaar ah oo leh sirsiin end-to-end ah. Xiriiriyayaasha waxaad ku darsaa si toos ah adigoo la isweydaarsanaya koodh QR ah, fariimahaagana waxaa lagu sirsiiyaa qalabkaaga ka hor inta aan la dirin. Ma akhrin karno fariimahaaga, mana martigalinno feed dadweyne, profile-yo, ama wax kasta oo la wadaago.\n\nDULQAAD MA JIRO WAXYAABAHA AAN LA AQBALI KARIN IYO XAD-GUDUBKA\nMa jirto dulqaad la siinayo waxyaabo aan la aqbali karin, sharci-darro ah, ama xad-gudub ah — hadal iyo hab-dhaqan toona — Rún dushiisa. Waxaad ku ogolaataa inaadan Rún u isticmaalin si aad u dirto, u codsato, ama u raadiso waxyaabo sharci-darro ah, dhibaateynaya, hanjabaad ah, nacayb ah, ka faa\'iidaysi galmo, ama si kale aan loo aqbali karin, iyo inaadan si kale u dhibaynin, u xad-gudbin, ama u waxyeelayn dad kale. Tan ku xadgudubku waa jebin shuruudahan.\n\nSIDA AAD ISKA ILAALIN LAHAYD\nSababtoo ah wada-hadalladaadu waa kuwo khaas kuu ah adiga iyo dadka aad ku dartay, waxaad gacanta ku haysaa cidda kula soo xiriiri karta:\n\n• Warbixi — haddii xiriiriye uu kuu soo diro waxyaabo aan la aqbali karin ama uu ku sameeyo dhaqan xad-gudub ah, isticmaal “Warbixi” (wada-hadalka gudihiisa, ama adigoo taabanaya oo hayaya xiriiriyaha) si aad noo ogeysiiso. Warbixin kasta waxaan eegnaa oo tallaabo waan ka qaadnaa 24 saacadood gudahood — waxaana ka mid ah in aan xannibno diriyayaasha xad-gudubka ee marka farsamo ahaan awoodno, iyo inaan u sheegno waxyaabaha sharci-darrada ah maamulayaasha khuseeya. Sababtoo ah fariimuhu waa kuwo leh sirsiin end-to-end ah, waxaan ku tallaabsanaa waxa aad noogu sheegto warbixintaada.\n\n• Xannib — isticmaal “Xannib” si aad si degdeg ah u qariso xiriiriye si aadan mar dambe u arkin isaga ama fariimihiisa. Xannibiddu waa mid la beddeli karo — mar kasta waad ka furi kartaa xannibaadda menu-ga Dejinta.\n\nWaxaad mas\'uul ka tahay waxyaabaha aad dirto iyo dadka aad doorato inaad ku darto xiriiriyayaashaada. Waa inaad gaadhay da\'da lagaaga oggol yahay inaad gasho heshiis sharci ahaan ku xidhaya dalkaaga si aad u isticmaasho Rún.\n\nDAMMAANAD MA JIRTO\nRún waxaa lagu bixiyaa “sida ay tahay”, iyada oo aan lahayn dammaanad nooc kasta ah, ilaa heerka ugu buuxa ee sharcigu oggol yahay.\n\nXiriir: %1$s</string>
+    <string name="eula_agree_button">Waan ogolahay &amp; sii wad</string>
+    <string name="eula_decline_alert_title">Ogolaansho ayaa loo baahan yahay</string>
+    <string name="eula_decline_alert_message">Waa inaad aqbashaa Shuruudaha Isticmaalka si aad u isticmaasho Rún. Waxay jiraan si loo ilaaliyo dadka oo dhan, waxayna mamnuucayaan waxyaabo aan la aqbali karin iyo dhaqan xad-gudub ah.</string>
+    <string name="report_abuse_email_subject">Warbixinta xad-gudubka Rún</string>
+    <string name="report_abuse_email_body">Waxaan rabaa inaan ka warbixiyo xiriiriye uu leeyahay waxyaabo aan la aqbali karin ama dhaqan xad-gudub ah.\n\nXiriiriyaha (magaca aan ku bixiyay qalabkayga): %1$s\n\nMaxaa dhacay (fadlan ku sharax erayadaada):\n\n\n---\nRún wuxuu eegaa warbixin kasta 24 saacadood gudaheed, wuxuuna tallaabo ka qaadaa —\nisagoo xannibaya diriyayaasha xad-gudubka marka farsamo ahaan suurtagal tahay, oo\nu sheegaya waxyaabaha sharci-darrada ah maamulayaasha khuseeya.\n\nEmail-kan waxaa kaydiya app-ka boostada ee taleefankaaga, ka baxsan kaydka sirsiiman ee Rún, sidaas darteed\nfadlan ku dar oo kaliya waxa aad ku raaxaysan tahay inuu halkaas ku sii jiro.</string>
+    <string name="report_email_fallback_title">Warbixin email ah</string>
+    <string name="report_email_fallback_message">Qalabkan lagama dejin app email ah. Taabo Koobi warbixinta, kadibna ku dhex dhig email kasta oo loo dirayo %1$s.</string>
+    <string name="report_copy_report_button">Koobi warbixinta</string>
+    <string name="report_copy_report_clipboard">Loo dirayo: %1$s\nMawduuca: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Qofna ma xannibin.</string>
+    <string name="report_unblock_button">Ka saar xannibka</string>
+    <string name="burn_notice_title">Gub marka la akhriyo</string>
+    <string name="burn_notice_message">Fariimuhu waxay ka soo muuqdaan hal mar — halkan oo kale — mana kaydsana marnaba. Marka aad ka baxdo wada-hadalkan, si joogto ah ayay u baabba\'aan.</string>
+</resources>

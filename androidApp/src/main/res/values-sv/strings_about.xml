@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ramen för Om-modalen (AboutInfoModal.kt — den klassiska rutan med appnamn/
+  version/tack, skild från den svepbara funktionskarusellen som är nycklad i
+  strings_shared.xml under about_*) samt donations-/stödmodalen och dricksburken
+  (DonateModal.kt, TipJar.kt — Play Billing) och iOS-motsvarigheten
+  (SupportView.swift, TipStore.swift). Nyckelprefix: about_info_, donate_, tip_.
+
+  Lokaliseras medvetet INTE här (enligt kampanjens undantagslista): appnamnet
+  "Rún", runtecknet "ᚱ", tillverkarnamnet "Vikstrom Group AB", adressen
+  "vgab.eu", namn och licenser i tacklistan (AboutContent.credits — ett par av
+  namn och licens, inte en mening) och själva versionsnumren i "Version X (Y)"
+  (bara det omgivande ordet är en resurs).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Om-modalen (AboutInfoModal.kt) -->
+    <string name="about_info_tagline">Privata meddelanden, dirigerade via Tor.</string>
+    <string name="about_info_tor_version">Kör Tor %1$s</string>
+    <string name="about_info_open_source_heading">Byggd på öppen källkod</string>
+    <string name="about_info_clearnet_title">Öppna i webbläsaren?</string>
+    <string name="about_info_clearnet_message">vgab.eu öppnas i din webbläsare över det vanliga internet — inte Tor. Webbplatsen och ditt nätverk kan se enhetens IP-adress.</string>
+
+    <!-- Ram för donations-/stödmodalen (DonateModal.kt); själva DonateContent.appeal
+         är redan nycklad i strings_shared.xml — lägg inte till den igen. -->
+    <string name="donate_title">Stöd Rún</string>
+    <string name="donate_tab_tip">Dricks</string>
+    <string name="donate_tab_crypto">Krypto</string>
+    <string name="donate_play_disclosure">Hanteras av Google Play · kopplas till ditt Google-konto · ingen annan tredje part.</string>
+    <string name="donate_tba">Kommer snart</string>
+    <string name="donate_qr_content_description">QR-kod med donationsadress för %1$s</string>
+    <string name="donate_copied_confirmation">Kopierat ✓</string>
+
+    <!-- Dricksburk via Play Billing (TipJar.kt) + iOS StoreKit (SupportView.swift) -->
+    <string name="tip_appeal">Rún har inga annonser, inga investerare och säljer aldrig dina data. En dricks — hur stor som helst — hjälper till att hålla appen gratis och oberoende.</string>
+    <string name="tip_store_disclosure">Hanteras av App Store · kopplas till ditt Apple-ID · ingen annan tredje part.</string>
+    <string name="tip_thank_you">Tack 🖤</string>
+    <string name="tip_thank_you_body">Ditt stöd håller Rún gratis och oberoende.</string>
+    <string name="tip_unavailable_fallback">Det går inte att ge dricks just nu.</string>
+    <string name="tip_error_purchase_failed">Dricksen gick inte igenom. Försök igen.</string>
+    <string name="tip_error_unavailable_device">Dricks i appen går inte att ge på den här enheten.</string>
+    <string name="tip_error_load_failed">Kunde inte ladda dricksalternativen just nu.</string>
+    <string name="tip_error_not_configured">Dricksfunktionen är inte konfigurerad än.</string>
+    <string name="tip_error_checkout_failed">Kunde inte öppna kassan i Google Play. Försök igen.</string>
+    <string name="tip_tier_small">Bjud på en kaffe</string>
+    <string name="tip_tier_medium">Liten dricks</string>
+    <string name="tip_tier_large">Generös dricks</string>
+    <string name="tip_tier_xl">Du är en legend</string>
+
+</resources>

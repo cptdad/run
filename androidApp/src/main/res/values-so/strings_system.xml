@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_system.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Fariimaha</string>
+    <string name="notification_title">Ogeysiis</string>
+    <string name="apns_notification_body">Ogeysiis</string>
+    <string name="tor_keepalive_channel_name">Isku-xirka diyaar ah</string>
+    <string name="tor_keepalive_notification_title">Isku-xirka waa lagu hayaa diyaar</string>
+    <string name="infoplist_camera_usage">Kamaradda waxaa loo isticmaalaa in lagu sawiro koodhadhka QR marka la isweydaarsanayo xiriiriyayaasha.</string>
+    <string name="infoplist_faceid_usage">Face ID wuxuu furaa khasnaddaada sirsiiman marka furitaanka ku xidhan qalabka la shido.</string>
+    <string name="infoplist_local_network_usage">Gelitaanka shabakadda gudaha waxaa la isticmaalaa kaliya marka aad dejiso proxy Tor ah oo dibadda ah shabakaddaada gudaha.</string>
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lägg till kontakt — skanna/visa QR, koda in kod, alias, introduktioner,
+  text om kameratillstånd (AddContactScreen.kt / AddContactView.swift).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- Rubrik / navigering -->
+    <string name="add_contact_title">Lägg till kontakt</string>
+    <string name="add_contact_nav_title">Lägg till kontakt</string>
+
+    <!-- Steg 1 — Val -->
+    <string name="add_contact_choice_heading">Lägg till en kontakt</string>
+    <string name="add_contact_choice_subtitle">Du och din kontakt byter koder. Välj hur ni börjar — ni gör båda delarna.</string>
+    <string name="add_contact_choice_show">Visa min kod</string>
+    <string name="add_contact_choice_scan">Skanna en kod</string>
+
+    <!-- Steg — Visa min kod -->
+    <string name="add_contact_show_heading">Visa det här för din kontakt</string>
+    <string name="add_contact_show_hint_scanned">Låt kontakten skanna den, och slutför sedan.</string>
+    <string name="add_contact_show_hint_pending">Låt kontakten skanna den. Sedan skannar du deras.</string>
+    <string name="add_contact_next">Nästa</string>
+    <string name="add_contact_show_first_android">Jag har visat den →</string>
+    <string name="add_contact_show_first_ios">Jag har visat den</string>
+
+    <!-- Steg — Skanna kod -->
+    <string name="add_contact_scan_heading">Skanna din kontakts QR-kod</string>
+    <string name="add_contact_camera_permission">Kameratillstånd krävs för att skanna</string>
+    <string name="add_contact_invalid_qr">Ogiltigt QR-kodsformat</string>
+    <string name="add_contact_scan_deadlock">Skanna koden på deras skärm ”Nästan där”</string>
+
+    <!-- Status för inkorgsskapande / väntan på slutförande -->
+    <string name="add_contact_mint_failed_relay">Kunde inte nå reläet</string>
+    <string name="add_contact_solving_pow">Löser proof-of-work…</string>
+    <string name="add_contact_setting_up_inbox">Skapar inkorg…</string>
+    <string name="add_contact_mint_failed_prefix">Inkorgen kunde inte skapas: %1$s</string>
+    <!-- Reservtext för fallet .ready i mintStatusLine, bara på iOS — syns normalt
+         inte (slutförandesteget lämnar skärmen så fort inkorgen är klar),
+         behålls för den defensiva switchens fullständighet. -->
+    <string name="add_contact_mint_ready">Inkorgen är klar</string>
+
+    <!-- Steg — Klart -->
+    <string name="add_contact_done_heading">✓ Kontakt tillagd</string>
+    <string name="add_contact_saved_as">Sparad som: %1$s</string>
+    <string name="add_contact_scan_back_hint">Låt dem skanna din kod nu. Ni kan skriva till varandra så snart de gör det.</string>
+    <string name="add_contact_keep_waiting">Fortsätt vänta</string>
+    <string name="add_contact_cancel_pairing">Avbryt parkoppling</string>
+    <string name="add_contact_cancel_pairing_title">Avbryta parkopplingen?</string>
+    <string name="add_contact_cancel_pairing_message">Det här raderar den halvfärdiga kontakten och stänger dess inkorgar. Ni måste båda börja om med nya koder.</string>
+    <string name="add_contact_qr_preparing">Förbereder din kod…</string>
+    <string name="add_contact_announce_hint">De kan skriva till dig om en stund — din inkorg levereras automatiskt.</string>
+    <string name="add_contact_mnemonic_label">Personligt minne (valfritt)</string>
+    <string name="add_contact_mnemonic_placeholder">t.ex. Träffades på konferensen i Oslo</string>
+    <string name="add_contact_scan_back_title">Nästan där</string>
+
+    <!-- Flik för kodutbyte (klistra in) -->
+    <string name="add_contact_your_code">Din kod</string>
+    <string name="add_contact_their_code">Deras kod</string>
+    <string name="add_contact_paste_placeholder">Klistra in kontaktkoden här</string>
+    <string name="add_contact_copied_bang">Kopierat!</string>
+    <string name="add_contact_invalid_code">Ogiltig kod</string>
+    <string name="add_contact_paste_not_ready">Skapar fortfarande inkorgen — försök igen om en stund</string>
+
+    <!-- valvet nekar tillägget (motpartens inkorgs-id ägs redan av en befintlig
+         kontakt). Hålls byte-identisk mellan plattformarna — se den delade
+         kommentaren i både AddContactScreen.kt och AddContactView.swift. -->
+    <string name="add_contact_inbox_in_use">Kunde inte lägga till kontakten — en av inkorgarna i deras kod används redan här. Om du lägger till någon du redan har på nytt, radera den gamla kontakten först och försök sedan igen.</string>
+
+</resources>

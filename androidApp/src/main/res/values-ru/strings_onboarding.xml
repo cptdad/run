@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_onboarding.xml.
+  PIN entry/setup/change, launch gates (compromised-device, inactivity wipe, passcode warning), EULA, block/report, rune dialog chrome, and the burn-on-read onboarding notice. Mirrored on iOS via L10n.swift. Android sources: PinEntryScreen.kt, PinSetupScreen.kt, PinComponents.kt, ChangePinScreen.kt, RuneDialog.kt, MainActivity.kt, BurnOnReadNotice.kt. iOS sources: PinEntryView.swift, PinSetupView.swift, ChangePinView.swift, ContentView.swift, UserSafety.swift, UIComponents.swift. Some strings differ by wording between platforms (Android says "lock screen", iOS says "passcode"; Android says "rooted", iOS says "jailbroken") — these get separate keys rather than being forced to share one, per the byte-identical-English rule. The EULA / block / report strings (eula_, report_) are iOS-only: Rún's Guideline-1.2 safeguards (Terms of Use, Report, Block) are not implemented on Android.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="pin_erase_vault_title">Удалить это хранилище?</string>
+    <string name="pin_erase_vault_message">Хранилище на этом устройстве невозможно открыть — для него не сохранён ни PIN, ни парольная фраза. Удаление сотрёт его навсегда и запустит новую настройку. Это действие необратимо.</string>
+    <string name="pin_erase_vault_confirm">Удалить</string>
+    <string name="pin_prompt_passphrase">Введите парольную фразу</string>
+    <string name="pin_passphrase_placeholder">Парольная фраза</string>
+    <string name="pin_unlock_button">Разблокировать</string>
+    <string name="pin_backoff_hint">Повторите через %1$d с</string>
+    <string name="pin_permanent_key_loss_lockscreen_has_recovery">Экран блокировки устройства изменился, поэтому аппаратный ключ, защищавший это хранилище, утерян. Ваш код восстановления всё ещё может его открыть.</string>
+    <string name="pin_permanent_key_loss_lockscreen_no_recovery">Экран блокировки устройства изменился, поэтому аппаратный ключ, защищавший это хранилище, утерян. Без кода восстановления это хранилище открыть невозможно.</string>
+    <string name="pin_permanent_key_loss_passcode_has_recovery">Код-пароль устройства изменился, поэтому аппаратный ключ, защищавший это хранилище, утерян. Ваш код восстановления всё ещё может его открыть.</string>
+    <string name="pin_permanent_key_loss_passcode_no_recovery">Код-пароль устройства изменился, поэтому аппаратный ключ, защищавший это хранилище, утерян. Без кода восстановления это хранилище открыть невозможно.</string>
+    <string name="pin_use_recovery_code">Использовать код восстановления</string>
+    <string name="pin_use_recovery_code_prompt">Не удаётся разблокировать? Используйте код восстановления</string>
+    <string name="pin_orphaned_vault_notice">На этом устройстве есть хранилище, но для него не сохранён ни PIN, ни парольная фраза, поэтому открыть его нечем. Его содержимое невозможно восстановить.</string>
+    <string name="pin_erase_start_over">Удалить и начать заново</string>
+    <string name="pin_strength_too_weak">Слишком слабая</string>
+    <string name="pin_strength_still_weak">Всё ещё слишком слабая — добавьте слов</string>
+    <string name="pin_strength_strong">Надёжная</string>
+    <string name="pin_strength_excellent">Отличная</string>
+    <string name="pin_hardware_lock_not_enabled_title">Аппаратная блокировка не включена</string>
+    <string name="pin_hardware_lock_not_enabled_message">Ваш телефон не подтвердил аппаратный ключ, поэтому хранилище настроено на более низком уровне защиты. Включить аппаратную блокировку можно позже в настройках.</string>
+    <string name="pin_device_key_busy_title">Не удалось завершить настройку</string>
+    <string name="pin_device_key_busy_message">Аппаратный модуль безопасности вашего телефона занят. Заблокируйте телефон, разблокируйте его и попробуйте снова.</string>
+    <string name="pin_setup_choose_pin">Придумайте PIN-код</string>
+    <string name="pin_setup_confirm_pin">Подтвердите PIN-код</string>
+    <string name="pin_setup_choose_passphrase">Придумайте парольную фразу</string>
+    <string name="pin_setup_confirm_passphrase">Подтвердите парольную фразу</string>
+    <string name="pin_setup_passphrase_hint">Около шести случайных слов. Вводится при каждой разблокировке — здесь нет ни PIN-кода, ни быстрого входа по биометрии. В этом и есть смысл.</string>
+    <string name="pin_passphrase_placeholder_reenter">Введите парольную фразу ещё раз</string>
+    <string name="pin_confirm_button">Подтвердить</string>
+    <string name="pin_change_enter_current_passphrase">Введите текущую парольную фразу</string>
+    <string name="pin_change_enter_current_pin">Введите текущий PIN-код</string>
+    <string name="pin_change_choose_new_pin">Придумайте новый PIN-код</string>
+    <string name="pin_change_confirm_passphrase">Подтвердите парольную фразу</string>
+    <string name="pin_change_confirm_new_pin">Подтвердите новый PIN-код</string>
+    <string name="gate_compromised_title">Устройство скомпрометировано</string>
+    <string name="gate_compromised_body">Похоже, на этом устройстве получены root-права. Rún не может гарантировать безопасность ваших сообщений на скомпрометированном устройстве.</string>
+    <string name="gate_compromised_body_jailbroken">Похоже, на этом устройстве выполнен джейлбрейк. Rún не может гарантировать безопасность ваших сообщений на скомпрометированном устройстве.</string>
+    <string name="gate_compromised_continue">Понимаю — продолжить</string>
+    <string name="gate_reauth_countdown">Проверка парольной фразы через %1$d…</string>
+    <string name="gate_lock_countdown">Блокировка через %1$d…</string>
+    <string name="gate_lock_countdown_tap_to_stay">Коснитесь экрана в любом месте, чтобы приложение осталось разблокированным</string>
+    <string name="gate_passcode_warning_title">Нет код-пароля устройства</string>
+    <string name="gate_passcode_warning_message">Без код-пароля устройства аппаратная защита хранящихся данных Rún слабее. Установите код-пароль в настройках, чтобы получить полную защиту, а затем вернитесь и завершите настройку. Вы можете продолжить и без него.</string>
+    <string name="gate_passcode_warning_open_settings">Открыть настройки</string>
+    <string name="gate_passcode_warning_continue_anyway">Всё равно продолжить</string>
+    <string name="eula_before_you_start_title">Прежде чем начать</string>
+    <string name="eula_terms_of_use_title">Условия использования</string>
+    <string name="eula_body">Используя Rún, вы соглашаетесь с этими Условиями использования.\n\nRún — это приватный мессенджер со сквозным шифрованием. Вы добавляете контакты лично, обмениваясь QR-кодом, и ваши сообщения шифруются на вашем устройстве ещё до отправки. Мы не можем читать ваши сообщения и не размещаем публичную ленту, профили или какой-либо общий контент.\n\nНУЛЕВАЯ ТЕРПИМОСТЬ К НЕПРИЕМЛЕМОМУ КОНТЕНТУ И ЗЛОУПОТРЕБЛЕНИЯМ\nВ Rún не допускается неприемлемый, незаконный или оскорбительный контент либо поведение. Вы соглашаетесь не использовать Rún для отправки, запроса или требования контента, который является незаконным, оскорбительным, содержащим угрозы, разжигающим ненависть, сексуально эксплуатирующим или иным образом неприемлемым, а также не оскорблять, не преследовать и не причинять вред другим людям. Нарушение этого пункта является нарушением настоящих условий.\n\nЗАБОТА О ВАШЕЙ БЕЗОПАСНОСТИ\nПоскольку ваши беседы доступны только вам и добавленным вами людям, вы сами решаете, кто может с вами связаться:\n\n• Пожаловаться — если контакт присылает вам неприемлемый контент или ведёт себя оскорбительно, используйте «Пожаловаться» (в беседе или нажатием и удержанием на контакте), чтобы сообщить нам об этом. Мы рассматриваем каждую жалобу в течение 24 часов и принимаем меры — вплоть до блокировки нарушителя там, где это технически возможно, и передачи сведений о незаконном контенте соответствующим органам. Поскольку сообщения защищены сквозным шифрованием, мы действуем исходя из того, что вы указали в своей жалобе.\n\n• Заблокировать — используйте «Заблокировать», чтобы сразу скрыть контакт: вы больше не будете видеть ни его, ни его сообщения. Блокировку можно отменить — вы можете разблокировать контакт в любой момент в меню настроек.\n\nВы несёте ответственность за контент, который отправляете, и за людей, которых добавляете в контакты. Чтобы использовать Rún, вы должны достичь возраста, позволяющего заключать юридически обязывающие соглашения в вашей стране.\n\nОТСУТСТВИЕ ГАРАНТИЙ\nRún предоставляется «как есть», без каких-либо гарантий, в максимальной степени, допустимой законом.\n\nКонтакт: %1$s</string>
+    <string name="eula_agree_button">Принимаю и продолжаю</string>
+    <string name="eula_decline_alert_title">Необходимо согласие</string>
+    <string name="eula_decline_alert_message">Чтобы использовать Rún, необходимо принять Условия использования. Они существуют для того, чтобы обеспечить безопасность всех пользователей и запретить неприемлемый контент и оскорбительное поведение.</string>
+    <string name="report_abuse_email_subject">Жалоба на злоупотребление в Rún</string>
+    <string name="report_abuse_email_body">Я хочу пожаловаться на контакт из-за неприемлемого контента или оскорбительного поведения.\n\nКонтакт (имя, под которым он записан на моём устройстве): %1$s\n\nЧто произошло (опишите, пожалуйста, своими словами):\n\n\n---\nRún рассматривает каждую жалобу в течение 24 часов и принимает меры —\nпри технической возможности блокируя нарушителей и сообщая о\nнезаконном контенте соответствующим органам.\n\nЭто письмо сохраняется вашим почтовым приложением вне зашифрованного\nхранилища Rún, поэтому указывайте в нём только то, что вы готовы там хранить.</string>
+    <string name="report_email_fallback_title">Пожаловаться по электронной почте</string>
+    <string name="report_email_fallback_message">На этом устройстве не настроено почтовое приложение. Нажмите «Скопировать жалобу», а затем вставьте её в любое письмо, адресованное %1$s.</string>
+    <string name="report_copy_report_button">Скопировать жалобу</string>
+    <string name="report_copy_report_clipboard">Кому: %1$s\nТема: %2$s\n\n%3$s</string>
+    <string name="report_blocked_empty_state">Вы никого не заблокировали.</string>
+    <string name="report_unblock_button">Разблокировать</string>
+    <string name="burn_notice_title">Сжигание при прочтении</string>
+    <string name="burn_notice_message">Сообщения появляются только один раз — прямо здесь — и никогда не сохраняются. Когда вы покидаете эту беседу, они исчезают навсегда.</string>
+</resources>

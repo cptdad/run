@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_conversation.xml.
+  Machine-translated 2026-08-27, pending human review.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+
+    <!-- 1:1 conversation screen (ConversationScreen.kt / ConversationView.swift) -->
+    <string name="conversation_pending_banner">Venter på denne kontakts indbakke — du kan sende om et øjeblik.</string>
+    <string name="conversation_alias_unknown">Ukendt</string>
+    <string name="conversation_contact_fallback">Kontakt</string>
+    <string name="conversation_fs_stalled_title">Forward secrecy er ikke aktiveret endnu</string>
+    <string name="conversation_fs_stalled_body">Beskeder til denne kontakt er stadig krypteret, men de får endnu ikke den ekstra beskyttelse, der holder tidligere beskeder sikre, hvis en nøgle senere bliver kompromitteret. Det klarer sig som regel, når kontakten svarer. Hvis det fortsætter, skal du fjerne kontakten og tilføje den igen.</string>
+    <string name="conversation_ratchet_refused_body">Der kunne ikke oprettes en sikker kanal med denne kontakt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen.</string>
+
+    <!-- iOS-only report/block sheet (Guideline 1.2) -->
+    <string name="conversation_report_confirm_title">Anmeld kontakt</string>
+    <string name="conversation_report_confirm_message">Anmeldelser bliver gennemgået og håndteret inden for 24 timer. Din anmeldelse sendes fra din egen mailapp, så vi kommer til at se din mailadresse — og kladden gemmes af den app uden for Rún, hvor den ikke bliver slettet, hvis du sletter alt i Rún.</string>
+    <string name="conversation_report_confirm_button">Anmeld til Rún</string>
+    <string name="conversation_report_action">Anmeld</string>
+    <string name="conversation_block_action">Blokér</string>
+
+    <!-- iOS-only manual-screenshot warning banner (ScreenshotProtection.swift) -->
+    <string name="conversation_screenshot_warning_banner">⚠ Skærmbilledet er gemt i Fotos — billedet er IKKE krypteret og kan blive synkroniseret til iCloud.</string>
+    <string name="conversation_group_echo_label">Gruppebesked i %1$s</string>
+    <string name="conversation_group_echo_open">Åbn gruppen</string>
+
+</resources>

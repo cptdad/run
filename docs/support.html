@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rún — Support</title>
+<meta name="description" content="Support and FAQ for Rún, a private, end-to-end encrypted messenger routed over Tor.">
+<meta name="robots" content="index,follow">
+<!-- Self-contained: no external fonts, scripts, trackers, or analytics. -->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0d0d0f;
+    color: #e7e7ea;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
+  h2 {
+    font-size: 1.25rem;
+    margin: 2.25rem 0 .75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #26262b;
+  }
+  h3 { font-size: 1.02rem; margin: 1.4rem 0 .3rem; color: #fff; }
+  p, li { color: #c7c7cd; }
+  a { color: #8ab4ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .lede { color: #e7e7ea; font-size: 1.05rem; }
+  ul { padding-left: 1.2rem; }
+  code { background: #1a1a1f; padding: .1rem .35rem; border-radius: 4px; font-size: .9em; }
+  footer { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #26262b; color: #8a8a92; font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Rún — Support</h1>
+  <p class="lede"><strong>Rún</strong> is a private messenger: messages are end-to-end encrypted and routed over the Tor network. No accounts, no phone number, no email sign-up.</p>
+  <p>If you need help, the FAQ below covers the most common questions. For anything else, contact us at <a href="mailto:support@your-domain">support@your-domain</a>.</p>
+
+  <h2>Getting started</h2>
+
+  <h3>How do I add a contact?</h3>
+  <p>Open <strong>Add Contact</strong> and either scan the other person's QR code or paste their contact code. Each side generates half of a shared key, and Rún combines them — so the encryption key for your conversation only ever exists on your two devices. You both need to exchange codes for messaging to work.</p>
+
+  <h3>Why does it take a moment to connect?</h3>
+  <p>On first launch (and after reopening), Rún establishes a Tor connection before it can send or receive. This can take anywhere from a few seconds to a minute depending on your network. A progress ring shows the status; once it's complete, messaging is ready.</p>
+
+  <h3>Messages aren't sending / receiving</h3>
+  <ul>
+    <li>Make sure the Tor connection has finished bootstrapping (wait for the progress ring to complete).</li>
+    <li>Check that you have a working internet connection.</li>
+    <li>Confirm both people have added each other via QR/contact code.</li>
+    <li>If a contact is tagged "Re-pair," exchange codes again to refresh the connection.</li>
+  </ul>
+
+  <h2>PIN, privacy &amp; data</h2>
+
+  <h3>I forgot my PIN. How do I recover my messages?</h3>
+  <p>You can't — and that's by design. Your messages are encrypted with a key derived from your PIN, and there is no account, server copy, or backdoor that could restore them. A forgotten PIN means the data cannot be decrypted by anyone, including us. You can reinstall the app to start fresh.</p>
+
+  <h3>My messages disappeared</h3>
+  <p>For your protection, Rún erases its data after too many incorrect PIN attempts, and after an extended period of inactivity. This is a security feature, not a bug. Erased data cannot be recovered.</p>
+
+  <h3>Do you have my messages on a server?</h3>
+  <p>No. Messages are end-to-end encrypted and relayed only as encrypted, padded data that the relay cannot read. We don't run accounts and don't store your conversations.</p>
+
+  <h3>What data do you collect?</h3>
+  <p>None. Rún has no ads, no trackers, and no analytics. There is no account and nothing tying a conversation to your identity.</p>
+
+  <h3>How do I delete everything?</h3>
+  <p>Delete the app from your device. All of Rún's data is stored locally and is removed with the app.</p>
+
+  <h2>Contact</h2>
+  <ul>
+    <li><strong>General support &amp; bug reports:</strong> <a href="mailto:support@your-domain">support@your-domain</a></li>
+    <li><strong>Security disclosures:</strong> <a href="mailto:security@your-domain">security@your-domain</a> — please report suspected vulnerabilities privately before disclosing publicly.</li>
+  </ul>
+
+  <footer>
+    Rún is free and supported by donations. No subscriptions, no upsells.<br>
+    Last updated: June 2026
+  </footer>
+</main>
+</body>
+</html>

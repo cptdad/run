@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Somali (so) translation of values/strings_settings.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="settings_language">Luqadda</string>
+    <string name="language_option_system">Sida nidaamku dejiyay</string>
+    <string name="notif_settings_carousel_back">‹ Gadaal</string>
+    <string name="notif_settings_carousel_next">Xiga ›</string>
+    <string name="notif_settings_technical_details">Faahfaahinta farsamada</string>
+    <string name="notif_settings_sound_row_label">Codka iyo gariirka</string>
+    <string name="notif_settings_sound_row_hint">Digniinuhu waxay u dhawaaqaan sida fariin-gudbiye kasta oo kale. Ka beddel ama ka aamusi dejinta ogeysiisyada ee Android — Rún marnaba ma beddelo doorashadaada.</string>
+    <string name="notif_settings_register_error_generic">Ma diiwaan gelin karin ogeysiisyada. Hubi xidhiidhkaaga oo isku day mar kale.</string>
+    <string name="notif_settings_register_error_no_distributor">Wax qaybiye ogeysiis ah lama dooran. F-Droid ka rakib ntfy, kadibna isku day mar kale.</string>
+    <string name="notif_settings_register_error_distributor_selection">Lama xidhiidhi karin qaybiyaha ogeysiiskaaga. Si buuxda u xir Rún oo dib u fur, kadibna isku day mar kale.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Server-ka push-ka ee qaybiyahan weli lama taageero — waxa loo baahan yahay VAPID. ntfy wuu shaqeeyaa; waxaad ka rakibi kartaa F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Qaybiyaha ogeysiiskaagu wuu diiday diiwaan gelinta. Fur, hubi in la dejiyay, kadibna isku day mar kale.</string>
+    <string name="notif_settings_register_error_no_endpoint">Qaybiyaha ogeysiiskaagu wax kuma jawaabin waqtiga. Fur, hubi in uu xiriir la leeyahay, kadibna isku day mar kale.</string>
+    <string name="notif_settings_no_distributor_message">Taleefankan ma laha adeegyada Google, sidaa darteed ogeysiisyadu waxay u baahan yihiin app qaybiye UnifiedPush ah. Rakib mid — ntfy waa doorashada lagula talinayo — kadibna halkan ku soo noqo oo shid ogeysiisyada.</string>
+    <string name="notif_settings_no_distributor_link_label">F-Droid ka hel ntfy</string>
+    <string name="notif_settings_unregistered_notice">Qaybiyaha ogeysiiskaagu wuu joojiyay gaarsiinta Rún, sidaa darteed ogeysiisyada waa la damiyay. Mar kale shid si aad dib ula xiriirto.</string>
+    <string name="settings_language_restart_title">Dib u bilow si loo dabaqo</string>
+    <string name="settings_language_restart_message">Rún waa inuu dib u bilaabo si uu luqadda app-ka ugu beddelo %1$s. Sii wad?</string>
+    <string name="settings_report_bug">Ka warbixi cilad</string>
+    <string name="settings_debug_mode">Habka debug-ga</string>
+    <string name="settings_debug_mode_on">Habka debug-ga (shidan)</string>
+    <string name="debug_mode_title">Habka debug-ga</string>
+    <string name="debug_mode_message">U dir relay-ga diiwaanno baaritaan oo qarsoodi ah si aad u caawiso horumarinta. Diiwaannada waligood kuma jiro wax lagu aqoonsan karo adiga ama qalabkan: ma jiraan magacyo, ma jiro waxa ku jira farriimaha, ma jiraan cinwaanno, ma jiraan furayaal, mana jiraan aqoonsiyo sanduuq ama xiriiriye.</string>
+    <string name="debug_mode_message_off">Habka debug-ga waa shidan yahay. Dami si aad u joojiso dirista diiwaannada baaritaanka ee qarsoodiga ah.</string>
+    <string name="debug_mode_turn_on">Shid</string>
+    <string name="debug_mode_turn_off">Dami</string>
+    <string name="ext_proxy_title">Proxy Tor-ka dibadda</string>
+    <string name="ext_proxy_description">Ku dir dhammaan taraafikada relay-ga SOCKS5 proxy aad adigu maamusho, sida Orbot ama Tor shabakaddaada, halkii aad ka isticmaali lahayd Tor-ka ku dhex jira Rún. Marka tan shidan tahay, Tor-ka ku dhex jira weligiis ma bilaabmo. Haddii proxy-ga lagu gaari waayo, Rún wuxuu ku sii jiraa offline. Wax beddel ah ma jiro.</string>
+    <string name="ext_proxy_toggle">Isticmaal proxy dibadda ah</string>
+    <string name="ext_proxy_host_label">IP-ga proxy-ga</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Geli cinwaan IP ah oo taleefankan ama shabakaddaada gudaha ah ku yaal: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x ama 169.254.x.x. Magacyada host-ka lama ogola.</string>
+    <string name="ext_proxy_error_port">Geli port u dhexeeya 1 ilaa 65535.</string>
+    <string name="ext_proxy_error_save">Habaynta lama kaydin karin. Mar kale isku day.</string>
+    <string name="ext_proxy_lan_warning">Taraafikada u dhexaysa taleefankan iyo proxy-ga lama sirayo. Qofkasta oo daawan kara ama dhalleecayn kara cinwaankan, oo ay ku jiraan shabakado kale oo taleefankan dambe ku soo biiro, wuxuu helayaa token-yada gelitaanka ee sanduuqyada wada-hadalladaada. Wuxuu tirtiri karaa ama la wareegi karaa sanduuqyadaas, laakiin ma akhrisan karo fariimahaaga. Tan ku isticmaal oo kaliya shabakad aad xukunto, oo dami habkan marka aad ka baxdo.</string>
+    <string name="ext_proxy_loopback_warning">Inta app-ka proxy-ga (sida Orbot) uusan shaqaynayn, app kasta oo kale oo taleefankan ku jira wuu qaadan karaa deegaankiisa (port) oo wuxuu helayaa isla token-yadaas gelitaanka. Ka dhig app-ka proxy-ga port aan caadi ahayn oo ha shaqeeyo.</string>
+    <string name="ext_proxy_next_launch">Isbeddeladu waxay dhaqan galayaan marka xigta ee aad furto Rún.</string>
+    <string name="ext_proxy_saved">La keydiyay. Xir oo mar kale fur Rún si loo dabaqo.</string>
+    <string name="ext_proxy_connecting">Waxaa lagu xirayaa proxy-gaaga dibadda</string>
+    <string name="ext_proxy_status_checking">Proxy dibadda ah la isticmaalayo: waa la hubinayaa</string>
+    <string name="ext_proxy_status_reachable">Proxy dibadda ah ayaa la isticmaalayaa</string>
+    <string name="ext_proxy_status_unreachable">Proxy-ga dibadda lama gaari karo</string>
+    <string name="ext_proxy_status_invalid">Habaynta proxy-ga dibadda ma sax aha. Ka saxo Settings.</string>
+    <string name="ext_proxy_status_unreadable">Habaynta proxy-ga dibadda lama akhrin karin. Fariimaha lama heli karo.</string>
+    <string name="report_bug_title">Sharax cilada (waad qarsoon tahay)</string>
+    <string name="report_bug_placeholder">Maxaa dhacay, oo maxaad filaysay?</string>
+    <string name="report_bug_send">Dir</string>
+    <string name="report_bug_failed">Warbixinta lama diri karin — hubi xidhiidhka oo isku day mar kale.</string>
+    <string name="report_bug_thanks">Mahadsanid inaad ka caawiso hagaajinta Rún</string>
+</resources>

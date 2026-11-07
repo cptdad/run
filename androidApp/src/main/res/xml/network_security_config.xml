@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network security configuration (RELEASE / default).
+
+    Cleartext (plain HTTP) is permitted ONLY for:
+      • .onion domains — Tor provides end-to-end encryption within the network,
+        so TLS is not needed (and is not usable) for hidden services.
+
+    The emulator/loopback cleartext entries (10.0.2.2, localhost, 127.0.0.1)
+    used for dev / MockWebServer / Tor-SOCKS live in the DEBUG override at
+    androidApp/src/debug/res/xml/network_security_config.xml, so they never ship
+    in a release build.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Tor hidden services — no TLS needed, Tor encrypts end-to-end -->
+        <domain includeSubdomains="true">onion</domain>
+    </domain-config>
+</network-security-config>

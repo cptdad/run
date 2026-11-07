@@ -1,0 +1,77 @@
+{
+  "identifier" : "RUN_TIPS",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "19",
+      "familyShareable" : false,
+      "internalID" : "5000001",
+      "localizations" : [
+        {
+          "description" : "A small thank-you tip for Rún.",
+          "displayName" : "Buy me a coffee",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_small",
+      "referenceName" : "Tip Small",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "49",
+      "familyShareable" : false,
+      "internalID" : "5000002",
+      "localizations" : [
+        {
+          "description" : "A small tip to support Rún.",
+          "displayName" : "Small tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_medium",
+      "referenceName" : "Tip Medium",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "99",
+      "familyShareable" : false,
+      "internalID" : "5000003",
+      "localizations" : [
+        {
+          "description" : "A generous tip to support Rún.",
+          "displayName" : "Generous tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_large",
+      "referenceName" : "Tip Large",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "999",
+      "familyShareable" : false,
+      "internalID" : "5000004",
+      "localizations" : [
+        {
+          "description" : "An exceptionally generous tip to support Rún.",
+          "displayName" : "You're a legend",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_xl",
+      "referenceName" : "Tip XL",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "SWE",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 1,
+    "minor" : 0
+  }
+}

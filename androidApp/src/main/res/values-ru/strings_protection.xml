@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Russian (ru) translation of values/strings_protection.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="protection_pick_a_level">Выберите уровень, чтобы продолжить</string>
+    <string name="protection_apply_button">Применить</string>
+    <string name="protection_level_accessibility_label">Защита уровня «%1$s»</string>
+    <string name="protection_device_panel_title">Базовая защита устройства</string>
+    <string name="protection_device_panel_detected_label">ОБНАРУЖЕНО</string>
+    <string name="protection_device_panel_detected_value">%1$s · %2$s</string>
+    <string name="protection_device_panel_baseline_label">Базовый уровень устройства · AFU</string>
+    <string name="protection_downgrade_title">Снизить уровень защиты?</string>
+    <string name="protection_downgrade_message_android">Переход на «%1$s» облегчит взлом вашего телефона, если его изымут. Продолжить?</string>
+    <string name="protection_downgrade_message_ios">Переход на «%1$s» облегчит взлом вашего телефона, если его изымут.</string>
+    <string name="protection_downgrade_keep">Оставить текущий</string>
+    <string name="protection_downgrade_reduce">Снизить</string>
+    <string name="protection_persist_failed_title">Не удалось сохранить уровень</string>
+    <string name="protection_persist_failed_message">Ничего не изменилось — аппаратный ключ был занят. Попробуйте снова.</string>
+    <string name="protection_lever_b_failed_message">Ваш телефон не подтвердил аппаратный ключ, поэтому для хранилища установлен более низкий уровень защиты, чем вы выбрали. Вы можете повторить попытку в настройках.</string>
+    <string name="protection_lever_b_reharden_notice">Ваш ключ защиты нуждается в обновлении. Выключите и снова включите уровень «Защищённый», чтобы заново его укрепить.</string>
+    <string name="protection_enabling_title">Защищаем хранилище…</string>
+    <string name="protection_enabling_body_android">Телефон может попросить подтвердить действие с помощью блокировки экрана.</string>
+    <string name="protection_enabling_body_ios">Телефон может попросить подтвердить действие с помощью Face ID или код-пароля.</string>
+    <string name="protection_forced_explainer_intro">Без него телефон не может защитить ключи Rún, поэтому здесь Rún требует самый строгий уровень защиты. Есть два варианта:</string>
+    <string name="protection_forced_explainer_cta_title_android">Настройте блокировку экрана</string>
+    <string name="protection_forced_explainer_cta_body_android">Подойдёт PIN-код, графический ключ, пароль или отпечаток пальца. Как только на телефоне будет установлена блокировка, станет доступен любой уровень защиты.</string>
+    <string name="protection_forced_open_settings_button">Открыть настройки блокировки экрана</string>
+    <string name="protection_forced_explainer_outro_android">Либо создайте парольную фразу прямо сейчас ниже — уровень «Максимальный» сам блокирует Rún, блокировка экрана не понадобится. Четыре-пять случайных слов образуют надёжную фразу.</string>
+    <string name="protection_forced_explainer_cta_title_ios">Настройте код-пароль устройства</string>
+    <string name="protection_forced_explainer_cta_body_ios">Откройте Настройки → Face ID и код-пароль → Включите код-пароль, затем вернитесь в Rún. Как только на телефоне будет установлен код-пароль, станет доступен любой уровень защиты.</string>
+    <string name="protection_forced_explainer_outro_ios">Или создайте парольную фразу прямо сейчас ниже — уровень «Максимальный» сам блокирует Rún, код-пароль устройства не понадобится. Четыре-пять случайных слов образуют надёжную фразу.</string>
+    <string name="protection_migration_finish_maximum">Для уровня «%1$s» нужна парольная фраза, а этот экран её не задаёт — поэтому хранилище пока остаётся на уровне «%2$s». Чтобы закончить, откройте Настройки › Уровень защиты и снова выберите «%1$s» — это установит вашу парольную фразу и применит его таймеры.</string>
+    <string name="protection_migration_finish_private">Не удалось включить здесь аппаратную блокировку уровня «%1$s», поэтому хранилище пока остаётся на уровне «%2$s». Чтобы закончить, откройте Настройки › Уровень защиты и снова выберите «%1$s» — это включит аппаратную блокировку и применит его таймеры.</string>
+    <string name="protection_migration_finish_same">Таймеры уровня «%1$s» настроены. Чтобы завершить включение его более строгой разблокировки, откройте Настройки › Уровень защиты.</string>
+    <string name="protection_migration_almost_there_title">Почти готово</string>
+    <string name="protection_recovery_code_title">Ваш код восстановления</string>
+    <string name="protection_recovery_code_body_android">Запишите этот код и храните его в надёжном месте отдельно от телефона. Если ваш отпечаток пальца или код-пароль устройства когда-нибудь изменится и заблокирует вам доступ, этот код вместе с вашим PIN-кодом восстановит ваши сообщения. Мы не сможем показать его снова.</string>
+    <string name="protection_recovery_code_body_ios">Запишите этот код и храните его в надёжном месте отдельно от телефона. Если ваш Face ID или код-пароль устройства когда-нибудь изменится и заблокирует вам доступ, этот код вместе с вашим PIN-кодом восстановит ваши сообщения. Мы не сможем показать его снова.</string>
+    <string name="protection_recovery_ack_label">Код записан</string>
+    <string name="protection_recovery_ack_hint_android">Отметьте «Код записан», чтобы продолжить.</string>
+    <string name="protection_recovery_ack_hint_ios">Включите «Код записан», чтобы продолжить.</string>
+    <string name="protection_recovery_entry_title">Восстановление по коду</string>
+    <string name="protection_recovery_entry_subtitle">Для восстановления потребуются сохранённый код восстановления и %1$s. Это восстановит ваши сообщения. Если этот телефон по-прежнему поддерживает аппаратную блокировку, она снова включится с тем же кодом, поэтому храните код в надёжном месте.</string>
+    <string name="protection_recovery_code_placeholder">Код восстановления</string>
+    <string name="protection_recovery_wrong_credential">Этот код и %1$s не совпали. Проверьте оба значения и попробуйте снова.</string>
+    <string name="protection_recovery_generic_error">Не удалось выполнить восстановление сейчас — нет сохранённого кода восстановления, либо аппаратный ключ занят. Попробуйте снова.</string>
+    <string name="protection_recovery_attempt_record_failed">Не удалось записать попытку — аппаратный ключ занят. Попробуйте снова.</string>
+    <string name="protection_recovery_button_recovering">Восстановление…</string>
+    <string name="protection_recovery_button_recover">Восстановить</string>
+    <string name="protection_credential_type_passphrase">парольная фраза</string>
+    <string name="protection_credential_type_pin">PIN</string>
+</resources>

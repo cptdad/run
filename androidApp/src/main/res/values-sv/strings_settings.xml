@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Språkväljare (androidApp/src/main/java/com/vg/run/LanguagePickerModal.kt,
+         AppLocale.kt) — ingången för appens egna språkval. Själva språklistan
+         översätts INTE här: LanguagePickerModal visar varje stödd tagg med namnet
+         på SITT EGET språk via
+         Locale.forLanguageTag(tag).getDisplayName(Locale.forLanguageTag(tag)),
+         så filen behöver bara ramtexterna nedan i varje språk. -->
+    <string name="settings_language">Språk</string>
+    <string name="language_option_system">Systemets standard</string>
+
+    <!-- Ram för notisinställningarnas modal (NotificationSettingsModal.kt) —
+         karusellnavigering som delas av BÅDA utbildningssidorna, FCM (delad
+         commonMain-kopia) och UnifiedPush (Android-lokal kopia), plus texterna
+         för specifika registreringsfel och saknad distributör. iOS motsvarande
+         karusellram bor i ContactListView.swift under samma prefix
+         notif_settings_. -->
+    <string name="notif_settings_carousel_back">‹ Tillbaka</string>
+    <string name="notif_settings_carousel_next">Nästa ›</string>
+    <string name="notif_settings_technical_details">Tekniska detaljer</string>
+    <string name="notif_settings_sound_row_label">Ljud och vibration</string>
+    <string name="notif_settings_sound_row_hint">Notiserna låter som i vilken meddelandeapp som helst. Ändra eller tysta dem i Androids notisinställningar — Rún åsidosätter aldrig ditt val.</string>
+    <string name="notif_settings_register_error_generic">Kunde inte registrera för notiser. Kontrollera din anslutning och försök igen.</string>
+    <string name="notif_settings_register_error_no_distributor">Ingen notisdistributör valdes. Installera ntfy från F-Droid och försök igen.</string>
+    <string name="notif_settings_register_error_distributor_selection">Kunde inte ansluta till din notisdistributör. Stäng Rún helt och öppna appen igen, och försök sedan på nytt.</string>
+    <string name="notif_settings_register_error_vapid_unsupported">Distributörens pushserver stöds inte än — den kräver VAPID. ntfy fungerar och kan installeras från F-Droid.</string>
+    <string name="notif_settings_register_error_distributor_refused">Din notisdistributör nekade registreringen. Öppna den, kontrollera att den är konfigurerad och försök igen.</string>
+    <string name="notif_settings_register_error_no_endpoint">Din notisdistributör svarade inte i tid. Öppna den, se till att den är ansluten och försök igen.</string>
+    <string name="notif_settings_no_distributor_message">Den här telefonen har inga Google-tjänster, så notiser kräver en app som fungerar som UnifiedPush-distributör. Installera en — ntfy är det rekommenderade valet — och kom sedan tillbaka hit och slå på notiser.</string>
+    <string name="notif_settings_no_distributor_link_label">Hämta ntfy på F-Droid</string>
+    <string name="notif_settings_unregistered_notice">Din notisdistributör slutade leverera till Rún, så notiserna stängdes av. Slå på dem igen för att återansluta.</string>
+    <string name="settings_language_restart_title">Starta om för att verkställa</string>
+    <string name="settings_language_restart_message">Rún måste startas om för att byta appens språk till %1$s. Fortsätta?</string>
+    <string name="settings_report_bug">Rapportera fel</string>
+    <string name="settings_debug_mode">Felsökningsläge</string>
+    <string name="settings_debug_mode_on">Felsökningsläge (på)</string>
+    <string name="debug_mode_title">Felsökningsläge</string>
+    <string name="debug_mode_message">Skicka anonyma diagnostikloggar till reläet för att hjälpa utvecklingen. Loggarna innehåller aldrig något som identifierar dig eller den här enheten: inga namn, inget meddelandeinnehåll, inga adresser, inga nycklar, inga inkorgs- eller kontakt-id.</string>
+    <string name="debug_mode_message_off">Felsökningsläget är på. Stäng av det för att sluta skicka anonyma diagnostikloggar.</string>
+    <string name="debug_mode_turn_on">Slå på</string>
+    <string name="debug_mode_turn_off">Stäng av</string>
+    <string name="ext_proxy_title">Extern Tor-proxy</string>
+    <string name="ext_proxy_description">Skicka all relätrafik via en SOCKS5-proxy som du själv driver, till exempel Orbot eller Tor i ditt eget nätverk, i stället för den inbyggda Tor-funktionen i Rún. Så länge detta är på startar den inbyggda Tor aldrig. Går det inte att nå proxyn förblir Rún offline. Det finns ingen reservväg.</string>
+    <string name="ext_proxy_toggle">Använd en extern proxy</string>
+    <string name="ext_proxy_host_label">Proxyns IP-adress</string>
+    <string name="ext_proxy_port_label">Port</string>
+    <string name="ext_proxy_error_host">Ange en IP-adress på den här telefonen eller i ditt lokala nätverk: 127.x.x.x, ::1, 10.x.x.x, 172.16–31.x.x, 192.168.x.x eller 169.254.x.x. Värdnamn är inte tillåtna.</string>
+    <string name="ext_proxy_error_port">Ange en port mellan 1 och 65535.</string>
+    <string name="ext_proxy_error_save">Det gick inte att spara inställningen. Försök igen.</string>
+    <string name="ext_proxy_lan_warning">Trafiken mellan telefonen och proxyn är inte krypterad. Alla som kan övervaka eller imitera den här adressen, även på andra nätverk som telefonen ansluter till senare, får åtkomst-token till dina konversationers inkorgar. De kan radera eller ta över inkorgarna, men inte läsa dina meddelanden. Använd detta bara i ett nätverk du kontrollerar och stäng av läget när du lämnar det.</string>
+    <string name="ext_proxy_loopback_warning">Medan proxyappen (till exempel Orbot) inte körs kan vilken annan app som helst på telefonen ta över dess port och få samma åtkomst-token. Ställ in proxyappen på en port som inte är standard och låt den vara igång.</string>
+    <string name="ext_proxy_next_launch">Ändringar börjar gälla nästa gång du öppnar Rún.</string>
+    <string name="ext_proxy_saved">Sparat. Stäng och öppna Rún igen för att tillämpa det.</string>
+    <string name="ext_proxy_connecting">Ansluter via din externa proxy</string>
+    <string name="ext_proxy_status_checking">Använder extern proxy: kontrollerar</string>
+    <string name="ext_proxy_status_reachable">Använder extern proxy</string>
+    <string name="ext_proxy_status_unreachable">Den externa proxyn kan inte nås</string>
+    <string name="ext_proxy_status_invalid">Inställningen för extern proxy är ogiltig. Åtgärda den i Inställningar.</string>
+    <string name="ext_proxy_status_unreadable">Inställningen för extern proxy kunde inte läsas. Meddelanden är inte tillgängliga.</string>
+    <string name="report_bug_title">Beskriv felet (du är anonym)</string>
+    <string name="report_bug_placeholder">Vad hände, och vad förväntade du dig?</string>
+    <string name="report_bug_send">Skicka</string>
+    <string name="report_bug_failed">Kunde inte skicka rapporten — kontrollera anslutningen och försök igen.</string>
+    <string name="report_bug_thanks">Tack för att du hjälper till att förbättra Rún</string>
+</resources>

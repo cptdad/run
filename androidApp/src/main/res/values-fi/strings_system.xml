@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Finnish (fi) translation of values/strings_system.xml (human-reviewed 2026-09-03). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">Viestit</string>
+    <string name="notification_title">Ilmoitus</string>
+    <string name="apns_notification_body">Ilmoitus</string>
+    <string name="tor_keepalive_channel_name">Yhteyden valmiustila</string>
+    <string name="tor_keepalive_notification_title">Pidetään yhteys valmiina</string>
+    <string name="infoplist_camera_usage">Kameraa käytetään QR-koodien lukemiseen kontaktien vaihdon yhteydessä.</string>
+    <string name="infoplist_faceid_usage">Face ID avaa salatun holvisi, kun laitteistoon sidottu avaus on käytössä.</string>
+    <string name="infoplist_local_network_usage">Paikallisverkon käyttöä hyödynnetään vain, kun määrität ulkoisen Tor-proxyn paikallisverkossasi.</string>
+</resources>

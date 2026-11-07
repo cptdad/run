@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Danish (da) translation of values/strings_common.xml.
+  Machine-translated 2026-08-27, pending human review.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Annuller</string>
+    <string name="common_close">Luk</string>
+    <string name="common_done">Færdig</string>
+    <string name="common_back">Tilbage</string>
+    <string name="common_delete">Slet</string>
+    <string name="common_retry">Prøv igen</string>
+    <string name="common_continue">Fortsæt</string>
+    <string name="common_copy">Kopiér</string>
+    <string name="common_copied">Kopieret</string>
+    <string name="common_save">Gem</string>
+    <string name="common_yes">Ja</string>
+    <string name="common_no">Nej</string>
+    <string name="common_got_it">Forstået</string>
+    <string name="common_understood">Jeg forstår</string>
+    <string name="common_decline">Afvis</string>
+    <string name="common_not_now">Ikke nu</string>
+    <string name="common_open">Åbn</string>
+    <string name="common_settings">Indstillinger</string>
+    <string name="common_loading">Indlæser…</string>
+    <string name="common_message_placeholder">Besked</string>
+    <string name="common_conversation_interrupted">Samtalen blev afbrudt</string>
+    <string name="common_screenshot_notice">%1$s har måske taget et skærmbillede</string>
+    <string name="common_time_yesterday">I går %1$s</string>
+</resources>

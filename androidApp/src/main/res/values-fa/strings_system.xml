@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Persian (fa) translation of values/strings_system.xml. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="notification_channel_name">پیام‌ها</string>
+    <string name="notification_title">اعلان</string>
+    <string name="apns_notification_body">اعلان</string>
+    <string name="tor_keepalive_channel_name">آماده‌باش اتصال</string>
+    <string name="tor_keepalive_notification_title">اتصال آماده نگه داشته می‌شود</string>
+    <string name="infoplist_camera_usage">دوربین برای اسکن کدهای QR هنگام تبادل مخاطب استفاده می‌شود.</string>
+    <string name="infoplist_faceid_usage">وقتی باز کردن قفلِ متصل به سخت‌افزار فعال باشد، Face ID گاوصندوق رمزگذاری‌شدهٔ شما را باز می‌کند.</string>
+    <string name="infoplist_local_network_usage">دسترسی به شبکهٔ محلی فقط زمانی استفاده می‌شود که یک پروکسی Tor خارجی روی شبکهٔ محلی خود تعیین کنید.</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål (nb). Human-reviewed 2026-09-03 (jargon-policy sweep: technical terms kept English/loanword, calques and register fixed). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Avbryt</string>
+    <string name="common_close">Lukk</string>
+    <string name="common_done">Ferdig</string>
+    <string name="common_back">Tilbake</string>
+    <string name="common_delete">Slett</string>
+    <string name="common_retry">Prøv igjen</string>
+    <string name="common_continue">Fortsett</string>
+    <string name="common_copy">Kopier</string>
+    <string name="common_copied">Kopiert</string>
+    <string name="common_save">Lagre</string>
+    <string name="common_yes">Ja</string>
+    <string name="common_no">Nei</string>
+    <string name="common_got_it">Skjønner</string>
+    <string name="common_understood">Forstått</string>
+    <string name="common_decline">Avslå</string>
+    <string name="common_not_now">Ikke nå</string>
+    <string name="common_open">Åpne</string>
+    <string name="common_settings">Innstillinger</string>
+    <string name="common_loading">Laster…</string>
+    <string name="common_message_placeholder">Melding</string>
+    <string name="common_conversation_interrupted">Samtalen ble avbrutt</string>
+    <string name="common_screenshot_notice">%1$s har kanskje tatt et skjermbilde</string>
+    <string name="common_time_yesterday">I går %1$s</string>
+</resources>

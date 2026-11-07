@@ -1,0 +1,255 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSCameraUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تُستخدم الكاميرا لمسح رموز QR ضوئيًا أثناء تبادل جهات الاتصال."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameraet bruges til at scanne QR-koder ved udveksling af kontakter."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kamera wird verwendet, um beim Kontaktaustausch QR-Codes zu scannen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera is used to scan QR codes during contact exchange."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La cámara se usa para escanear códigos QR al intercambiar contactos."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دوربین برای اسکن کدهای QR هنگام تبادل مخاطب استفاده می‌شود."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameraa käytetään QR-koodien lukemiseen kontaktien vaihdon yhteydessä."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'appareil photo sert à scanner les codes QR lors de l'échange de contacts."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Камерата се користи за скенирање QR-кодови при размена на контакти."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameraet brukes til å skanne QR-koder når du utveksler kontaktkoder."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Камера используется для сканирования QR-кодов при обмене контактами."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamaradda waxaa loo isticmaalaa in lagu sawiro koodhadhka QR marka la isweydaarsanayo xiriiriyayaasha."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameran används för att skanna QR-koder vid kontaktutbyte."
+          }
+        }
+      }
+    },
+    "NSFaceIDUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يفتح Face ID قفل خزنتك المشفّرة عندما يكون الفتح المرتبط بالعتاد مفعّلًا."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID låser din krypterede boks op, når hardwarebundet oplåsning er slået til."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID entsperrt deinen verschlüsselten Tresor, wenn die hardwaregebundene Entsperrung aktiviert ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID unlocks your encrypted vault when hardware-bound unlock is enabled."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID desbloquea tu caja fuerte cifrada cuando el desbloqueo vinculado al hardware está activado."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقتی باز کردن قفلِ متصل به سخت‌افزار فعال باشد، Face ID گاوصندوق رمزگذاری‌شدهٔ شما را باز می‌کند."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID avaa salatun holvisi, kun laitteistoon sidottu avaus on käytössä."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID déverrouille votre coffre-fort chiffré lorsque le déverrouillage lié au matériel est activé."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID го отклучува вашиот шифриран трезор кога е овозможено хардверски врзано отклучување."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID låser opp det krypterte hvelvet ditt når maskinvarebundet opplåsing er slått på."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID разблокирует ваше зашифрованное хранилище, когда включена аппаратная блокировка."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID wuxuu furaa khasnaddaada sirsiiman marka furitaanka ku xidhan qalabka la shido."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID låser upp ditt krypterade valv när hårdvarubunden upplåsning är påslagen."
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يُستخدم الوصول إلى الشبكة المحلية إلا عند تعيين بروكسي Tor خارجي على شبكتك المحلية."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adgang til lokalt netværk bruges kun, når du angiver en ekstern Tor-proxy på dit lokale netværk."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf das lokale Netzwerk wird nur verwendet, wenn du einen externen Tor-Proxy in deinem lokalen Netzwerk festlegst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local network access is used only when you set an external Tor proxy on your local network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a la red local solo se usa cuando configuras un proxy Tor externo en tu red local."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دسترسی به شبکهٔ محلی فقط زمانی استفاده می‌شود که یک پروکسی Tor خارجی روی شبکهٔ محلی خود تعیین کنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paikallisverkon käyttöä hyödynnetään vain, kun määrität ulkoisen Tor-proxyn paikallisverkossasi."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'accès au réseau local n'est utilisé que si vous définissez un proxy Tor externe sur votre réseau local."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пристапот до локалната мрежа се користи само кога ќе поставите надворешен Tor прокси во вашата локална мрежа."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tilgang til lokalt nettverk brukes bare når du angir en ekstern Tor-proxy på ditt lokale nettverk."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к локальной сети используется только тогда, когда вы задаёте внешний прокси Tor в вашей локальной сети."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelitaanka shabakadda gudaha waxaa la isticmaalaa kaliya marka aad dejiso proxy Tor ah oo dibadda ah shabakaddaada gudaha."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lokal nätverksåtkomst används bara när du anger en extern Tor-proxy i ditt lokala nätverk."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
