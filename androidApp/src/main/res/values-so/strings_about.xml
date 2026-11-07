@@ -8,7 +8,11 @@
     <string name="about_info_tor_version">Wuxuu ku shaqeeyaa Tor %1$s</string>
     <string name="about_info_open_source_heading">Ku dhisan open source</string>
     <string name="about_info_clearnet_title">Browser-ka ku fur?</string>
-    <string name="about_info_clearnet_message">vgab.eu wuxuu ku furmayaa browser-kaaga isagoo adeegsanaya internetka caadiga ah — ma aha Tor. Boggan iyo shabakaddaadu waxay arki karaan cinwaanka IP-ga qalabkaaga.</string>
+    <string name="about_info_clearnet_message">%1$s wuxuu ku furmayaa browser-kaaga isagoo adeegsanaya internetka caadiga ah — ma aha Tor. Boggan iyo shabakaddaadu waxay arki karaan cinwaanka IP-ga qalabkaaga.</string>
+    <string name="about_info_source_heading">Koodhka isha</string>
+    <string name="about_info_licences">Ruqsadaha</string>
+    <string name="about_info_licences_title">Ruqsadaha iyo ogeysiisyada sharciga</string>
+    <string name="about_info_signing_cert">Shahaadada saxiixa SHA-256</string>
     <string name="donate_title">Taageer Rún</string>
     <string name="donate_tab_tip">Bakhshiish</string>
     <string name="donate_tab_crypto">Crypto</string>

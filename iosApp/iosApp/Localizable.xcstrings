@@ -754,79 +754,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "يُفتح vgab.eu في متصفحك عبر الإنترنت العادي — لا عبر Tor. يمكن للموقع ولشبكتك رؤية عنوان IP لجهازك."
+            "value": "يُفتح %1$@ في متصفحك عبر الإنترنت العادي — لا عبر Tor. يمكن للموقع ولشبكتك رؤية عنوان IP لجهازك."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu åbnes i din browser over det almindelige internet — ikke Tor. Websitet og dit netværk kan se din enheds IP-adresse."
+            "value": "%1$@ åbnes i din browser over det almindelige internet — ikke Tor. Websitet og dit netværk kan se din enheds IP-adresse."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu öffnet sich in deinem Browser über das normale Internet — nicht über Tor. Die Website und dein Netzwerk sehen die IP-Adresse deines Geräts."
+            "value": "%1$@ öffnet sich in deinem Browser über das normale Internet — nicht über Tor. Die Website und dein Netzwerk sehen die IP-Adresse deines Geräts."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address."
+            "value": "%1$@ opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu se abre en tu navegador por internet normal, no por Tor. La web y tu red pueden ver la dirección IP de tu dispositivo."
+            "value": "%1$@ se abre en tu navegador por internet normal, no por Tor. La web y tu red pueden ver la dirección IP de tu dispositivo."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu در مرورگر شما و از راه اینترنت معمولی باز می‌شود — نه Tor. وب‌سایت و شبکهٔ شما نشانی IP دستگاهتان را می‌بینند."
+            "value": "%1$@ در مرورگر شما و از راه اینترنت معمولی باز می‌شود — نه Tor. وب‌سایت و شبکهٔ شما نشانی IP دستگاهتان را می‌بینند."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu avautuu selaimessasi tavallisen internetin kautta — ei Tor-verkon kautta. Sivusto ja verkkosi näkevät laitteesi IP-osoitteen."
+            "value": "%1$@ avautuu selaimessasi tavallisen internetin kautta — ei Tor-verkon kautta. Sivusto ja verkkosi näkevät laitteesi IP-osoitteen."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu s'ouvre dans votre navigateur, sur l'internet ordinaire — pas via Tor. Le site et votre réseau peuvent voir l'adresse IP de votre appareil."
+            "value": "%1$@ s'ouvre dans votre navigateur, sur l'internet ordinaire — pas via Tor. Le site et votre réseau peuvent voir l'adresse IP de votre appareil."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu се отвора во вашиот прелистувач преку обичниот интернет — не преку Tor. Веб-страницата и вашата мрежа можат да ја видат IP-адресата на вашиот уред."
+            "value": "%1$@ се отвора во вашиот прелистувач преку обичниот интернет — не преку Tor. Веб-страницата и вашата мрежа можат да ја видат IP-адресата на вашиот уред."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu åpnes i nettleseren din over vanlig internett – ikke Tor. Nettstedet og nettverket ditt kan se IP-adressen til enheten din."
+            "value": "%1$@ åpnes i nettleseren din over vanlig internett – ikke Tor. Nettstedet og nettverket ditt kan se IP-adressen til enheten din."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu откроется в вашем браузере через обычный интернет — не через Tor. Сайт и ваша сеть смогут увидеть IP-адрес вашего устройства."
+            "value": "%1$@ откроется в вашем браузере через обычный интернет — не через Tor. Сайт и ваша сеть смогут увидеть IP-адрес вашего устройства."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu wuxuu ku furmayaa browser-kaaga isagoo adeegsanaya internetka caadiga ah — ma aha Tor. Boggan iyo shabakaddaadu waxay arki karaan cinwaanka IP-ga qalabkaaga."
+            "value": "%1$@ wuxuu ku furmayaa browser-kaaga isagoo adeegsanaya internetka caadiga ah — ma aha Tor. Boggan iyo shabakaddaadu waxay arki karaan cinwaanka IP-ga qalabkaaga."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "vgab.eu öppnas i din webbläsare över det vanliga internet — inte Tor. Webbplatsen och ditt nätverk kan se enhetens IP-adress."
+            "value": "%1$@ öppnas i din webbläsare över det vanliga internet — inte Tor. Webbplatsen och ditt nätverk kan se enhetens IP-adress."
           }
         }
       }
@@ -914,6 +914,172 @@
         }
       }
     },
+    "about_info_licences": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التراخيص"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licenser"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lizenzen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licences"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licencias"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مجوزها"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisenssit"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licences"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лиценци"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisenser"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лицензии"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruqsadaha"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licenser"
+          }
+        }
+      }
+    },
+    "about_info_licences_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التراخيص والإشعارات القانونية"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licenser og meddelelser"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lizenzen und Hinweise"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licences and notices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licencias y avisos"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مجوزها و اطلاعیه‌های حقوقی"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisenssit ja huomautukset"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licences et mentions"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лиценци и напомени"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisenser og merknader"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лицензии и уведомления"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruqsadaha iyo ogeysiisyada sharciga"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licenser och meddelanden"
+          }
+        }
+      }
+    },
     "about_info_open_source_heading": {
       "extractionState": "manual",
       "localizations": {
@@ -993,6 +1159,172 @@
           "stringUnit": {
             "state": "translated",
             "value": "Byggd på öppen källkod"
+          }
+        }
+      }
+    },
+    "about_info_signing_cert": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شهادة التوقيع SHA-256"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signeringscertifikat SHA-256"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signaturzertifikat SHA-256"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing certificate SHA-256"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado de firma SHA-256"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "گواهی امضا SHA-256"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allekirjoitusvarmenne SHA-256"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificat de signature SHA-256"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сертификат за потпишување SHA-256"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signeringssertifikat SHA-256"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сертификат подписи SHA-256"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shahaadada saxiixa SHA-256"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signeringscertifikat SHA-256"
+          }
+        }
+      }
+    },
+    "about_info_source_heading": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشيفرة المصدرية"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kildekode"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quellcode"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código fuente"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کد منبع"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähdekoodi"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code source"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изворен код"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kildekode"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исходный код"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koodhka isha"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Källkod"
           }
         }
       }
@@ -1584,79 +1916,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "هذا هو Rún — هادئ وخاص وسرّه بيدك. أضف شخصًا وجهًا لوجه، وابدأ محادثة لا يراها أحد سواكما."
+            "value": "هذا هو Rún — هادئ وخاص وسرّه بيدك. أضف شخصًا وجهًا لوجه، وابدأ محادثة لا يراها أحد سواكما. شيفرة التطبيق متاحة للعموم على github.com/cptdad/run، فيمكن لأي شخص قراءتها."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det er Rún — stille, privat og din egen hemmelighed. Tilføj en person ansigt til ansigt, og start en samtale, ingen andre kan se."
+            "value": "Det er Rún — stille, privat og din egen hemmelighed. Tilføj en person ansigt til ansigt, og start en samtale, ingen andre kan se. Appens kode er offentlig på github.com/cptdad/run, så alle kan læse den."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Das ist Rún — still, privat und dein Geheimnis. Füge jemanden persönlich hinzu und beginne eine Unterhaltung, die niemand sonst sehen kann."
+            "value": "Das ist Rún — still, privat und dein Geheimnis. Füge jemanden persönlich hinzu und beginne eine Unterhaltung, die niemand sonst sehen kann. Der Code der App ist öffentlich unter github.com/cptdad/run, sodass ihn jeder lesen kann."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see."
+            "value": "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see. The app's code is public at github.com/cptdad/run, so anyone can read it."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eso es Rún: silencioso, privado y tuyo para guardarlo en secreto. Añade a alguien en persona y empieza una conversación que nadie más puede ver."
+            "value": "Eso es Rún: silencioso, privado y tuyo para guardarlo en secreto. Añade a alguien en persona y empieza una conversación que nadie más puede ver. El código de la app es público en github.com/cptdad/run, así que cualquiera puede leerlo."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "این Rún است — ساکت، خصوصی و رازی که مال شماست. کسی را حضوری اضافه کنید و گفتگویی را آغاز کنید که هیچ‌کس دیگری نمی‌تواند ببیند."
+            "value": "این Rún است — ساکت، خصوصی و رازی که مال شماست. کسی را حضوری اضافه کنید و گفتگویی را آغاز کنید که هیچ‌کس دیگری نمی‌تواند ببیند. کد برنامه در github.com/cptdad/run عمومی است و هر کسی می‌تواند آن را بخواند."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se on Rún — hiljainen, yksityinen ja sinun salaisuutesi. Lisää joku kasvokkain ja aloita keskustelu, jota kukaan muu ei näe."
+            "value": "Se on Rún — hiljainen, yksityinen ja sinun salaisuutesi. Lisää joku kasvokkain ja aloita keskustelu, jota kukaan muu ei näe. Sovelluksen koodi on julkinen osoitteessa github.com/cptdad/run, joten kuka tahansa voi lukea sen."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Voilà Rún — discrète, privée, et à vous de la garder secrète. Ajoutez quelqu'un en personne, et commencez une conversation que personne d'autre ne peut voir."
+            "value": "Voilà Rún — discrète, privée, et à vous de la garder secrète. Ajoutez quelqu'un en personne, et commencez une conversation que personne d'autre ne peut voir. Le code de l'application est public sur github.com/cptdad/run : chacun peut le lire."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Тоа е Rún — тивок, приватен и ваш, за да го чувате во тајност. Додадете некого лично и започнете разговор што никој друг не може да го види."
+            "value": "Тоа е Rún — тивок, приватен и ваш, за да го чувате во тајност. Додадете некого лично и започнете разговор што никој друг не може да го види. Кодот на апликацијата е јавен на github.com/cptdad/run, па секој може да го прочита."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det er Rún – stille, privat og din å holde hemmelig. Legg til noen ansikt til ansikt, og start en samtale ingen andre kan se."
+            "value": "Det er Rún – stille, privat og din å holde hemmelig. Legg til noen ansikt til ansikt, og start en samtale ingen andre kan se. Appens kode er offentlig på github.com/cptdad/run, så alle kan lese den."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Это и есть Rún — тихий, приватный и целиком ваш, чтобы хранить его в тайне. Добавьте кого-то лично и начните беседу, которую больше никто не увидит."
+            "value": "Это и есть Rún — тихий, приватный и целиком ваш, чтобы хранить его в тайне. Добавьте кого-то лично и начните беседу, которую больше никто не увидит. Код приложения открыт: он доступен на github.com/cptdad/run, так что его может прочитать любой."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Taasi waa Rún — aamusan, gaar ah, oo aad sir u haysan karto. Qof si toos ah ugu dar, oo bilow wada-hadal aan cid kale arki karin."
+            "value": "Taasi waa Rún — aamusan, gaar ah, oo aad sir u haysan karto. Qof si toos ah ugu dar, oo bilow wada-hadal aan cid kale arki karin. Koodhka appka waa mid dadweyne oo ku yaal github.com/cptdad/run, sidaa darteed qof walba wuu akhrin karaa."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det är Rún — tyst, privat och din att hålla hemlig. Lägg till någon personligen och börja en konversation som ingen annan kan se."
+            "value": "Det är Rún — tyst, privat och din att hålla hemlig. Lägg till någon personligen och börja en konversation som ingen annan kan se. Appens kod är offentlig på github.com/cptdad/run, så vem som helst kan läsa den."
           }
         }
       }

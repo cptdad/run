@@ -1,6 +1,7 @@
 package com.vg.run
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -19,11 +20,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,14 +44,26 @@ import androidx.compose.ui.graphics.Color
 // installed version, and a one-line description. (The swipeable feature/
 // privacy carousel lives in AboutModal, surfaced as "How Rún works".)
 //
-// Static content.
+// Static content, plus the client source link, the bundled licence texts
+// (LicencesScreen.kt, loaded only when opened) and the running APK's signing
+// certificate fingerprint. iOS sibling: AboutInfoView in ContactListView.swift.
 // ---------------------------------------------------------------------------
+
+// A clearnet link behind the confirmation dialog: [host] fills the message's
+// placeholder, [url] is what opens in the external browser.
+private data class ClearnetLink(val host: String, val url: String)
+
+private val MAKER_LINK = ClearnetLink("vgab.eu", "https://vgab.eu")
+private val SOURCE_LINK = ClearnetLink("github.com", "https://github.com/cptdad/run")
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AboutInfoModal(onClose: () -> Unit) {
-    var showClearnetConfirm by remember { mutableStateOf(false) }
+    var clearnetConfirm by remember { mutableStateOf<ClearnetLink?>(null) }
+    var showLicences by remember { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+    val signingCert = remember { signingCertSha256(context) }
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -105,6 +120,25 @@ fun AboutInfoModal(onClose: () -> Unit) {
                         fontSize = 14.sp,
                         modifier = Modifier.testTag("about_info_version")
                     )
+                    // Signing-certificate fingerprint (Android only — nothing when
+                    // the platform does not hand it over).
+                    signingCert?.let { fp ->
+                        Text(
+                            stringResource(R.string.about_info_signing_cert),
+                            color = RunGrey,
+                            fontSize = 11.sp,
+                        )
+                        SelectionContainer {
+                            Text(
+                                fp,
+                                color = RunGrey,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.testTag("about_info_signing_cert")
+                            )
+                        }
+                    }
                     Text(
                         stringResource(R.string.about_info_tagline),
                         color = RunWhite,
@@ -136,6 +170,33 @@ fun AboutInfoModal(onClose: () -> Unit) {
                         )
                     }
 
+                    // Client source — same clearnet gate as the maker link below.
+                    Text(
+                        stringResource(R.string.about_info_source_heading),
+                        color = RunWhite,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                    Text(
+                        "github.com/cptdad/run ↗",
+                        color = Color(0xFFDBB575),
+                        fontFamily = SerifFamily,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .clickable { clearnetConfirm = SOURCE_LINK }
+                            .testTag("about_info_source")
+                    )
+                    Text(
+                        stringResource(R.string.about_info_licences),
+                        color = Color(0xFFDBB575),
+                        fontFamily = SerifFamily,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .clickable { showLicences = true }
+                            .testTag("about_info_licences")
+                    )
+
                     // Maker — opens the company site in the EXTERNAL browser over the
                     // clearnet (not Tor), which reveals the device IP to the site and
                     // any on-path observer. Gate behind an explicit confirmation so a
@@ -153,7 +214,7 @@ fun AboutInfoModal(onClose: () -> Unit) {
                         fontFamily = SerifFamily,
                         fontSize = 14.sp,
                         modifier = Modifier
-                            .clickable { showClearnetConfirm = true }
+                            .clickable { clearnetConfirm = MAKER_LINK }
                             .testTag("about_info_website")
                     )
                 }
@@ -161,21 +222,25 @@ fun AboutInfoModal(onClose: () -> Unit) {
         }
     }
 
-    if (showClearnetConfirm) {
+    if (showLicences) {
+        LicencesScreen(onClose = { showLicences = false })
+    }
+
+    clearnetConfirm?.let { link ->
         RuneDialog(
-            onDismissRequest = { showClearnetConfirm = false },
+            onDismissRequest = { clearnetConfirm = null },
             title = stringResource(R.string.about_info_clearnet_title),
-            message = stringResource(R.string.about_info_clearnet_message),
+            message = stringResource(R.string.about_info_clearnet_message, link.host),
             actions = listOf(
                 RuneDialogAction(
                     label = stringResource(R.string.common_open),
                     testTag = "clearnet_open_confirm",
                     onClick = {
-                        showClearnetConfirm = false
-                        uriHandler.openUri("https://vgab.eu")
+                        clearnetConfirm = null
+                        uriHandler.openUri(link.url)
                     },
                 ),
-                runeSecondary(stringResource(R.string.common_cancel)) { showClearnetConfirm = false },
+                runeSecondary(stringResource(R.string.common_cancel)) { clearnetConfirm = null },
             ),
         )
     }

@@ -33,7 +33,7 @@
     <string name="about_forensic_title">Forensiksicher</string>
     <string name="about_forensic_body">Ein beschlagnahmtes Telefon gibt nichts Brauchbares preis. Alles im Ruhezustand ist mit SQLCipher versiegelt, und eine Löschung vernichtet die Schlüssel selbst — übrig bleibt nur Rauschen, keine Caches, keine Fragmente. Wie schwer es zu öffnen ist, entscheidest du: Solide setzt auf deine PIN; Sicher bindet den Schlüssel an den Sicherheitschip dieses Telefons, hinter deinem Fingerabdruck oder Gesicht; Maximum tauscht die PIN gegen eine Passphrase, die nur du kennst — so bleibt selbst ein vollständig ausgelesenes Telefon verschlossen.</string>
     <string name="about_ready_title">Bereit, wenn du es bist</string>
-    <string name="about_ready_body">Das ist Rún — still, privat und dein Geheimnis. Füge jemanden persönlich hinzu und beginne eine Unterhaltung, die niemand sonst sehen kann.</string>
+    <string name="about_ready_body">Das ist Rún — still, privat und dein Geheimnis. Füge jemanden persönlich hinzu und beginne eine Unterhaltung, die niemand sonst sehen kann. Der Code der App ist öffentlich unter github.com/cptdad/run, sodass ihn jeder lesen kann.</string>
 
     <!-- Donate / Support modal -->
     <string name="donate_appeal">Rún hat keine Werbung, keine Investoren und verkauft niemals deine Daten. Jede Spende — groß oder klein — hilft, die App für alle kostenlos zu halten, für immer.</string>

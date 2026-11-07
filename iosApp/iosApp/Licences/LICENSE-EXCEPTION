@@ -1,0 +1,52 @@
+Additional permission under GNU GPL version 3 section 7
+=======================================================
+
+The code in this repository is licensed under the GNU General Public License,
+version 3 or any later version (see LICENSE). Under section 7 of that licence, the
+copyright holders of this program grant the additional permissions below. They apply
+to the covered work as a whole, including contributions accepted under the same terms
+(see CONTRIBUTING.md). They do not touch the artwork (LICENSE-ART) or the name
+(TRADEMARK.md), and they grant nothing beyond what is written here.
+
+1. Platform libraries
+
+   If you modify this program, or any covered work, by linking or combining it with
+   one or more of the following libraries, or with their later versions or with
+   replacements from the same vendor serving the same purpose, the copyright holders
+   grant you additional permission to convey the resulting work:
+
+   - the Android SDK, Android Jetpack and the other libraries that Google distributes
+     for Android apps under the Android Software Development Kit License or the Play
+     Core Software Development Kit Terms of Service, among them Google Play services,
+     Firebase Cloud Messaging, the Google Play Billing Library and the Google Play
+     In-App Review library;
+   - the iOS SDK and the system frameworks, libraries and tools that Apple distributes
+     with Xcode under the Apple Developer Program License Agreement and the Xcode and
+     Apple SDKs Agreement, among them Foundation, UIKit, SwiftUI, CryptoKit, Network,
+     Security, StoreKit and UserNotifications.
+
+   Corresponding Source for a non-source form of such a combination need not include
+   the source code of those libraries. It must still include the source code of every
+   other part of the covered work, and the libraries must be used as the vendor
+   distributes them, or as the vendor's licence lets you modify them.
+
+2. Application stores
+
+   You may convey a covered work in object code form through Apple's App Store,
+   Google Play or another application store, even where the store's terms of use
+   impose conditions on the recipient (for example on the number of devices, on use,
+   or on redistribution of the copy obtained through the store) that the GNU GPL
+   would not let you impose, provided that:
+
+   (a) the Corresponding Source of the conveyed work is available to every recipient
+       under the GNU GPL version 3 or later with these additional permissions, from a
+       place that the store listing or the program itself names; and
+   (b) you do not present the store's terms as the licence of the work. They govern
+       the copy obtained through the store; the rights to the Corresponding Source
+       under the GNU GPL and this file remain with every recipient.
+
+3. Removal
+
+   As section 7 provides, you may remove these additional permissions from any copy
+   you convey and convey the work under the plain GNU GPL. A copy conveyed that way
+   must not carry this file, so that its recipients are not misled about their terms.

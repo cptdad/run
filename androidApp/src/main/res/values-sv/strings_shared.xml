@@ -32,7 +32,7 @@
     <string name="about_forensic_title">Säker mot forensik</string>
     <string name="about_forensic_body">En beslagtagen telefon lämnar inget användbart ifrån sig. Allt i vila är förseglat med SQLCipher, och en radering förstör själva nycklarna — kvar blir bara brus, inga cacher eller fragment. Hur svårt det är att öppna väljer du själv: Normal förlitar sig på din PIN-kod; Säker binder nyckeln till telefonens säkerhetschip, bakom ditt fingeravtryck eller ansikte; Maximal byter PIN-koden mot en lösenfras som bara du känner till — så att även en fullständigt avbildad telefon förblir stängd.</string>
     <string name="about_ready_title">Redo när du är</string>
-    <string name="about_ready_body">Det är Rún — tyst, privat och din att hålla hemlig. Lägg till någon personligen och börja en konversation som ingen annan kan se.</string>
+    <string name="about_ready_body">Det är Rún — tyst, privat och din att hålla hemlig. Lägg till någon personligen och börja en konversation som ingen annan kan se. Appens kod är offentlig på github.com/cptdad/run, så vem som helst kan läsa den.</string>
 
     <!-- Donations-/stödmodal (DonateContent.kt) -->
     <string name="donate_appeal">Rún har inga annonser, inga investerare och säljer aldrig dina data. Varje donation — stor som liten — hjälper till att hålla appen gratis för alla, för alltid.</string>

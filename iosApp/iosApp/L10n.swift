@@ -18,12 +18,20 @@ enum L10n {
     static var aboutGroupsBody: String { NSLocalizedString("about_groups_body", value: "A group lives only on its members' phones — no group account, no member list, nothing on the relay to seize. Each message is sent privately to every member, so the relay never learns the group's name, who's in it, or a word of what's said. It does see one message go to several inboxes at once — enough to tell a group exists and how many it reached, never whose.", comment: "") }
     /// en: "Group chats"
     static var aboutGroupsTitle: String { NSLocalizedString("about_groups_title", value: "Group chats", comment: "") }
-    /// en: "vgab.eu opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address."
-    static var aboutInfoClearnetMessage: String { NSLocalizedString("about_info_clearnet_message", value: "vgab.eu opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address.", comment: "") }
+    /// en: "%1$s opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address."
+    static func aboutInfoClearnetMessage(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("about_info_clearnet_message", value: "%1$@ opens in your browser over the normal internet — not Tor. The website and your network can see your device's IP address.", comment: ""), p1) }
     /// en: "Open in browser?"
     static var aboutInfoClearnetTitle: String { NSLocalizedString("about_info_clearnet_title", value: "Open in browser?", comment: "") }
+    /// en: "Licences"
+    static var aboutInfoLicences: String { NSLocalizedString("about_info_licences", value: "Licences", comment: "") }
+    /// en: "Licences and notices"
+    static var aboutInfoLicencesTitle: String { NSLocalizedString("about_info_licences_title", value: "Licences and notices", comment: "") }
     /// en: "Built on open source"
     static var aboutInfoOpenSourceHeading: String { NSLocalizedString("about_info_open_source_heading", value: "Built on open source", comment: "") }
+    /// en: "Signing certificate SHA-256"
+    static var aboutInfoSigningCert: String { NSLocalizedString("about_info_signing_cert", value: "Signing certificate SHA-256", comment: "") }
+    /// en: "Source code"
+    static var aboutInfoSourceHeading: String { NSLocalizedString("about_info_source_heading", value: "Source code", comment: "") }
     /// en: "Private messaging, routed through Tor."
     static var aboutInfoTagline: String { NSLocalizedString("about_info_tagline", value: "Private messaging, routed through Tor.", comment: "") }
     /// en: "Runs Tor %1$s"
@@ -38,8 +46,8 @@ enum L10n {
     static var aboutQuietBody: String { NSLocalizedString("about_quiet_body", value: "No ads, analytics, or profiles — ever, and out of the box no notifications: Rún reaches its relay, over Tor, only when you open it. You can opt into instant alerts — a contentless wake carried by Apple's or Google's push service, or by one you install yourself, revealing only rough timing, never the message or who sent it — off unless you turn it on.", comment: "") }
     /// en: "Quiet by default"
     static var aboutQuietTitle: String { NSLocalizedString("about_quiet_title", value: "Quiet by default", comment: "") }
-    /// en: "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see."
-    static var aboutReadyBody: String { NSLocalizedString("about_ready_body", value: "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see.", comment: "") }
+    /// en: "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see. The app's code is public at github.com/cptdad/run, so anyone can read it."
+    static var aboutReadyBody: String { NSLocalizedString("about_ready_body", value: "That's Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see. The app's code is public at github.com/cptdad/run, so anyone can read it.", comment: "") }
     /// en: "Ready when you are"
     static var aboutReadyTitle: String { NSLocalizedString("about_ready_title", value: "Ready when you are", comment: "") }
     /// en: "There's no directory of who's on Rún. Instead, someone you already trust can introduce you to someone they trust — and you choose whether to accept. Trust travels person to person, never through a server."

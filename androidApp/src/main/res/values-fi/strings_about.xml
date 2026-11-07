@@ -7,7 +7,11 @@
     <string name="about_info_tor_version">Käyttää Tor-versiota %1$s</string>
     <string name="about_info_open_source_heading">Rakennettu avoimen lähdekoodin varaan</string>
     <string name="about_info_clearnet_title">Avataanko selaimessa?</string>
-    <string name="about_info_clearnet_message">vgab.eu avautuu selaimessasi tavallisen internetin kautta — ei Tor-verkon kautta. Sivusto ja verkkosi näkevät laitteesi IP-osoitteen.</string>
+    <string name="about_info_clearnet_message">%1$s avautuu selaimessasi tavallisen internetin kautta — ei Tor-verkon kautta. Sivusto ja verkkosi näkevät laitteesi IP-osoitteen.</string>
+    <string name="about_info_source_heading">Lähdekoodi</string>
+    <string name="about_info_licences">Lisenssit</string>
+    <string name="about_info_licences_title">Lisenssit ja huomautukset</string>
+    <string name="about_info_signing_cert">Allekirjoitusvarmenne SHA-256</string>
 
     <!-- Donate / Support modal chrome -->
     <string name="donate_title">Tue Rún-sovellusta</string>

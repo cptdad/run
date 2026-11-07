@@ -19,7 +19,11 @@
     <string name="about_info_tor_version">Kör Tor %1$s</string>
     <string name="about_info_open_source_heading">Byggd på öppen källkod</string>
     <string name="about_info_clearnet_title">Öppna i webbläsaren?</string>
-    <string name="about_info_clearnet_message">vgab.eu öppnas i din webbläsare över det vanliga internet — inte Tor. Webbplatsen och ditt nätverk kan se enhetens IP-adress.</string>
+    <string name="about_info_clearnet_message">%1$s öppnas i din webbläsare över det vanliga internet — inte Tor. Webbplatsen och ditt nätverk kan se enhetens IP-adress.</string>
+    <string name="about_info_source_heading">Källkod</string>
+    <string name="about_info_licences">Licenser</string>
+    <string name="about_info_licences_title">Licenser och meddelanden</string>
+    <string name="about_info_signing_cert">Signeringscertifikat SHA-256</string>
 
     <!-- Ram för donations-/stödmodalen (DonateModal.kt); själva DonateContent.appeal
          är redan nycklad i strings_shared.xml — lägg inte till den igen. -->

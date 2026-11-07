@@ -27,6 +27,7 @@
 		718822768AACD7F9015290F7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F543015C899423D4B01CEB2E /* Assets.xcassets */; };
 		A7F0AE7A0000000000000001 /* Metamorphous-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A7F0AE7A0000000000000002 /* Metamorphous-Regular.ttf */; };
 		BD6C4A9E00000000000A0005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BD6C4A9E00000000000B0005 /* PrivacyInfo.xcprivacy */; };
+		BD6C4A9E00000000000A0006 /* Licences in Resources */ = {isa = PBXBuildFile; fileRef = BD6C4A9E00000000000B0006 /* Licences */; };
 		7E947DCDD9D308ECC7F448A5 /* ContactListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A227B23B8A11B6BBDB52D36 /* ContactListView.swift */; };
 		84F507C324237FE01E561545 /* IntegrityCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1840BE574AEAA321357A39E /* IntegrityCheck.swift */; };
 		90C61D2FD076845A5CF89BAE /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0FDE66AC47DFB2788D7516 /* UIComponents.swift */; };
@@ -119,6 +120,7 @@
 		F122A22B417B30FB34FDD121 /* PinEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinEntryView.swift; sourceTree = "<group>"; };
 		A7F0AE7A0000000000000002 /* Metamorphous-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Metamorphous-Regular.ttf"; sourceTree = "<group>"; };
 		BD6C4A9E00000000000B0005 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		BD6C4A9E00000000000B0006 /* Licences */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Licences; sourceTree = "<group>"; };
 		F543015C899423D4B01CEB2E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F88BFC4F76805A1DF1F7031A /* Run.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Run.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC2AFC437DBE20DAAB8A4094 /* SwiftTorHttp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTorHttp.swift; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 				B1840BE574AEAA321357A39E /* IntegrityCheck.swift */,
 				CCBF88BD2343BD45E8EFDAF4 /* KeychainHelper.swift */,
 				10CA110000000000000B0003 /* L10n.swift */,
+				BD6C4A9E00000000000B0006 /* Licences */,
 				10CA110000000000000B0001 /* Localizable.xcstrings */,
 				7AAC8BFA4B8FA45D114C56B2 /* LogViewerView.swift */,
 				C0DE100000000000000B0001 /* ConnectionLogPanel.swift */,
@@ -311,6 +314,7 @@
 				10CA110000000000000A0001 /* Localizable.xcstrings in Resources */,
 				10CA110000000000000A0002 /* InfoPlist.xcstrings in Resources */,
 				BD6C4A9E00000000000A0005 /* PrivacyInfo.xcprivacy in Resources */,
+				BD6C4A9E00000000000A0006 /* Licences in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

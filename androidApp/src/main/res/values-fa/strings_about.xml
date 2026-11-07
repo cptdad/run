@@ -11,7 +11,11 @@
     <string name="about_info_tor_version">از Tor %1$s استفاده می‌کند</string>
     <string name="about_info_open_source_heading">ساخته‌شده بر پایهٔ متن‌باز</string>
     <string name="about_info_clearnet_title">در مرورگر باز شود؟</string>
-    <string name="about_info_clearnet_message">vgab.eu در مرورگر شما و از راه اینترنت معمولی باز می‌شود — نه Tor. وب‌سایت و شبکهٔ شما نشانی IP دستگاهتان را می‌بینند.</string>
+    <string name="about_info_clearnet_message">%1$s در مرورگر شما و از راه اینترنت معمولی باز می‌شود — نه Tor. وب‌سایت و شبکهٔ شما نشانی IP دستگاهتان را می‌بینند.</string>
+    <string name="about_info_source_heading">کد منبع</string>
+    <string name="about_info_licences">مجوزها</string>
+    <string name="about_info_licences_title">مجوزها و اطلاعیه‌های حقوقی</string>
+    <string name="about_info_signing_cert">گواهی امضا SHA-256</string>
 
     <!-- Donate / Support modal chrome -->
     <string name="donate_title">از Rún حمایت کنید</string>

@@ -9,9 +9,11 @@
 
   NOT localized here on purpose (per the campaign's exclusion list): the app
   name "Rún", the rune glyph "ᚱ", the maker name "Vikstrom Group AB", the
-  "vgab.eu" URL, credit names/licence names (AboutContent.credits — a
-  name/licence pair, not a sentence), and the "Version X (Y)" numbers
-  themselves (only the surrounding word is a resource).
+  "vgab.eu" / "github.com/cptdad/run" URLs, the bundled licence texts
+  (assets/licences/ — legal texts shown verbatim), credit names/licence
+  names (AboutContent.credits — a name/licence pair, not a sentence), and
+  the "Version X (Y)" numbers themselves (only the surrounding word is a
+  resource).
 -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
 
@@ -20,7 +22,12 @@
     <string name="about_info_tor_version">Runs Tor %1$s</string>
     <string name="about_info_open_source_heading">Built on open source</string>
     <string name="about_info_clearnet_title">Open in browser?</string>
-    <string name="about_info_clearnet_message">vgab.eu opens in your browser over the normal internet — not Tor. The website and your network can see your device\'s IP address.</string>
+    <!-- %1$s = the host being opened ("vgab.eu" or "github.com"), not localized. -->
+    <string name="about_info_clearnet_message">%1$s opens in your browser over the normal internet — not Tor. The website and your network can see your device\'s IP address.</string>
+    <string name="about_info_source_heading">Source code</string>
+    <string name="about_info_licences">Licences</string>
+    <string name="about_info_licences_title">Licences and notices</string>
+    <string name="about_info_signing_cert">Signing certificate SHA-256</string>
 
     <!-- Donate / Support modal chrome (DonateModal.kt); DonateContent.appeal
          itself is already keyed in strings_shared.xml — do not re-add it. -->

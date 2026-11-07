@@ -8,7 +8,11 @@
     <string name="about_info_tor_version">Работи со Tor %1$s</string>
     <string name="about_info_open_source_heading">Изградено на отворен код</string>
     <string name="about_info_clearnet_title">Да се отвори во прелистувач?</string>
-    <string name="about_info_clearnet_message">vgab.eu се отвора во вашиот прелистувач преку обичниот интернет — не преку Tor. Веб-страницата и вашата мрежа можат да ја видат IP-адресата на вашиот уред.</string>
+    <string name="about_info_clearnet_message">%1$s се отвора во вашиот прелистувач преку обичниот интернет — не преку Tor. Веб-страницата и вашата мрежа можат да ја видат IP-адресата на вашиот уред.</string>
+    <string name="about_info_source_heading">Изворен код</string>
+    <string name="about_info_licences">Лиценци</string>
+    <string name="about_info_licences_title">Лиценци и напомени</string>
+    <string name="about_info_signing_cert">Сертификат за потпишување SHA-256</string>
     <string name="donate_title">Поддршка за Rún</string>
     <string name="donate_tab_tip">Бакшиш</string>
     <string name="donate_tab_crypto">Крипто</string>

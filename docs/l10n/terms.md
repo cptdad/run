@@ -1463,6 +1463,8 @@ See the shared rules in the `## en` section (`conversation_ratchet_refused_body`
 | hardware lock | قفل العتاد |
 | device passcode / lock screen | رمز دخول / قفل شاشة |
 | recovery code | رمز الاسترداد |
+| Licences (open-source) | التراخيص (العنوان: «التراخيص والإشعارات القانونية» — *الإشعارات* وحدها تعني التنبيهات) |
+| source code | الشيفرة المصدرية |
 
 - **Tiers:** جيد / آمن / الحد الأقصى
 - **Register:** Modern Standard Arabic, addressing the user in the **2nd person
@@ -1675,6 +1677,8 @@ See the shared rules in the `## en` section (`conversation_ratchet_refused_body`
 | hardware lock | قفل سخت‌افزاری |
 | device passcode / lock screen | رمز دستگاه / قفل صفحه |
 | recovery code | کد بازیابی |
+| Licences (open-source) | مجوزها (عنوان: «مجوزها و اطلاعیه‌های حقوقی» — *اعلان‌ها* = notifications، استفاده نشود) |
+| source code | کد منبع |
 
 - **Tiers:** معقول / امن / حداکثر
 - **Register:** formal/polite **شما** with plural verb endings throughout.
@@ -1858,6 +1862,8 @@ has **UI strings only** — never write store copy for it.
 | device passcode | **passcode** (loanword; def. *passcode-ka*) |
 | lock screen | quful shaashadeed (def. *qufulka shaashadda*) |
 | recovery code | koodhka soo-celinta |
+| Licences (open-source) | **Ruqsadaha** (title *Ruqsadaha iyo ogeysiisyada sharciga*; never *shati* = shirt; *ogeysiisyada* alone = notifications) |
+| source code | Koodhka isha |
 
 - **Tiers:** Caadi / Ammaan / Ugu sarreeya
 - **Register:** Somali has no T/V distinction. Address the user in the 2nd
@@ -2283,6 +2289,8 @@ block of `whatsnew.txt`.
 | wake signal (push) | сигнал за будење |
 | pair in person | спарување лично / спарени лично |
 | notification (the generic alert title) | Известување |
+| Licences (open-source) | Лиценци (title *Лиценци и напомени*) |
+| source code | Изворен код |
 
 - **Tiers:** Основно / Безбедно / Максимално — frozen, byte-identical in UI and
   store copy. Spliced into sentences **unquoted** (*Rún тука работи на

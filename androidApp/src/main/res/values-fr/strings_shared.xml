@@ -33,7 +33,7 @@
     <string name="about_forensic_title">Résistante à l\'analyse forensique</string>
     <string name="about_forensic_body">Un téléphone saisi ne livre rien d\'exploitable. Tout ce qui est au repos est scellé par SQLCipher, et un effacement détruit les clés elles-mêmes — ne laissant que du bruit, sans caches ni fragments. La difficulté d\'ouverture, c\'est vous qui la choisissez : Décent s\'appuie sur votre code PIN ; Sécurisé lie la clé à la puce de sécurité de ce téléphone, derrière votre empreinte ou votre visage ; Maximum remplace le code PIN par une phrase secrète que vous seul connaissez — même une copie intégrale du téléphone reste close.</string>
     <string name="about_ready_title">Prête quand vous l\'êtes</string>
-    <string name="about_ready_body">Voilà Rún — discrète, privée, et à vous de la garder secrète. Ajoutez quelqu\'un en personne, et commencez une conversation que personne d\'autre ne peut voir.</string>
+    <string name="about_ready_body">Voilà Rún — discrète, privée, et à vous de la garder secrète. Ajoutez quelqu\'un en personne, et commencez une conversation que personne d\'autre ne peut voir. Le code de l\'application est public sur github.com/cptdad/run : chacun peut le lire.</string>
 
     <!-- Donate / Support modal -->
     <string name="donate_appeal">Rún n\'a ni publicité, ni investisseurs, et ne vend jamais vos données. Chaque don — grand ou petit — aide à la garder gratuite pour tous, pour toujours.</string>

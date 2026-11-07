@@ -8,7 +8,11 @@
     <string name="about_info_tor_version">Использует Tor %1$s</string>
     <string name="about_info_open_source_heading">Создано на основе открытого кода</string>
     <string name="about_info_clearnet_title">Открыть в браузере?</string>
-    <string name="about_info_clearnet_message">vgab.eu откроется в вашем браузере через обычный интернет — не через Tor. Сайт и ваша сеть смогут увидеть IP-адрес вашего устройства.</string>
+    <string name="about_info_clearnet_message">%1$s откроется в вашем браузере через обычный интернет — не через Tor. Сайт и ваша сеть смогут увидеть IP-адрес вашего устройства.</string>
+    <string name="about_info_source_heading">Исходный код</string>
+    <string name="about_info_licences">Лицензии</string>
+    <string name="about_info_licences_title">Лицензии и уведомления</string>
+    <string name="about_info_signing_cert">Сертификат подписи SHA-256</string>
     <string name="donate_title">Поддержать Rún</string>
     <string name="donate_tab_tip">Чаевые</string>
     <string name="donate_tab_crypto">Крипто</string>

@@ -32,7 +32,7 @@
     <string name="about_forensic_title">Forensic-safe</string>
     <string name="about_forensic_body">A seized phone gives up nothing useful. Everything at rest is sealed with SQLCipher, and a wipe erases the keys themselves — leaving only noise, no caches or fragments. How hard it is to open is your choice: Decent leans on your PIN; Secure binds the key to this phone\'s security chip, behind your fingerprint or face; Maximum swaps the PIN for a passphrase only you know — so even a fully imaged phone stays shut.</string>
     <string name="about_ready_title">Ready when you are</string>
-    <string name="about_ready_body">That\'s Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see.</string>
+    <string name="about_ready_body">That\'s Rún — quiet, private, and yours to keep secret. Add someone in person, and start a conversation no one else can see. The app\'s code is public at github.com/cptdad/run, so anyone can read it.</string>
 
     <!-- Donate / Support modal (DonateContent.kt) -->
     <string name="donate_appeal">Rún has no ads, no investors, and never sells your data. Every donation — large or small — helps keep it free for everyone, forever.</string>

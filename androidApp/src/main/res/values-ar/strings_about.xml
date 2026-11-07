@@ -11,7 +11,11 @@
     <string name="about_info_tor_version">يعمل بإصدار Tor %1$s</string>
     <string name="about_info_open_source_heading">مبني على المصدر المفتوح</string>
     <string name="about_info_clearnet_title">هل تريد الفتح في المتصفح؟</string>
-    <string name="about_info_clearnet_message">يُفتح vgab.eu في متصفحك عبر الإنترنت العادي — لا عبر Tor. يمكن للموقع ولشبكتك رؤية عنوان IP لجهازك.</string>
+    <string name="about_info_clearnet_message">يُفتح %1$s في متصفحك عبر الإنترنت العادي — لا عبر Tor. يمكن للموقع ولشبكتك رؤية عنوان IP لجهازك.</string>
+    <string name="about_info_source_heading">الشيفرة المصدرية</string>
+    <string name="about_info_licences">التراخيص</string>
+    <string name="about_info_licences_title">التراخيص والإشعارات القانونية</string>
+    <string name="about_info_signing_cert">شهادة التوقيع SHA-256</string>
 
     <!-- Donate / Support modal chrome -->
     <string name="donate_title">دعم Rún</string>

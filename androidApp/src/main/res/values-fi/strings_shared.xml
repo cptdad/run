@@ -33,7 +33,7 @@
     <string name="about_forensic_title">Forensiikan kestävä</string>
     <string name="about_forensic_body">Takavarikoitu puhelin ei luovuta mitään hyödyllistä. Kaikki levossa oleva on sinetöity SQLCipher-salauksella, ja pyyhintä tuhoaa itse avaimet — jäljelle jää vain kohinaa, ei välimuisteja eikä sirpaleita. Kuinka vaikeaa sen avaaminen on, on sinun valintasi: Perus nojaa PIN-koodiisi; Turva sitoo avaimen tämän puhelimen turvasiruun, sormenjälkesi tai kasvojesi taakse; Maksimi vaihtaa PIN-koodin tilalle salalauseen, jonka vain sinä tiedät — joten edes täysin kopioitu puhelin ei aukea.</string>
     <string name="about_ready_title">Valmis, kun sinäkin olet</string>
-    <string name="about_ready_body">Se on Rún — hiljainen, yksityinen ja sinun salaisuutesi. Lisää joku kasvokkain ja aloita keskustelu, jota kukaan muu ei näe.</string>
+    <string name="about_ready_body">Se on Rún — hiljainen, yksityinen ja sinun salaisuutesi. Lisää joku kasvokkain ja aloita keskustelu, jota kukaan muu ei näe. Sovelluksen koodi on julkinen osoitteessa github.com/cptdad/run, joten kuka tahansa voi lukea sen.</string>
 
     <!-- Donate / Support modal (DonateContent.kt) -->
     <string name="donate_appeal">Rún ei näytä mainoksia eikä sillä ole sijoittajia, eikä se koskaan myy tietojasi. Jokainen lahjoitus — suuri tai pieni — auttaa pitämään sen ilmaisena kaikille, ikuisesti.</string>

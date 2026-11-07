@@ -33,7 +33,7 @@
     <string name="about_forensic_title">A prueba de forenses</string>
     <string name="about_forensic_body">Un teléfono incautado no entrega nada útil. Todo lo que está en reposo se sella con SQLCipher, y un borrado destruye las claves mismas, dejando solo ruido, sin cachés ni fragmentos. Lo difícil que sea abrirlo lo eliges tú: Aceptable se apoya en tu PIN; Seguro ata la clave al chip de seguridad de este teléfono, detrás de tu huella o tu cara; Máximo cambia el PIN por una frase de contraseña que solo tú conoces, así que ni un teléfono clonado por completo se abre.</string>
     <string name="about_ready_title">Listo cuando tú quieras</string>
-    <string name="about_ready_body">Eso es Rún: silencioso, privado y tuyo para guardarlo en secreto. Añade a alguien en persona y empieza una conversación que nadie más puede ver.</string>
+    <string name="about_ready_body">Eso es Rún: silencioso, privado y tuyo para guardarlo en secreto. Añade a alguien en persona y empieza una conversación que nadie más puede ver. El código de la app es público en github.com/cptdad/run, así que cualquiera puede leerlo.</string>
 
     <!-- Donate / Support modal -->
     <string name="donate_appeal">Rún no tiene anuncios ni inversores, y nunca vende tus datos. Cada donación, grande o pequeña, ayuda a mantenerlo gratuito para todo el mundo, para siempre.</string>

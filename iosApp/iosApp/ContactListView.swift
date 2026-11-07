@@ -2919,10 +2919,24 @@ struct AboutView: View {
 // The classic "About" box: app name, the runic mark, the installed version, a
 // one-line description, the bundled Tor version, and open-source
 // acknowledgements. (The swipeable feature carousel is AboutView, surfaced as
-// "How Rún works".) Static and vault-agnostic.
+// "How Rún works".) Static and vault-agnostic. Also the client source link and
+// the bundled licence texts (LicencesView, loaded only when opened). Android
+// sibling: AboutInfoModal.kt (+ LicencesScreen.kt). No signing-certificate line
+// here: an App Store binary is re-signed by Apple, so there is nothing to match.
 struct AboutInfoView: View {
     let onClose: () -> Void
+    // A clearnet link behind the confirmation dialog: `host` fills the
+    // message's placeholder, `url` is what opens in the external browser.
+    struct ClearnetLink {
+        let host: String
+        let url: String
+        static let maker = ClearnetLink(host: "vgab.eu", url: "https://vgab.eu")
+        static let source = ClearnetLink(host: "github.com", url: "https://github.com/cptdad/run")
+    }
     @State private var showClearnetConfirm = false
+    // Not cleared on dismiss, so the message doesn't flip mid-dismiss animation.
+    @State private var clearnetTarget = ClearnetLink.maker
+    @State private var showLicences = false
     @Environment(\.openURL) private var openURL
 
     private var version: String {
@@ -2969,6 +2983,29 @@ struct AboutInfoView: View {
                             .foregroundColor(.secondary)
                     }
 
+                    // Client source — same clearnet gate as the maker link below.
+                    Text(L10n.aboutInfoSourceHeading)
+                        .font(.runeSubheadline).fontWeight(.semibold)
+                        .foregroundColor(Color.runTextPrimary)
+                        .padding(.top, 12)
+                    Button {
+                        clearnetTarget = .source
+                        showClearnetConfirm = true
+                    } label: {
+                        Text(verbatim: "github.com/cptdad/run ↗")
+                            .font(.system(.subheadline, design: .serif))
+                            .foregroundColor(Color(red: 0.86, green: 0.71, blue: 0.46))
+                    }
+                    .accessibilityIdentifier("about_info_source")
+                    Button {
+                        showLicences = true
+                    } label: {
+                        Text(L10n.aboutInfoLicences)
+                            .font(.system(.subheadline, design: .serif))
+                            .foregroundColor(Color(red: 0.86, green: 0.71, blue: 0.46))
+                    }
+                    .accessibilityIdentifier("about_info_licences")
+
                     // Maker — opens the company site in the EXTERNAL browser over
                     // the clearnet (not Tor), which reveals the device IP to the
                     // site and any on-path observer. Gate it behind an explicit
@@ -2979,6 +3016,7 @@ struct AboutInfoView: View {
                         .foregroundColor(Color.runTextPrimary)
                         .padding(.top, 18)
                     Button {
+                        clearnetTarget = .maker
                         showClearnetConfirm = true
                     } label: {
                         Text(verbatim: "vgab.eu ↗")
@@ -2993,10 +3031,10 @@ struct AboutInfoView: View {
                 .padding(.horizontal, 28)
             }
             .runeDialog(isPresented: $showClearnetConfirm, title: L10n.aboutInfoClearnetTitle,
-                        message: L10n.aboutInfoClearnetMessage,
+                        message: L10n.aboutInfoClearnetMessage(clearnetTarget.host),
                         actions: [
                             RuneDialogAction(L10n.commonOpen, a11yId: "clearnet_open_confirm") {
-                                openURL(URL(string: "https://vgab.eu")!)
+                                if let url = URL(string: clearnetTarget.url) { openURL(url) }
                             },
                             .secondary(L10n.commonCancel) { },
                         ])
@@ -3013,6 +3051,79 @@ struct AboutInfoView: View {
         }
         .accessibilityIdentifier("about_info_modal")
         .preferredColorScheme(.dark)
+        .fullScreenCover(isPresented: $showLicences) {
+            LicencesView { showLicences = false }
+                .coveredDarkSheet()
+        }
+    }
+}
+
+// "Licences and notices" — the full texts the app is published under. The four
+// files are COMMITTED byte-for-byte copies of the repo-root files in the
+// `Licences` folder reference (scripts/sync-licence-bundle.sh; pinned by
+// LicenceBundleTest on the JVM side, which also pins this file order to
+// Android's LicencesScreen.kt). Read off the main actor only when this view
+// appears — never when the About box opens (~65 KB of text).
+struct LicencesView: View {
+    let onClose: () -> Void
+    static let files = ["LICENSE-EXCEPTION", "LICENSE", "THIRD_PARTY_NOTICES.md", "OFL.txt"]
+    @State private var texts: [(name: String, body: String)] = []
+
+    // One file's text, or nil if missing/unreadable (the view then skips it).
+    private static func load(_ name: String) -> String? {
+        let ns = name as NSString
+        let ext = ns.pathExtension.isEmpty ? nil : ns.pathExtension
+        guard let url = Bundle.main.url(forResource: ns.deletingPathExtension, withExtension: ext,
+                                        subdirectory: "Licences"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return String(decoding: data, as: UTF8.self)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(L10n.aboutInfoLicencesTitle)
+                    .font(.system(.title3, design: .serif)).fontWeight(.bold)
+                    .foregroundColor(Color.runTextPrimary)
+                Spacer()
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(Color.runTextPrimary)
+                        .padding(12)
+                }
+                .accessibilityIdentifier("about_info_licences_close")
+            }
+            .padding(.leading, 20)
+            .padding(.trailing, 8)
+            .padding(.vertical, 4)
+            Divider()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(texts.enumerated()), id: \.offset) { i, t in
+                        if i > 0 { Divider().padding(.vertical, 8) }
+                        Text(verbatim: t.name)
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color.runTextPrimary)
+                        Text(verbatim: t.body)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(Color.runTextPrimary.opacity(0.85))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+        }
+        .background(Color.runBackground.ignoresSafeArea())
+        .accessibilityIdentifier("about_info_licences_screen")
+        .task {
+            let loaded = await Task.detached(priority: .userInitiated) { () -> [(name: String, body: String)] in
+                LicencesView.files.compactMap { name in LicencesView.load(name).map { (name: name, body: $0) } }
+            }.value
+            texts = loaded
+        }
     }
 }
 

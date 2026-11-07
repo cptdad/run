@@ -7,7 +7,11 @@
     <string name="about_info_tor_version">Kjører Tor %1$s</string>
     <string name="about_info_open_source_heading">Bygget på åpen kildekode</string>
     <string name="about_info_clearnet_title">Åpne i nettleseren?</string>
-    <string name="about_info_clearnet_message">vgab.eu åpnes i nettleseren din over vanlig internett – ikke Tor. Nettstedet og nettverket ditt kan se IP-adressen til enheten din.</string>
+    <string name="about_info_clearnet_message">%1$s åpnes i nettleseren din over vanlig internett – ikke Tor. Nettstedet og nettverket ditt kan se IP-adressen til enheten din.</string>
+    <string name="about_info_source_heading">Kildekode</string>
+    <string name="about_info_licences">Lisenser</string>
+    <string name="about_info_licences_title">Lisenser og merknader</string>
+    <string name="about_info_signing_cert">Signeringssertifikat SHA-256</string>
 
     <!-- Støtte-/donasjonsvindu -->
     <string name="donate_title">Støtt Rún</string>
