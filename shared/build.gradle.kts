@@ -435,7 +435,11 @@ android {
     if (runNdkPresent) externalNativeBuild {
         cmake {
             path = file("src/androidMain/cpp/CMakeLists.txt")
-            version = "4.4.5"
+            // Minimum, not exact ("+"): the Homebrew CMake here (cmake.dir in local.properties),
+            // the Debian/Ubuntu CMake on CI and on F-Droid's build servers all qualify. The
+            // generated flags come from the NDK's toolchain file, not from the CMake version, so
+            // the .so stays byte-identical across them (checked by the reproducible-build job).
+            version = "3.22.1+"
         }
     }
     buildTypes {

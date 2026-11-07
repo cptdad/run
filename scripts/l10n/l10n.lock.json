@@ -46,7 +46,7 @@
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     },
     "whatsnew": {
-      "en": "• Leaving a chat no longer loses a message.\n• Faster connects; reconnects when your network returns.\n• Notifications toggle more reliably; adding a contact in person is quicker.\n• Groups: clearer unread dots, \"not delivered to N\" marks, a warning before leaving.\n• Locks can't be postponed; showing a move code again asks you to unlock.\n• Tighter keyboard and clipboard privacy; connection timing is sent only in Debug mode.\n• About links to the source code and lists the licences.",
+      "en": "• Groups: a text that missed members says \"not delivered to N\"; leaving warns that unread texts may be lost.\n• Locks can't be postponed; showing a move code again asks you to unlock.\n• Tighter keyboard and clipboard privacy.\n• A cancelled move import no longer gets stuck.\n• About links to the source code and lists the licences.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     }
   },

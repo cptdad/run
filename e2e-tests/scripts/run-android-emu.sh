@@ -6,7 +6,7 @@
 # install it FRESH onto the emulator, point the suite at the emulator, and run.
 #
 # Two lessons are baked in:
-#   1. noReset:true reuses the INSTALLED app — so `assembleDebug` alone
+#   1. noReset:true reuses the INSTALLED app — so `assembleGoogleDebug` alone
 #      never deploys your changes. We always `adb install -r` the freshly
 #      built APK.
 #   2. uiautomator2/UiAutomation state on an emulator can get wedged
@@ -26,7 +26,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
-APK="../androidApp/build/outputs/apk/debug/androidApp-debug.apk"
+APK="../androidApp/build/outputs/apk/google/debug/androidApp-google-debug.apk"
 LOG="${TMPDIR:-/tmp}/e2e-android-emu.log"
 
 # Repair Appium's driver cache if this repo was moved/renamed (absolute paths
@@ -54,7 +54,7 @@ if [ "${1:-}" = "--reboot" ]; then
 fi
 
 echo "Building debug APK..."
-(cd .. && ./gradlew :androidApp:assembleDebug -q) || { echo "APK build failed" >&2; exit 1; }
+(cd .. && ./gradlew :androidApp:assembleGoogleDebug -q) || { echo "APK build failed" >&2; exit 1; }
 
 # DeviceLockPolicy (2026-07-21): a device with NO lock screen is FORCED to the
 # MAXIMUM tier, whose credential is a >=70-bit PASSPHRASE — this PIN-only suite

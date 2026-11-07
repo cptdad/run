@@ -98,7 +98,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import android.os.SystemClock
-import com.google.android.play.core.review.ReviewManagerFactory
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -1137,27 +1136,18 @@ fun ContactListScreen(
         // means "go ahead", no further gating needed. Play In-App Review
         // needs the hosting Activity, not just a Context — see
         // Context.findActivity() (ActivityExt.kt; same walk used for
-        // launchBillingFlow). Any failure (no Play Services, a non-Play
-        // install, no resolvable Activity) silently no-ops — never a custom
-        // dialog, never a browser fallback.
+        // launchBillingFlow). VendorReview is the flavour seam: Play In-App
+        // Review in `google`, a no-op in `foss`. Any failure (no Play Services,
+        // a non-Play install, no resolvable Activity) silently no-ops — never a
+        // custom dialog, never a browser fallback. We only ever cared that the
+        // request was MADE, already latched by markReviewPromptShown before this
+        // fired; the OS alone decides whether its sheet renders.
         LaunchedEffect(requestReviewFlow) {
             if (requestReviewFlow) {
                 viewModel.consumeRequestReviewFlow()
                 try {
                     val activity = context.findActivity()
-                    if (activity != null) {
-                        val manager = ReviewManagerFactory.create(context)
-                        manager.requestReviewFlow().addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                // The OS alone decides whether its sheet actually
-                                // renders (Play's own internal throttling) — we
-                                // only ever cared that the request was MADE,
-                                // already latched by markReviewPromptShown before
-                                // this fired.
-                                manager.launchReviewFlow(activity, task.result)
-                            }
-                        }
-                    }
+                    if (activity != null) VendorReview.requestReview(context, activity)
                 } catch (_: Exception) {
                     // Never let a cosmetic nudge crash the contact list.
                 }

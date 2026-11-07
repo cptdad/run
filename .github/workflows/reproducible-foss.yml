@@ -1,0 +1,73 @@
+# Reproducible-build check for the F-Droid flavour (BUILDING.md §4, docs/fdroid-recipe.yml).
+#
+# Builds the `foss` release APK (zero Google code, unsigned) on a Linux runner the way
+# F-Droid's build servers do — Debian-family CMake from PATH, the NDK from sdkmanager, the
+# production relay addresses from relay.properties.example — and uploads it as a workflow
+# artifact. The maintainer compares it with the APK built on the release machine:
+#
+#     gh run download <run-id> -n foss-release-apk-<sha>
+#     scripts/reproducible/compare-apks.py androidApp-foss-release-unsigned.apk <local foss apk>
+#
+# Every entry must match byte for byte (the signature is the only allowed difference). F-Droid
+# runs the same comparison before it publishes the developer-signed APK, so a green run here is
+# the precondition for every F-Droid release. Runs on version tags and on demand.
+name: reproducible-foss
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-foss-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Verify the Gradle wrapper before executing it
+        run: scripts/verify-gradle-wrapper.sh
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78  # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # The native Argon2 library needs the pinned NDK (shared/build.gradle.kts runNdkVersion)
+      # plus a CMake >= 3.22 and Ninja on PATH. The runner image ships CMake; Ninja is added.
+      - name: Install the pinned NDK and Ninja
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" --install "ndk;30.0.16248370" >/dev/null
+          sudo apt-get install -y --no-install-recommends ninja-build >/dev/null
+          cmake --version | head -1
+          ninja --version
+
+      # Exactly what the F-Droid recipe's prebuild does: the published production relay
+      # addresses, and the NDK path the shared module reads. No keystore: the APK is unsigned,
+      # which is what the comparison wants.
+      - name: Configure the build like F-Droid
+        run: |
+          set -eu
+          cp relay.properties.example relay.properties
+          printf 'run.ndkPath=%s\n' "$ANDROID_HOME/ndk/30.0.16248370" > local.properties
+
+      - name: Build the foss release APK
+        run: ./gradlew --no-daemon :androidApp:assembleFossRelease
+
+      - name: Digest
+        run: sha256sum androidApp/build/outputs/apk/foss/release/*.apk
+
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # v5.0.0
+        with:
+          name: foss-release-apk-${{ github.sha }}
+          path: androidApp/build/outputs/apk/foss/release/*.apk
+          retention-days: 14
+          if-no-files-found: error

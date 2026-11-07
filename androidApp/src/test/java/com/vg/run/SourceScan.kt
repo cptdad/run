@@ -89,6 +89,8 @@ internal fun fileFunctionBody(relativePath: String, signature: String): String =
  */
 internal object SourcePins {
     private const val MAIN = "androidApp/src/main/java/com/vg/run/"
+    /** The `google` distribution flavour's source set (FCM, Play Billing, Play Review). */
+    private const val GOOGLE = "androidApp/src/google/kotlin/com/vg/run/"
     const val RUN_VIEW_MODEL = MAIN + "RunViewModel.kt"
     const val WIPE_ROUTINE = MAIN + "WipeRoutine.kt"
     const val MAIN_ACTIVITY = MAIN + "MainActivity.kt"
@@ -96,9 +98,9 @@ internal object SourcePins {
     const val GROUP_CONVERSATION_SCREEN = MAIN + "GroupConversationScreen.kt"
     const val CONVERSATION_SCREEN = MAIN + "ConversationScreen.kt"
     const val CONTACT_LIST_SCREEN = MAIN + "ContactListScreen.kt"
-    const val VENDOR_PUSH = MAIN + "VendorPush.kt"
+    const val VENDOR_PUSH = GOOGLE + "VendorPush.kt"
     const val PUSH_REGISTRATION_COORDINATOR = MAIN + "PushRegistrationCoordinator.kt"
-    const val RUN_FCM_SERVICE = MAIN + "RunFcmService.kt"
+    const val RUN_FCM_SERVICE = GOOGLE + "RunFcmService.kt"
     const val MOVE_TO_NEW_DEVICE_SCREEN = MAIN + "MoveToNewDeviceScreen.kt"
     const val GROUP_INFO_SCREEN = MAIN + "GroupInfoScreen.kt"
     const val CONNECT_TELEMETRY_RECORDER = MAIN + "ConnectTelemetryRecorder.kt"

@@ -63,7 +63,7 @@ relay is valid and safe), the Android and iOS builds, and the invocations Gradle
 why. The short version:
 
 ```
-./gradlew :androidApp:assembleDebug     # alone, never together with a release task
+./gradlew :androidApp:assembleGoogleDebug   # or assembleFossDebug; alone, never with a release task
 ./gradlew test                          # JVM unit tests (shared module + Android app)
 ./gradlew lint
 ```

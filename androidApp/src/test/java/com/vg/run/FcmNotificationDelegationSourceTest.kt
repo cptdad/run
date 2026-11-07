@@ -48,11 +48,13 @@ class FcmNotificationDelegationSourceTest {
 
     @Test
     fun manifest_declaresNotificationDelegationDisabled() {
-        val manifest = File(repoRoot(), "androidApp/src/main/AndroidManifest.xml").readText()
+        // The Firebase meta-data live in the `google` flavour's manifest (src/google); the
+        // `foss` flavour links no Firebase and so has nothing to declare.
+        val manifest = File(repoRoot(), "androidApp/src/google/AndroidManifest.xml").readText()
 
         val nameAt = manifest.indexOf("firebase_messaging_notification_delegation_enabled")
         assertTrue(
-            "AndroidManifest.xml must declare the " +
+            "src/google/AndroidManifest.xml must declare the " +
                 "firebase_messaging_notification_delegation_enabled meta-data — its absence " +
                 "makes ProxyNotificationInitializer default to GRANTING Play Services the " +
                 "notification delegate (bytecode-verified, firebase-messaging 25.1.2).",

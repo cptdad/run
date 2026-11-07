@@ -18,7 +18,7 @@ if (!process.env.ANDROID_HOME) {
 
 /**
  * Android-specific config. Points at the debug APK produced by
- * `./gradlew :androidApp:assembleDebug` (the single universal build since
+ * `./gradlew :androidApp:assembleGoogleDebug` (the single universal build since
  * the 2026-08-04 flavor collapse — both push transports, runtime-selected).
  *
  * Device: the first connected Android device or emulator. Set
@@ -52,7 +52,7 @@ export const config: Options.Testrunner = {
                 'outputs',
                 'apk',
                 'debug',
-                'androidApp-debug.apk'
+                'androidApp-google-debug.apk'
             ),
             'appium:appPackage': 'com.vg.run',
             'appium:appActivity': 'com.vg.run.MainActivity',

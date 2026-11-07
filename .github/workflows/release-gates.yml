@@ -178,13 +178,17 @@ jobs:
       # Android Lint rides in the same invocation (open-source plan §5, 2026-11-05):
       # lintDebug on both modules, warnings as configured in the module build files.
       # The lint artifacts are already in gradle/verification-metadata.xml.
-      - name: JVM unit tests + Android Lint (shared debug, androidApp debug)
+      # Both distribution flavours of the app: `google` (store build) and `foss` (F-Droid,
+      # zero Google code) — the flavour seams must compile and pass on each.
+      - name: JVM unit tests + Android Lint (shared debug, androidApp google+foss debug)
         run: |
           ./gradlew --no-daemon \
             :shared:testDebugUnitTest \
-            :androidApp:testDebugUnitTest \
+            :androidApp:testGoogleDebugUnitTest \
+            :androidApp:testFossDebugUnitTest \
             :shared:lintDebug \
-            :androidApp:lintDebug
+            :androidApp:lintGoogleDebug \
+            :androidApp:lintFossDebug
 
   # Mirror the local gitleaks pre-commit hook into CI. The hook is
   # staged-only, local, and bypassable (`git commit --no-verify` / unconfigured

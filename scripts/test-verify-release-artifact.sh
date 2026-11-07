@@ -17,10 +17,10 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 GATE="$HERE/verify-release-artifact.sh"
-AAB="${1:-$HERE/../androidApp/build/outputs/bundle/release/androidApp-release.aab}"
+AAB="${1:-$HERE/../androidApp/build/outputs/bundle/googleRelease/androidApp-google-release.aab}"
 
 if [ ! -f "$AAB" ]; then
-  echo "⚠ no signed .aab at $AAB — skipping artifact-gate regression test (build one with bundleRelease to run it)"
+  echo "⚠ no signed .aab at $AAB — skipping artifact-gate regression test (build one with bundleGoogleRelease to run it)"
   exit 0
 fi
 

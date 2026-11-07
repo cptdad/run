@@ -64,10 +64,12 @@ echo "=== Pre-push: release-artifact signer identity ==="
 # is `fastlane android_release`, which now runs scripts/verify-release-artifact.sh
 # against the exact .aab it is about to hand to supply and aborts the lane on any
 # non-zero exit. This pass stays as early warning on a pre-built artifact.
-# ONE universal build (2026-08-04 flavor collapse): Play Store ships the
-# .aab (bundleRelease); direct distribution ships the .apk (assembleRelease).
-REL_ART="$(ls -t "$REPO_ROOT"/androidApp/build/outputs/bundle/release/*.aab \
-                 "$REPO_ROOT"/androidApp/build/outputs/apk/release/*.apk 2>/dev/null | head -1)"
+# Two flavours: Play Store ships the `google` .aab (bundleGoogleRelease), direct
+# distribution the `google` .apk (assembleGoogleRelease), F-Droid the zero-Google
+# `foss` .apk (assembleFossRelease). Whichever was built most recently is checked.
+REL_ART="$(ls -t "$REPO_ROOT"/androidApp/build/outputs/bundle/googleRelease/*.aab \
+                 "$REPO_ROOT"/androidApp/build/outputs/apk/google/release/*.apk \
+                 "$REPO_ROOT"/androidApp/build/outputs/apk/foss/release/*.apk 2>/dev/null | head -1)"
 if [ -n "$REL_ART" ]; then
   echo "verifying signer of $REL_ART"
   "$REPO_ROOT/scripts/verify-release-artifact.sh" "$REL_ART"
@@ -283,8 +285,8 @@ echo "=== Pre-push: deploy to physical devices ==="
     done
     if [ -n "$ANDROID_TARGETS" ]; then
       echo "  Android: building debug APK..."
-      if (cd "$REPO_ROOT" && ./gradlew -q :androidApp:assembleDebug); then
-        APK="$REPO_ROOT/androidApp/build/outputs/apk/debug/androidApp-debug.apk"
+      if (cd "$REPO_ROOT" && ./gradlew -q :androidApp:assembleGoogleDebug); then
+        APK="$REPO_ROOT/androidApp/build/outputs/apk/google/debug/androidApp-google-debug.apk"
         for s in $ANDROID_TARGETS; do
           if "$ADB" -s "$s" install -r "$APK" >/dev/null 2>&1; then
             echo "  Android: installed build $LOCAL_CODE on $s"

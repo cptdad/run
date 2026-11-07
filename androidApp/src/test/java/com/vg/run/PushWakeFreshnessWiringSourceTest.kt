@@ -287,6 +287,8 @@ class PushWakeFreshnessWiringSourceTest {
     private fun mainSources(): List<File> =
         listOf(
             "androidApp/src/main/java/com/vg/run",
+            "androidApp/src/google/kotlin/com/vg/run",
+            "androidApp/src/foss/kotlin/com/vg/run",
             "shared/src/commonMain/kotlin/com/vg/run",
             "shared/src/androidMain/kotlin/com/vg/run",
             "shared/src/iosMain/kotlin/com/vg/run",

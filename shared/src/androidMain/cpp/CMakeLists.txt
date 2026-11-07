@@ -45,6 +45,12 @@ target_compile_options(runargon2 PRIVATE
   -fdata-sections
   -fstack-protector-strong
   -Wall
+  # Reproducible builds (F-Droid rebuilds this .so on its own servers and compares it
+  # byte for byte with the published APK): no checkout path may reach the object code,
+  # neither through debug info (stripped at link time below anyway) nor through
+  # __FILE__-style strings. Both source roots are mapped to fixed relative names.
+  "-ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=src"
+  "-ffile-prefix-map=${ARGON2_DIR}=argon2"
 )
 
 # 16 KB page alignment (Play requirement for targetSdk 35+; NDK r28+ default, made

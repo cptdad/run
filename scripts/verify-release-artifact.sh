@@ -257,6 +257,32 @@ AAPT2="$(ls "$SDK_BT"/*/aapt2 2>/dev/null | sort -V | tail -1)"
 XML="$("$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" 2>/dev/null)"
 [ -n "$XML" ] || { echo "could not read manifest from $APK (extraction failed)" >&2; exit 3; }
 
+# 0) `foss` flavour (F-Droid): ZERO Google code. Had any Google artefact been linked, the
+#    manifest merger would carry Firebase's FirebaseInitProvider, the FCM MESSAGING_EVENT
+#    intent filter, Play Services' com.google.android.gms.version meta-data or Play
+#    Billing's ProxyBillingActivity (component names are never obfuscated), and the
+#    google-services plugin would have generated the google_app_id string resource.
+#    Every one of them must be absent. Recognised by the flavour directory in the path or
+#    by "foss" in the file name.
+case "$APK" in
+  */foss/*|*foss*)
+    foss_bad=0
+    for needle in FirebaseInitProvider com.google.firebase.MESSAGING_EVENT com.google.android.gms.version ProxyBillingActivity; do
+      if printf '%s' "$XML" | grep -q "$needle"; then
+        echo "✗ foss artifact carries Google code: the manifest mentions $needle" >&2; foss_bad=1
+      fi
+    done
+    if "$AAPT2" dump resources "$APK" 2>/dev/null | grep -qE 'string/(google_app_id|gcm_defaultSenderId|project_id|google_api_key)\b'; then
+      echo "✗ foss artifact carries Firebase config resources (google_app_id …)" >&2; foss_bad=1
+    fi
+    if [ "$foss_bad" = 0 ]; then
+      echo "✓ foss: no Google component, intent filter or Firebase resource in the artifact"
+    else
+      fail=1
+    fi
+    ;;
+esac
+
 # App package/namespace — DERIVED from the artifact, not hardcoded, so this gate
 # stays correct if the app is renamed or built under a variant namespace
 # (external review 2026-07 #4). aapt2 already expands relative component names

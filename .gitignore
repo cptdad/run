@@ -43,9 +43,10 @@ relay.properties
 # without Firebase config); debug builds warn and continue (CI runs unit
 # suites without the file; such a debug APK just has FCM unconfigured).
 # Split by build type so debug resolves the DEV Firebase project and release
-# resolves PROD automatically (no manual swap): src/debug = dev,
-# src/release = prod.
-androidApp/src/*/google-services.json
+# resolves PROD automatically (no manual swap), under the `google` flavour so the
+# `foss` (F-Droid) variants never see one: src/google/debug = dev,
+# src/google/release = prod.
+androidApp/src/**/google-services.json
 *.xcuserstate
 xcuserdata/
 /.idea/

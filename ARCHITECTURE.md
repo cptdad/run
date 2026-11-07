@@ -246,7 +246,7 @@ bounded keep-alive; its rules are in `BackgroundTorKeepAlive.kt`.
   `STRIP_DEV_RELAY=1`).
 - **Refused invocations.** Because the scrub depends on the whole invocation, Gradle refuses a bare
   `build` / `assemble` and any invocation that mixes a Debug artifact task with a release-intent
-  task. Build the debug APK on its own (`./gradlew :androidApp:assembleDebug`).
+  task. Build the debug APK on its own (`./gradlew :androidApp:assembleGoogleDebug`).
 - **Version.** `version.properties` holds `versionName` and `versionCode` for both platforms.
 - **Signing.** `androidApp/build.gradle.kts` looks for `keystore.properties` in
   `$RUN_SIGNING_DIR`, then `~/.run-signing/`, then the repo root. Without it, release builds are

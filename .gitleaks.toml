@@ -22,6 +22,10 @@ paths = [
 # The real relay.properties is gitignored, so it is never staged/scanned.
 # The Apple Developer Team ID is a public identifier, not a secret.
 regexes = [
+    # The Android RELEASE SIGNING CERTIFICATE's SHA-256 fingerprint (docs/fdroid-recipe.yml
+    # AllowedAPKSigningKeys). A certificate digest is public by nature — anyone with the APK
+    # computes it, and the About screen shows it — but the 64-hex shape trips generic-api-key.
+    '''29b4d5195bbc4ffd9be87c2547ee33371c7edff46f14ba8f93eadd7e2d2d2422''',
     '''YOUR_TEAM_ID''',
     # ACCEPTED BURNED secret — never re-flag (see the accepted-burned-secrets note).
     # A dead Loki write token committed to relay.properties before it was gitignored

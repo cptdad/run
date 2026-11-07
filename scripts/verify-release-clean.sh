@@ -20,10 +20,17 @@ fail=0
 # 1) testTagsAsResourceId must ALWAYS be gated on BuildConfig.DEBUG — never a
 #    hardcoded true/false (true would expose every debug testTag as an automation
 #    hook in a release build).
+#    The flavour source sets (src/google, src/foss) are scanned too when present; they are
+#    added only if they exist, because a missing path makes grep exit 2 even on a match,
+#    which would turn a real hit into a silent pass (the canary test fixture has no flavours).
+SRC_DIRS=("$SRC")
+for d in androidApp/src/google/kotlin androidApp/src/foss/kotlin; do
+  [ -d "$d" ] && SRC_DIRS+=("$d")
+done
 if [ ! -d "$SRC" ]; then
   echo "FAIL: check 1: $SRC missing — refusing to report OK." >&2
   fail=1
-elif grep -rnE "testTagsAsResourceId[[:space:]]*=[[:space:]]*(true|false)\b" "$SRC" 2>/dev/null; then
+elif grep -rnE "testTagsAsResourceId[[:space:]]*=[[:space:]]*(true|false)\b" "${SRC_DIRS[@]}" 2>/dev/null; then
   echo "FAIL: testTagsAsResourceId is hardcoded above — must be '= BuildConfig.DEBUG'." >&2
   fail=1
 fi

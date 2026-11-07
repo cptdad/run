@@ -84,13 +84,32 @@ export RELAY_ONION_URL=http://<your-relay-v3-address>.onion
 
 ## 4. Android
 
+### Two flavours
+
+The app module has one flavour dimension, `distribution`, with two values:
+
+- **`google`** — the store build. Both notification transports are compiled in (FCM when
+  Play Services is present, UnifiedPush otherwise, chosen at runtime), plus Google Play
+  Billing for the tip jar and Play In-App Review. This is what Google Play ships.
+- **`foss`** — no Google code at all: UnifiedPush only, the "Support Rún" screen shows the
+  crypto address only, no store review sheet. This is the F-Droid build. Every Google
+  artefact in `androidApp/build.gradle.kts` is `googleImplementation`-scoped, and the
+  flavour-specific code (`VendorPush`, `VendorBilling`, `VendorReview`, the tip jar body,
+  the FCM service and its manifest entries) lives in `androidApp/src/google` and
+  `androidApp/src/foss`. `scripts/verify-release-artifact.sh` on a `foss` APK asserts
+  that no Google component, intent filter or Firebase resource ended up in it.
+
+Task names carry the flavour: `assembleGoogleDebug`, `assembleFossRelease`,
+`bundleGoogleRelease`, `testFossDebugUnitTest`, and so on.
+
 ### Debug APK
 
 ```
-./gradlew :androidApp:assembleDebug
+./gradlew :androidApp:assembleGoogleDebug      # or assembleFossDebug
 ```
 
-Output: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
+Output: `androidApp/build/outputs/apk/google/debug/androidApp-google-debug.apk`
+(`.../apk/foss/debug/androidApp-foss-debug.apk` for the foss flavour).
 
 Run this task **alone**, never combined with a release task (see "Refused
 invocations"). Debug builds use a cheap Argon2 cost and can log; do not use one
@@ -99,11 +118,13 @@ for real data.
 ### Release APK / AAB
 
 ```
-./gradlew :androidApp:assembleRelease     # APK
-./gradlew :androidApp:bundleRelease       # AAB
+./gradlew :androidApp:assembleGoogleRelease     # APK, store flavour
+./gradlew :androidApp:bundleGoogleRelease       # AAB (Google Play)
+./gradlew :androidApp:assembleFossRelease       # APK, F-Droid flavour
 ```
 
-Outputs: `androidApp/build/outputs/apk/release/`, `.../bundle/release/`.
+Outputs: `androidApp/build/outputs/apk/google/release/`, `.../bundle/googleRelease/`,
+`.../apk/foss/release/`.
 
 **Signing.** `keystore.properties` is looked up in `$RUN_SIGNING_DIR`, then
 `~/.run-signing`, then the repo root (keep it out of the repo tree). Keys:
@@ -112,11 +133,12 @@ Outputs: `androidApp/build/outputs/apk/release/`, `.../bundle/release/`.
 still succeeds but is **unsigned**; sign it yourself (e.g. `apksigner`) before
 installing.
 
-**Firebase.** `google-services.json` is gitignored; place yours at
-`androidApp/src/debug/` and `androidApp/src/release/`.
+**Firebase (`google` flavour only).** `google-services.json` is gitignored; place yours at
+`androidApp/src/google/debug/` and `androidApp/src/google/release/`. The `foss` flavour
+never reads one.
 
-- Debug builds without it compile with a warning and FCM is unconfigured.
-- **Release builds fail without a valid file.** Use your own Firebase project's
+- `google` debug builds without it compile with a warning and FCM is unconfigured.
+- **`google` release builds fail without a valid file.** Use your own Firebase project's
   file. Push to your build also needs a relay holding matching FCM credentials;
   the official relay's belong to the official app.
 
@@ -127,9 +149,9 @@ installing.
 
 The build deliberately fails these, with an explanatory message:
 
-- Bare `build` or `assemble` (any project path): they build both variants, so
-  the debug APK would get an empty dev-relay constant and silently use the
-  production relay.
+- Bare `build` or `assemble` (any project path): they build every variant, debug
+  and release together, so the debug APKs would get an empty dev-relay constant
+  and silently use the production relay.
 - A debug artifact task together with a release-intent task (name containing
   `release`, `CONFIGURATION=Release`, or `STRIP_DEV_RELAY=1`), for the same
   reason.
@@ -238,7 +260,7 @@ devices and a live relay and are out of scope here. See `e2e-tests/README.md`.
 ## 8. Troubleshooting
 
 - **`build` / `assemble` refused.** Intended (section 4). Run `./gradlew test
-  lint`, `:androidApp:assembleRelease`, and `:androidApp:assembleDebug` separately.
+  lint`, `:androidApp:assembleGoogleRelease`, and `:androidApp:assembleGoogleDebug` separately.
 - **"Android NDK 30.0.16248370 not found".** Install the NDK in a space-free
   path and set `RUN_NDK_PATH` or `run.ndkPath` (section 2).
 - **First unlock is slow in release, fast in debug.** Release derives the vault

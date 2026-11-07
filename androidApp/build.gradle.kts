@@ -78,12 +78,25 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // ONE universal build (2026-08-04, supersedes the foss/google flavor split
-    // of notification-levels-plan.md §2b): both notification transports ship in
-    // every APK — FCM when Play Services is present, UnifiedPush otherwise —
-    // selected at runtime via VendorPush.isAvailable(). The F-Droid-main-repo
-    // zero-Google artifact is deliberately parked; if it is ever revived, the
-    // flavor split lives in git history (removed right after 0a0ab40).
+    // Two distribution flavours (reintroduced 2026-11-08 for F-Droid; supersedes the
+    // 2026-08-04 collapse to one universal build):
+    //  - google: the store build. Both notification transports ship in it — FCM when Play
+    //    Services is present, UnifiedPush otherwise, selected at runtime via
+    //    VendorPush.isAvailable() — plus Play Billing (tip jar) and Play In-App Review.
+    //  - foss:   zero Google code (F-Droid). UnifiedPush only; the "Support Rún" modal shows
+    //    the crypto address only; no store review sheet.
+    // F-Droid's scanner reads this file: every Google artefact in dependencies{} is
+    // `googleImplementation`-scoped, which the scanner skips when it builds `foss`. The seams
+    // (VendorPush, VendorBilling, VendorReview, TipJarBody, RunFcmService + its manifest
+    // entries) live in src/google and src/foss; main code reads them flavour-blind.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("foss") { dimension = "distribution" }
+        create("google") {
+            dimension = "distribution"
+            isDefault = true
+        }
+    }
 
     if (hasSigningConfig) {
         signingConfigs {
@@ -190,25 +203,28 @@ dependencies {
     // See WipeRoutine's databaseList() sweep, which cleans it up for installs
     // that already have the file.
 
+    // ---- `google` flavour only (googleImplementation, NEVER plain implementation: the
+    // `foss` flavour must link no Google class, and F-Droid's scanner checks exactly this).
     // Google Play Billing — the "Support Rún" tip jar (consumable one-time tips).
     // On devices without Play Services the tip tab degrades at runtime
     // (VendorBilling/TipJar); DonateModal keeps the crypto tab either way.
-    implementation(libs.billing.ktx)
+    "googleImplementation"(libs.billing.ktx)
 
     // Play In-App Review — the privacy-respecting store-review nudge
-    // (ReviewPromptPolicy.kt in commonMain gates WHEN; ContactListScreen
-    // calls ReviewManagerFactory here). Same graceful-degrade posture as
+    // (ReviewPromptPolicy.kt in commonMain gates WHEN; VendorReview in
+    // src/google calls ReviewManagerFactory). Same graceful-degrade posture as
     // Billing above: no Play Services / not a Play install ⇒ the returned
     // Task fails and the caller silently no-ops, no custom dialog fallback.
-    implementation(libs.play.review.ktx)
+    "googleImplementation"(libs.play.review.ktx)
 
     // Vendor push (FCM) — the Vendor-push NotificationLevel tier
-    // (notification-levels-plan.md §2b). VendorPush.kt/RunFcmService.kt are the
-    // only callers; on devices without Play Services the runtime gate
+    // (notification-levels-plan.md §2b). VendorPush.kt/RunFcmService.kt (src/google) are
+    // the only callers; on devices without Play Services the runtime gate
     // (VendorPush.isAvailable) routes to UnifiedPush instead.
-    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
-    implementation("com.google.firebase:firebase-messaging")  // -ktx artifacts left the BoM in 34.0.0; the main module carries the same API
-    implementation("com.google.android.gms:play-services-base")
+    "googleImplementation"(platform("com.google.firebase:firebase-bom:34.19.0"))
+    "googleImplementation"("com.google.firebase:firebase-messaging")  // -ktx artifacts left the BoM in 34.0.0; the main module carries the same API
+    "googleImplementation"("com.google.android.gms:play-services-base")
+    // ---- end of the `google`-only block
 
     // UnifiedPush connector — the Google-free wake transport (a distributor app
     // such as ntfy holds one socket and delivers contentless wakes to
@@ -303,10 +319,10 @@ dependencies {
 // coverage). Kover cannot ingest instrumented coverage, so this is a plain
 // JaCoCo report that merges both execution-data formats.
 //
-//   ./gradlew :androidApp:testDebugUnitTest \
-//             :androidApp:connectedDebugAndroidTest jacocoFullReport
+//   ./gradlew :androidApp:testGoogleDebugUnitTest \
+//             :androidApp:connectedGoogleDebugAndroidTest jacocoFullReport
 //
-// connectedDebugAndroidTest needs a device/emulator; if you skip it the report
+// connectedGoogleDebugAndroidTest needs a device/emulator; if you skip it the report
 // still builds from whatever .exec/.ec are present (unit-only in that case).
 // ---------------------------------------------------------------------------
 tasks.register<JacocoReport>("jacocoFullReport") {
@@ -318,7 +334,8 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     // task's coverage dir). This therefore REQUIRES a connected device/emulator.
     // For a unit-only report, run the two unit-test tasks + this without the
     // device — but the instrumented columns will then be empty.
-    dependsOn("testDebugUnitTest", ":shared:testDebugUnitTest", "connectedDebugAndroidTest")
+    // The `google` flavour carries the full code (both push transports, Billing, Review).
+    dependsOn("testGoogleDebugUnitTest", ":shared:testDebugUnitTest", "connectedGoogleDebugAndroidTest")
 
     val coverageExcludes = listOf(
         "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
@@ -330,19 +347,19 @@ tasks.register<JacocoReport>("jacocoFullReport") {
 
     // Compiled Kotlin bytecode for the debug variant of each module.
     classDirectories.setFrom(
-        fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) { setExcludes(coverageExcludes) },
+        fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/googleDebug")) { setExcludes(coverageExcludes) },
         fileTree(shared.layout.buildDirectory.dir("tmp/kotlin-classes/debug")) { setExcludes(coverageExcludes) },
     )
     sourceDirectories.setFrom(
-        files("src/main/java", "src/main/kotlin"),
+        files("src/main/java", "src/main/kotlin", "src/google/kotlin"),
         shared.files("src/commonMain/kotlin", "src/androidMain/kotlin"),
     )
     // Execution data: unit tests (.exec) + instrumented tests (.ec), both modules.
     // Rooted at specific output dirs (not the whole build dir) to keep the input
     // footprint tight and avoid spurious overlap with other tasks' outputs.
     executionData.setFrom(
-        fileTree(layout.buildDirectory.dir("outputs/unit_test_code_coverage/debugUnitTest")) { include("*.exec") },
-        fileTree(layout.buildDirectory.dir("outputs/code_coverage/debugAndroidTest/connected")) { include("**/*.ec") },
+        fileTree(layout.buildDirectory.dir("outputs/unit_test_code_coverage/googleDebugUnitTest")) { include("*.exec") },
+        fileTree(layout.buildDirectory.dir("outputs/code_coverage/googleDebugAndroidTest/connected")) { include("**/*.ec") },
         fileTree(shared.layout.buildDirectory.dir("outputs/unit_test_code_coverage/debugUnitTest")) { include("*.exec") },
     )
     reports {
@@ -366,11 +383,16 @@ val syncRunestoneAssets by tasks.registering(Exec::class) {
 tasks.named("preBuild") { dependsOn(syncRunestoneAssets) }
 
 // ---------------------------------------------------------------------------
-// google-services.json is GITIGNORED (androidApp/src/debug/ = the dev Firebase
-// project, androidApp/src/release/ = prod), so it is legitimately absent on a
-// fresh clone or CI runner. IGNORE keeps such machines building (the plugin's
-// process<Variant>GoogleServices task quietly no-ops instead of failing);
-// the per-variant guard below decides where that absence is acceptable.
+// google-services.json is GITIGNORED and lives under the `google` FLAVOUR's source
+// set (androidApp/src/google/debug/ = the dev Firebase project,
+// androidApp/src/google/release/ = prod), so it is legitimately absent on a fresh
+// clone or CI runner. IGNORE keeps such machines building (the plugin's
+// process<Variant>GoogleServices task quietly no-ops instead of failing); the
+// per-variant guard below decides where that absence is acceptable. The `foss`
+// variants never find a json (the plugin searches src/<flavour>/<buildType>,
+// src/<buildType>/<flavour>, src/<flavour>, src/<buildType> — none of which carry one
+// for `foss`), so no google_app_id or other Firebase resource is ever generated
+// into the F-Droid build; scripts/verify-release-artifact.sh asserts that.
 // ---------------------------------------------------------------------------
 googleServices {
     missingGoogleServicesStrategy = MissingGoogleServicesStrategy.IGNORE
@@ -378,9 +400,10 @@ googleServices {
 
 // ---------------------------------------------------------------------------
 // Per-variant fail-closed guard on top of the IGNORE above. Without it,
-// `bundleRelease` on a json-less machine would succeed and quietly ship an
+// `bundleGoogleRelease` on a json-less machine would succeed and quietly ship an
 // artifact with no Firebase config at all — FCM push silently dead in
-// production, with no build failure to flag it. Policy:
+// production, with no build failure to flag it. Policy (`google` flavour only;
+// `foss` has no Firebase and is skipped):
 //   - release variants: missing/invalid json FAILS the build (fail closed —
 //     never ship an FCM-dead artifact).
 //   - debug variants: WARN only, so a fresh clone / CI runner without the
@@ -399,12 +422,15 @@ googleServices {
 // require the google-services plugin to have already registered the task by
 // the time this onVariants callback runs.
 androidComponents.onVariants { variant ->
+    if (variant.flavorName != "google") return@onVariants
     val variantName = variant.name
     val failClosed = variant.buildType == "release"
     val processTaskName = variant.computeTaskName("process", "GoogleServices")
     val searchedPaths = listOf(
+        "androidApp/src/google/${variant.buildType}/google-services.json",
+        "androidApp/src/${variant.buildType}/google/google-services.json",
+        "androidApp/src/google/google-services.json",
         "androidApp/src/${variant.buildType}/google-services.json",
-        "androidApp/src/$variantName/google-services.json",
         "androidApp/google-services.json",
     )
     tasks.withType<GoogleServicesTask>().matching { it.name == processTaskName }.configureEach {
