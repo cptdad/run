@@ -1,0 +1,3 @@
+• Debug mode keeps sending diagnostics after Rún has been in the background, and on a phone protected by a passcode.
+• Rún keeps what you type out of the keyboard's learned words wherever it can, at every protection level.
+• Each protection level now says plainly whether the keyboard may learn what you type.

@@ -1,0 +1,4 @@
+• Flyt Rún til en ny telefon, også af en anden slags: den gamle viser en kode, den nye scanner den, og dine kontakter, grupper og samtaler følger med — forseglet, over Tor, ingen skykopi.
+• At fjerne nogen fra en gruppe, eller selv forlade en, holder nu også, når de er offline.
+• Før du slår notifikationer til, viser Rún, hvad relæet får at vide.
+• En forfalsket kontaktopdatering kan ikke omdirigere beskeder, og en sletning efterlader mindre.

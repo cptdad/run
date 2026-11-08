@@ -1,0 +1,7 @@
+• Uansett hvordan du forlater en chat, går ingen meldinger lenger tapt.
+• Kobler til raskere: kontaktene vises så snart relayet svarer.
+• Kobler seg til igjen av seg selv når nettverket er tilbake.
+• Å slå varsler av eller på fungerer mer pålitelig.
+• Å legge til en kontakt ansikt til ansikt går raskere.
+• En gruppes ulest-prikk forsvinner så snart du har sett meldingen i en annen chat.
+• Rapporter om tilkoblingstid sendes bare i Feilsøkingsmodus.

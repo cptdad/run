@@ -1,0 +1,5 @@
+• Flytning til en ny telefon beder nu først om din PIN eller adgangssætning.
+• Introduktioner og gruppens adminbeskeder får nu samme forward secrecy som chats.
+• Ventetiden efter forkert PIN eller adgangssætning gælder nu også efter en genstart af appen.
+• En besked, der sendes lige idet Tor falder ud, sendes igen, når forbindelsen er tilbage.
+• Usendte beskeder fjernes ved låsning, og et gruppemedlem kan ikke længere få din telefon til at tjekke for beskeder for tit.

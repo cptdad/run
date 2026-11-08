@@ -1,0 +1,6 @@
+• Rättningar från en fullständig säkerhetsgenomgång – de flesta märks inte.
+• Skyddsnivån Maximal krävs nu på en telefon utan skärmlås.
+• Överföringskoden till en ny telefon kan bara kopieras med knappen ”Kopiera”.
+• Gruppnamn från en kontakt rensas innan de visas.
+• Ett meddelande i en grupp visas inte längre som oläst på kontakten som skickade det.
+• Om du hade Felsökningsläge på behöver du slå på det igen.

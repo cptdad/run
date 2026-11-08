@@ -1,0 +1,2 @@
+• At slå notifikationer fra og til igen virker nu pålideligt.
+• Tydeligere fremdriftstekst, mens Rún opretter forbindelse, og tippet om langsom forbindelse bliver ikke længere afkortet.

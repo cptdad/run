@@ -1,0 +1,6 @@
+• Kontakte und „Kontakt hinzufügen“ erscheinen nach der Antwort des Relays.
+• Die Verbindungszahl stockt nie; der rote Ring pulsiert stärker und leuchtet durchgehend, sobald das Relay antwortet.
+• Dreimal auf die Verbindungszeile tippen: ein Live-Protokoll, das niemanden verrät.
+• Die Push-Frage wartet jetzt, bis du verbunden bist.
+• Benachrichtigungs-Tour auf drei Seiten plus Schalter gekürzt.
+• Nach dem Verbinden meldet die App dem Relay nur die Dauer in Sekunden — nichts Identifizierendes.

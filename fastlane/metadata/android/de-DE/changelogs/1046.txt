@@ -1,0 +1,7 @@
+• Beim Verlassen eines Chats geht keine Nachricht mehr verloren.
+• Verbindet sich schneller und neu, wenn das Netz zurück ist.
+• Benachrichtigungen schalten zuverlässiger ein und aus.
+• Kontakte persönlich hinzufügen geht schneller.
+• Ungelesen-Punkte von Gruppen verschwinden nach Ansicht in einem anderen Chat.
+• Gruppen: Verpasst ein Text Mitglieder, steht „nicht zugestellt an N“; Verlassen warnt, dass Ungelesenes verloren gehen kann.
+• Verbindungsdauer wird nur im Debug-Modus gemeldet.

@@ -1,0 +1,6 @@
+• Korjauksia täydestä tietoturva-arvioinnista – suurin osa ei näy käytössä.
+• Puhelimessa, jossa ei ole näytön lukitusta, vaaditaan nyt suojaustaso Maksimi.
+• Paritus valmistuu heti, kun toinen puhelin lukee koodin takaisin.
+• Uuteen puhelimeen siirtyminen ei enää kaada sovellusta koodia luettaessa.
+• Ryhmäviesti ei enää näy lukemattomana sen lähettäneen kontaktin kohdalla.
+• Jos sinulla oli Virheenkorjaustila päällä, kytke se uudelleen päälle.

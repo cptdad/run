@@ -1,0 +1,7 @@
+• Beim Verlassen eines Chats geht nichts mehr verloren.
+• Schnellere Verbindung; Neuverbindung nach Netzausfall.
+• Benachrichtigungen schalten zuverlässiger; Hinzufügen vor Ort geht schneller.
+• Gruppen: klarere Ungelesen-Punkte, „nicht zugestellt an N“, Warnung vorm Verlassen.
+• Sperre nicht aufschiebbar; Umzugscode erneut zeigen verlangt Entsperren.
+• Mehr Schutz für Tastatur und Zwischenablage; Verbindungsdauer nur im Debug-Modus gesendet.
+• „Über“ verlinkt den Quellcode, zeigt die Lizenzen.

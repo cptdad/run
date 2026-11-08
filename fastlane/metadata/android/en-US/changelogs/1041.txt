@@ -1,0 +1,3 @@
+• Connecting is faster and more reliable: Rún now tries several addresses of its relay at once and uses whichever answers first.
+• Reopening the app shortly after leaving it reuses the running Tor connection, so it is ready sooner and opens more reliably.
+• Turning notifications on or off is more reliable, including right after a network drop.

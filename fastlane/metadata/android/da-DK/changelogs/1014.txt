@@ -1,0 +1,3 @@
+• En gruppeinvitation, du endnu ikke er gået med i, overlever nu, at appen lukkes — den venter, når du kommer tilbage.
+• Forbindelsen går hurtigere: Rún kommer nu forbi en fastlåst forbindelse på egen hånd, og kontaktlisten vises tidligere.
+• Samtaler viser nu, når forward secrecy endnu ikke er aktiveret — det løser sig som regel, når din kontakt svarer.

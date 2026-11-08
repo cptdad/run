@@ -1,0 +1,6 @@
+• Raskere opplåsing på telefoner der den var treg.
+• Tilkoblingen er raskere og mer pålitelig.
+• Private meldinger fra gruppemedlemmer vises nå i gruppen, merket som private, med mulighet til å svare.
+• Gruppemeldinger som kommer under en samtale på tomannshånd, vises der, merket med gruppenavnet.
+• Å forlate en samtale mister ikke lenger meldinger som er på vei inn.
+• Å legge til kontakter og flytte til ny telefon feiler ikke lenger på enkelte tregere telefoner.

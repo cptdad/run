@@ -1,0 +1,4 @@
+• Att ta bort någon ur en grupp, eller lämna en, håller nu även när medlemmar är offline: Rún fortsätter att försöka i en vecka.
+• Innan du slår på notiser berättar Rún nu vad reläet självt kan få veta.
+• Inställningarna säger till när din skyddsnyckel behöver härdas på nytt.
+• Säkerhetsarbete rakt igenom: meddelanden kan inte styras om av en förfalskad kontaktuppdatering, och en radering lämnar mindre efter sig.

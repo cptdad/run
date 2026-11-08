@@ -1,0 +1,4 @@
+• Retirer quelqu'un d'un groupe, ou en quitter un, tient désormais même si des membres sont hors ligne : Rún réessaie pendant une semaine.
+• Avant d'activer les notifications, Rún explique maintenant ce que le relais lui-même peut apprendre.
+• Les Paramètres vous préviennent quand votre clé de protection doit être renforcée.
+• Sécurité renforcée partout : une fausse mise à jour de contact ne peut plus détourner vos messages, et un effacement laisse moins de traces.

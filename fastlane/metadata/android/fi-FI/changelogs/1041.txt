@@ -1,0 +1,3 @@
+• Yhdistäminen on nopeampaa ja luotettavampaa: Rún kokeilee nyt useaa välityspalvelimensa osoitetta yhtä aikaa ja käyttää sitä, joka vastaa ensin.
+• Kun avaat sovelluksen pian poistumisen jälkeen, käynnissä oleva Tor-yhteys otetaan uudelleen käyttöön, joten sovellus on valmis nopeammin ja aukeaa luotettavammin.
+• Ilmoitusten käyttöön ottaminen ja poistaminen toimii luotettavammin, myös heti verkkokatkon jälkeen.

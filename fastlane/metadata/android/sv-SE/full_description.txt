@@ -1,0 +1,38 @@
+Rún är en säker meddelandeapp byggd för personer som vägrar att kompromissa med integriteten. Varje meddelande är end-to-end-krypterat innan det lämnar din enhet, och nycklarna vrids framåt medan ni chattar — så även om en nyckel skulle exponeras förblir resten av konversationen förseglad.
+
+Rún kräver varken konto, telefonnummer eller e-postadress. Det finns inget som länkar tillbaka till din identitet. Kontakter läggs till personligen via QR-kodskanning, eller via en betrodd introduktion från någon du redan litar på — ingen central katalog, ingen kontaktmatchning, ingen social graf.
+
+All trafik dirigeras via Tor-nätverket, vilket döljer din IP-adress och plats även för reläet i Rún. En observatör som övervakar ditt nätverk ser bara krypterad Tor-trafik — den kan inte avgöra vem du pratar med eller vad du säger. Meddelanden fylls ut till fasta storlekar, så inte ens meddelandets längd läcker.
+
+Meddelanden finns bara i arbetsminnet — de skrivs aldrig till disk. Lämna en chatt eller stäng appen, så är de borta. Det finns ingen meddelandehistorik att bläddra i, inget arkiv att begära ut och ingen säkerhetskopia att läcka. Reläet lagrar bara tillfälliga krypterade datablobbar det inte kan läsa, i inkorgar som förfaller av sig själva.
+
+Ditt valv är krypterat i vila med AES-256 via SQLCipher, med en Argon2id-härledd nyckel som skyddas av Android Keystore. Du väljer själv hur svåråtkomligt det ska vara:
+
+• Normal — snabb PIN-upplåsning med milda tider för autolås och självradering.
+• Säker — valvnyckeln binds även till telefonens säkerhetschip, bakom ditt fingeravtryck eller ansikte. En beslagtagen telefon står starkt emot offline-attacker.
+• Maximal — PIN-koden byts mot en stark lösenfras och tiderna är som stramast. Även en fullständigt avbildad telefon förblir låst.
+
+På alla nivåer låser Rún sig självt vid inaktivitet, raderar allt efter för många felaktiga upplåsningsförsök och förstör sig självt efter en längre tids oanvändning — hur strikt avgörs av nivån du valt. En radering förstör själva krypteringsnycklarna, så inget går att återskapa.
+
+Gruppchattar finns bara på medlemmarnas telefoner — inget gruppkonto, ingen medlemslista. Varje meddelande går privat till varje medlem: reläet ser ett meddelande nå flera inkorgar, aldrig vilka de är eller ett ord av det.
+
+Ingen analys. Ingen spårning. Ingen reklam. Ingen kraschrapportering. Inga molnsäkerhetskopior. Som standard är appen tyst — inga notiser — och du ser bara dina meddelanden när du öppnar den. Du kan välja att slå på notiser; om du gör det skickas en innehållslös väckningssignal via Googles pushservrar (FCM), eller via en valfri UnifiedPush-distributör om Google-tjänster saknas. Endera får bara veta att något kommit in och när — aldrig från vem eller vad det innehåller — och Rún berättar exakt detta innan du aktiverar det.
+
+Klientens källkod är öppen under GPL på github.com/cptdad/run: läs den, bygg den själv eller rapportera säkerhetsproblem där. Reläservern är inte publicerad än.
+
+Rún är byggd för journalister, aktivister, visselblåsare och alla som ser privata samtal som en grundläggande rättighet.
+
+Viktiga funktioner:
+- End-to-end-kryptering med forward secrecy (AES-256-GCM + Double Ratchet)
+- All trafik via Tor — din IP-adress och plats förblir dolda
+- Inget konto, telefonnummer eller e-post krävs
+- Kontaktutbyte med QR-kod personligen samt betrodda introduktioner
+- Gruppchattar utan gruppkonto eller medlemslista
+- Meddelanden hålls bara i arbetsminnet — lagras aldrig på disk
+- Krypterat lokalt valv (SQLCipher, Argon2id, Android Keystore)
+- Tre skyddsnivåer: Normal, Säker, Maximal
+- Autolås, radering vid upprepade felförsök, självförstöring vid inaktivitet
+- Skärmdumpar blockerade
+- Ingen analys, spårning, reklam eller kraschrapportering
+- Telefonbyte med en förseglad överföring, aldrig en molnsäkerhetskopia
+- Tillgänglig på 13 språk

@@ -1,0 +1,2 @@
+• Att slå av notiser och sedan på igen fungerar nu pålitligt.
+• Tydligare förloppstext när Rún ansluter, och tipset om långsam anslutning kapas inte längre.

@@ -1,0 +1,5 @@
+• Ulæste beskeder markeres næsten med det samme, når forbindelsen er oprettet.
+• God og Sikker beholder ordforslag og emoji på tastaturet; Maksimal beholder et tastatur, der ikke lærer noget.
+• Adminrollen overdrages ikke længere, mens et medlem stadig er ved at tilslutte sig en gruppe.
+• Hvis der ikke kan oprettes en sikker kanal, holder Rún op med at sende i stedet for at bruge svagere beskyttelse.
+• Fejlfindingstilstand sender diagnostik pålideligt efter en genstart.

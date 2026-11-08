@@ -1,0 +1,2 @@
+• Benachrichtigungen aus- und wieder einzuschalten funktioniert jetzt zuverlässig.
+• Klarerer Fortschrittstext, während Rún verbindet, und der Hinweis auf eine langsame Verbindung wird nicht mehr abgeschnitten.

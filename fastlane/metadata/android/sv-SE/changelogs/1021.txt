@@ -1,0 +1,3 @@
+• Felsökningsläge fortsätter skicka diagnostikloggar efter att appen har varit i bakgrunden, och på en telefon som skyddas av en lösenkod.
+• Rún håller det du skriver utanför tangentbordets inlärda ord där det går, på alla skyddsnivåer.
+• Varje skyddsnivå säger nu tydligt om tangentbordet kan lära sig det du skriver.

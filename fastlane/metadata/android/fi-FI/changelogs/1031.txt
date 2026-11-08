@@ -1,0 +1,6 @@
+• Nopeampi lukituksen avaus puhelimissa, joissa se oli hidasta.
+• Yhdistäminen on nopeampaa ja luotettavampaa.
+• Ryhmän jäsenten yksityisviestit näkyvät nyt ryhmässä yksityisiksi merkittyinä, ja niihin voi vastata.
+• Kahdenkeskisen keskustelun aikana saapuvat ryhmäviestit näkyvät siinä ryhmän nimellä merkittyinä.
+• Keskustelusta poistuminen ei enää hukkaa saapumassa olevia viestejä.
+• Yhteystietojen lisäys ja siirto uuteen puhelimeen eivät enää epäonnistu joillain hitaammilla puhelimilla.

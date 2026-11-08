@@ -1,0 +1,3 @@
+• A group invite you haven't joined yet now survives closing the app — it's waiting when you come back.
+• Connecting is quicker: Rún now works past a stalled connection on its own, and your contact list appears sooner.
+• Conversations now tell you when forward secrecy hasn't engaged yet — it usually clears once your contact replies.

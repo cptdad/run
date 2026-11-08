@@ -1,0 +1,3 @@
+• Der Verbindungsbildschirm wirkt nicht mehr eingefroren: Die Anzeige bewegt sich weiter, während Rún seine Route aufbaut, und erreicht 100 % erst, wenn das Relay wirklich geantwortet hat.
+• Von Anfang an steht dort, dass die erste Verbindung einige Minuten dauern kann.
+• Antwortet das Relay langsam, versucht Rún es viel früher erneut, statt zu warten.

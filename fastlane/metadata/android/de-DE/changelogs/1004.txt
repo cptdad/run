@@ -1,0 +1,4 @@
+• Jemanden aus einer Gruppe zu entfernen oder selbst zu gehen, hält jetzt auch, wenn Mitglieder offline sind: Rún bleibt eine Woche lang dran.
+• Bevor du Benachrichtigungen einschaltest, sagt Rún jetzt auch, was das Relay selbst erfährt.
+• Die Einstellungen melden sich, wenn dein Schutzschlüssel erneut gehärtet werden muss.
+• Sicherheitsarbeit an vielen Stellen: eine gefälschte Kontaktaktualisierung kann Nachrichten nicht mehr umleiten, und eine Löschung hinterlässt weniger.

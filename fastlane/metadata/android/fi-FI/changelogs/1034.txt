@@ -1,0 +1,3 @@
+• Myöhässä saapuvia ilmoituksia viesteistä, jotka olet jo nähnyt, ei enää näytetä.
+• Yhteys palautuu paljon nopeammin, kun Tor-verkko jumittuu, joten pitkät odotukset ennen viestiesi näkymistä ovat harvinaisempia.
+• Sisäänrakennettu Tor on päivitetty uusimpaan tietoturvaversioonsa.

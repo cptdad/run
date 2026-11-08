@@ -1,0 +1,5 @@
+• Unread indicators appear almost immediately after connecting.
+• Decent and Secure keep keyboard suggestions and emoji; Maximum keeps a keyboard that learns nothing.
+• The admin role is no longer handed over while a member is still joining a group.
+• If a secure channel can't be set up, Rún stops sending instead of quietly using weaker protection.
+• Debug mode sends diagnostics reliably after a restart.

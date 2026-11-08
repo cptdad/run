@@ -1,0 +1,4 @@
+• Att ta bort någon ur en grupp väntar nu på att de andra bekräftar det, så det kan inte misslyckas i tysthet.
+• En chatt som kom ur en introduktion visar vem som introducerade dig, och ingen kan översvämma dig med introduktioner.
+• När Rún ansluter ser du rörliga punkter och större text, plus ett tips om det tar ett tag.
+• Rún hör av sig mer sällan när inget händer, och en radering tar nu bort de sista kvarvarande filerna.

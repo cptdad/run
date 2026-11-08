@@ -1,0 +1,6 @@
+• Contacts and Add contact appear once the relay has answered.
+• The connecting number never stalls; the red ring pulses harder and holds solid when the relay answers.
+• Triple-tap the connecting line for a live connection log that identifies nobody.
+• The push-notification question now waits until you are connected.
+• Notification walkthrough cut to three pages plus the switch.
+• After connecting, the app reports just the seconds it took to the relay — nothing identifying.

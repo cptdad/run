@@ -1,0 +1,7 @@
+• Quitter une discussion ne fait plus perdre de message.
+• Connexion plus rapide, et reconnexion quand le réseau revient.
+• Activer ou couper les notifications est plus fiable.
+• L'ajout d'un contact en personne est plus rapide.
+• Les points non lus des groupes s'effacent une fois vus dans une autre discussion.
+• Groupes : un texte manqué par des membres indique « non remis à N » ; quitter avertit que les non-lus peuvent être perdus.
+• La durée de connexion n'est signalée qu'en Mode débogage.

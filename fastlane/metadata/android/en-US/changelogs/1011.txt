@@ -1,0 +1,4 @@
+• Rún tells you when an introduction you made is accepted, and again once both sides approve.
+• New in Settings: Debug mode — switch it on to send anonymous diagnostic logs that help track down connection problems. Nothing in them points to you.
+• The live connection log now follows the whole path to the relay, and still identifies nobody.
+• Rún now keeps its way into the Tor network between launches instead of starting over.

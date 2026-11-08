@@ -1,0 +1,6 @@
+• Kontakterna och ”Lägg till kontakt” visas när reläet har svarat.
+• Anslutningssiffran står aldrig still; den röda ringen pulserar starkare och lyser stadigt när reläet svarar.
+• Tre tryck på anslutningsraden ger en anslutningslogg i realtid som inte pekar ut någon.
+• Frågan om push-notiser väntar nu tills du är ansluten.
+• Notisguiden är nerkortad till tre sidor plus brytaren.
+• Efter anslutningen rapporterar appen bara antalet sekunder det tog till reläet — inget som pekar ut dig.

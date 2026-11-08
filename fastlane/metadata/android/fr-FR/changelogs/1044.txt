@@ -1,0 +1,7 @@
+• Plus aucun message perdu, quelle que soit la façon de quitter une discussion.
+• Connexion plus rapide : vos contacts s'affichent dès que le relais répond.
+• Se reconnecte d'elle-même quand le réseau revient.
+• Activer ou désactiver les notifications est plus fiable.
+• L'ajout d'un contact en personne aboutit plus vite.
+• Le point non lu d'un groupe disparaît dès que vous voyez son message dans une autre discussion.
+• Les rapports de durée de connexion ne partent qu'en Mode débogage.

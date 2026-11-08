@@ -1,0 +1,3 @@
+• Å legge til en kontakt er tydeligere: etter den første skanningen viser Rún «Nesten der» og din egen kode som den andre telefonen skanner tilbake — da blir det ferdig av seg selv.
+• Du kan fortsette å vente på den andre skanningen, eller avbryte parkoblingen og fjerne den halvferdige kontakten.
+• Oppsettet av innboksen henger ikke lenger fast når forbindelsen kommer og går.

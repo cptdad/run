@@ -1,0 +1,4 @@
+• Retirer quelqu'un d'un groupe attend maintenant la confirmation des autres : cela ne peut plus échouer en silence.
+• Une conversation née d'une présentation indique qui vous a présenté, et personne ne peut vous en inonder.
+• Pendant que Rún se connecte, vous voyez des points animés et un texte plus grand, avec une astuce si cela dure.
+• Rún se manifeste moins souvent au repos, et un effacement supprime désormais les derniers fichiers résiduels.

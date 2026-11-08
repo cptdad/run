@@ -1,0 +1,4 @@
+• Übertrage Rún auf ein neues Handy, auch anderer Art: Das alte zeigt einen Code, das neue scannt ihn, Kontakte, Gruppen und Unterhaltungen kommen mit — versiegelt, über Tor, ohne Cloud-Backup.
+• Jemanden aus einer Gruppe entfernen oder selbst gehen hält jetzt auch, wenn sie offline sind.
+• Bevor du Benachrichtigungen einschaltest, zeigt Rún, was das Relay erfährt.
+• Eine gefälschte Kontaktaktualisierung kann Nachrichten nicht umleiten, eine Löschung hinterlässt weniger.

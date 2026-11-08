@@ -1,0 +1,6 @@
+• Forbinder hurtigere: kontakterne vises, så snart relæet svarer, og et forsøg, der er gået i stå, prøves igen tidligere.
+• Genopretter selv forbindelsen, når netværket er tilbage efter et udfald.
+• At slå notifikationer til eller fra virker mere pålideligt.
+• At tilføje en kontakt ansigt til ansigt går hurtigere.
+• En gruppes ulæst-prik forsvinder, så snart du har set dens besked i en anden chat.
+• Rapporter om forbindelsestid sendes kun, mens Fejlfindingstilstand er slået til.

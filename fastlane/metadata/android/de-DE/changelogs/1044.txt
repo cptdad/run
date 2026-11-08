@@ -1,0 +1,7 @@
+• Egal, wie du einen Chat verlässt: Keine Nachricht geht mehr verloren.
+• Schnellere Verbindung: Kontakte erscheinen, sobald das Relay antwortet.
+• Verbindet sich von selbst neu, wenn das Netz zurück ist.
+• Benachrichtigungen ein- oder auszuschalten klappt zuverlässiger.
+• Einen Kontakt persönlich hinzuzufügen geht schneller.
+• Der Ungelesen-Punkt einer Gruppe verschwindet, sobald du ihre Nachricht in einem anderen Chat siehst.
+• Berichte zur Verbindungsdauer gehen nur im Debug-Modus raus.

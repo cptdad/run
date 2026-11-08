@@ -24,7 +24,7 @@ What makes that work, all already in the repository:
   cannot be reproduced on macOS, because the NDK ships a different clang per host, which is why the
   asset is always the Linux build.
 
-Verified locally for v1.6.60: `apksigcopier compare run-1.6.60-foss.apk --unsigned <Linux build>`
+Verified locally for v1.6.60 and v1.6.61 (each published by `publish-foss-release.sh`): `apksigcopier compare run-1.6.60-foss.apk --unsigned <Linux build>`
 passes, and the Linux and macOS builds differ only in `librunargon2.so`.
 
 ## Opening the merge request (maintainer, once)
@@ -38,11 +38,13 @@ passes, and the Linux and macOS builds differ only in `librunargon2.so`.
    cp ~/code/run/docs/fdroid-recipe.yml metadata/com.vg.run.yml
    ```
 
-   Remove the comment lines (the header and the one after `ndk:`; fdroiddata keeps metadata
-   comment-free).
-3. Optional local checks (need `pip install fdroidserver`): `fdroid lint com.vg.run` and
-   `fdroid rewritemeta com.vg.run` (canonical field order). fdroiddata's own CI runs the real
-   build on the merge request, so these are a convenience, not a requirement.
+   Remove the comment header (fdroiddata keeps metadata comment-free; the body is already in
+   `fdroid rewritemeta` order).
+3. Optional local checks (`pipx install fdroidserver`, run INSIDE the fdroiddata checkout so the
+   `config/` category and anti-feature definitions are found; outside it every category and
+   anti-feature is reported invalid): `fdroid lint com.vg.run` and `fdroid rewritemeta com.vg.run`.
+   Both were clean for this recipe on 2026-11-08. fdroiddata's own CI runs the real build on the
+   merge request, so these are a convenience, not a requirement.
 4. Commit and push: `git add metadata/com.vg.run.yml && git commit -m "New app: Rún (com.vg.run)"
    && git push -u origin com.vg.run`.
 5. Open the merge request against `fdroid/fdroiddata` `master` with the text below. Tick
@@ -72,7 +74,7 @@ Reproducible build / developer signature:
 - `Binaries:` points at the GitHub release asset `run-<version>-foss.apk`, which is the
   unsigned build from our own Linux CI (`.github/workflows/reproducible-foss.yml`) signed with
   the key in `AllowedAPKSigningKeys` using apksigner 34.0.0.
-- Verified locally with `apksigcopier compare` for v1.6.60.
+- Verified locally with `apksigcopier compare` for v1.6.60 and v1.6.61.
 - The native library (Argon2, `shared/src/androidMain/cpp`) is built with the NDK pinned in the
   recipe; the macOS NDK clang produces different bytes than the Linux one, so the asset is
   always Linux-built.
@@ -84,7 +86,7 @@ from apt.
 
 Two things I want to flag rather than have you discover:
 1. Tor ships as a prebuilt binary via Maven (`info.guardianproject:tor-android`, the artefact
-   Orbot uses). If that is not acceptable for the main repo, tell me what you would accept
+   Guardian Project publishes for Orbot). If that is not acceptable for the main repo, tell me what you would accept
    (building Tor from source in the recipe, or a specific F-Droid-built artefact) and I will
    adapt the build.
 2. Anti-features: NonFreeNet (the relay server's source is not published yet) and NonFreeAssets

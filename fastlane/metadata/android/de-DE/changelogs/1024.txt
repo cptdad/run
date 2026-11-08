@@ -1,0 +1,6 @@
+• Korrekturen aus einer vollständigen Sicherheitsprüfung – meist unsichtbar.
+• Auf einem Telefon ohne Bildschirmsperre gilt jetzt zwingend die Schutzstufe Maximum.
+• Die Kopplung ist fertig, sobald das andere Telefon den Code ebenfalls scannt.
+• Das Übertragen auf ein neues Telefon stürzt beim Scannen des Codes nicht mehr ab.
+• Eine Gruppennachricht erscheint nicht mehr als ungelesen beim sendenden Kontakt.
+• Hattest du den Debug-Modus an, schalte ihn noch einmal ein.

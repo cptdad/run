@@ -1,0 +1,5 @@
+• Five new languages — Arabic, Persian, Somali, Russian and Macedonian — bring Rún to 13; Arabic and Persian lay out right to left.
+• Choose the app's language in Settings, whatever the phone is set to.
+• New: Report bug — tell us what went wrong, anonymously over Tor.
+• The runestone now turns solid red as soon as Tor connects.
+• The first contact or group no longer slips under the top bar.

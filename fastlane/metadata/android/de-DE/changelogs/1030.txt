@@ -1,0 +1,6 @@
+• Schnelleres Entsperren auf Telefonen, wo es langsam war.
+• Die Verbindung ist schneller und zuverlässiger.
+• Private Nachrichten von Gruppenmitgliedern erscheinen jetzt als privat markiert in der Gruppe, mit Antwortoption.
+• Gruppennachrichten, die während eines Einzelchats eintreffen, erscheinen dort mit Gruppennamen.
+• Verlassen einer Unterhaltung verliert keine eintreffenden Nachrichten mehr.
+• Kontakte hinzufügen und Telefonumzug scheitern auf manchen langsameren Telefonen nicht mehr.

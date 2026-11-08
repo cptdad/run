@@ -1,0 +1,3 @@
+• Virheenkorjaustila jatkaa diagnostiikkalokien lähettämistä sen jälkeen, kun sovellus on ollut taustalla, ja puhelimessa, jota suojaa pääsykoodi.
+• Rún pitää kirjoittamasi tekstin poissa näppäimistön oppimista sanoista aina kun se on mahdollista, kaikilla suojaustasoilla.
+• Jokainen suojaustaso kertoo nyt selvästi, voiko näppäimistö oppia kirjoittamiasi sanoja.

@@ -1,0 +1,3 @@
+• Menyval som behöver en anslutning är utgråade tills Rún är ansluten.
+• Direkt efter konfigurationen ber en låst Rún nu om din PIN-kod eller lösenfras i stället för att visa konfigurationen igen.
+• Tor är uppdaterat med de senaste säkerhetsrättningarna.

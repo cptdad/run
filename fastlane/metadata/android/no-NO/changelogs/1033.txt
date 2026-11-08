@@ -1,0 +1,2 @@
+• Tilkoblingen kommer seg mye raskere når Tor-nettverket henger, så lange ventetider før meldingene dine vises blir sjeldnere.
+• Den innebygde Tor er oppdatert til sin nyeste sikkerhetsversjon.

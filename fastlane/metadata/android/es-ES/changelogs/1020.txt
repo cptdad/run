@@ -1,0 +1,5 @@
+• Los mensajes sin leer se marcan casi al instante después de conectar.
+• Aceptable y Seguro mantienen las sugerencias del teclado y los emojis; Máximo mantiene un teclado que no aprende nada.
+• El rol de administrador ya no se cede mientras un miembro aún se está uniendo a un grupo.
+• Si no se puede establecer un canal seguro, Rún deja de enviar en lugar de usar una protección más débil.
+• El modo de depuración envía los diagnósticos de forma fiable tras un reinicio.

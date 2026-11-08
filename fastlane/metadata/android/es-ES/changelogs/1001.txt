@@ -1,0 +1,5 @@
+• Cinco idiomas nuevos — árabe, persa, somalí, ruso y macedonio — llevan Rún a 13; el árabe y el persa se muestran de derecha a izquierda.
+• Elige el idioma de la app en Ajustes, sea cual sea el del teléfono.
+• Nuevo: Informar de un error — cuéntanos qué falló, de forma anónima por Tor.
+• La piedra rúnica se queda fija en rojo en cuanto Tor se conecta.
+• El primer contacto o grupo ya no queda bajo la barra superior.

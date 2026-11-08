@@ -1,0 +1,4 @@
+• Move Rún to a new phone, even a different kind: the old one shows a code, the new one scans it, and your contacts, groups and conversations come along — sealed, over Tor, no cloud backup.
+• Removing someone from a group, or leaving one, now sticks even when they are offline.
+• Before you turn notifications on, Rún shows what the relay can learn.
+• A faked contact update can't re-route messages, and a wipe leaves less behind.

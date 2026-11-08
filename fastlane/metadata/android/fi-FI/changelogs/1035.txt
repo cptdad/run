@@ -1,0 +1,2 @@
+• Viesti, joka lähetetään juuri kun Tor-yhteys katkeaa, lähetetään nyt automaattisesti uudelleen heti kun yhteys palaa, eikä sinun tarvitse enää napauttaa Yritä uudelleen.
+• Yksityisyys- ja akkuparannuksia tietoturvatarkastuksen pohjalta: lähettämättömät viestit poistetaan muistista, kun sovellus lukitaan tai pyyhitään, eikä ryhmän jäsen voi enää saada puhelintasi tarkistamaan viestejä tiheään tahtiin.

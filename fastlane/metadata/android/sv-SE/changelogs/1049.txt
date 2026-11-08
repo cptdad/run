@@ -1,0 +1,8 @@
+• Att lämna en chatt tappar inte längre något meddelande.
+• Snabbare anslutning; återansluter när nätverket är tillbaka.
+• Notiser slås på och av mer pålitligt.
+• Att lägga till en kontakt på plats går snabbare.
+• Grupper: tydligare oläst-prickar, markeringen ”inte levererat till N” och en varning innan du lämnar.
+• Låsningen kan inte längre skjutas upp; att visa en flyttkod igen kräver upplåsning.
+• Bättre integritet för tangentbord och urklipp.
+• Anslutningstid skickas bara i Felsökningsläge.

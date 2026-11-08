@@ -1,0 +1,6 @@
+• Ansluter snabbare: kontakterna visas så fort reläet svarar, och ett försök som fastnat görs om tidigare.
+• Återansluter av sig själv när nätverket är tillbaka efter ett avbrott.
+• Att slå på eller av notiser fungerar mer pålitligt.
+• Att lägga till en kontakt på plats går snabbare.
+• En grupps oläst-prick försvinner så fort du sett dess meddelande i en annan chatt.
+• Rapporter om anslutningstid skickas bara medan Felsökningsläge är på.

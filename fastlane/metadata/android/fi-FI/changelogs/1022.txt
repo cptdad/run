@@ -1,0 +1,5 @@
+• Korjauksia täydestä tietoturva-arvioinnista – suurin osa ei näy käytössä.
+• Puhelimessa, jossa ei ole näytön lukitusta, vaaditaan nyt suojaustaso Maksimi.
+• Uuden puhelimen siirtokoodin voi kopioida vain ”Kopioi”-painikkeella.
+• Kontaktin lähettämät ryhmien nimet siivotaan ennen näyttämistä.
+• Jos sinulla oli Virheenkorjaustila päällä, kytke se uudelleen päälle.

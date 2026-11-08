@@ -1,0 +1,6 @@
+• Kontaktit ja ”Lisää kontakti” näkyvät, kun välityspalvelin on vastannut.
+• Yhteysluku ei jää paikalleen; punainen rengas sykkii voimakkaammin ja palaa tasaisena, kun välityspalvelin vastaa.
+• Kolme napautusta yhteysrivillä avaa yhteyslokin, joka ei yksilöi ketään.
+• Push-ilmoituskysymys odottaa nyt, kunnes yhteys on muodostettu.
+• Ilmoitusesittely on lyhennetty kolmeen sivuun ja kytkimeen.
+• Yhteyden jälkeen sovellus kertoo välityspalvelimelle vain kuluneet sekunnit — ei mitään yksilöivää.

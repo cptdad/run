@@ -1,0 +1,3 @@
+• Flytt Rún til en ny telefon, også til en telefon av et annet slag: den gamle viser en kode, den nye skanner den, og kontaktene, gruppene og samtalene dine blir med.
+• Overføringen er forseglet og går bare over Tor via relayet til Rún — ingen sikkerhetskopi i skyen.
+• Sett opp gjenopprettingskoden din, Sikker-beskyttelse og varsler på nytt på den nye telefonen; den gamle tilbyr deretter å slette seg selv.

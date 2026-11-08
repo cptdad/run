@@ -1,0 +1,5 @@
+• Fem nya språk — arabiska, persiska, somaliska, ryska och makedonska — tar Rún till 13; arabiska och persiska visas från höger till vänster.
+• Välj appens språk under Inställningar, oavsett vad telefonen är inställd på.
+• Nytt: Rapportera fel — berätta anonymt via Tor vad som gick fel.
+• Runstenen lyser nu stadigt rött så snart Tor är anslutet.
+• Den första kontakten eller gruppen hamnar inte längre under den övre listen.

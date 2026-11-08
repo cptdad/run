@@ -1,0 +1,3 @@
+• Menüpunkte, die eine Verbindung brauchen, sind ausgegraut, bis Rún verbunden ist.
+• Direkt nach der Einrichtung fragt ein gesperrtes Rún jetzt nach deiner PIN oder Passphrase, statt die Einrichtung erneut zu zeigen.
+• Tor ist mit den neuesten Sicherheitskorrekturen aktualisiert.

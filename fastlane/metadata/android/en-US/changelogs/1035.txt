@@ -1,0 +1,2 @@
+• A message sent just as the Tor connection drops is now sent again automatically once the connection is back, instead of waiting for you to tap Retry.
+• Privacy and battery improvements from a security review: unsent messages are cleared from memory when the app locks or is wiped, and a group member can no longer keep your phone checking for messages at a high rate.

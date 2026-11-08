@@ -1,0 +1,3 @@
+• L’écran de connexion ne semble plus figé : la progression continue d’avancer pendant que Rún établit sa route, et n’atteint 100 % que lorsque le relais a vraiment répondu.
+• Il indique désormais d’emblée que la première connexion peut prendre quelques minutes.
+• Si le relais tarde à répondre, Rún réessaie bien plus vite au lieu d’attendre.

@@ -1,0 +1,5 @@
+• Uleste meldinger markeres nesten umiddelbart etter tilkoblingen.
+• God og Sikker beholder ordforslag og emoji på tastaturet; Maksimal beholder et tastatur som ikke lærer noe.
+• Administratorrollen overføres ikke lenger mens et medlem fortsatt holder på å bli med i en gruppe.
+• Hvis en sikker kanal ikke kan opprettes, slutter Rún å sende i stedet for å bruke et svakere vern.
+• Feilsøkingsmodus sender diagnostikk pålitelig etter en omstart.

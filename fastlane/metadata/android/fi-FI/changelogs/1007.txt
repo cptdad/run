@@ -1,0 +1,3 @@
+• Kontaktin lisääminen on selkeämpää: ensimmäisen lukemisen jälkeen Rún näyttää ”Melkein perillä” ja oman koodisi, jonka toinen puhelin lukee — heti kun se tapahtuu, lisäys valmistuu itsestään.
+• Voit jäädä odottamaan tuota toista lukemista tai perua parituksen ja poistaa puolivalmiin kontaktin.
+• Postilaatikon valmistelu ei enää jää jumiin, kun yhteys katkeilee.

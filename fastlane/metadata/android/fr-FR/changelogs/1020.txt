@@ -1,0 +1,5 @@
+• Les messages non lus sont signalés presque aussitôt après la connexion.
+• Décent et Sécurisé conservent les suggestions du clavier et les emoji ; Maximum garde un clavier qui n'apprend rien.
+• Le rôle d'admin n'est plus transféré pendant qu'un membre rejoint encore un groupe.
+• Si un canal sécurisé ne peut pas être établi, Rún cesse d'envoyer au lieu d'utiliser une protection plus faible.
+• Le mode débogage envoie les diagnostics de façon fiable après un redémarrage.

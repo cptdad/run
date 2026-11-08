@@ -1,0 +1,1 @@
+• Valintaikkunat mukautuvat taas tekstiinsä, ja pitkät painikkeiden tekstit näkyvät kokonaan.

@@ -1,0 +1,6 @@
+• Kontaktene og «Legg til kontakt» vises når relayet har svart.
+• Tilkoblingstallet står aldri stille; den røde ringen pulserer kraftigere og lyser jevnt når relayet svarer.
+• Tre trykk på tilkoblingslinjen gir en live tilkoblingslogg som ikke peker ut noen.
+• Spørsmålet om push-varsler venter nå til du er tilkoblet.
+• Varselgjennomgangen er kuttet til tre sider pluss bryteren.
+• Etter tilkobling melder appen til relayet bare hvor mange sekunder det tok — ingenting som identifiserer deg.

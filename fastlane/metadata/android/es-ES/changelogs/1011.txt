@@ -1,0 +1,4 @@
+• Rún te avisa cuando se aprueba una presentación que has hecho, y otra vez cuando ambas partes la aprueban.
+• Nuevo en “Ajustes”: Modo de depuración — actívalo para enviar registros de diagnóstico anónimos que ayudan a localizar problemas de conexión. Nada en ellos apunta a ti.
+• El registro de conexión en directo ya sigue todo el camino hasta el relay, y sigue sin identificar a nadie.
+• Rún conserva su camino hacia la red Tor entre inicios en lugar de empezar de cero.

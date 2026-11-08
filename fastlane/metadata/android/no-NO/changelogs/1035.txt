@@ -1,0 +1,2 @@
+• En melding som sendes akkurat idet Tor-tilkoblingen faller ut, sendes nå automatisk på nytt så snart tilkoblingen er tilbake, i stedet for å vente på at du trykker på Prøv igjen.
+• Forbedringer for personvern og batteri etter en sikkerhetsgjennomgang: usendte meldinger fjernes fra minnet når appen låses eller slettes, og et gruppemedlem kan ikke lenger få telefonen din til å se etter meldinger i høyt tempo.

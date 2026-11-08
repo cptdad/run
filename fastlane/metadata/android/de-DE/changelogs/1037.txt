@@ -1,0 +1,5 @@
+• Die Übertragung auf ein neues Handy fragt jetzt zuerst nach PIN oder Passphrase.
+• Vorstellungen und Admin-Nachrichten in Gruppen haben jetzt dieselbe Forward Secrecy wie Chats.
+• Die Wartezeit nach falscher PIN oder Passphrase gilt auch nach einem App-Neustart.
+• Eine Nachricht, die beim Abbruch von Tor gesendet wird, wird danach erneut gesendet.
+• Ungesendete Nachrichten werden beim Sperren gelöscht, und ein Gruppenmitglied lässt dein Handy nicht mehr zu oft nach Nachrichten suchen.

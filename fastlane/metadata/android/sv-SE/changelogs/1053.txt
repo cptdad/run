@@ -1,0 +1,6 @@
+• Maximal: en sångrad skriven utan mellanslag godkänns inte längre som stark lösenfras.
+• Grupper: en text som missat medlemmar visar ”inte levererat till N”; att lämna varnar för att olästa texter kan gå förlorade.
+• Låsning kan inte skjutas upp; att visa flyttkoden igen kräver upplåsning.
+• Bättre integritet för tangentbord och urklipp.
+• En avbruten flytt till ny telefon fastnar inte längre.
+• Om länkar till källkoden och visar licenserna.

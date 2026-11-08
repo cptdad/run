@@ -1,0 +1,5 @@
+• Cinq nouvelles langues — arabe, persan, somali, russe et macédonien — portent Rún à 13 ; l'arabe et le persan s'affichent de droite à gauche.
+• Choisissez la langue de l'app dans Paramètres, quelle que soit celle du téléphone.
+• Nouveau : Signaler un bug — dites-nous anonymement, via Tor, ce qui s'est passé.
+• La pierre runique reste désormais rouge fixe dès que Tor est connecté.
+• Le premier contact ou groupe ne passe plus sous la barre du haut.

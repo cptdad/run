@@ -1,0 +1,4 @@
+• Rún sier fra når en introduksjon du har gjort blir godkjent, og igjen når begge sider har godkjent.
+• Nytt under «Innstillinger»: Feilsøkingsmodus — slå den på for å sende anonyme diagnoselogger som hjelper med å spore opp tilkoblingsproblemer. Ingenting i dem peker på deg.
+• Tilkoblingsloggen følger nå hele veien fram til relayet, og peker fortsatt ikke ut noen.
+• Rún beholder nå veien sin inn i Tor-nettverket mellom oppstarter i stedet for å begynne på nytt.

@@ -1,0 +1,3 @@
+• Forbindelsen oprettes hurtigere og mere pålideligt: Rún prøver nu flere adresser til sit relæ på én gang og bruger den, der svarer først.
+• Åbner du appen igen kort efter, at du har forladt den, genbruges den kørende Tor-forbindelse, så den er klar hurtigere og åbner mere pålideligt.
+• Det er mere pålideligt at slå notifikationer til eller fra, også lige efter et netværksudfald.

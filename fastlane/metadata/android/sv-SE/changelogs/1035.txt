@@ -1,0 +1,2 @@
+• Ett meddelande som skickas precis när Tor-anslutningen bryts skickas nu om automatiskt så snart anslutningen är tillbaka, i stället för att vänta på att du trycker på Försök igen.
+• Förbättringar av integritet och batteri efter en säkerhetsgranskning: osända meddelanden rensas ur minnet när appen låses eller raderas, och en gruppmedlem kan inte längre få din telefon att leta efter meddelanden i hög takt.

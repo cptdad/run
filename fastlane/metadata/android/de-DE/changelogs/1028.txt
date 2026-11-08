@@ -1,0 +1,1 @@
+• Dialoge passen sich wieder ihrem Text an, und lange Schaltflächenbeschriftungen werden vollständig angezeigt.

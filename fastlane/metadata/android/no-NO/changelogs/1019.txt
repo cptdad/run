@@ -1,0 +1,2 @@
+• Å slå varsler av og på igjen fungerer nå pålitelig.
+• Tydeligere fremdriftstekst mens Rún kobler til, og tipset om treg tilkobling blir ikke lenger avkortet.

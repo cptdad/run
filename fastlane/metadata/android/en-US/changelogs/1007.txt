@@ -1,0 +1,3 @@
+• Adding a contact is clearer: after the first scan Rún says “Almost there” and shows your code for the other phone to scan back — it completes on its own the moment they do.
+• You can keep waiting for that second scan, or cancel the pairing and clear the half-finished contact.
+• Setting up your inbox no longer gets stuck when the connection comes and goes.

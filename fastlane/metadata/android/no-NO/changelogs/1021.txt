@@ -1,0 +1,3 @@
+• Feilsøkingsmodus fortsetter å sende diagnoselogger etter at appen har vært i bakgrunnen, og på en telefon som er beskyttet med kode.
+• Rún holder det du skriver utenfor ordene tastaturet lærer, der det lar seg gjøre, på alle beskyttelsesnivåer.
+• Hvert beskyttelsesnivå sier nå tydelig om tastaturet kan lære ord du skriver.

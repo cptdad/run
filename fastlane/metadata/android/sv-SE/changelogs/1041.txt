@@ -1,0 +1,3 @@
+• Anslutningen går snabbare och är stabilare: Rún provar nu flera adresser till sitt relä samtidigt och använder den som svarar först.
+• Öppnar du appen igen strax efter att du lämnat den återanvänds den pågående Tor-anslutningen, så den är redo tidigare och öppnas mer pålitligt.
+• Att slå på eller av notiser fungerar mer pålitligt, även direkt efter ett nätverksavbrott.

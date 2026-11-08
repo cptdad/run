@@ -1,0 +1,5 @@
+• Olästa meddelanden markeras nästan direkt efter anslutningen.
+• Normal och Säker behåller tangentbordets ordförslag och emoji; Maximal behåller ett tangentbord som inte lär sig något.
+• Adminrollen lämnas inte längre över medan en medlem fortfarande håller på att gå med i en grupp.
+• Om en säker kanal inte kan upprättas slutar Rún skicka i stället för att tyst använda ett svagare skydd.
+• Felsökningsläge skickar diagnostik pålitligt efter en omstart.

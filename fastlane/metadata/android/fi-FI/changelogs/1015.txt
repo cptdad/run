@@ -1,0 +1,4 @@
+• Jäsenen poistaminen ryhmästä odottaa nyt muiden vahvistusta, joten se ei voi epäonnistua huomaamatta.
+• Esittelystä alkanut keskustelu näyttää, kuka sinut esitteli, eikä kukaan voi hukuttaa sinua esittelyihin.
+• Kun Rún yhdistää, näet liikkuvat pisteet ja isomman tekstin sekä vihjeen, jos se kestää.
+• Rún ottaa yhteyttä harvemmin, kun mitään ei tapahdu, ja pyyhintä poistaa nyt viimeisetkin jäännöstiedostot.

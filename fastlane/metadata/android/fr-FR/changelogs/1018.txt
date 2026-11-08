@@ -1,0 +1,2 @@
+• Désactiver puis réactiver les notifications fonctionne désormais de façon fiable.
+• Texte de progression plus clair pendant la connexion de Rún, et le message sur les connexions lentes n'est plus tronqué.

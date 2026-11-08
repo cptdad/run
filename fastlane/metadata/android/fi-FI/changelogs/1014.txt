@@ -1,0 +1,3 @@
+• Ryhmäkutsu, johon et ole vielä liittynyt, säilyy nyt sovelluksen sulkemisen yli — se odottaa, kun palaat.
+• Yhdistäminen on nopeampaa: Rún pääsee nyt itse jumittuneen yhteyden ohi, ja kontaktilista näkyy aiemmin.
+• Keskustelut kertovat nyt, jos forward secrecy ei ole vielä aktivoitunut — se korjaantuu yleensä, kun kontaktisi vastaa.

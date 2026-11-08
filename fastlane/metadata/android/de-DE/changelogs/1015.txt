@@ -1,0 +1,4 @@
+• Wenn du jemanden aus einer Gruppe entfernst, bestätigen das jetzt die anderen — es kann nicht mehr still fehlschlagen.
+• Ein Chat aus einer Vorstellung zeigt, wer dich vorgestellt hat, und niemand kann dich damit überfluten.
+• Während Rún verbindet, siehst du bewegte Punkte und größeren Text, dazu einen Hinweis, wenn es dauert.
+• Rún meldet sich seltener, wenn nichts passiert, und eine Löschung entfernt jetzt die letzten Restdateien.

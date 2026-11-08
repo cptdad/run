@@ -1,0 +1,3 @@
+• Une invitation à un groupe que vous n'avez pas encore rejoint survit désormais à la fermeture de l'application : elle vous attend à votre retour.
+• La connexion est plus rapide : Rún dépasse maintenant seul une connexion bloquée, et votre liste de contacts s'affiche plus tôt.
+• Les conversations indiquent désormais quand la confidentialité persistante n'est pas encore active — cela se règle généralement dès que votre contact répond.

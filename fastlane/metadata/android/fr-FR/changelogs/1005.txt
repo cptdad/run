@@ -1,0 +1,3 @@
+• Transférez Rún vers un nouveau téléphone, même d'un autre type : l'ancien affiche un code, le nouveau le scanne, et vos contacts, groupes et conversations vous suivent.
+• Le transfert est scellé et passe uniquement par Tor via le relais de Rún — sans aucune sauvegarde cloud.
+• Reconfigurez votre code de récupération, la protection Sécurisé et les notifications sur le nouveau téléphone ; l'ancien propose ensuite de s'effacer.

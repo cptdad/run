@@ -1,0 +1,4 @@
+• Der Runenstein leuchtet weiß, sobald Rún das Relay erreicht, und deine Kontakte und Gruppen lassen sich genau dann öffnen.
+• Der Verbindungsfortschritt ist wieder in der Kontaktliste zu sehen, mit der Schaltfläche „Neu verbinden“, wenn das Relay hängt.
+• Eine Unterhaltung oder Gruppe zu verlassen geht schneller — ein Weg zum Relay statt mehrerer.
+• Eine Gruppennachricht setzt den Punkt für Ungelesenes jetzt auf die Gruppe, nicht auf den Absender.

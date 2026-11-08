@@ -1,0 +1,4 @@
+• Rún kertoo, kun tekemäsi esittely hyväksytään, ja uudelleen kun molemmat osapuolet ovat hyväksyneet.
+• Uutta asetuksissa: Virheenkorjaustila — ota se käyttöön, niin sovellus lähettää anonyymeja diagnostiikkalokeja, jotka auttavat jäljittämään yhteysongelmia. Mikään niissä ei viittaa sinuun.
+• Yhteysloki seuraa nyt koko matkan välityspalvelimelle, eikä se silti yksilöi ketään.
+• Rún säilyttää reittinsä Tor-verkkoon käynnistysten välillä sen sijaan, että aloittaisi alusta.

@@ -1,0 +1,6 @@
+• Rettelser fra en fuld sikkerhedsgennemgang – de fleste er usynlige.
+• På en telefon uden skærmlås kræves nu beskyttelsesniveauet Maksimal.
+• Parringen bliver færdig, så snart den anden telefon scanner tilbage.
+• Appen går ikke længere ned, når du scanner koden for at flytte til en ny telefon.
+• En besked i en gruppe vises ikke længere som ulæst på kontakten, der sendte den.
+• Hvis du havde Fejlfindingstilstand slået til, skal du slå den til igen.

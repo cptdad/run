@@ -1,0 +1,7 @@
+• At forlade en chat mister ikke længere beskeder.
+• Forbinder hurtigere og genopretter forbindelsen, når netværket er tilbage.
+• Notifikationer slås til og fra mere pålideligt.
+• At tilføje en kontakt ansigt til ansigt går hurtigere.
+• Gruppers ulæst-prikker forsvinder, når de er set i en anden chat.
+• Grupper: en tekst, der ikke nåede alle, viser »ikke leveret til N«; at forlade advarer om, at ulæste tekster kan gå tabt.
+• Forbindelsestid rapporteres kun i Fejlfindingstilstand.

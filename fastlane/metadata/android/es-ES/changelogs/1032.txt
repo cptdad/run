@@ -1,0 +1,1 @@
+• La conexión se recupera mucho antes cuando la red Tor se atasca, así que las largas esperas hasta que aparecen tus mensajes son menos frecuentes.

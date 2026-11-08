@@ -1,0 +1,1 @@
+• Connecting recovers much sooner when the Tor network stalls, so long waits before your messages appear are rarer.

@@ -1,0 +1,6 @@
+• Schnellere Verbindung: Kontakte erscheinen, sobald das Relay antwortet, und ein hängender Versuch wird früher wiederholt.
+• Verbindet sich nach einem Netzwerkausfall von selbst neu.
+• Benachrichtigungen ein- oder auszuschalten klappt zuverlässiger.
+• Einen Kontakt persönlich hinzuzufügen geht schneller.
+• Der Ungelesen-Punkt einer Gruppe verschwindet, sobald du ihre Nachricht in einem anderen Chat siehst.
+• Berichte zur Verbindungsdauer gehen nur raus, solange der Debug-Modus an ist.

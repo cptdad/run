@@ -1,0 +1,3 @@
+• Der Debug-Modus sendet Diagnoseprotokolle weiter, nachdem die App im Hintergrund war, und auf einem Telefon mit Gerätecode.
+• Rún hält das, was du tippst, aus den gelernten Wörtern der Tastatur heraus, wo immer es geht – auf jeder Schutzstufe.
+• Jede Schutzstufe sagt jetzt klar, ob die Tastatur Wörter lernen kann, die du tippst.

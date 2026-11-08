@@ -1,0 +1,3 @@
+• Late-arriving notifications for messages you have already seen are no longer shown.
+• Connecting recovers much sooner when the Tor network stalls, so long waits before your messages appear are rarer.
+• The built-in Tor is updated to its latest security release.

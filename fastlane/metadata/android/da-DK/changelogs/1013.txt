@@ -1,0 +1,2 @@
+• Retter et nedbrud, der lukkede Rún et par sekunder efter hver oplåsning på nogle af de nyeste telefoner.
+• Hvis appen blev ved med at lukke ned ved start, er denne opdatering løsningen — intet andet ændrer sig.

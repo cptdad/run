@@ -1,0 +1,5 @@
+• Ungelesene Nachrichten werden fast sofort nach dem Verbinden markiert.
+• Solide und Sicher behalten Tastaturvorschläge und Emojis; Maximum behält eine Tastatur, die nichts lernt.
+• Die Admin-Rolle wird nicht mehr übergeben, während ein Mitglied noch einer Gruppe beitritt.
+• Lässt sich kein sicherer Kanal aufbauen, sendet Rún nicht weiter, statt still auf schwächeren Schutz auszuweichen.
+• Der Debug-Modus sendet Diagnosedaten nach einem Neustart zuverlässig.

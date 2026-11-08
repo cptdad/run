@@ -1,0 +1,3 @@
+• Übertrage Rún auf ein neues Handy, auch auf ein Handy anderer Art: Das alte zeigt einen Code, das neue scannt ihn, und deine Kontakte, Gruppen und Unterhaltungen kommen mit.
+• Die Übertragung ist versiegelt und läuft nur über Tor durch das Relay von Rún — ohne Cloud-Backup.
+• Richte auf dem neuen Handy deinen Wiederherstellungscode, den Sicher-Schutz und Benachrichtigungen neu ein; das alte bietet danach an, sich selbst zu löschen.

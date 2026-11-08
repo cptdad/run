@@ -1,0 +1,3 @@
+• Yhteyttä tarvitsevat valikon kohdat näkyvät harmaina, kunnes Rún saa yhteyden.
+• Heti käyttöönoton jälkeen lukittu Rún pyytää nyt PIN-koodiasi tai salalausettasi sen sijaan, että näyttäisi käyttöönoton uudelleen.
+• Tor on päivitetty uusimmilla tietoturvakorjauksilla.

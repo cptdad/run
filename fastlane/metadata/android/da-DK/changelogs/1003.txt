@@ -1,0 +1,4 @@
+• Runestenen lyser hvidt, når Rún når relæet, og dine kontakter og grupper kan åbnes med det samme.
+• Forbindelsesforløbet vises igen i kontaktlisten, med knappen “Forbind igen”, hvis relæet hænger.
+• At forlade en chat eller gruppe går hurtigere — én tur til relæet i stedet for flere.
+• En gruppebesked tænder nu den ulæste prik på gruppen, ikke på personen, der sendte den.

@@ -1,0 +1,7 @@
+• Quitter une discussion ne perd plus de message.
+• Connexion plus rapide ; reconnexion au retour du réseau.
+• Notifications plus fiables ; ajout d'un contact en personne plus rapide.
+• Groupes : points non lus plus clairs, « non remis à N », alerte avant de quitter.
+• Verrouillage non repoussable ; réafficher un code de transfert exige de déverrouiller.
+• Clavier et presse-papiers plus discrets ; durée de connexion envoyée seulement en Mode débogage.
+• À propos : code source et licences.

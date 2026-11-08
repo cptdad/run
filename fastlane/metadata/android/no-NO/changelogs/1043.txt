@@ -1,0 +1,6 @@
+• Kobler til raskere: kontaktene vises så snart relayet svarer, og et forsøk som har stoppet opp, prøves på nytt tidligere.
+• Kobler seg til igjen av seg selv når nettverket er tilbake etter et brudd.
+• Å slå varsler av eller på fungerer mer pålitelig.
+• Å legge til en kontakt ansikt til ansikt går raskere.
+• En gruppes ulest-prikk forsvinner så snart du har sett meldingen i en annen chat.
+• Rapporter om tilkoblingstid sendes bare mens Feilsøkingsmodus er på.

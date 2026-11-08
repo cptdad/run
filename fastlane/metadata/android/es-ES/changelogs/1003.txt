@@ -1,0 +1,4 @@
+• La piedra rúnica se enciende en blanco en cuanto Rún alcanza el relay, y tus contactos y grupos se pueden abrir justo en ese momento.
+• El progreso de la conexión vuelve a verse en la lista de contactos, con un botón “Reconectar” si el relay se atasca.
+• Salir de un chat o de un grupo es más rápido: un viaje de ida y vuelta al relay en lugar de varios.
+• Un mensaje de grupo enciende ahora el punto de no leído en el grupo, y no en quien lo envió.

@@ -1,0 +1,3 @@
+• Las opciones del menú que necesitan conexión aparecen en gris hasta que Rún se conecta.
+• Justo después de la configuración, Rún bloqueado ahora te pide tu PIN o tu frase de contraseña en lugar de volver a mostrar la configuración.
+• Tor se ha actualizado con las últimas correcciones de seguridad.

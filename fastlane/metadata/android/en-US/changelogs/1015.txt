@@ -1,0 +1,4 @@
+• Removing someone from a group now waits for the others to confirm it, so it can't quietly fail.
+• A chat from an introduction shows who vouched for you, and no one can flood you with them.
+• While Rún connects, you see moving dots and bigger text, plus a hint if it takes a while.
+• Rún checks in less often when idle, and a wipe now removes the last leftover files.

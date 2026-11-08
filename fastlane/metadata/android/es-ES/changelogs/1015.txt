@@ -1,0 +1,4 @@
+• Quitar a alguien de un grupo ahora espera la confirmación de los demás, así que no puede fallar en silencio.
+• Un chat surgido de una presentación muestra quién te presentó, y nadie puede inundarte con presentaciones.
+• Mientras Rún se conecta, ves puntos en movimiento y texto más grande, más un aviso si tarda.
+• Rún se comunica menos a menudo cuando no pasa nada, y un borrado elimina ahora los últimos archivos residuales.

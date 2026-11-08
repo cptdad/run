@@ -1,0 +1,5 @@
+• Ryhmät: jäseniltä jääneessä viestissä lukee ”toimittamatta: N”; poistuessa varoitetaan, että lukemattomat viestit voivat kadota.
+• Lukitusta ei voi lykätä; siirtokoodin uudelleen näyttäminen vaatii avauksen.
+• Yksityisempi näppäimistö ja leikepöytä.
+• Peruttu siirto uuteen puhelimeen ei enää jää jumiin.
+• Tietoja: linkki lähdekoodiin ja lisenssit.

@@ -1,0 +1,6 @@
+• Contacts et « Ajouter un contact » apparaissent quand le relais a répondu.
+• Le pourcentage ne stagne jamais ; l'anneau rouge palpite plus fort puis reste fixe quand le relais répond.
+• Triple appui sur la ligne de connexion : journal en direct qui n'identifie personne.
+• La question des notifications attend la connexion.
+• Guide des notifications réduit à trois pages plus l'interrupteur.
+• Une fois connecté, l'app ne signale au relais que les secondes écoulées — rien d'identifiant.

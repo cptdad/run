@@ -1,0 +1,8 @@
+• Å forlate en chat mister ikke lenger meldinger.
+• Raskere tilkobling; kobler til igjen når nettverket er tilbake.
+• Varsler slås av og på mer pålitelig.
+• Å legge til en kontakt ansikt til ansikt går raskere.
+• Grupper: tydeligere ulest-prikker, merket «ikke levert til N» og en advarsel før du forlater.
+• Låsingen kan ikke lenger utsettes; å vise en flyttekode på nytt krever opplåsing.
+• Bedre personvern for tastatur og utklippstavle.
+• Tilkoblingstid sendes bare i Feilsøkingsmodus.

@@ -1,0 +1,4 @@
+• Jäsenen poistaminen ryhmästä tai ryhmästä lähteminen pysyy voimassa, vaikka jäseniä olisi offline-tilassa: Rún yrittää viikon ajan.
+• Ennen kuin otat ilmoitukset käyttöön, Rún kertoo nyt, mitä välityspalvelin itse saa tietää.
+• Asetukset kertovat, kun suojausavaimesi täytyy koventaa uudelleen.
+• Turvallisuustyötä läpi sovelluksen: viestejä ei voi ohjata muualle väärennetyllä yhteystiedon päivityksellä, ja pyyhintä jättää vähemmän jälkiä.

@@ -1,0 +1,3 @@
+• Eine Gruppeneinladung, der du noch nicht beigetreten bist, übersteht jetzt das Schließen der App — sie wartet, wenn du zurückkommst.
+• Das Verbinden geht schneller: Rún kommt jetzt allein an einer hängenden Verbindung vorbei, und deine Kontaktliste erscheint früher.
+• Unterhaltungen zeigen jetzt an, wenn Forward Secrecy noch nicht aktiviert ist — meist erledigt sich das, sobald dein Kontakt antwortet.

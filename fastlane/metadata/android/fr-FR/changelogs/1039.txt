@@ -1,0 +1,5 @@
+• Le transfert vers un nouveau téléphone demande d'abord votre PIN ou phrase secrète.
+• Présentations et messages d'administration de groupe ont la même confidentialité persistante que les discussions.
+• Le délai après un PIN ou une phrase secrète erronés persiste au redémarrage.
+• Un message envoyé quand Tor se coupe est renvoyé dès son retour.
+• Les messages non envoyés sont effacés au verrouillage, et un membre d'un groupe ne peut plus faire vérifier les messages trop souvent.

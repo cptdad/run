@@ -1,0 +1,3 @@
+• Siirrä Rún uuteen puhelimeen, myös toisenlaiseen puhelimeen: vanha näyttää koodin, uusi lukee sen, ja yhteystietosi, ryhmäsi ja keskustelusi tulevat mukana.
+• Siirto on sinetöity ja kulkee vain Tor-verkon kautta Rún-välityspalvelimelle — ei pilvivarmuuskopiota.
+• Määritä palautuskoodisi, Turva-suojaus ja ilmoitukset uudelleen uudella puhelimella; vanha tarjoutuu sitten pyyhkimään itsensä.

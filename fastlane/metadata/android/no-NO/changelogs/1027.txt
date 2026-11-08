@@ -1,0 +1,3 @@
+• Menyvalg som trenger en tilkobling, er grået ut til Rún er tilkoblet.
+• Rett etter oppsettet ber en låst Rún nå om PIN-koden eller passfrasen din i stedet for å vise oppsettet på nytt.
+• Tor er oppdatert med de nyeste sikkerhetsrettelsene.

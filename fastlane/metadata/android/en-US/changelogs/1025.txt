@@ -1,0 +1,6 @@
+• Fixes from a full security review — most of them invisible.
+• Maximum protection is now enforced on a phone with no screen lock.
+• Pairing by scanning finishes right after the other phone scans back.
+• Moving to a new phone by scanning the code no longer crashes.
+• A message in a group no longer shows as unread on the contact who sent it.
+• If you had Debug mode on, switch it on once more.

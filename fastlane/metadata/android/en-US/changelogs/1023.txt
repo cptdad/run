@@ -1,0 +1,6 @@
+• Fixes from a full security review — most of them invisible.
+• Maximum protection is now enforced on a phone with no screen lock.
+• The transfer code for a new phone can only be copied with the Copy button.
+• Group names from a contact are cleaned up before they are shown.
+• A message in a group no longer shows as unread on the contact who sent it.
+• If you had Debug mode on, switch it on once more.

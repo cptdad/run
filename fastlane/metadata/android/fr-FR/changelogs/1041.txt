@@ -1,0 +1,3 @@
+• La connexion est plus rapide et plus fiable : Rún essaie désormais plusieurs adresses de son relais à la fois et utilise celle qui répond en premier.
+• Rouvrir l’app peu après l’avoir quittée réutilise la connexion Tor en cours : elle est prête plus vite et s’ouvre de façon plus fiable.
+• Activer ou désactiver les notifications est plus fiable, y compris juste après une coupure réseau.

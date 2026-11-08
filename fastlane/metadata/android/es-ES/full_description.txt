@@ -1,0 +1,38 @@
+Rún es una app de mensajería segura para quien no cede en privacidad. Cada mensaje se cifra de extremo a extremo antes de salir de tu dispositivo, y las claves avanzan sin volver atrás mientras hablas: aunque una clave quedara expuesta, el resto sigue sellado.
+
+Rún no necesita cuenta, número de teléfono ni correo. No hay nada que enlace con tu identidad. Los contactos se añaden en persona escaneando códigos QR, o mediante una presentación avalada por alguien de confianza: sin directorio central, sin descubrimiento de contactos, sin grafo social.
+
+Todo el tráfico viaja por la red Tor, ocultando tu IP y tu ubicación incluso al propio relay de Rún. Quien vigile tu red solo ve tráfico Tor cifrado: no sabe con quién hablas ni qué dices. Los mensajes se rellenan a tamaños fijos: ni siquiera su longitud se filtra.
+
+Los mensajes viven solo en memoria: nunca se escriben en disco. Sal de un chat o cierra la app y desaparecen. No hay historial que recorrer, ni archivo que reclamar judicialmente, ni copia de seguridad que filtrar. El relay solo guarda bloques cifrados temporales e ilegibles, en buzones que caducan solos.
+
+Tu caja fuerte está cifrada en reposo con AES-256 mediante SQLCipher, con clave derivada con Argon2id y respaldada por el Android Keystore. Eliges lo difícil que es llegar a ella:
+
+• Aceptable: desbloqueo rápido con PIN y tiempos de autobloqueo y autoborrado relajados.
+• Seguro: la clave de la caja fuerte se ata además al chip de seguridad del teléfono, detrás de tu huella o tu cara. Un teléfono incautado resiste bien los ataques offline.
+• Máximo: el PIN se sustituye por una frase de contraseña fuerte y los tiempos son los más estrictos. Ni un teléfono clonado por completo se abre.
+
+En todos los niveles Rún se bloquea solo cuando está inactivo, se borra tras muchos intentos fallidos de desbloqueo y se autodestruye tras un largo tiempo sin uso, según el nivel que elijas. Un borrado destruye las propias claves de cifrado y no deja nada recuperable.
+
+Los chats de grupo viven solo en los teléfonos de sus miembros: sin cuenta de grupo, sin lista de miembros. Cada mensaje se envía en privado a cada miembro; el relay ve un mensaje llegar a varios buzones, nunca quiénes son ni una palabra de él.
+
+Sin analíticas. Sin rastreo. Sin publicidad. Sin informes de fallos. Sin copias en la nube. Por defecto se mantiene en silencio, sin notificaciones, y simplemente ves tus mensajes al abrir la app. Puedes activar las notificaciones si quieres; si lo haces, una señal de activación sin contenido pasa por los servidores push de Google (FCM), o, sin servicios de Google, por una app distribuidora de UnifiedPush que elijas. En ambos casos solo se sabe cuándo llegó algo, nunca de quién ni qué dice, y Rún te explica esto antes de que las actives.
+
+El código fuente del cliente es público bajo la GPL en github.com/cptdad/run: léelo, compílalo tú mismo o informa allí de un problema de seguridad. El servidor relay aún no está publicado.
+
+Rún está hecho para periodistas, activistas, denunciantes y cualquiera que crea que la conversación privada es un derecho fundamental.
+
+Funciones principales:
+- Cifrado de extremo a extremo con forward secrecy (AES-256-GCM + Double Ratchet)
+- Todo el tráfico por Tor: tu IP y tu ubicación quedan ocultas
+- Sin cuenta, número de teléfono ni correo
+- Intercambio de contactos por QR en persona y presentaciones avaladas
+- Chats de grupo sin cuenta de grupo ni lista de miembros
+- Mensajes solo en memoria: nunca guardados en disco
+- Caja fuerte local cifrada (SQLCipher, Argon2id, Android Keystore)
+- Tres niveles de protección: Aceptable, Seguro, Máximo
+- Autobloqueo, borrado tras intentos fallidos y autodestrucción por inactividad
+- Capturas de pantalla bloqueadas
+- Sin analíticas, rastreo, anuncios ni informes de fallos
+- Cambio de teléfono con una transferencia sellada, nunca una copia en la nube
+- Disponible en 13 idiomas

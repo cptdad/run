@@ -1,0 +1,3 @@
+• En gruppinbjudan du ännu inte har gått med i överlever att appen stängs — den väntar när du kommer tillbaka.
+• Anslutningen går snabbare: Rún tar sig nu förbi en avstannad anslutning på egen hand, och kontaktlistan visas tidigare.
+• Konversationer visar nu när forward secrecy inte har aktiverats ännu — det brukar lösa sig när din kontakt svarar.

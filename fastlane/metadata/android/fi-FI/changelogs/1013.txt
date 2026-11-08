@@ -1,0 +1,2 @@
+• Korjaa kaatumisen, joka sulki Rún-sovelluksen muutaman sekunnin kuluttua jokaisesta lukituksen avaamisesta joissakin uusimmista puhelimista.
+• Jos sovellus sulkeutui toistuvasti käynnistyksen yhteydessä, tämä päivitys korjaa sen — mikään muu ei muutu.

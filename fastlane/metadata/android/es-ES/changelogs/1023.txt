@@ -1,0 +1,6 @@
+• Correcciones de una revisión de seguridad completa: casi todas invisibles.
+• En un teléfono sin pantalla de bloqueo ahora se exige el nivel de protección Máximo.
+• El código de transferencia a un teléfono nuevo solo se puede copiar con el botón “Copiar”.
+• Los nombres de grupo de un contacto se limpian antes de mostrarse.
+• Un mensaje de grupo ya no aparece como no leído en el contacto que lo envió.
+• Si tenías el Modo de depuración activado, vuelve a activarlo una vez.

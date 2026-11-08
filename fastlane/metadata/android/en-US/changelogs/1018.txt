@@ -1,0 +1,2 @@
+• Turning notifications off and back on again now works reliably.
+• Cleaner progress text while Rún connects, and the slow-connection hint is no longer cut off.

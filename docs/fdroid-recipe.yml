@@ -1,6 +1,12 @@
 # fdroiddata metadata/com.vg.run.yml — the file to submit. Everything about the submission
 # (steps, merge-request text, reviewer questions, per-release maintenance) is in
 # docs/fdroid-submission.md. First tag with a signed release asset: v1.6.60 (2026-11-08).
+# Field order is `fdroid rewritemeta` canonical; `fdroid lint` passes against fdroiddata's own
+# category/anti-feature definitions (2026-11-08). The ndk value is the REVISION form because
+# fdroidserver installs NDKs with sdkmanager "ndk;<value>" and its release-name table ends at r26c.
+AntiFeatures:
+  - NonFreeAssets
+  - NonFreeNet
 Categories:
   - Internet
   - Security
@@ -12,7 +18,7 @@ SourceCode: https://github.com/cptdad/run
 IssueTracker: https://github.com/cptdad/run/issues
 Changelog: https://github.com/cptdad/run/releases
 
-Summary: Anonymous, end-to-end encrypted messenger over Tor. No accounts. No traces.
+Summary: Anonymous, end-to-end encrypted messenger over Tor with no accounts or traces
 Description: |-
   Rún is a secure messenger built for people who refuse to compromise on
   privacy. Every message is end-to-end encrypted before it leaves your device,
@@ -40,34 +46,30 @@ Description: |-
 
   The relay server's source is not published yet (hence NonFreeNet).
 
-AntiFeatures:
-  - NonFreeNet
-  - NonFreeAssets
-
 RepoType: git
 Repo: https://github.com/cptdad/run.git
 Binaries: https://github.com/cptdad/run/releases/download/v%v/run-%v-foss.apk
 
 Builds:
-  - versionName: 1.6.60
-    versionCode: 1053
-    commit: v1.6.60
+  - versionName: 1.6.61
+    versionCode: 1054
+    commit: v1.6.61
     subdir: androidApp
     sudo:
       - apt-get update || apt-get update
       - apt-get install -y --no-install-recommends cmake ninja-build
     gradle:
       - foss
-    ndk: 30.0.16248370   # revision form: fdroidserver installs it with sdkmanager "ndk;<value>"
     prebuild:
       - cp ../relay.properties.example ../relay.properties
       - printf 'run.ndkPath=%s\n' "$$NDK$$" >> ../local.properties
     scandelete:
       - iosApp/tor.xcframework
+    ndk: 30.0.16248370
 
 AllowedAPKSigningKeys: 29b4d5195bbc4ffd9be87c2547ee33371c7edff46f14ba8f93eadd7e2d2d2422
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v\d+\.\d+\.\d+$
-CurrentVersion: 1.6.60
-CurrentVersionCode: 1053
+CurrentVersion: 1.6.61
+CurrentVersionCode: 1054

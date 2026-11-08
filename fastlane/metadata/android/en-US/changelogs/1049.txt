@@ -1,0 +1,8 @@
+• Leaving a chat no longer loses a message.
+• Faster connects; reconnects when your network returns.
+• Notifications toggle more reliably.
+• Adding a contact in person is quicker.
+• Groups: clearer unread dots, "not delivered to N" marks, a warning before leaving.
+• Locks can't be postponed; showing a move code again asks you to unlock.
+• Tighter keyboard and clipboard privacy.
+• Connection timing is sent only in Debug mode.

@@ -1,0 +1,4 @@
+• Rún säger till när en introduktion du gjort godkänns, och igen när båda sidor har godkänt.
+• Nytt under ”Inställningar”: Felsökningsläge — slå på det för att skicka anonyma diagnostikloggar som hjälper till att spåra anslutningsproblem. Inget i dem pekar ut dig.
+• Anslutningsloggen i realtid följer nu hela vägen fram till reläet, och pekar fortfarande inte ut någon.
+• Rún behåller nu sin väg in i Tor-nätverket mellan starterna i stället för att börja om.

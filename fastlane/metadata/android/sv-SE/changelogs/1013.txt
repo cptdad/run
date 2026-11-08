@@ -1,0 +1,2 @@
+• Rättar en krasch som stängde Rún några sekunder efter varje upplåsning på vissa av de nyaste telefonerna.
+• Om appen hela tiden avslutades vid start löser den här uppdateringen det — inget annat ändras.

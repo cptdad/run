@@ -1,0 +1,3 @@
+• Menupunkter, der kræver forbindelse, er nedtonede, indtil Rún har forbindelse.
+• Lige efter opsætningen beder en låst Rún nu om din PIN eller adgangssætning i stedet for at vise opsætningen igen.
+• Tor er opdateret med de seneste sikkerhedsrettelser.

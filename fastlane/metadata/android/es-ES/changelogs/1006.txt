@@ -1,0 +1,4 @@
+• Mueve Rún a un teléfono nuevo, aunque sea de otro tipo: el antiguo muestra un código, el nuevo lo escanea, y tus contactos, grupos y conversaciones vienen contigo: sellado, por Tor, sin copia en la nube.
+• Quitar a alguien de un grupo, o salir de uno, ahora se mantiene aunque esté sin conexión.
+• Antes de activar las notificaciones, Rún muestra qué puede saber el relay.
+• Una actualización de contacto falsa ya no puede desviar mensajes, y un borrado deja menos rastro.

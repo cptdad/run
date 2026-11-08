@@ -1,0 +1,3 @@
+• Mueve Rún a un teléfono nuevo, aunque sea de otro tipo: el antiguo muestra un código, el nuevo lo escanea, y tus contactos, grupos y conversaciones vienen contigo.
+• La transferencia va sellada y solo pasa por Tor a través del relay de Rún: sin ninguna copia en la nube.
+• Vuelve a configurar tu código de recuperación, la protección Seguro y las notificaciones en el teléfono nuevo; el antiguo se ofrece luego a borrarse.

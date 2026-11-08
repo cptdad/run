@@ -1,0 +1,6 @@
+• Snabbare upplåsning på telefoner där den var långsam.
+• Anslutningen är snabbare och mer pålitlig.
+• Privata meddelanden från gruppmedlemmar visas nu i gruppen, märkta som privata, med möjlighet att svara.
+• Gruppmeddelanden som kommer under en chatt på tu man hand visas där, märkta med gruppens namn.
+• Att lämna en konversation tappar inte längre meddelanden som är på väg in.
+• Att lägga till kontakter och flytta till ny telefon misslyckas inte längre på vissa långsammare telefoner.

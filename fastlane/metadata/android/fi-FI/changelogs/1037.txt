@@ -1,0 +1,5 @@
+• Siirto uuteen puhelimeen kysyy nyt ensin PIN-koodisi tai salalauseesi.
+• Esittelyt ja ryhmän ylläpitoviestit saavat nyt saman forward secrecyn kuin keskustelut.
+• Odotusaika väärän PIN-koodin tai salalauseen jälkeen säilyy nyt myös sovelluksen uudelleenkäynnistyksen yli.
+• Viesti, joka lähetetään juuri kun Tor katkeaa, lähetetään uudelleen yhteyden palattua.
+• Lähettämättömät viestit poistetaan lukittaessa, eikä ryhmän jäsen voi enää saada puhelintasi tarkistamaan viestejä liian usein.

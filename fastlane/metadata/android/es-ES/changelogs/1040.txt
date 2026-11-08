@@ -1,0 +1,5 @@
+• Mover a un teléfono nuevo ahora pide primero tu PIN o frase de contraseña.
+• Las presentaciones y los mensajes de administración de grupo tienen la misma forward secrecy que los chats.
+• La espera tras un PIN o frase de contraseña incorrectos se mantiene al reiniciar la app.
+• Un mensaje enviado justo cuando se cae Tor se reenvía en cuanto vuelve.
+• Los mensajes no enviados se borran al bloquear, y un miembro de un grupo ya no puede hacer que tu teléfono busque mensajes demasiado a menudo.

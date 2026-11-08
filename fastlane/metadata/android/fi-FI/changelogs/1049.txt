@@ -1,0 +1,8 @@
+• Keskustelusta poistuminen ei enää hukkaa viestejä.
+• Nopeampi yhteys; yhdistää uudelleen, kun verkko palaa.
+• Ilmoitukset kytkeytyvät päälle ja pois luotettavammin.
+• Kontaktin lisääminen kasvokkain on nopeampaa.
+• Ryhmät: selkeämmät lukemattoman pisteet, ”toimittamatta: N” ja varoitus ennen poistumista.
+• Lukitusta ei voi enää lykätä; siirtokoodin uudelleen näyttäminen vaatii avauksen.
+• Parempi yksityisyys näppäimistölle ja leikepöydälle.
+• Yhteysaika lähetetään vain Virheenkorjaustilassa.

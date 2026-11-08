@@ -1,0 +1,5 @@
+• Des correctifs issus d'un audit de sécurité complet — la plupart invisibles.
+• Sur un téléphone sans écran de verrouillage, le niveau de protection Maximum est désormais imposé.
+• Le code de transfert vers un nouveau téléphone ne se copie plus qu'avec le bouton « Copier ».
+• Les noms de groupe reçus d'un contact sont nettoyés avant d'être affichés.
+• Si vous aviez activé le Mode débogage, réactivez-le une fois.

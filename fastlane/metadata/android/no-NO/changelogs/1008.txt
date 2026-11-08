@@ -1,0 +1,3 @@
+• Tilkoblingsskjermen ser ikke lenger fast ut: tallet fortsetter å bevege seg mens Rún bygger ruten sin, og når 100 % først når relayet faktisk har svart.
+• Nå står det med en gang at den første tilkoblingen kan ta noen minutter.
+• Hvis relayet svarer sent, prøver Rún igjen mye raskere i stedet for å vente.

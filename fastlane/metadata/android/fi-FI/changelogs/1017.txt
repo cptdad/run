@@ -1,0 +1,2 @@
+• Ilmoitusten kytkeminen pois ja takaisin päälle toimii nyt luotettavasti.
+• Selkeämpi edistymisteksti, kun Rún yhdistää, eikä hitaan yhteyden vihjettä enää katkaista.

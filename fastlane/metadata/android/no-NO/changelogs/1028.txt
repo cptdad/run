@@ -1,0 +1,1 @@
+• Dialogbokser passer teksten sin igjen, og lange knappetekster vises i sin helhet.

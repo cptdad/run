@@ -1,0 +1,7 @@
+• Hur du än lämnar en chatt försvinner inget meddelande längre.
+• Ansluter snabbare: kontakterna visas så fort reläet svarar.
+• Återansluter av sig själv när nätverket är tillbaka.
+• Att slå på eller av notiser fungerar mer pålitligt.
+• Att lägga till en kontakt på plats går snabbare.
+• En grupps oläst-prick försvinner så fort du sett dess meddelande i en annan chatt.
+• Rapporter om anslutningstid skickas bara i Felsökningsläge.

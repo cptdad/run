@@ -1,0 +1,38 @@
+Rún on turvallinen viestisovellus ihmisille, jotka eivät suostu tinkimään yksityisyydestä. Jokainen viesti salataan päästä päähän, ennen kuin se lähtee laitteeltasi, ja avaimet kiertyvät eteenpäin keskustellessa — joten vaikka yksi avain joskus paljastuisi, loput keskustelusta pysyvät sinetöityinä.
+
+Rún ei vaadi tiliä, puhelinnumeroa eikä sähköpostiosoitetta. Mikään ei linkity henkilöllisyyteesi. Kontaktit lisätään kasvokkain QR-koodeja lukemalla tai taatun esittelyn kautta — ei keskitettyä hakemistoa, ei kontaktien etsintää, ei sosiaalista verkostoa.
+
+Kaikki liikenne reititetään Tor-verkon kautta, mikä piilottaa IP-osoitteesi ja sijaintisi jopa Rún-sovelluksen omalta välityspalvelimelta. Verkkoasi tarkkaileva näkee vain salattua Tor-liikennettä — ei kenen kanssa puhut tai mitä sanot. Viestit täytetään kiinteisiin kokoihin, joten edes viestin pituus ei vuoda.
+
+Viestit elävät vain muistissa — niitä ei koskaan kirjoiteta levylle. Poistu keskustelusta tai sulje sovellus, ja ne ovat poissa. Ei viestihistoriaa selattavaksi, ei arkistoa haastettavaksi, ei varmuuskopiota vuotamaan. Välityspalvelin säilyttää vain tilapäisiä salattuja möykkyjä, joita se ei voi lukea, postilaatikoissa, jotka vanhenevat itsestään.
+
+Holvisi on levossa salattu AES-256:lla (SQLCipher), ja sen avain johdetaan Argon2id:llä ja suojataan Android Keystoressa. Sinä valitset, kuinka vaikeaa siihen on päästä:
+
+• Perus — nopea avaus PIN-koodilla, väljillä automaattilukituksen ja itsepyyhinnän ajastuksilla.
+• Turva — holvin avain sidotaan lisäksi puhelimen turvasiruun, sormenjälkesi tai kasvojesi taakse. Takavarikoitu puhelin kestää vahvasti offline-hyökkäyksiä.
+• Maksimi — PIN-koodin tilalle tulee vahva salalause ja ajastukset ovat tiukimmillaan. Edes täysin kopioitu puhelin ei aukea.
+
+Jokaisella tasolla Rún lukitsee itsensä käyttämättömänä, pyyhkii kaiken liian monen väärän yrityksen jälkeen ja tuhoaa itsensä pitkän käyttämättömyyden jälkeen — tiukkuus riippuu valitsemastasi tasosta. Pyyhintä tuhoaa itse salausavaimet, joten mitään ei jää palautettavaksi.
+
+Ryhmäkeskustelut elävät vain jäsentensä puhelimissa — ei ryhmätiliä, ei jäsenluetteloa. Jokainen viesti lähetetään erikseen kullekin jäsenelle: välityspalvelin näkee yhden viestin menevän useaan postilaatikkoon, ei keitä he ovat eikä sanaakaan siitä.
+
+Ei analytiikkaa. Ei seurantaa. Ei mainoksia. Ei kaatumisraportteja. Ei pilvivarmuuskopioita. Oletuksena se on hiljainen — ei ilmoituksia — ja näet viestisi, kun avaat sovelluksen. Voit ottaa ilmoitukset käyttöön; jos otat, sisällötön herätesignaali kulkee Googlen push-palvelinten (FCM) kautta tai ilman Google-palveluita valitsemasi UnifiedPush-välittäjäsovelluksen kautta. Kumpikin oppii vain saapumisen ja ajankohdan — ei koskaan keneltä tai mitä siinä lukee — ja Rún kertoo tarkalleen tämän ennen käyttöönottoa.
+
+Asiakasohjelman lähdekoodi on julkinen GPL-lisenssillä osoitteessa github.com/cptdad/run: lue se, käännä se itse tai ilmoita siellä tietoturvaongelmasta. Välityspalvelinta ei ole vielä julkaistu.
+
+Rún on rakennettu toimittajille, aktivisteille, väärinkäytösten paljastajille ja kaikille, joiden mielestä yksityinen keskustelu on perusoikeus.
+
+Tärkeimmät ominaisuudet:
+- Päästä päähän -salaus ja forward secrecy (AES-256-GCM + Double Ratchet)
+- Kaikki liikenne Tor-verkon kautta — IP-osoitteesi ja sijaintisi pysyvät piilossa
+- Ei tiliä, puhelinnumeroa tai sähköpostia
+- Kontaktien vaihto QR-koodilla kasvokkain sekä taatut esittelyt
+- Ryhmäkeskustelut ilman ryhmätiliä tai jäsenluetteloa
+- Viestit vain muistissa — ei koskaan levylle tallennettuina
+- Salattu paikallinen holvi (SQLCipher, Argon2id, Android Keystore)
+- Kolme suojaustasoa: Perus, Turva, Maksimi
+- Automaattilukitus, pyyhintä toistuvista virheistä, itsetuho käyttämättömyydestä
+- Kuvakaappaukset estetty
+- Ei analytiikkaa, seurantaa, mainoksia tai kaatumisraportteja
+- Puhelimen vaihto sinetöidyllä siirrolla, ei koskaan pilvivarmuuskopiota
+- Saatavilla 13 kielellä

@@ -1,0 +1,1 @@
+• Dialogs fit their text again, and long button labels are shown in full.

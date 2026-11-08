@@ -1,0 +1,7 @@
+• Uanset hvordan du forlader en chat, går ingen beskeder længere tabt.
+• Forbinder hurtigere: kontakterne vises, så snart relæet svarer.
+• Genopretter selv forbindelsen, når netværket er tilbage.
+• At slå notifikationer til eller fra virker mere pålideligt.
+• At tilføje en kontakt ansigt til ansigt går hurtigere.
+• En gruppes ulæst-prik forsvinder, så snart du har set dens besked i en anden chat.
+• Rapporter om forbindelsestid sendes kun i Fejlfindingstilstand.

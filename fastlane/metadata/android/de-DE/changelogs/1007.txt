@@ -1,0 +1,3 @@
+• Kontakte hinzufügen ist klarer: Nach dem ersten Scan zeigt Rún „Fast geschafft“ und deinen eigenen Code, den das andere Handy zurückscannt — sobald das passiert, ist alles von selbst fertig.
+• Du kannst auf diesen zweiten Scan weiter warten oder die Kopplung abbrechen und den unvollständigen Kontakt entfernen.
+• Das Einrichten des Postfachs bleibt nicht mehr hängen, wenn die Verbindung kommt und geht.

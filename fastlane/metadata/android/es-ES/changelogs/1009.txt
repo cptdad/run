@@ -1,0 +1,6 @@
+• Los contactos y “Añadir contacto” aparecen cuando el relay ha respondido.
+• El número de conexión nunca se detiene; el anillo rojo late más fuerte y queda fijo cuando responde el relay.
+• Toca tres veces la línea de conexión: registro en directo que no identifica a nadie.
+• La pregunta de notificaciones espera a que estés conectado.
+• Guía de notificaciones reducida a tres páginas y el interruptor.
+• Tras conectar, la app solo informa al relay de los segundos que tardó; nada identificable.

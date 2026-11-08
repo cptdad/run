@@ -1,0 +1,3 @@
+• Flytta Rún till en ny telefon, även till en telefon av ett annat slag: den gamla visar en kod, den nya skannar den, och dina kontakter, grupper och konversationer följer med.
+• Överföringen är förseglad och går bara över Tor via Rún-reläet — ingen molnsäkerhetskopia inblandad.
+• Ställ in din återställningskod, skyddsnivån Säker och notiser på nytt på den nya telefonen; den gamla erbjuder sig sedan att radera sig själv.

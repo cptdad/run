@@ -1,0 +1,3 @@
+• Move Rún to a new phone, even a different kind of phone: the old one shows a code, the new one scans it, and your contacts, groups and conversations come along.
+• The transfer is sealed and goes only over Tor through Rún's relay — no cloud backup involved.
+• Set up your recovery code, Secure protection and notifications again on the new phone; the old one then offers to wipe itself.

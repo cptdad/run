@@ -1,0 +1,5 @@
+• Lukemattomat viestit merkitään lähes heti yhteyden muodostuttua.
+• Perus ja Turva säilyttävät näppäimistön sanaehdotukset ja emojit; Maksimi pitää näppäimistön, joka ei opi mitään.
+• Ylläpitäjyyttä ei enää siirretä, kun jäsen on vielä liittymässä ryhmään.
+• Jos suojattua kanavaa ei saada muodostettua, Rún lakkaa lähettämästä eikä käytä heikompaa suojausta.
+• Virheenkorjaustila lähettää diagnostiikkatiedot luotettavasti uudelleenkäynnistyksen jälkeen.

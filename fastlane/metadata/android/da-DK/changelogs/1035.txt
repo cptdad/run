@@ -1,0 +1,2 @@
+• En besked, der sendes lige idet Tor-forbindelsen falder ud, sendes nu automatisk igen, så snart forbindelsen er tilbage, i stedet for at vente på, at du trykker på Prøv igen.
+• Forbedringer af privatliv og batteri efter en sikkerhedsgennemgang: usendte beskeder fjernes fra hukommelsen, når appen låses eller slettes, og et gruppemedlem kan ikke længere få din telefon til at tjekke for beskeder i højt tempo.

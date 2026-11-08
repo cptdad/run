@@ -1,0 +1,6 @@
+• Maximum : un vers de chanson tapé sans espaces ne passe plus pour une phrase secrète solide.
+• Groupes : un texte manqué par des membres indique « non remis à N » ; quitter avertit que les non-lus peuvent être perdus.
+• Verrouillage non repoussable ; réafficher un code de transfert exige de déverrouiller.
+• Clavier et presse-papiers plus discrets.
+• Un transfert annulé vers un nouveau téléphone ne reste plus bloqué.
+• À propos : code source et licences.

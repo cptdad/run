@@ -1,0 +1,6 @@
+• Desbloqueo más rápido en los teléfonos donde era lento.
+• La conexión es más rápida y fiable.
+• Los mensajes privados de miembros del grupo aparecen ahora en el grupo, marcados como privados, con opción de responder.
+• Los mensajes de grupo que llegan durante un chat individual aparecen allí, con el nombre del grupo.
+• Salir de una conversación ya no pierde los mensajes que están llegando.
+• Añadir contactos y pasar a un teléfono nuevo ya no falla en algunos teléfonos lentos.

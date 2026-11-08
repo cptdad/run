@@ -1,0 +1,3 @@
+• L’ajout d’un contact est plus clair : après le premier scan, Rún affiche « Presque terminé » et votre propre code, que l’autre téléphone scanne à son tour — tout se termine alors tout seul.
+• Vous pouvez continuer à attendre ce second scan ou annuler l’appairage et supprimer le contact à moitié terminé.
+• La création de la boîte de réception ne reste plus bloquée quand la connexion va et vient.

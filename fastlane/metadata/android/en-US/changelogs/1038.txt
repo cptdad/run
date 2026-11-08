@@ -1,0 +1,5 @@
+• Moving to a new phone now asks for your PIN or passphrase first.
+• Introductions and group admin messages now get the same forward secrecy as chats.
+• The wait after a wrong PIN or passphrase now survives an app restart.
+• A message sent just as Tor drops is resent once it is back.
+• Unsent messages are cleared on lock, and a group member can no longer make your phone check for messages too often.

@@ -1,0 +1,2 @@
+• Un message envoyé juste au moment où la connexion Tor se coupe est désormais renvoyé automatiquement dès que la connexion revient, sans attendre que vous appuyiez sur Réessayer.
+• Améliorations de la confidentialité et de l'autonomie à la suite d'un audit de sécurité : les messages non envoyés sont effacés de la mémoire quand l'application est verrouillée ou effacée, et un membre d'un groupe ne peut plus forcer votre téléphone à vérifier les messages à un rythme élevé.

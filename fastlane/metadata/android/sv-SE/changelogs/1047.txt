@@ -1,0 +1,7 @@
+• Att lämna en chatt tappar inte längre något meddelande.
+• Ansluter snabbare och återansluter när nätverket är tillbaka.
+• Notiser slås på och av mer pålitligt.
+• Att lägga till en kontakt på plats går snabbare.
+• Gruppers oläst-prickar försvinner när de setts i en annan chatt.
+• Grupper: en text som missat medlemmar visar ”inte levererat till N”; att lämna varnar för att olästa texter kan gå förlorade.
+• Anslutningstid rapporteras bara i Felsökningsläge.

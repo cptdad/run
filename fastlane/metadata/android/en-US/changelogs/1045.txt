@@ -1,0 +1,7 @@
+• Leaving a chat any way you like no longer loses a message.
+• Connects faster: contacts appear as soon as the relay answers.
+• Reconnects by itself when your network returns.
+• Turning notifications on or off is more reliable.
+• Adding a contact in person completes sooner.
+• A group's unread dot clears once you've seen its message in another chat.
+• Connection timing reports are sent only in Debug mode.

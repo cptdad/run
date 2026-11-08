@@ -1,0 +1,4 @@
+• Siirrä Rún uuteen puhelimeen, myös toisenlaiseen: vanha näyttää koodin, uusi lukee sen, ja yhteystietosi, ryhmäsi ja keskustelusi tulevat mukana — sinetöitynä, Tor-verkossa, ei pilvikopiota.
+• Ryhmästä poistaminen tai ryhmästä lähteminen pysyy voimassa, vaikka jäsen olisi offline.
+• Ennen ilmoitusten käyttöönottoa Rún kertoo, mitä välityspalvelin saa tietää.
+• Väärennetty yhteystiedon päivitys ei voi ohjata viestejä muualle, ja pyyhintä jättää vähemmän jälkiä.

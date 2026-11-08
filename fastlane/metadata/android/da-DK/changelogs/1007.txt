@@ -1,0 +1,3 @@
+• At tilføje en kontakt er tydeligere: efter den første scanning viser Rún “Næsten der” og din egen kode, som den anden telefon scanner tilbage — så snart den gør det, bliver det færdigt af sig selv.
+• Du kan vente videre på den anden scanning eller annullere parringen og fjerne den halvfærdige kontakt.
+• Oprettelsen af indbakken går ikke længere i stå, når forbindelsen kommer og går.

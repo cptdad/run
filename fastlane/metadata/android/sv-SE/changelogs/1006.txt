@@ -1,0 +1,4 @@
+• Flytta Rún till en ny telefon, även av ett annat slag: den gamla visar en kod, den nya skannar den, och dina kontakter, grupper och konversationer följer med — förseglat, över Tor, ingen molnkopia.
+• Att ta bort någon ur en grupp, eller lämna en, håller nu även när de är offline.
+• Innan du slår på notiser visar Rún vad reläet kan få veta.
+• En förfalskad kontaktuppdatering kan inte styra om meddelanden, och en radering lämnar mindre efter sig.

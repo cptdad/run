@@ -1,0 +1,4 @@
+• At fjerne nogen fra en gruppe venter nu på, at de andre bekræfter det, så det ikke kan mislykkes i stilhed.
+• En chat, der kom fra en introduktion, viser, hvem der introducerede dig, og ingen kan oversvømme dig med dem.
+• Mens Rún opretter forbindelse, ser du bevægelige prikker og større tekst plus et tip, hvis det tager tid.
+• Rún melder sig sjældnere, når der ikke sker noget, og en sletning fjerner nu de sidste restfiler.

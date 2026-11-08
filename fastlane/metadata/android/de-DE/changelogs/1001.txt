@@ -1,0 +1,5 @@
+• Fünf neue Sprachen — Arabisch, Persisch, Somali, Russisch und Mazedonisch — bringen Rún auf 13; Arabisch und Persisch laufen von rechts nach links.
+• Wähle die Sprache der App unter Einstellungen, egal was am Telefon eingestellt ist.
+• Neu: Fehler melden — schreib uns anonym über Tor, was schiefgelaufen ist.
+• Der Runenstein leuchtet jetzt durchgehend rot, sobald Tor verbunden ist.
+• Der erste Kontakt oder die erste Gruppe rutscht nicht mehr unter die obere Leiste.

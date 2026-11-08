@@ -1,0 +1,2 @@
+• Corrige un plantage qui fermait Rún quelques secondes après chaque déverrouillage sur certains des téléphones les plus récents.
+• Si l'application se fermait sans cesse au lancement, cette mise à jour règle le problème — rien d'autre ne change.

@@ -1,0 +1,2 @@
+• Corrige un fallo que cerraba Rún unos segundos después de cada desbloqueo en algunos de los teléfonos más nuevos.
+• Si la aplicación se cerraba una y otra vez al iniciarse, esta actualización lo soluciona — nada más cambia.

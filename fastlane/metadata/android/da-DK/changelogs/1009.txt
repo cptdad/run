@@ -1,0 +1,6 @@
+• Kontakterne og “Tilføj kontakt” vises, når relæet har svaret.
+• Forbindelsestallet står aldrig stille; den røde ring pulserer kraftigere og lyser fast, når relæet svarer.
+• Tre tryk på forbindelseslinjen giver en live forbindelseslog, der ikke udpeger nogen.
+• Spørgsmålet om push-notifikationer venter nu, til du er forbundet.
+• Notifikationsguiden er skåret ned til tre sider plus knappen.
+• Efter forbindelsen melder appen kun antal sekunder til relæet — intet identificerende.

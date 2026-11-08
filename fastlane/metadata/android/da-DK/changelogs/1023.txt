@@ -1,0 +1,6 @@
+• Rettelser fra en fuld sikkerhedsgennemgang – de fleste er usynlige.
+• På en telefon uden skærmlås kræves nu beskyttelsesniveauet Maksimal.
+• Overførselskoden til en ny telefon kan kun kopieres med knappen “Kopiér”.
+• Gruppenavne fra en kontakt renses, før de vises.
+• En besked i en gruppe vises ikke længere som ulæst på kontakten, der sendte den.
+• Hvis du havde Fejlfindingstilstand slået til, skal du slå den til igen.

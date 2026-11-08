@@ -1,0 +1,3 @@
+• The connecting screen no longer looks stuck: the progress keeps moving while Rún builds its route, and reaches 100% only once the relay has really answered.
+• It now says up front that the first connection can take a few minutes.
+• If the relay is slow to answer, Rún retries much sooner instead of waiting.

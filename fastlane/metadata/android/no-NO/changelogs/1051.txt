@@ -1,0 +1,5 @@
+• Grupper: en tekst som ikke nådde alle viser «ikke levert til N»; å forlate varsler om at uleste tekster kan gå tapt.
+• Låsingen kan ikke utsettes; å vise flyttekoden på nytt krever opplåsing.
+• Bedre personvern for tastatur og utklipp.
+• En avbrutt flytting til ny telefon henger seg ikke lenger opp.
+• Om: lenke til kildekoden og lisensene.

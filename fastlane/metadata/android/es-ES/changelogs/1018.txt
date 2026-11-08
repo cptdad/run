@@ -1,0 +1,2 @@
+• Desactivar y volver a activar las notificaciones ahora funciona de forma fiable.
+• Texto de progreso más claro mientras Rún se conecta, y el aviso de conexión lenta ya no se corta.

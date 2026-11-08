@@ -1,0 +1,3 @@
+• Anslutningsskärmen ser inte längre ut att ha fastnat: siffran fortsätter röra sig medan Rún bygger sin väg, och når 100 % först när reläet verkligen har svarat.
+• Nu står det direkt att den första anslutningen kan ta några minuter.
+• Om reläet är långsamt att svara försöker Rún igen mycket snabbare i stället för att vänta.

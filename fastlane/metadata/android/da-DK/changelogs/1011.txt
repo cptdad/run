@@ -1,0 +1,4 @@
+• Rún siger til, når en introduktion du har lavet bliver godkendt, og igen når begge sider har godkendt.
+• Nyt under “Indstillinger”: Fejlfindingstilstand — slå den til for at sende anonyme diagnoselogge, der hjælper med at spore forbindelsesproblemer. Intet i dem peger på dig.
+• Forbindelsesloggen følger nu hele vejen frem til relæet og udpeger stadig ingen.
+• Rún beholder nu sin vej ind i Tor-netværket mellem opstarter i stedet for at begynde forfra.

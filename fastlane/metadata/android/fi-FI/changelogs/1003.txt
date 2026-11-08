@@ -1,0 +1,4 @@
+• Riimukivi syttyy valkoisena heti, kun Rún tavoittaa välityspalvelimen, ja yhteystiedot ja ryhmät voi avata samalla hetkellä.
+• Yhteyden edistyminen näkyy taas yhteystietoluettelossa, ja mukana on ”Yhdistä uudelleen” -painike, jos välityspalvelin jumittaa.
+• Keskustelusta tai ryhmästä poistuminen on nopeampaa — yksi käynti välityspalvelimella usean sijaan.
+• Ryhmäviesti sytyttää lukemattoman viestin pisteen nyt ryhmälle, ei viestin lähettäjälle.

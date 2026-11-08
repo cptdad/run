@@ -1,0 +1,3 @@
+• Yhteysnäyttö ei enää näytä jumittuneelta: luku etenee koko ajan, kun Rún rakentaa reittiään, ja saavuttaa 100 % vasta, kun välityspalvelin on oikeasti vastannut.
+• Nyt siinä kerrotaan heti, että ensimmäinen yhteys voi kestää muutaman minuutin.
+• Jos välityspalvelin vastaa hitaasti, Rún yrittää uudelleen paljon aiemmin sen sijaan, että jäisi odottamaan.

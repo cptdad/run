@@ -1,0 +1,3 @@
+• Menu items that need a connection are greyed out until Rún is connected.
+• Right after setting up, a locked Rún now asks for your PIN or passphrase instead of showing setup again.
+• Tor is updated with the latest security fixes.

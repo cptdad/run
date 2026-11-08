@@ -1,0 +1,1 @@
+• Dialogrutor passar sin text igen, och långa knapptexter visas i sin helhet.

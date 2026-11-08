@@ -1,0 +1,2 @@
+• Forbindelsen kommer sig meget hurtigere, når Tor-netværket går i stå, så lange ventetider, før dine beskeder vises, bliver sjældnere.
+• Den indbyggede Tor er opdateret til sin nyeste sikkerhedsversion.

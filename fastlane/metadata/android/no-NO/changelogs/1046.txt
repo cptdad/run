@@ -1,0 +1,7 @@
+• Å forlate en chat mister ikke lenger meldinger.
+• Kobler til raskere og kobler til igjen når nettverket er tilbake.
+• Varsler slås av og på mer pålitelig.
+• Å legge til en kontakt ansikt til ansikt går raskere.
+• Gruppers ulest-prikker forsvinner når de er sett i en annen chat.
+• Grupper: en tekst som ikke nådde alle viser «ikke levert til N»; å forlate varsler om at uleste tekster kan gå tapt.
+• Tilkoblingstid rapporteres bare i Feilsøkingsmodus.

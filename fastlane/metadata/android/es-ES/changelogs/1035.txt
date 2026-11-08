@@ -1,0 +1,2 @@
+• Un mensaje enviado justo cuando se corta la conexión Tor ahora se vuelve a enviar automáticamente en cuanto vuelve la conexión, sin esperar a que toques Reintentar.
+• Mejoras de privacidad y batería tras una revisión de seguridad: los mensajes no enviados se eliminan de la memoria cuando la app se bloquea o se borra, y un miembro de un grupo ya no puede hacer que tu teléfono busque mensajes a un ritmo elevado.

@@ -1,0 +1,4 @@
+• At fjerne nogen fra en gruppe, eller selv forlade en, holder nu også, når medlemmer er offline: Rún bliver ved med at prøve i en uge.
+• Før du slår notifikationer til, fortæller Rún nu, hvad relæet selv får at vide.
+• Indstillingerne siger til, når din beskyttelsesnøgle skal hærdes på ny.
+• Sikkerhedsarbejde hele vejen igennem: beskeder kan ikke omdirigeres af en forfalsket kontaktopdatering, og en sletning efterlader mindre.

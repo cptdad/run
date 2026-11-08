@@ -1,0 +1,2 @@
+• Die Verbindung erholt sich viel schneller, wenn das Tor-Netzwerk hängt, sodass lange Wartezeiten, bis deine Nachrichten erscheinen, seltener werden.
+• Das integrierte Tor ist auf sein neuestes Sicherheitsupdate aktualisiert.

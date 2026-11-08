@@ -1,0 +1,3 @@
+• El modo de depuración sigue enviando registros de diagnóstico después de un rato en segundo plano, y en un teléfono protegido con código.
+• Rún mantiene lo que escribes fuera de las palabras aprendidas por el teclado siempre que puede, en todos los niveles de protección.
+• Cada nivel de protección dice ahora claramente si el teclado puede aprender palabras que escribes.

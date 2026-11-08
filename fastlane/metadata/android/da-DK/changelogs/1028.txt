@@ -1,0 +1,1 @@
+• Dialogbokse passer til deres tekst igen, og lange knaptekster vises i deres helhed.

@@ -1,0 +1,38 @@
+Rún ist ein sicherer Messenger für Menschen, die bei Privatsphäre keine Kompromisse machen. Jede Nachricht wird Ende-zu-Ende verschlüsselt, bevor sie dein Gerät verlässt, und die Schlüssel rücken beim Chatten weiter, sodass ein offengelegter Schlüssel nie den Rest der Unterhaltung preisgibt.
+
+Rún braucht weder Konto noch Telefonnummer noch E-Mail-Adresse — nichts, was zu deiner Identität zurückführt. Kontakte fügt ihr persönlich per QR-Code hinzu oder über eine verbürgte Vorstellung durch eine Vertrauensperson — kein Verzeichnis, keine Kontaktsuche, kein Social Graph.
+
+Aller Datenverkehr läuft über das Tor-Netzwerk und verbirgt IP-Adresse und Standort selbst vor dem eigenen Relay von Rún. Wer dein Netzwerk beobachtet, sieht nur verschlüsselten Tor-Verkehr — nicht, mit wem du sprichst oder was du sagst. Nachrichten werden auf feste Größen aufgefüllt — nicht einmal ihre Länge verrät etwas.
+
+Nachrichten leben nur im Arbeitsspeicher, nie auf dem Datenträger. Verlasse einen Chat oder schließe die App, und sie sind weg. Kein Verlauf, kein Archiv zum Vorladen, kein Backup, das durchsickern kann. Das Relay hält nur kurzzeitig verschlüsselte Datenblöcke, die es nicht lesen kann, in Postfächern, die von selbst ablaufen.
+
+Dein Tresor ist im Ruhezustand mit AES-256 über SQLCipher verschlüsselt; sein Schlüssel wird mit Argon2id abgeleitet und vom Android-Keystore geschützt. Du bestimmst den Zugriffsschutz:
+
+• Solide — schnelles Entsperren per PIN, mit großzügigen Sperr- und Selbstlöschzeiten.
+• Sicher — der Tresorschlüssel ist zusätzlich an den Sicherheitschip gebunden, hinter deinem Fingerabdruck oder Gesicht. Ein beschlagnahmtes Telefon hält Offline-Angriffen sehr gut stand.
+• Maximum — statt der PIN eine starke Passphrase, die Zeiten am strengsten. Selbst ein vollständig ausgelesenes Telefon bleibt verschlossen.
+
+Auf jeder Stufe sperrt sich Rún bei Untätigkeit, löscht sich nach zu vielen Fehlversuchen und zerstört sich nach langer Inaktivität — wie streng, bestimmt die gewählte Stufe. Eine Löschung vernichtet die Schlüssel selbst; nichts bleibt wiederherstellbar.
+
+Gruppenchats leben nur auf den Telefonen ihrer Mitglieder — kein Gruppenkonto, keine Mitgliederliste. Jede Nachricht geht einzeln an jedes Mitglied: Das Relay sieht eine Nachricht mehrere Postfächer erreichen, nie wen und kein Wort davon.
+
+Keine Analyse. Kein Tracking. Keine Werbung. Keine Absturzberichte. Keine Cloud-Backups. Standardmäßig bleibt es still: Du siehst deine Nachrichten, wenn du die App öffnest. Du kannst Benachrichtigungen einschalten; dann läuft ein inhaltsloses Wecksignal über Googles Push-Server (FCM) oder, auf einem Telefon ohne Google-Dienste, über eine UnifiedPush-Distributor-App deiner Wahl. Beide erfahren nur, dass etwas angekommen ist und wann — nie den Absender oder den Inhalt. Rún sagt dir genau das, bevor du sie aktivierst.
+
+Der Quellcode des Clients ist unter der GPL öffentlich: github.com/cptdad/run. Lies ihn, baue ihn selbst oder melde dort Sicherheitslücken. Der Relay-Server ist noch nicht veröffentlicht.
+
+Rún ist für Journalisten, Aktivisten, Whistleblower und alle, die private Kommunikation als Grundrecht sehen.
+
+Wichtigste Funktionen:
+- Ende-zu-Ende-Verschlüsselung mit Forward Secrecy (AES-256-GCM + Double Ratchet)
+- Aller Verkehr über Tor — IP-Adresse und Standort bleiben verborgen
+- Kein Konto, keine Telefonnummer, keine E-Mail nötig
+- Persönlicher QR-Kontaktaustausch und verbürgte Vorstellungen
+- Gruppenchats ohne Gruppenkonto und Mitgliederliste
+- Nachrichten nur im Arbeitsspeicher — nie auf dem Datenträger
+- Verschlüsselter lokaler Tresor (SQLCipher, Argon2id, Android-Keystore)
+- Drei Schutzstufen: Solide, Sicher, Maximum
+- Automatische Sperre, Löschung nach Fehlversuchen, Selbstzerstörung bei Inaktivität
+- Screenshots blockiert
+- Keine Analyse, kein Tracking, keine Werbung, keine Absturzberichte
+- Handywechsel mit versiegelter Übertragung, nie ein Cloud-Backup
+- Verfügbar in 13 Sprachen

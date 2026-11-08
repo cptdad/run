@@ -1,0 +1,7 @@
+• Leaving a chat no longer loses a message.
+• Connects faster and reconnects when your network returns.
+• Notifications switch on and off more reliably.
+• Adding a contact in person is quicker.
+• Group unread dots clear once seen in another chat.
+• Groups: a text that missed members says "not delivered to N"; leaving warns that unread texts may be lost.
+• Connection timing is reported only in Debug mode.

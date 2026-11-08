@@ -1,0 +1,4 @@
+• Flytt Rún til en ny telefon, også av et annet slag: den gamle viser en kode, den nye skanner den, og kontaktene, gruppene og samtalene dine blir med — forseglet, over Tor, ingen skykopi.
+• Å fjerne noen fra en gruppe, eller forlate en selv, holder nå også når de er frakoblet.
+• Før du slår på varsler, viser Rún hva relayet får vite.
+• En forfalsket kontaktoppdatering kan ikke omdirigere meldinger, og en sletting etterlater mindre.

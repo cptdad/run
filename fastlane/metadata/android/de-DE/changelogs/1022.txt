@@ -1,0 +1,5 @@
+• Korrekturen aus einer vollständigen Sicherheitsprüfung – die meisten unsichtbar.
+• Auf einem Telefon ohne Bildschirmsperre gilt jetzt zwingend die Schutzstufe Maximum.
+• Der Übertragungscode für ein neues Telefon lässt sich nur noch mit der Schaltfläche „Kopieren“ kopieren.
+• Gruppennamen von Kontakten werden bereinigt, bevor sie angezeigt werden.
+• Wenn du den Debug-Modus an hattest, schalte ihn noch einmal ein.

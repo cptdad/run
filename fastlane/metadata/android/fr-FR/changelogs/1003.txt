@@ -1,0 +1,4 @@
+• La pierre runique s'allume en blanc dès que Rún atteint le relais, et vos contacts et groupes s'ouvrent dès cet instant.
+• La progression de la connexion réapparaît dans la liste de contacts, avec un bouton « Reconnecter » si le relais bloque.
+• Quitter une conversation ou un groupe est plus rapide : un aller-retour vers le relais au lieu de plusieurs.
+• Un message de groupe allume désormais la pastille de non-lu sur le groupe, et non sur l'expéditeur.

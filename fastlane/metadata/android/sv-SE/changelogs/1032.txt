@@ -1,0 +1,1 @@
+• Anslutningen återhämtar sig mycket snabbare när Tor-nätverket hakar upp sig, så långa väntetider innan dina meddelanden visas blir ovanligare.

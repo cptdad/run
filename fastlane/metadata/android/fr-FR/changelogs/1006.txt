@@ -1,0 +1,4 @@
+• Transférez Rún vers un nouveau téléphone, même d'un autre type : l'ancien affiche un code, le nouveau le scanne, et vos contacts, groupes et conversations suivent — scellé, via Tor, sans cloud.
+• Retirer quelqu'un d'un groupe, ou en quitter un, tient désormais même s'il est hors ligne.
+• Avant d'activer les notifications, Rún montre ce que le relais peut apprendre.
+• Une fausse mise à jour de contact ne peut plus détourner vos messages, et un effacement laisse moins de traces.

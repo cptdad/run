@@ -1,0 +1,1 @@
+• Los cuadros de diálogo vuelven a ajustarse a su texto y las etiquetas largas de los botones se muestran completas.

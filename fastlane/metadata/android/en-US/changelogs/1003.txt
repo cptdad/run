@@ -1,0 +1,4 @@
+• The runestone lights white when Rún reaches the relay, and your contacts and groups are ready to open right then.
+• Connection progress is back on the contact list, with a Reconnect button if the relay stalls.
+• Leaving a chat or group is quicker — one round trip to the relay instead of several.
+• A group message now lights the unread dot on the group, not on the person who sent it.

@@ -1,0 +1,3 @@
+• Forbindelsesskærmen ser ikke længere fast ud: tallet bliver ved med at bevæge sig, mens Rún bygger sin rute, og når først 100 %, når relæet rent faktisk har svaret.
+• Nu står der med det samme, at den første forbindelse kan tage et par minutter.
+• Hvis relæet er langsomt til at svare, prøver Rún igen meget hurtigere i stedet for at vente.

@@ -1,0 +1,2 @@
+• Behebt einen Absturz, der Rún auf einigen der neuesten Telefone wenige Sekunden nach jedem Entsperren beendet hat.
+• Wenn sich die App beim Start immer wieder beendet hat, ist dieses Update die Lösung — sonst ändert sich nichts.

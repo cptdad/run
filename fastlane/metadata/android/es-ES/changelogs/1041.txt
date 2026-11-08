@@ -1,0 +1,3 @@
+• La conexión es más rápida y fiable: Rún ahora prueba varias direcciones de su relay a la vez y usa la que responde primero.
+• Si vuelves a abrir la app poco después de salir, reutiliza la conexión Tor en curso, así que está lista antes y se abre de forma más fiable.
+• Activar o desactivar las notificaciones es más fiable, también justo después de un corte de red.

@@ -1,0 +1,7 @@
+• Salir de un chat ya no hace perder ningún mensaje.
+• Conexión más rápida y reconexión cuando vuelve la red.
+• Activar o desactivar notificaciones es más fiable.
+• Añadir un contacto en persona es más rápido.
+• Los puntos de no leído de los grupos desaparecen al verlos en otro chat.
+• Grupos: un texto que no llegó a todos indica «no entregado a N»; al salir se avisa de que lo no leído puede perderse.
+• El tiempo de conexión solo se informa en el Modo de depuración.

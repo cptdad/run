@@ -1,0 +1,2 @@
+• La connexion se rétablit bien plus vite quand le réseau Tor se bloque : les longues attentes avant l’affichage de vos messages sont plus rares.
+• Le Tor intégré passe à sa dernière version de sécurité.

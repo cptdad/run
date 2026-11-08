@@ -1,0 +1,3 @@
+• Una invitación de grupo a la que aún no te has unido ahora sobrevive al cierre de la aplicación: te espera cuando vuelves.
+• Conectar es más rápido: Rún ahora supera por sí solo una conexión atascada, y tu lista de contactos aparece antes.
+• Las conversaciones ahora te avisan cuando forward secrecy aún no se ha activado; suele resolverse en cuanto tu contacto responde.

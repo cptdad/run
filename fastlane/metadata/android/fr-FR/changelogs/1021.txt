@@ -1,0 +1,3 @@
+• Le mode débogage continue d'envoyer les journaux de diagnostic après un passage en arrière-plan, et sur un téléphone protégé par un code d'appareil.
+• Rún garde ce que vous tapez hors des mots appris par le clavier partout où c'est possible, à tous les niveaux de protection.
+• Chaque niveau de protection indique désormais clairement si le clavier peut apprendre les mots que vous tapez.

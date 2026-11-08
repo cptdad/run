@@ -1,0 +1,1 @@
+• Les boîtes de dialogue s’ajustent de nouveau à leur texte, et les libellés de bouton longs s’affichent en entier.

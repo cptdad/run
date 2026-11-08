@@ -1,0 +1,3 @@
+• La pantalla de conexión ya no parece bloqueada: el progreso sigue avanzando mientras Rún construye su ruta y solo llega al 100 % cuando el relay ha respondido de verdad.
+• Ahora indica desde el principio que la primera conexión puede tardar unos minutos.
+• Si el relay tarda en responder, Rún lo reintenta mucho antes en lugar de esperar.

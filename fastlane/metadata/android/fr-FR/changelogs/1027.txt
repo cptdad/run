@@ -1,0 +1,3 @@
+• Les éléments du menu qui nécessitent une connexion restent grisés tant que Rún n'est pas connecté.
+• Juste après la configuration, Rún verrouillée demande désormais votre code PIN ou votre phrase secrète au lieu de réafficher la configuration.
+• Tor est mis à jour avec les derniers correctifs de sécurité.

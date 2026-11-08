@@ -1,0 +1,4 @@
+• Runstenen lyser vitt när Rún når reläet, och dina kontakter och grupper går att öppna direkt när den gör det.
+• Anslutningsförloppet syns igen i kontaktlistan, med knappen ”Anslut igen” om reläet hakar upp sig.
+• Att lämna en chatt eller grupp går snabbare — en enda vända till reläet i stället för flera.
+• Ett gruppmeddelande tänder nu den olästa pricken på gruppen, inte på personen som skickade det.

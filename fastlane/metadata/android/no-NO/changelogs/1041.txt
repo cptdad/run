@@ -1,0 +1,3 @@
+• Tilkoblingen går raskere og er mer pålitelig: Rún prøver nå flere adresser til relayet sitt samtidig og bruker den som svarer først.
+• Åpner du appen igjen kort tid etter at du gikk ut, gjenbrukes den aktive Tor-tilkoblingen, så den er klar raskere og åpnes mer pålitelig.
+• Å slå varsler på eller av er mer pålitelig, også rett etter et nettverksbrudd.

@@ -1,0 +1,8 @@
+• At forlade en chat mister ikke længere beskeder.
+• Hurtigere forbindelse; forbinder igen, når netværket er tilbage.
+• Notifikationer slås til og fra mere pålideligt.
+• At tilføje en kontakt ansigt til ansigt går hurtigere.
+• Grupper: tydeligere ulæst-prikker, »ikke leveret til N« og en advarsel, før du forlader.
+• Låsning kan ikke længere udskydes; at vise en flyttekode igen kræver oplåsning.
+• Bedre privatliv for tastatur og udklipsholder.
+• Forbindelsestid sendes kun i Fejlfindingstilstand.

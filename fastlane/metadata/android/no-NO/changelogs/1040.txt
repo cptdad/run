@@ -1,0 +1,5 @@
+• Å flytte til en ny telefon krever nå PIN eller passfrase først.
+• Introduksjoner og gruppens adminmeldinger får nå samme forward secrecy som chatter.
+• Ventetiden etter feil PIN eller passfrase gjelder nå også etter en omstart av appen.
+• En melding som sendes akkurat idet Tor faller ut, sendes på nytt når forbindelsen er tilbake.
+• Usendte meldinger fjernes ved låsing, og et gruppemedlem kan ikke lenger få telefonen din til å se etter meldinger for ofte.

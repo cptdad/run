@@ -1,0 +1,6 @@
+• Déverrouillage plus rapide sur les téléphones où il était lent.
+• La connexion est plus rapide et plus fiable.
+• Les messages privés d’un membre du groupe s’affichent dans le groupe, marqués privés, avec une option de réponse.
+• Les messages de groupe reçus pendant une discussion à deux s’y affichent, avec le nom du groupe.
+• Quitter une conversation ne fait plus perdre les messages en cours d’arrivée.
+• Ajouter des contacts ou changer de téléphone n’échoue plus sur certains téléphones lents.

@@ -1,0 +1,4 @@
+• Quitar a alguien de un grupo, o salir de uno, ahora se mantiene aunque haya miembros sin conexión: Rún sigue intentándolo durante una semana.
+• Antes de activar las notificaciones, Rún ahora explica qué puede saber el propio relay.
+• Los Ajustes te avisan cuando tu clave de protección necesita reforzarse.
+• Trabajo de seguridad por todas partes: los mensajes no pueden desviarse con una actualización de contacto falsa, y un borrado deja menos rastro.

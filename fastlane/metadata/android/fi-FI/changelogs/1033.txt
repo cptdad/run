@@ -1,0 +1,2 @@
+• Yhteys palautuu paljon nopeammin, kun Tor-verkko jumittuu, joten pitkät odotukset ennen viestiesi näkymistä ovat harvinaisempia.
+• Sisäänrakennettu Tor on päivitetty uusimpaan tietoturvaversioonsa.

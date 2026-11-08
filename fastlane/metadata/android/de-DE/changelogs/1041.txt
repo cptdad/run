@@ -1,0 +1,3 @@
+• Verbinden geht schneller und zuverlässiger: Rún probiert jetzt mehrere Adressen seines Relays gleichzeitig und nutzt die, die zuerst antwortet.
+• Öffnest du die App kurz nach dem Verlassen wieder, wird die laufende Tor-Verbindung weiterverwendet – sie ist schneller bereit und öffnet zuverlässiger.
+• Benachrichtigungen ein- oder auszuschalten klappt zuverlässiger, auch direkt nach einem Netzwerkausfall.

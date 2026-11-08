@@ -1,0 +1,4 @@
+• Rún vous prévient quand une présentation de votre part est approuvée, puis quand chacun a approuvé.
+• Nouveau dans « Paramètres » : Mode débogage — activez-le pour envoyer des journaux de diagnostic anonymes qui aident à repérer les problèmes de connexion. Rien n'y renvoie à vous.
+• Le journal de connexion en direct suit maintenant tout le chemin jusqu'au relais, sans identifier personne.
+• Rún garde son chemin vers le réseau Tor d'un lancement à l'autre, sans tout recommencer.

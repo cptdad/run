@@ -1,0 +1,7 @@
+• Keskustelusta poistuminen ei enää hukkaa viestejä.
+• Yhdistää nopeammin ja uudelleen, kun verkko palaa.
+• Ilmoitukset kytkeytyvät päälle ja pois luotettavammin.
+• Kontaktin lisääminen kasvokkain on nopeampaa.
+• Ryhmien lukemattoman pisteet poistuvat, kun ne on nähty toisessa keskustelussa.
+• Ryhmät: jäseniltä jääneessä viestissä lukee ”toimittamatta: N”; poistuessa varoitetaan, että lukemattomat viestit voivat kadota.
+• Yhteysaika raportoidaan vain Virheenkorjaustilassa.

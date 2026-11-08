@@ -1,0 +1,6 @@
+• Yhteys muodostuu nopeammin: kontaktit näkyvät heti, kun välityspalvelin vastaa, ja jumiutunut yritys toistetaan aiemmin.
+• Yhdistää itse uudelleen, kun verkko palaa katkon jälkeen.
+• Ilmoitusten kytkeminen päälle tai pois toimii luotettavammin.
+• Kontaktin lisääminen kasvokkain valmistuu nopeammin.
+• Ryhmän lukemattoman viestin piste poistuu heti, kun olet nähnyt sen viestin toisessa keskustelussa.
+• Yhteysaikaraportteja lähetetään vain, kun Virheenkorjaustila on päällä.

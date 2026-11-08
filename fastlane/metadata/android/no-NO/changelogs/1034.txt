@@ -1,0 +1,3 @@
+• Forsinkede varsler om meldinger du allerede har sett, vises ikke lenger.
+• Tilkoblingen kommer seg mye raskere når Tor-nettverket henger, så lange ventetider før meldingene dine vises blir sjeldnere.
+• Den innebygde Tor er oppdatert til sin nyeste sikkerhetsversjon.

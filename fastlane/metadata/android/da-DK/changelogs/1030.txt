@@ -1,0 +1,6 @@
+• Hurtigere oplåsning på telefoner, hvor den var langsom.
+• Forbindelsen er hurtigere og mere pålidelig.
+• Private beskeder fra gruppemedlemmer vises nu i gruppen, markeret som private, med mulighed for at svare.
+• Gruppebeskeder, der kommer under en samtale på tomandshånd, vises dér, markeret med gruppens navn.
+• Når du forlader en samtale, mistes beskeder på vej ind ikke længere.
+• Tilføjelse af kontakter og flytning til ny telefon fejler ikke længere på visse langsommere telefoner.

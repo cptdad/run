@@ -1,0 +1,8 @@
+• Beim Verlassen eines Chats geht keine Nachricht mehr verloren.
+• Schnellere Verbindung; neu verbunden, wenn das Netz zurück ist.
+• Benachrichtigungen lassen sich zuverlässiger schalten.
+• Kontakte persönlich hinzufügen geht schneller.
+• Gruppen: klarere Ungelesen-Punkte, „nicht zugestellt an N“, Warnung vorm Verlassen.
+• Sperre nicht mehr aufschiebbar; Code erneut zeigen verlangt Entsperren.
+• Mehr Privatsphäre für Tastatur und Zwischenablage.
+• Verbindungsdauer nur im Debug-Modus gesendet.

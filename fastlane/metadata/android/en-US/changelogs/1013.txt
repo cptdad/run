@@ -1,0 +1,2 @@
+• Fixes a crash that closed Rún a few seconds after every unlock on some of the newest phones.
+• If the app kept quitting on you at launch, this update is the fix — nothing else changes.

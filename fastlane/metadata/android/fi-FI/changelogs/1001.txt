@@ -1,0 +1,5 @@
+• Viisi uutta kieltä: arabia, persia, somali, venäjä ja makedonia — Rún on nyt saatavilla 13 kielellä; arabia ja persia näkyvät oikealta vasemmalle.
+• Valitse sovelluksen kieli Asetuksista, oli puhelimen kieli mikä tahansa.
+• Uutta: Ilmoita virheestä — kerro meille nimettömästi Tor-verkon kautta, mikä meni pieleen.
+• Riimukivi palaa nyt tasaisen punaisena heti, kun Tor on yhdistetty.
+• Ensimmäinen kontakti tai ryhmä ei enää jää yläpalkin alle.

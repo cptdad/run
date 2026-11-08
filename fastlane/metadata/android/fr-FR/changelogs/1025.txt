@@ -1,0 +1,6 @@
+• Correctifs issus d'un audit de sécurité complet — la plupart invisibles.
+• Sur un téléphone sans écran de verrouillage, le niveau de protection Maximum est imposé.
+• L'appairage se termine dès que l'autre téléphone scanne à son tour.
+• Le transfert vers un nouveau téléphone ne plante plus lors du scan du code.
+• Un message de groupe n'apparaît plus comme non lu sur le contact qui l'a envoyé.
+• Si vous aviez activé le Mode débogage, réactivez-le une fois.

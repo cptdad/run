@@ -1,0 +1,3 @@
+• Fejlfindingstilstand bliver ved med at sende diagnoselogge, efter at appen har været i baggrunden, og på en telefon, der er beskyttet med en adgangskode.
+• Rún holder det, du skriver, uden for de ord, tastaturet lærer, hvor det kan lade sig gøre, på alle beskyttelsesniveauer.
+• Hvert beskyttelsesniveau siger nu tydeligt, om tastaturet kan lære ord, du skriver.

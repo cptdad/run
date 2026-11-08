@@ -1,0 +1,4 @@
+• Removing someone from a group, or leaving one, now sticks even when members are offline: Rún keeps trying for a week.
+• Before you turn notifications on, Rún now spells out what the relay itself can learn.
+• Settings now tell you when your protection key needs re-hardening.
+• Security work throughout: messages can't be re-routed by a faked contact update, and a wipe leaves less behind.

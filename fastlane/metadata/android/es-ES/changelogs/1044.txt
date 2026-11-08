@@ -1,0 +1,7 @@
+• Salgas como salgas de un chat, ya no se pierde ningún mensaje.
+• Conexión más rápida: tus contactos aparecen en cuanto el relay responde.
+• Se reconecta sola cuando vuelve la red.
+• Activar o desactivar las notificaciones es más fiable.
+• Añadir un contacto en persona se completa antes.
+• El punto de no leído de un grupo desaparece en cuanto ves su mensaje en otro chat.
+• Los informes del tiempo de conexión solo se envían en el Modo de depuración.

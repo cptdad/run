@@ -1,0 +1,5 @@
+• Rún meldet dir, wenn eine Vorstellung von dir bestätigt wird — und erneut, wenn beide zugestimmt haben.
+• Neu unter „Einstellungen“: Debug-Modus — einschalten, um anonyme Protokolle zu senden, die bei Verbindungsproblemen helfen.
+• Das Live-Verbindungsprotokoll deckt jetzt den ganzen Weg zum Relay ab. Keines verrät dich.
+• Rún behält seinen Weg ins Tor-Netz zwischen zwei Starts, statt neu zu beginnen.
+• Kontakte erscheinen jetzt samt Punkten für ungelesene Nachrichten.

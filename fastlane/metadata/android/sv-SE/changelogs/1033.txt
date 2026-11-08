@@ -1,0 +1,2 @@
+• Anslutningen återhämtar sig mycket snabbare när Tor-nätverket hakar upp sig, så långa väntetider innan dina meddelanden visas blir ovanligare.
+• Den inbyggda Tor är uppdaterad till sin senaste säkerhetsversion.

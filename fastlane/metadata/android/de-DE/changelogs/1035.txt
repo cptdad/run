@@ -1,0 +1,2 @@
+• Eine Nachricht, die genau in dem Moment gesendet wird, in dem die Tor-Verbindung abbricht, wird jetzt automatisch erneut gesendet, sobald die Verbindung wieder steht – statt zu warten, bis du auf „Wiederholen“ tippst.
+• Mehr Privatsphäre und weniger Akkuverbrauch nach einer Sicherheitsprüfung: Nicht gesendete Nachrichten werden beim Sperren oder Löschen der App aus dem Speicher entfernt, und ein Gruppenmitglied kann dein Telefon nicht mehr in hoher Frequenz nach Nachrichten suchen lassen.

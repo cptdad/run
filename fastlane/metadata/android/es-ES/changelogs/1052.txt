@@ -1,0 +1,5 @@
+• Grupos: un texto que no llegó a todos indica «no entregado a N»; al salir se avisa de que lo no leído puede perderse.
+• El bloqueo no se aplaza; reabrir el código de traslado pide desbloquear.
+• Más privacidad en teclado y portapapeles.
+• Un traslado cancelado al nuevo teléfono ya no se queda atascado.
+• Acerca de: enlace al código fuente y licencias.

@@ -1,0 +1,6 @@
+• Faster unlocking on phones where it was slow.
+• Connecting is faster and more reliable.
+• Private messages from group members now show in the group, marked private, with a reply option.
+• Group messages arriving during a one-to-one chat show there, marked with the group name.
+• Leaving a conversation no longer loses arriving messages.
+• Adding contacts and moving phones no longer fail on some slower phones.

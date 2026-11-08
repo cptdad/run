@@ -1,0 +1,8 @@
+• Salir de un chat ya no hace perder ningún mensaje.
+• Conexión más rápida; reconexión cuando vuelve la red.
+• Activar o desactivar notificaciones es más fiable.
+• Añadir un contacto en persona es más rápido.
+• Grupos: puntos de no leído más claros, «no entregado a N» y aviso antes de salir.
+• El bloqueo ya no se puede aplazar; volver a mostrar un código de traslado pide desbloquear.
+• Más privacidad en teclado y portapapeles.
+• El tiempo de conexión solo se envía en el Modo de depuración.
