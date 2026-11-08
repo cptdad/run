@@ -241,6 +241,16 @@ val generateRelayUrl = tasks.register("generateRelayUrl") {
             values.joinToString(", ", prefix = "listOf(", postfix = ")") { "\"${escapeForKotlinLiteral(it)}\"" }
         val safeUrls = kotlinList(prodUrls)
         val safeDevUrls = kotlinList(devUrls)
+        // Identifier-free build-log line (counts and the source only): lets a CI or Xcode Cloud
+        // build log answer "how many relay addresses did this artifact get, and from where" when
+        // the configured value itself cannot be read back (Xcode Cloud hides secret environment
+        // variables). Added 2026-11-08 after a stale single-address RELAY_ONION_URL in a shell
+        // profile had shipped 1 of the 3 configured addresses in every Mac-built store artifact.
+        logger.lifecycle(
+            "generateRelayUrl: ${prodUrls.size} production relay address(es) from " +
+                (if (urlFromEnv.isNullOrBlank()) "relay.properties" else "RELAY_ONION_URL") +
+                ", ${devUrls.size} dev address(es) (" + (if (releaseIntent) "release scrub" else "debug") + ")"
+        )
         val pkgDir = outputDir.get().asFile.resolve("com/vg/run")
         pkgDir.mkdirs()
         pkgDir.resolve("RelayUrl.kt").writeText(

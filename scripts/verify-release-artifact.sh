@@ -74,6 +74,45 @@ else
   echo "✓ no dev/test relay configured (RELAY_DEV_ONION_URL / relay.properties relayDevOnionUrl) — nothing to check"
 fi
 
+# --- production relay list: what the build BAKED must be what the repo configures ---
+# Read like the build does (RELAY_ONION_URL env var first, else relay.properties relayOnionUrl),
+# never printed. Two fail-closed checks. (1) relay.properties carries a list AND the env var is
+# set to a DIFFERENT list: the env var silently overrode the file. Found 2026-11-08: a stale
+# single-address export in ~/.zshrc had every Mac-built store artifact carry 1 of the 3 configured
+# addresses, so the multi-onion descriptor race never ran on Android store builds. (2) Every
+# configured address must be present in the artifact.
+prod_env="${RELAY_ONION_URL:-}"
+prod_file=""
+if [ -f "$REPO_ROOT/relay.properties" ]; then
+  prod_file="$(sed -nE 's/^[[:space:]]*relayOnionUrl[[:space:]]*[=:][[:space:]]*//p' "$REPO_ROOT/relay.properties" | tail -1 | sed 's/\\:/:/g' | tr -d '\r\n')"
+fi
+norm_list() { printf '%s' "$1" | tr -d ' \t' | tr ',' '\n' | grep -v '^$' | paste -s -d, -; }
+prod_raw="$prod_env"
+[ -n "$(printf '%s' "$prod_raw" | tr -d ', \t')" ] || prod_raw="$prod_file"
+if [ -n "$(printf '%s' "$prod_env" | tr -d ', \t')" ] && [ -n "$(printf '%s' "$prod_file" | tr -d ', \t')" ] \
+   && [ "$(norm_list "$prod_env")" != "$(norm_list "$prod_file")" ]; then
+  echo "✗ RELAY_ONION_URL (environment) and relay.properties relayOnionUrl configure DIFFERENT production relay lists — the environment variable overrode the file; unset it or make them equal" >&2
+  fail=1
+fi
+prod_checked=0
+prod_missing=0
+IFS=',' read -r -a prod_entries <<< "$prod_raw"
+for prod_onion in "${prod_entries[@]}"; do
+  prod_onion="$(printf '%s' "$prod_onion" | tr -d ' \t')"
+  [ -n "$prod_onion" ] || continue
+  prod_checked=$((prod_checked+1))
+  if ! grep -qF -- "$prod_onion" "$dev_strings"; then
+    echo "✗ configured production relay entry #$prod_checked is NOT present in $(basename "$APK") — built with a different relay list" >&2
+    prod_missing=1
+    fail=1
+  fi
+done
+if [ "$prod_checked" -gt 0 ]; then
+  [ "$prod_missing" -ne 0 ] || echo "✓ all $prod_checked configured production relay address(es) are present in the artifact"
+else
+  echo "✓ no production relay configured (RELAY_ONION_URL / relay.properties relayOnionUrl) — nothing to check"
+fi
+
 # --- post-signing injected-entry detection against the SIGNED file ---
 # jarsigner -verify (v1 JAR signing) WITHOUT -strict exits 0 even when extra
 # UNSIGNED entries are appended after signing — the tamper this catches. -strict
