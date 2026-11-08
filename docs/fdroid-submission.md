@@ -1,8 +1,25 @@
 # Submitting Rún to F-Droid
 
-Status 2026-11-08: everything on our side is in place; the merge request to
-[fdroiddata](https://gitlab.com/fdroid/fdroiddata) has not been opened yet. This page is the
-runbook for opening it and for keeping the app updated afterwards.
+Status 2026-11-08: the merge request is OPEN —
+<https://gitlab.com/fdroid/fdroiddata/-/merge_requests/56360> ("New app: Rún (com.vg.run)", from
+the fork `cptdad12/fdroiddata`, branch `com.vg.run`), with the recipe at v1.6.62 (1055), commit
+`64dee175a8213f5619ad2def85eb7adf7b437f0c`. It was opened through the GitLab API with `glab`
+(fork → file commit with `start_branch` → merge request), not through the web UI. This page is
+the runbook for what was done and for keeping the app updated afterwards.
+
+Pipeline: the MR pipeline runs on the fork, and GitLab refused it with 0 jobs ("The pipeline failed
+due to the user not being verified" — a fresh gitlab.com account without a card or phone number).
+fdroiddata's own template says not to verify in that case but to leave a note so a maintainer
+triggers the CI; that note is posted on the MR. The owner then verified the account and the pipeline
+ran (round 1): lint, rewritemeta, schema, source scan and the tool checks green; `fdroid build`
+stopped in the scanner with 6 errors and `checkupdates` failed. Fixes: (a) the Guardian Project
+raw-GitHub Maven mirror (gpmaven) removed from `settings.gradle.kts` — tor-android is on Maven
+Central and the verification metadata already pins Central's checksums; F-Droid accepts only known
+repositories (needs a new tag); (b) `scandelete` corrected to `iosApp/Frameworks/tor.xcframework`
+and extended with `e2e-tests` (its package.json is exported without the lock file); (c)
+`UpdateCheckData: version.properties|…` because the version is not literal in build.gradle.kts, so
+`checkupdates` found nothing. The ~45 `fuzz/src/test/resources/**` inputs are WARNINGS (binary test
+vectors), explained on the MR rather than deleted.
 
 ## What F-Droid will do with our recipe
 
@@ -24,7 +41,7 @@ What makes that work, all already in the repository:
   cannot be reproduced on macOS, because the NDK ships a different clang per host, which is why the
   asset is always the Linux build.
 
-Verified locally for v1.6.60 and v1.6.61 (each published by `publish-foss-release.sh`): `apksigcopier compare run-1.6.60-foss.apk --unsigned <Linux build>`
+Verified locally for v1.6.60, v1.6.61 and v1.6.62 (each published by `publish-foss-release.sh`): `apksigcopier compare run-1.6.60-foss.apk --unsigned <Linux build>`
 passes, and the Linux and macOS builds differ only in `librunargon2.so`.
 
 ## Opening the merge request (maintainer, once)
@@ -39,7 +56,13 @@ passes, and the Linux and macOS builds differ only in `librunargon2.so`.
    ```
 
    Remove the comment header (fdroiddata keeps metadata comment-free; the body is already in
-   `fdroid rewritemeta` order).
+   `fdroid rewritemeta` order). Two checklist rules that cost a push the first time: `commit:` must
+   be the FULL HASH of the tagged public commit (`git ls-remote git@github.com:cptdad/run.git
+   'refs/tags/v<version>^{}'`), never the tag; and the recipe carries no Summary/Description —
+   fdroiddata reads title, short/full description and changelogs from
+   `fastlane/metadata/android/<locale>/` (en-US required) AT THE BUILD COMMIT, so the tag the recipe
+   points at must already contain that tree (public since v1.6.62, export rule in
+   `scripts/export/public-paths.txt`).
 3. Optional local checks (`pipx install fdroidserver`, run INSIDE the fdroiddata checkout so the
    `config/` category and anti-feature definitions are found; outside it every category and
    anti-feature is reported invalid): `fdroid lint com.vg.run` and `fdroid rewritemeta com.vg.run`.
@@ -74,7 +97,7 @@ Reproducible build / developer signature:
 - `Binaries:` points at the GitHub release asset `run-<version>-foss.apk`, which is the
   unsigned build from our own Linux CI (`.github/workflows/reproducible-foss.yml`) signed with
   the key in `AllowedAPKSigningKeys` using apksigner 34.0.0.
-- Verified locally with `apksigcopier compare` for v1.6.60 and v1.6.61.
+- Verified locally with `apksigcopier compare` for every published tag.
 - The native library (Argon2, `shared/src/androidMain/cpp`) is built with the NDK pinned in the
   recipe; the macOS NDK clang produces different bytes than the Linux one, so the asset is
   always Linux-built.
@@ -92,8 +115,8 @@ Two things I want to flag rather than have you discover:
 2. Anti-features: NonFreeNet (the relay server's source is not published yet) and NonFreeAssets
    (the artwork is CC BY-NC-ND, see LICENSE-ART).
 
-Localized store metadata is not yet in the repository (Summary/Description are inline); it can
-be added as `metadata/<locale>/` if you prefer that.
+Localized store metadata lives in the repository under `fastlane/metadata/android/<locale>/`
+(12 locales including `en-US`: title, short and full description, changelogs). No screenshots yet.
 ```
 
 ## Keeping F-Droid updated (every release)

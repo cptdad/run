@@ -4,6 +4,10 @@
 # Field order is `fdroid rewritemeta` canonical; `fdroid lint` passes against fdroiddata's own
 # category/anti-feature definitions (2026-11-08). The ndk value is the REVISION form because
 # fdroidserver installs NDKs with sdkmanager "ndk;<value>" and its release-name table ends at r26c.
+# No Summary/Description here: fdroiddata reads them (and the changelogs) from the repo's
+# fastlane/metadata/android/<locale>/ tree at the build commit (public since v1.6.62). The
+# `commit` is the full hash of the public tag (`git ls-remote git@github.com:cptdad/run.git
+# 'refs/tags/vX^{}'`) — fdroiddata's checklist refuses tags/branches there.
 AntiFeatures:
   - NonFreeAssets
   - NonFreeNet
@@ -18,42 +22,14 @@ SourceCode: https://github.com/cptdad/run
 IssueTracker: https://github.com/cptdad/run/issues
 Changelog: https://github.com/cptdad/run/releases
 
-Summary: Anonymous, end-to-end encrypted messenger over Tor with no accounts or traces
-Description: |-
-  Rún is a secure messenger built for people who refuse to compromise on
-  privacy. Every message is end-to-end encrypted before it leaves your device,
-  and the keys ratchet forward as you chat.
-
-  Rún requires no account, no phone number, and no email address. Contacts are
-  added in person by scanning QR codes, or through a vouched introduction from
-  someone you already trust: no central directory, no contact discovery, no
-  social graph.
-
-  All traffic is routed through the Tor network, hiding your IP address and
-  location even from Rún's own relay. Messages are padded to fixed sizes, live
-  in memory only and are never written to disk. The relay stores only
-  temporary encrypted blobs it cannot read.
-
-  Your vault is encrypted at rest with AES-256 via SQLCipher, its key derived
-  with Argon2id and backed by the Android Keystore, with three protection
-  levels (Decent, Secure, Maximum). Rún locks itself when idle, wipes after too
-  many wrong unlock attempts, and self-destructs after a long stretch of
-  inactivity.
-
-  No analytics, no tracking, no advertising, no crash reporting, no cloud
-  backups. This build contains no Google code: notifications, if you turn them
-  on, arrive through a UnifiedPush distributor app you choose.
-
-  The relay server's source is not published yet (hence NonFreeNet).
-
 RepoType: git
 Repo: https://github.com/cptdad/run.git
 Binaries: https://github.com/cptdad/run/releases/download/v%v/run-%v-foss.apk
 
 Builds:
-  - versionName: 1.6.61
-    versionCode: 1054
-    commit: v1.6.61
+  - versionName: 1.6.62
+    versionCode: 1055
+    commit: 64dee175a8213f5619ad2def85eb7adf7b437f0c
     subdir: androidApp
     sudo:
       - apt-get update || apt-get update
@@ -64,12 +40,14 @@ Builds:
       - cp ../relay.properties.example ../relay.properties
       - printf 'run.ndkPath=%s\n' "$$NDK$$" >> ../local.properties
     scandelete:
-      - iosApp/tor.xcframework
+      - e2e-tests
+      - iosApp/Frameworks/tor.xcframework
     ndk: 30.0.16248370
 
 AllowedAPKSigningKeys: 29b4d5195bbc4ffd9be87c2547ee33371c7edff46f14ba8f93eadd7e2d2d2422
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v\d+\.\d+\.\d+$
-CurrentVersion: 1.6.61
-CurrentVersionCode: 1054
+UpdateCheckData: version.properties|versionCode=(\d+)|.|versionName=([\d.]+)
+CurrentVersion: 1.6.62
+CurrentVersionCode: 1055

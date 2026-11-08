@@ -20,14 +20,11 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
+        // info.guardianproject:tor-android (the embedded Tor binary) is served by Maven
+        // Central; gradle/verification-metadata.xml pins its checksums as computed from
+        // repo1.maven.org. The Guardian Project raw-GitHub mirror (gpmaven) was removed
+        // 2026-11-08: F-Droid's scanner only accepts known repositories.
         mavenCentral()
-        // Guardian Project Maven — hosts info.guardianproject:tor-android, the
-        // embedded Tor binary (libtor.so) used by the Android TorManager.
-        // Content-filtered per strict-repo mode (FAIL_ON_PROJECT_REPOS).
-        maven {
-            url = uri("https://raw.githubusercontent.com/guardianproject/gpmaven/master")
-            content { includeGroup("info.guardianproject") }
-        }
     }
 }
 
