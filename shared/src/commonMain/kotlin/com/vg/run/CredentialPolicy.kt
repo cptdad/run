@@ -160,9 +160,12 @@ object CredentialPolicy {
      * credit) — NOT with the character model, which grossly overrates natural
      * words ("correct horse battery staple" is ~52 bits of word choice, not
      * the ~130 bits its 28 characters would suggest). A single token is
-     * scored as length × log2(charset of the classes present), with repeated
-     * characters at half credit so "aaaaaaaaaaaaaaaa" cannot buy its way past
-     * the floor on length alone.
+     * scored as length × log2(charset of the classes present), with a run of
+     * same-case letters credited at natural-language rate (~1.4 bits per letter,
+     * so a lyric typed without spaces is one "word", not random text), other
+     * same-class runs at half credit, and repeated characters discounted so
+     * "aaaaaaaaaaaaaaaa" cannot buy its way past the floor on length alone.
+     * Character classes are Unicode-aware: "ä" is a letter, not a symbol.
      *
      * This is a heuristic LOWER-BOUND-ish estimate for gating and the meter,
      * not a cracker-grade model; it deliberately under-credits ambiguous
@@ -534,12 +537,21 @@ object CredentialPolicy {
     )
 
     private fun charModelBits(token: String, discountSameClassRuns: Boolean): Double {
+        // Character classes by UNICODE category, not ASCII range. Until 2026-11-08 every
+        // non-ASCII character counted as a SYMBOL (+33 to the alphabet, and a class change
+        // that broke the same-class-run discount), so "dugamladufriadufjällhöganord" — a
+        // national-anthem line typed without spaces — scored ~100 bits and was accepted for
+        // MAXIMUM while its ASCII twin scored 68 and was refused. ä, ö, å, é, ß are letters
+        // of the same alphabet as a..z: no symbol credit, and the run stays intact. Letters
+        // without case (Arabic, Persian, …) join the lowercase class for the same reason;
+        // the alphabet is still credited at 26 — a conservative lower bound on purpose.
+        val classes = token.map { charClass(it) }.toSet()
         var charset = 0
-        if (token.any { it in 'a'..'z' }) charset += 26
-        if (token.any { it in 'A'..'Z' }) charset += 26
-        if (token.any { it in '0'..'9' }) charset += 10
-        // Everything else (symbols, unicode) — credit a common symbol set.
-        if (token.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in '0'..'9' }) charset += 33
+        if (0 in classes) charset += 26
+        if (1 in classes) charset += 26
+        if (2 in classes) charset += 10
+        // Everything else (symbols, punctuation) — credit a common symbol set.
+        if (3 in classes) charset += 33
         val perChar = log2(max(charset, 1).toDouble())
         if (token.length <= 1) return perChar * token.length.toDouble()
         // Discount RUNS of predictable steps. A step is predictable
@@ -611,9 +623,19 @@ object CredentialPolicy {
         var prevPredictable = false
         for (i in 1 until s.length) {
             val pred = isPredictableStep(s[i - 1], s[i])
+            val cls = charClass(s[i])
             length += when {
                 pred && prevPredictable -> 0.0                                          // 2nd+ step of a run: guessable
-                discountSameClassRuns && charClass(s[i - 1]) == charClass(s[i]) -> 0.5
+                // A run of same-case LETTERS is natural language until proven otherwise: a
+                // phrase or lyric typed without spaces carries ~1.3–1.5 bits per letter
+                // (Shannon's estimate for text), not log2(26) ≈ 4.7 and not half of it.
+                // 0.3 × 4.7 ≈ 1.4 bits per letter: a concatenated phrase needs ~50 letters
+                // to clear 70 bits, so "dugamladufriadufjällhöganord" (28) cannot. A user who
+                // really types random letters adds spaces (word model) or a second character
+                // class; the live meter shows the effect. Digits and symbols keep 0.5 — their
+                // runs are already caught by the predictable-step and period penalties.
+                discountSameClassRuns && cls == charClass(s[i - 1]) && cls <= 1 -> LETTER_RUN_CREDIT
+                discountSameClassRuns && cls == charClass(s[i - 1]) -> 0.5
                 else -> 1.0
             }
             prevPredictable = pred
@@ -621,12 +643,16 @@ object CredentialPolicy {
         return length
     }
 
-    /** Character class for the same-class-run discount —
-     *  lower / upper / digit / other (symbols, unicode). */
+    /** Effective-length credit for the 2nd+ letter of a same-case letter run (see above). */
+    private const val LETTER_RUN_CREDIT = 0.3
+
+    /** Character class for the same-class-run discount — lowercase or caseless letter /
+     *  uppercase letter / digit / other (symbols, punctuation). Unicode-aware: "ä" is a letter,
+     *  not a symbol (2026-11-08 fix in [charModelBits]). */
     private fun charClass(c: Char): Int = when {
-        c in 'a'..'z' -> 0
-        c in 'A'..'Z' -> 1
-        c in '0'..'9' -> 2
+        c.isUpperCase() -> 1
+        c.isLetter() -> 0
+        c.isDigit() -> 2
         else -> 3
     }
 

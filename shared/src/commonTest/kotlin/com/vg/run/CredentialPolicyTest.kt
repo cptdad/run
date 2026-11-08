@@ -358,11 +358,15 @@ class CredentialPolicyTest {
         // model never runs on them).
         assertTrue(CredentialPolicy.meetsFloor("aB3!xY9\$kQ7%"))
         assertTrue(CredentialPolicy.meetsFloor("Xk7#mR2\$wZ9!v"))
-        // The long single-token passphrase the cross-platform e2e suite provisions
-        // its MAXIMUM iOS seats with (77.56 bits — single token, so it is scored by
-        // the character model and the word-model rules cannot touch it). Pinned
-        // here because a prior round of this hardening broke the suite.
-        assertTrue(CredentialPolicy.meetsFloor("kallearnebollmolnhejapamongiskatt"))
+        // The passphrase the cross-platform e2e suites provision their MAXIMUM iOS seats
+        // with. Until 2026-11-08 it was the eight words CONCATENATED
+        // ("kallearnebollmolnhejapamongiskatt", 77.56 bits under the old character model) —
+        // exactly the class of input the owner reported as a bug (a lyric typed without
+        // spaces was accepted), so the concatenation is now refused and the suites type
+        // the same eight words WITH spaces, which the word model scores at ~103 bits.
+        // Pinned here because a prior round of this hardening broke the suite.
+        assertFalse(CredentialPolicy.meetsFloor("kallearnebollmolnhejapamongiskatt"))
+        assertTrue(CredentialPolicy.meetsFloor("kalle arne boll moln heja pa mongi skatt"))
     }
 
     // -- All-numeric multi-token phrases ----------
@@ -678,5 +682,52 @@ class CredentialPolicyTest {
             ProtectionLevel.entries.minOf { it.autoLockTimeoutMs },
             CredentialPolicy.autoLockTimeoutMs(ProtectionLevelRead.Damaged),
         )
+    }
+
+    // ---- 2026-11-08: a well-known phrase typed WITHOUT spaces must not clear MAXIMUM ----
+
+    @Test
+    fun anthemLineWithoutSpaces_isRefused_andScoresWeak() {
+        // Reported by the owner: the first line of the Swedish national anthem, lowercased
+        // and concatenated, was accepted as a MAXIMUM passphrase. Two defects stacked:
+        // ä/ö counted as SYMBOLS (+33 alphabet, run discount broken at each one) and a
+        // same-case letter run was credited half of log2(26) per letter, ~3× the real
+        // entropy of natural language.
+        val anthem = "dugamladufriadufjällhöganord"
+        assertFalse(CredentialPolicy.meetsFloor(anthem))
+        assertEquals(0, CredentialPolicy.strengthBucket(CredentialPolicy.estimateBits(anthem)), "weak, not merely fair")
+        // At ~1.4 bits per letter a concatenated phrase needs about 50 letters; 37 is not enough.
+        assertFalse(CredentialPolicy.meetsFloor("dugamladufriadufjällhöganorddutystadu"))
+    }
+
+    @Test
+    fun diacritics_areLetters_notSymbols() {
+        // Same alphabet, same score: the diacritics neither add symbol credit nor break the run.
+        val withDiacritics = CredentialPolicy.estimateBits("dugamladufriadufjällhöganord")
+        val asciiTwin = CredentialPolicy.estimateBits("dugamladufriadufjallhoganord")
+        assertEquals(asciiTwin, withDiacritics, 1e-9)
+        // Uppercase letters with diacritics are the UPPERCASE class, not symbols either. (The
+        // letters are chosen so no pair is an alphabet or keyboard step; a sequence like
+        // "ABCD" would be discounted on its own and hide the comparison.)
+        assertEquals(
+            CredentialPolicy.estimateBits("KQZMWPLRTXVBNJCY"),
+            CredentialPolicy.estimateBits("KQZMWÄLRTXVBNJÖY"),
+            1e-9,
+        )
+        // Caseless letters (Arabic) are one alphabet too: a repeated-letter run is still discounted.
+        assertFalse(CredentialPolicy.meetsFloor("سلامسلامسلامسلامسلامسلام"))
+    }
+
+    @Test
+    fun letterRunTightening_leavesMixedClassAndPhrasePathsAlone() {
+        // The pinned mixed-class tokens change class at every character: no run, no change.
+        assertTrue(CredentialPolicy.meetsFloor("aB3!xY9\$kQ7%"))
+        assertTrue(CredentialPolicy.meetsFloor("Xk7#mR2\$wZ9!v"))
+        // Genuine phrases WITH spaces take the word model (despaced check runs with the run
+        // discount OFF), so six short random words still pass exactly as before.
+        assertTrue(CredentialPolicy.meetsFloor("cat dog fox pig cow hen"))
+        assertTrue(CredentialPolicy.meetsFloor("correct horse battery staple lamp river"))
+        // The same six words concatenated are one letter run — natural language — and fail.
+        assertFalse(CredentialPolicy.meetsFloor("catdogfoxpigcowhen"))
     }
 }

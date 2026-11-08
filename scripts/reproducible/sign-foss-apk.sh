@@ -24,7 +24,8 @@ SIGNING_DIR="${RUN_SIGNING_DIR:-$HOME/.run-signing}"
 PROPS="$SIGNING_DIR/keystore.properties"
 [ -f "$PROPS" ] || { echo "no keystore.properties at $PROPS" >&2; exit 1; }
 
-prop() { sed -n "s/^$1=//p" "$PROPS" | head -1; }
+# (`sed -n 1p`, not `head -1`: under pipefail an early-closing reader is a SIGPIPE exit.)
+prop() { sed -n "s/^$1=//p" "$PROPS" | sed -n '1p'; }
 STORE_FILE="$(prop storeFile)"
 case "$STORE_FILE" in /*) ;; *) STORE_FILE="$SIGNING_DIR/$STORE_FILE" ;; esac
 [ -f "$STORE_FILE" ] || { echo "keystore not found: $STORE_FILE" >&2; exit 1; }
@@ -49,7 +50,7 @@ APKSIGNER="${RUN_APKSIGNER:-$SDK_BT/34.0.0/apksigner}"
   --out "$OUT" "$UNSIGNED"
 unset RUN_KS_PASS RUN_KEY_PASS
 
-"$APKSIGNER" verify --print-certs "$OUT" | grep -E 'SHA-256' | head -1
+"$APKSIGNER" verify --print-certs "$OUT" 2>/dev/null | grep -E 'SHA-256' | sed -n '1p'
 echo "signed: $OUT"
 # The release gate (signer identity, zero Google code, manifest) must pass on the result:
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

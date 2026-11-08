@@ -3,7 +3,7 @@ name: codeql
 # CodeQL code scanning (open-source plan §5, 2026-11-05). Two analyses:
 #   java-kotlin — manual build mode (Kotlin has no build-free extractor), using
 #                 the same JDK + SDK + NDK/CMake provisioning as release-gates'
-#                 unit-tests job, then the debug Kotlin compile of both modules;
+#                 unit-tests job, then the debug Kotlin compile of both modules (both flavours);
 #   swift       — manual build mode on the macOS image with the BUILDING.md
 #                 simulator command.
 # Both run only on the PUBLIC repository: uploading results needs code scanning,
@@ -78,11 +78,15 @@ jobs:
           languages: java-kotlin
           build-mode: manual
 
-      - name: Compile (debug Kotlin, both modules)
+      - name: Compile (debug Kotlin, both modules, both distribution flavours)
+        # Task names carry the flavour since the google/foss split (BUILDING.md §4):
+        # a bare compileDebugKotlin is ambiguous and fails. Both flavours are compiled
+        # so the scan covers the vendor seams of each (androidApp/src/google + src/foss).
         run: |
           ./gradlew --no-daemon \
             :shared:compileDebugKotlinAndroid \
-            :androidApp:compileDebugKotlin
+            :androidApp:compileGoogleDebugKotlin \
+            :androidApp:compileFossDebugKotlin
 
       - uses: github/codeql-action/analyze@52cf1852265d99e9bea071b03366fc777a602909
         with:

@@ -125,8 +125,10 @@ A forced biometric unlock still works, and a passcode cracked by a forensic tool
 Changing enrolled fingerprints or faces destroys this key by design. The recovery code below is
 then the only way back in. This level needs biometrics enrolled and is unavailable otherwise.
 
-**Maximum** replaces the PIN with a passphrase that must estimate at roughly 70 bits or more. It
-uses no biometrics and no hardware binding. Its strength comes from the passphrase alone, so it
+**Maximum** replaces the PIN with a passphrase that must estimate at roughly 70 bits or more. The
+estimate is deliberately conservative: words are scored as word choices, not letters, and a run of
+letters typed without spaces is scored as natural language, so a song line or a quote does not
+qualify however long it is. It uses no biometrics and no hardware binding. Its strength comes from the passphrase alone, so it
 stays shut even after the device key has been extracted. It also uses a password-style message
 keyboard so the system keyboard does not learn your words.
 On iOS, Rún blocks third-party keyboards inside the app at every level, so only the system

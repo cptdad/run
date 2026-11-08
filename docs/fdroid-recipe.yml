@@ -1,26 +1,6 @@
-# F-Droid build recipe for Rún — the DRAFT of fdroiddata's metadata/com.vg.run.yml.
-#
-# Status (2026-11-08): not yet submitted. The app is published with the DEVELOPER'S signature
-# (reproducible build): F-Droid rebuilds the `foss` flavour from the tag on its own servers,
-# compares the result byte for byte with the APK attached to the GitHub release of the same
-# version (`Binaries:`), and publishes that signed APK only when they match. The F-Droid key
-# is never used (`AllowedAPKSigningKeys` is exclusive), so an F-Droid install updates like a
-# direct install and never asks the user to reinstall.
-#
-# Prerequisites in this repository (BUILDING.md §4): the `foss` flavour (zero Google code),
-# tags `v<versionName>` on github.com/cptdad/run (scripts/export/publish-public.sh writes
-# them on every push), a `run-<versionName>-foss.apk` asset on the matching GitHub release,
-# and the deterministic native build (shared/src/androidMain/cpp/CMakeLists.txt).
-#
-# Open questions for the F-Droid reviewers (to raise in the merge request):
-#  - info.guardianproject:tor-android ships Tor as a PREBUILT binary via Maven (the same
-#    artefact Orbot uses). F-Droid's inclusion policy prefers everything built from source;
-#    if they insist, the recipe grows a Tor build step or the dependency moves to F-Droid's
-#    own tor-android build.
-#  - Anti-features: NonFreeNet (the relay server's source is not published yet) and
-#    NonFreeAssets (the artwork is CC BY-NC-ND; see LICENSE-ART).
-#  - The NDK pin (r30 = 30.0.16248370) must be in fdroidserver's NDK table.
-
+# fdroiddata metadata/com.vg.run.yml — the file to submit. Everything about the submission
+# (steps, merge-request text, reviewer questions, per-release maintenance) is in
+# docs/fdroid-submission.md. First tag with a signed release asset: v1.6.60 (2026-11-08).
 Categories:
   - Internet
   - Security
@@ -32,31 +12,33 @@ SourceCode: https://github.com/cptdad/run
 IssueTracker: https://github.com/cptdad/run/issues
 Changelog: https://github.com/cptdad/run/releases
 
-Name: Rún
 Summary: Anonymous, end-to-end encrypted messenger over Tor. No accounts. No traces.
 Description: |-
-  Rún is a secure messenger built for people who refuse to compromise on privacy. Every
-  message is end-to-end encrypted before it leaves your device, and the keys ratchet
-  forward as you chat.
+  Rún is a secure messenger built for people who refuse to compromise on
+  privacy. Every message is end-to-end encrypted before it leaves your device,
+  and the keys ratchet forward as you chat.
 
-  Rún requires no account, no phone number, and no email address. Contacts are added in
-  person by scanning QR codes, or through a vouched introduction from someone you already
-  trust: no central directory, no contact discovery, no social graph.
+  Rún requires no account, no phone number, and no email address. Contacts are
+  added in person by scanning QR codes, or through a vouched introduction from
+  someone you already trust: no central directory, no contact discovery, no
+  social graph.
 
-  All traffic is routed through the Tor network, hiding your IP address and location even
-  from Rún's own relay. Messages are padded to fixed sizes, live in memory only and are
-  never written to disk. The relay stores only temporary encrypted blobs it cannot read.
+  All traffic is routed through the Tor network, hiding your IP address and
+  location even from Rún's own relay. Messages are padded to fixed sizes, live
+  in memory only and are never written to disk. The relay stores only
+  temporary encrypted blobs it cannot read.
 
-  Your vault is encrypted at rest with AES-256 via SQLCipher, its key derived with Argon2id
-  and backed by the Android Keystore, with three protection levels (Decent, Secure,
-  Maximum). Rún locks itself when idle, wipes after too many wrong unlock attempts, and
-  self-destructs after a long stretch of inactivity.
+  Your vault is encrypted at rest with AES-256 via SQLCipher, its key derived
+  with Argon2id and backed by the Android Keystore, with three protection
+  levels (Decent, Secure, Maximum). Rún locks itself when idle, wipes after too
+  many wrong unlock attempts, and self-destructs after a long stretch of
+  inactivity.
 
-  No analytics, no tracking, no advertising, no crash reporting, no cloud backups. This
-  build contains no Google code: notifications, if you turn them on, arrive through a
-  UnifiedPush distributor app you choose.
+  No analytics, no tracking, no advertising, no crash reporting, no cloud
+  backups. This build contains no Google code: notifications, if you turn them
+  on, arrive through a UnifiedPush distributor app you choose.
 
-  The relay server's source is not published yet (hence the NonFreeNet anti-feature).
+  The relay server's source is not published yet (hence NonFreeNet).
 
 AntiFeatures:
   - NonFreeNet
@@ -67,26 +49,25 @@ Repo: https://github.com/cptdad/run.git
 Binaries: https://github.com/cptdad/run/releases/download/v%v/run-%v-foss.apk
 
 Builds:
-  - versionName: 1.6.59          # placeholder: the first version published with a tag + release asset
-    versionCode: 1052
-    commit: v1.6.59
+  - versionName: 1.6.60
+    versionCode: 1053
+    commit: v1.6.60
     subdir: androidApp
+    sudo:
+      - apt-get update || apt-get update
+      - apt-get install -y --no-install-recommends cmake ninja-build
     gradle:
       - foss
-    ndk: r30
+    ndk: 30.0.16248370   # revision form: fdroidserver installs it with sdkmanager "ndk;<value>"
     prebuild:
-      # The production relay's onion addresses are published in relay.properties.example
-      # (README, "Using the production relay from your own build"); the build reads
-      # relay.properties. The dev relay stays empty: release tasks scrub it anyway.
       - cp ../relay.properties.example ../relay.properties
-      # The native Argon2 build takes the NDK from RUN_NDK_PATH / run.ndkPath (BUILDING.md §2).
       - printf 'run.ndkPath=%s\n' "$$NDK$$" >> ../local.properties
     scandelete:
-      - iosApp/tor.xcframework   # the iOS Tor framework (prebuilt binaries); not part of the Android build
+      - iosApp/tor.xcframework
 
 AllowedAPKSigningKeys: 29b4d5195bbc4ffd9be87c2547ee33371c7edff46f14ba8f93eadd7e2d2d2422
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v\d+\.\d+\.\d+$
-CurrentVersion: 1.6.59
-CurrentVersionCode: 1052
+CurrentVersion: 1.6.60
+CurrentVersionCode: 1053
