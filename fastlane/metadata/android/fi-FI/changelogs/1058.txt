@@ -1,0 +1,6 @@
+• Maksimi: salalause kirjoitetaan käsin – sitä ei voi liittää.
+• Maksimi hylkää enemmän heikkoja salalauseita, kuten laskeminen omalla kielellä tai välimerkkien jonot.
+• Ryhmät: jäseniltä jääneessä viestissä lukee ”toimittamatta: N”; poistuessa varoitetaan, että lukemattomat viestit voivat kadota.
+• Lukitusta ei voi lykätä; siirtokoodin uudelleen näyttäminen vaatii avauksen.
+• Peruttu siirto uuteen puhelimeen ei enää jää jumiin.
+• Tietoja: linkki lähdekoodiin ja lisenssit.

@@ -45,6 +45,17 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.platform.TextToolbar
+import androidx.compose.ui.platform.TextToolbarStatus
 
 // ---------------------------------------------------------------------------
 // Shared PIN UI components used by both PinEntryScreen and PinSetupScreen.
@@ -248,37 +259,84 @@ fun PassphraseInputField(
     isError: Boolean = false,
     onDone: (() -> Unit)? = null,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { if (it.length <= CredentialPolicy.MAX_PASSPHRASE_LENGTH) onValueChange(it) },
-        enabled = enabled,
-        isError = isError,
-        singleLine = true,
-        placeholder = { Text(placeholder, color = RunGrey) },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            autoCorrectEnabled = false,
-            imeAction = if (onDone != null) ImeAction.Done
-                        else ImeAction.Default,
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { onDone?.invoke() }
-        ),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = RunWhite,
-            unfocusedTextColor = RunWhite,
-            focusedContainerColor = RunSurface.copy(alpha = 0.4f),
-            unfocusedContainerColor = RunSurface.copy(alpha = 0.4f),
-            cursorColor = RunWhite,
-            focusedBorderColor = RunGrey,
-            unfocusedBorderColor = RunGrey.copy(alpha = 0.5f),
-            errorBorderColor = RunError,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics { testTag = fieldTag },
-    )
+    // The passphrase must be typed by hand, character by character (2026-11-09 user
+    // directive): no Paste INTO the field, and — because a secret sitting on the
+    // clipboard is a seize-and-extract target — no Copy / Cut / Select-all OUT of it.
+    // Two gates cover the human paste paths:
+    //   1) a no-op TextToolbar ([NoClipboardTextToolbar]) removes the long-press /
+    //      selection menu entirely (its Paste, Copy, Cut, Select-all) — the touch path;
+    //   2) onPreviewKeyEvent eats a hardware Ctrl/⌘-V before the IME can act on it.
+    // KeyboardType.Password already suppresses the IME clipboard / suggestion strip.
+    // The programmatic path the device e2e suites use (Appium setValue) goes through
+    // NEITHER gate, so this change does not touch them.
+    CompositionLocalProvider(LocalTextToolbar provides NoClipboardTextToolbar) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = { if (it.length <= CredentialPolicy.MAX_PASSPHRASE_LENGTH) onValueChange(it) },
+            enabled = enabled,
+            isError = isError,
+            singleLine = true,
+            placeholder = { Text(placeholder, color = RunGrey) },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                autoCorrectEnabled = false,
+                imeAction = if (onDone != null) ImeAction.Done
+                            else ImeAction.Default,
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onDone?.invoke() }
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = RunWhite,
+                unfocusedTextColor = RunWhite,
+                focusedContainerColor = RunSurface.copy(alpha = 0.4f),
+                unfocusedContainerColor = RunSurface.copy(alpha = 0.4f),
+                cursorColor = RunWhite,
+                focusedBorderColor = RunGrey,
+                unfocusedBorderColor = RunGrey.copy(alpha = 0.5f),
+                errorBorderColor = RunError,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                // Consume a hardware-keyboard paste shortcut (Ctrl-V / ⌘-V) before the
+                // IME sees it. A plain "v" has no Ctrl/Meta held, so typing is unaffected.
+                .onPreviewKeyEvent { e ->
+                    e.type == KeyEventType.KeyDown &&
+                        (e.isCtrlPressed || e.isMetaPressed) &&
+                        e.key == Key.V
+                }
+                .semantics { testTag = fieldTag },
+        )
+    }
+}
+
+/**
+ * A [TextToolbar] that shows NOTHING. Provided over the passphrase field (see
+ * [PassphraseInputField]) so the selection / long-press menu offers no Paste — the
+ * passphrase must be typed by hand — and no Copy / Cut /
+ * Select-all either, so the secret can never be lifted onto the clipboard a seized-device
+ * extraction would read. Both showMenu overloads are no-ops (the 5-arg one and the later
+ * 6-arg autofill one), so no menu can appear whichever the runtime invokes.
+ */
+private object NoClipboardTextToolbar : TextToolbar {
+    override val status: TextToolbarStatus get() = TextToolbarStatus.Hidden
+    override fun hide() {}
+    override fun showMenu(
+        rect: Rect,
+        onCopyRequested: (() -> Unit)?,
+        onPasteRequested: (() -> Unit)?,
+        onCutRequested: (() -> Unit)?,
+        onSelectAllRequested: (() -> Unit)?,
+    ) {}
+    override fun showMenu(
+        rect: Rect,
+        onCopyRequested: (() -> Unit)?,
+        onPasteRequested: (() -> Unit)?,
+        onCutRequested: (() -> Unit)?,
+        onSelectAllRequested: (() -> Unit)?,
+        onAutofillRequested: (() -> Unit)?,
+    ) {}
 }
 
 /**

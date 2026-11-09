@@ -22,14 +22,16 @@ SourceCode: https://github.com/cptdad/run
 IssueTracker: https://github.com/cptdad/run/issues
 Changelog: https://github.com/cptdad/run/releases
 
+AutoName: Rún
+
 RepoType: git
 Repo: https://github.com/cptdad/run.git
 Binaries: https://github.com/cptdad/run/releases/download/v%v/run-%v-foss.apk
 
 Builds:
-  - versionName: 1.6.62
-    versionCode: 1055
-    commit: 64dee175a8213f5619ad2def85eb7adf7b437f0c
+  - versionName: 1.6.63
+    versionCode: 1056
+    commit: cc1f26ee92244beb6bc43503a1ad0fa1ce7c64d1
     subdir: androidApp
     sudo:
       - apt-get update || apt-get update
@@ -38,6 +40,7 @@ Builds:
       - foss
     prebuild:
       - cp ../relay.properties.example ../relay.properties
+      - sed -i '/^ndk\.dir=/d' ../local.properties
       - printf 'run.ndkPath=%s\n' "$$NDK$$" >> ../local.properties
     scandelete:
       - e2e-tests
@@ -49,5 +52,5 @@ AllowedAPKSigningKeys: 29b4d5195bbc4ffd9be87c2547ee33371c7edff46f14ba8f93eadd7e2
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v\d+\.\d+\.\d+$
 UpdateCheckData: version.properties|versionCode=(\d+)|.|versionName=([\d.]+)
-CurrentVersion: 1.6.62
-CurrentVersionCode: 1055
+CurrentVersion: 1.6.63
+CurrentVersionCode: 1056

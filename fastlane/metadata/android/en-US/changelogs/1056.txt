@@ -1,6 +1,6 @@
-• Maximum: a song line typed without spaces no longer passes as a strong passphrase.
+• Maximum: the passphrase is typed by hand — it can't be pasted.
+• Maximum rejects more weak passphrases, like counting in your language or runs of punctuation.
 • Groups: a text that missed members says "not delivered to N"; leaving warns that unread texts may be lost.
 • Locks can't be postponed; showing a move code again asks you to unlock.
-• Tighter keyboard and clipboard privacy.
 • A cancelled move import no longer gets stuck.
 • About links to the source code and lists the licences.

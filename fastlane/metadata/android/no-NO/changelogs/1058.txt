@@ -1,0 +1,6 @@
+• Maksimal: passfrasen skrives for hånd – den kan ikke limes inn.
+• Maksimal avviser flere svake passfraser, som å telle på språket ditt eller rekker med skilletegn.
+• Grupper: en tekst som ikke nådde alle viser «ikke levert til N»; å forlate varsler om at uleste tekster kan gå tapt.
+• Låsingen kan ikke utsettes; å vise flyttekoden på nytt krever opplåsing.
+• En avbrutt flytting til ny telefon henger seg ikke lenger opp.
+• Om: lenke til kildekoden og lisensene.

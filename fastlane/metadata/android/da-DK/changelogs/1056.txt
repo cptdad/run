@@ -1,6 +1,6 @@
-• Maksimal: en sanglinje skrevet uden mellemrum godkendes ikke længere som stærk adgangssætning.
+• Maksimal: adgangssætningen skrives i hånden – den kan ikke indsættes.
+• Maksimal afviser flere svage adgangssætninger, som at tælle på dit sprog eller rækker af tegnsætning.
 • Grupper: en tekst, der ikke nåede alle, viser »ikke leveret til N«; at forlade advarer om, at ulæste tekster kan gå tabt.
 • Låsning kan ikke udskydes; at vise flyttekoden igen kræver oplåsning.
-• Bedre privatliv for tastatur og udklip.
 • En annulleret flytning til ny telefon hænger ikke længere fast.
 • Om: link til kildekoden og licenserne.

@@ -1,0 +1,6 @@
+• Maximum : la phrase secrète se saisit à la main, sans coller.
+• Maximum refuse plus de phrases secrètes faibles : compter dans votre langue ou des suites de ponctuation.
+• Groupes : un texte manqué par des membres indique « non remis à N » ; quitter avertit que les non-lus peuvent être perdus.
+• Verrouillage non repoussable ; réafficher un code de transfert exige de déverrouiller.
+• Un transfert annulé vers un nouveau téléphone ne reste plus bloqué.
+• À propos : code source et licences.

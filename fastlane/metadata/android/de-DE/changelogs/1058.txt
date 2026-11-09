@@ -1,0 +1,6 @@
+• Maximum: Die Passphrase wird von Hand getippt, nicht eingefügt.
+• Maximum lehnt mehr schwache Passphrasen ab: Zählen in der eigenen Sprache oder Satzzeichenfolgen.
+• Gruppen: Verpasst ein Text Mitglieder, steht „nicht zugestellt an N“; Verlassen warnt, dass Ungelesenes verloren gehen kann.
+• Sperre nicht aufschiebbar; Umzugscode erneut zeigen verlangt Entsperren.
+• Eine abgebrochene Übertragung aufs neue Gerät bleibt nicht mehr hängen.
+• „Über“ verlinkt den Quellcode, zeigt die Lizenzen.

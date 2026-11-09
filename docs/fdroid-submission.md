@@ -1,6 +1,6 @@
 # Submitting Rún to F-Droid
 
-Status 2026-11-08: the merge request is OPEN —
+Status 2026-11-08: the merge request is OPEN with a GREEN pipeline (round 3, see below) —
 <https://gitlab.com/fdroid/fdroiddata/-/merge_requests/56360> ("New app: Rún (com.vg.run)", from
 the fork `cptdad12/fdroiddata`, branch `com.vg.run`), with the recipe at v1.6.62 (1055), commit
 `64dee175a8213f5619ad2def85eb7adf7b437f0c`. It was opened through the GitLab API with `glab`
@@ -20,6 +20,20 @@ and extended with `e2e-tests` (its package.json is exported without the lock fil
 `UpdateCheckData: version.properties|…` because the version is not literal in build.gradle.kts, so
 `checkupdates` found nothing. The ~45 `fuzz/src/test/resources/**` inputs are WARNINGS (binary test
 vectors), explained on the MR rather than deleted.
+
+Round 2 (recipe at v1.6.63, after the maintainer linsui had rebased the branch onto master): the
+scanner passed; the Gradle build failed with `CXX1100: Both android.ndkPath and ndk.dir in
+local.properties are set` — fdroidserver writes `ndk.dir=` into local.properties and our build
+set `android.ndkPath` from `run.ndkPath`. `checkupdates --auto` added `AutoName: Rún` and the job
+fails whenever it changes the recipe. Fixes: `AutoName: Rún` in the recipe; prebuild
+`sed -i '/^ndk\.dir=/d' ../local.properties` so only our path remains (needed for v1.6.63);
+`shared/build.gradle.kts` now honours a plain `ndk.dir=` and leaves `ndkPath` unset in that case,
+so the recipe can drop both NDK prebuild lines from the first tag that carries the change.
+
+Round 3 (2026-11-08 ~21:30): ALL NINE JOBS GREEN. F-Droid's build server built 1.6.63 (1056) from
+`cc1f26ee`, downloaded `run-1.6.63-foss.apk` and logged "compared built binary to supplied reference
+binary successfully" with our signer `29b4d519…2422` as the allowed key — the reproducible build is
+proven on their infrastructure. Awaiting maintainer review/merge.
 
 ## What F-Droid will do with our recipe
 

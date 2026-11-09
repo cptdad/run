@@ -382,13 +382,20 @@ kotlin {
 // behind a path containing a SPACE, which CMake/ndk-build toolchains mishandle, so the
 // default is the Homebrew NDK r30 (`brew install --cask android-ndk`). Override with the
 // RUN_NDK_PATH env var or `run.ndkPath=` in the gitignored local.properties — keep it
-// space-free. The version pin below must match that NDK's source.properties.
+// space-free. A plain `ndk.dir=` in local.properties (what fdroidserver and Android Studio
+// write) is honoured too, F-Droid 2026-11-08: AGP then finds the NDK through ndk.dir itself,
+// and `ndkPath` must stay UNSET — setting both is a hard error (CXX1100).
+// The version pin below must match that NDK's source.properties.
 val runNdkVersion = "30.0.16248370"
-val runNdkPath: String = providers.environmentVariable("RUN_NDK_PATH").orNull?.takeIf { it.isNotBlank() }
-    ?: rootProject.file("local.properties").takeIf { it.isFile }?.let { f ->
-        Properties().apply { f.inputStream().use { load(it) } }.getProperty("run.ndkPath")
-    }?.takeIf { it.isNotBlank() }
-    ?: "/opt/homebrew/share/android-ndk"
+val runLocalProps: Properties? = rootProject.file("local.properties").takeIf { it.isFile }?.let { f ->
+    Properties().apply { f.inputStream().use { load(it) } }
+}
+val runNdkOverride: String? = providers.environmentVariable("RUN_NDK_PATH").orNull?.takeIf { it.isNotBlank() }
+    ?: runLocalProps?.getProperty("run.ndkPath")?.takeIf { it.isNotBlank() }
+val runNdkDir: String? = runLocalProps?.getProperty("ndk.dir")?.takeIf { it.isNotBlank() }
+val runNdkPath: String = runNdkOverride ?: runNdkDir ?: "/opt/homebrew/share/android-ndk"
+// True when the NDK comes from `ndk.dir` alone: AGP reads that property itself.
+val runNdkViaNdkDir: Boolean = runNdkOverride == null && runNdkDir != null
 val runNdkPresent: Boolean = File(runNdkPath, "source.properties").isFile
 // Fail the NATIVE tasks (only) with an actionable message when the NDK is absent —
 // configuration stays NDK-free so the iOS framework build (Xcode Cloud has no NDK)
@@ -409,7 +416,7 @@ tasks.matching {
         if (!present) throw GradleException(
             "Android NDK $version not found at '$path' (needed to build librunargon2.so, " +
             "the native vault Argon2id). Install it (`brew install --cask android-ndk`) or " +
-            "point RUN_NDK_PATH / `run.ndkPath=` in local.properties at a space-free NDK $version."
+            "point RUN_NDK_PATH / `run.ndkPath=` (or `ndk.dir=`) in local.properties at a space-free NDK $version."
         )
     }
 }
@@ -418,7 +425,7 @@ android {
     namespace = "com.vg.run.shared"
     if (runNdkPresent) {
         ndkVersion = runNdkVersion
-        ndkPath = runNdkPath
+        if (!runNdkViaNdkDir) ndkPath = runNdkPath
     }
     // 37.1 (minor release) required by tor-android 0.4.9.12+ (now 0.4.9.14) — keep in step with androidApp.
     compileSdk {

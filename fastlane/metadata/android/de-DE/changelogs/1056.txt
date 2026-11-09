@@ -1,6 +1,6 @@
-• Maximum: Eine ohne Leerzeichen getippte Liedzeile gilt nicht mehr als starke Passphrase.
+• Maximum: Die Passphrase wird von Hand getippt, nicht eingefügt.
+• Maximum lehnt mehr schwache Passphrasen ab: Zählen in der eigenen Sprache oder Satzzeichenfolgen.
 • Gruppen: Verpasst ein Text Mitglieder, steht „nicht zugestellt an N“; Verlassen warnt, dass Ungelesenes verloren gehen kann.
 • Sperre nicht aufschiebbar; Umzugscode erneut zeigen verlangt Entsperren.
-• Mehr Schutz für Tastatur und Zwischenablage.
 • Eine abgebrochene Übertragung aufs neue Gerät bleibt nicht mehr hängen.
 • „Über“ verlinkt den Quellcode, zeigt die Lizenzen.

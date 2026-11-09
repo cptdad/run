@@ -1,6 +1,7 @@
 import XCTest
 import CryptoKit
 import Foundation
+import UIKit
 @testable import Run
 
 // ---------------------------------------------------------------------------
@@ -150,5 +151,32 @@ final class RunCryptoTests: XCTestCase {
         XCTAssertNil(a.argon2id(password: pw,       salt: salt, memoryKiB: 256, iterations: 0, parallelism: 1, keyLength: 32), "t=0 → nil")
         XCTAssertNil(a.argon2id(password: Data(),   salt: salt, memoryKiB: 256, iterations: 2, parallelism: 1, keyLength: 32), "empty pw → nil")
         XCTAssertNil(a.argon2id(password: pw,       salt: salt, memoryKiB: 256, iterations: 2, parallelism: 1, keyLength: 0),  "len=0 → nil")
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PassphraseFieldTests — the high-risk passphrase must be TYPED by hand,
+// character by character, never pasted. PassphraseField
+// is backed by PasteBlockedTextField, a secure UITextField that refuses every
+// clipboard edit action in canPerformAction. This pins that refusal so a later
+// refactor can't quietly re-open the paste path (or a copy-out path — the secret
+// must never reach the clipboard a seized-device extraction would read).
+// ---------------------------------------------------------------------------
+final class PassphraseFieldTests: XCTestCase {
+
+    func test_passphraseField_refusesEveryClipboardAction() {
+        let field = PasteBlockedTextField()
+        for action in [
+            #selector(UIResponderStandardEditActions.paste(_:)),
+            #selector(UIResponderStandardEditActions.copy(_:)),
+            #selector(UIResponderStandardEditActions.cut(_:)),
+            #selector(UIResponderStandardEditActions.select(_:)),
+            #selector(UIResponderStandardEditActions.selectAll(_:)),
+        ] {
+            XCTAssertFalse(
+                field.canPerformAction(action, withSender: nil),
+                "\(action) must be refused — the passphrase is typed by hand, never pasted in or copied out"
+            )
+        }
     }
 }

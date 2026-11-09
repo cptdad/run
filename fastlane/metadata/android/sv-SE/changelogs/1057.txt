@@ -1,0 +1,6 @@
+• Maximal: lösenfrasen skrivs för hand – den går inte att klistra in.
+• Maximal underkänner fler svaga lösenfraser, som att räkna på ditt språk eller rader av skiljetecken.
+• Grupper: en text som missat medlemmar visar ”inte levererat till N”; att lämna varnar för att olästa texter kan gå förlorade.
+• Låsning kan inte skjutas upp; att visa flyttkoden igen kräver upplåsning.
+• En avbruten flytt till ny telefon fastnar inte längre.
+• Om länkar till källkoden och visar licenserna.

@@ -277,6 +277,36 @@ class CredentialPolicyTest {
     }
 
     @Test
+    fun punctuationPadding_doesNotMeetFloor() {
+        // Rung A (2026-11-09, the dynamic passphrase test across 13 languages). The
+        // estimator credited a token that NORMALIZES to nothing — a lone punctuation
+        // mark — as a full 12.9-bit diceware word, so a five-word anthem/phrase that
+        // scored ~64 bits (refused) cleared the floor the instant a single "!" was
+        // appended as a sixth "word". That worked in every language at once, since the
+        // trick needs no dictionary. A pure-punctuation token is now worth ZERO.
+        assertFalse(CredentialPolicy.meetsFloor("Ja vi elsker dette landet !"))      // Norwegian anthem + lone !
+        assertFalse(CredentialPolicy.meetsFloor("correct horse battery staple meadow !"))
+        assertFalse(CredentialPolicy.meetsFloor("correct horse battery staple meadow —"))
+        // The same five real words plus a sixth REAL word clears the floor, so the
+        // tightening costs a word of padding, never a legitimate phrase.
+        assertTrue(CredentialPolicy.meetsFloor("correct horse battery staple meadow river"))
+    }
+
+    @Test
+    fun localizedKeyboardWalks_doNotMeetFloor() {
+        // Rung H (2026-11-09): the predictable-step discount knew only US-QWERTY, so a
+        // keyboard walk typed on the layout a locale actually ships ran straight past
+        // the floor. The row table now also carries Nordic (å ä ö), German QWERTZ,
+        // French AZERTY and Russian ЙЦУКЕН. Adding rows only ever makes MORE adjacent
+        // pairs predictable, so this is monotone — it never turns a refused passphrase
+        // into an accepted one.
+        assertFalse(CredentialPolicy.meetsFloor("qwertyuiopåasdfghjklöä"))   // Nordic
+        assertFalse(CredentialPolicy.meetsFloor("qwertzuiopüasdfghjklöä"))   // German QWERTZ
+        assertFalse(CredentialPolicy.meetsFloor("azertyuiopqsdfghjklm"))     // French AZERTY
+        assertFalse(CredentialPolicy.meetsFloor("йцукенгшщзхъфывапролджэ"))  // Russian ЙЦУКЕН
+    }
+
+    @Test
     fun closedCategoryRuns_doNotMeetFloor() {
         // Closed, fully enumerable sets are absent from the 148-word COMMON_WORDS
         // list, so six of them scored a clean 77.55 bits and PASSED while carrying
@@ -290,6 +320,32 @@ class CredentialPolicyTest {
         // Capitalised / punctuated variants normalize to the same tokens.
         assertFalse(CredentialPolicy.meetsFloor("Monday Tuesday Wednesday Thursday Friday Saturday"))
         assertFalse(CredentialPolicy.meetsFloor("Alpha, Bravo, Charlie, Delta, Echo, Foxtrot"))
+    }
+
+    @Test
+    fun localizedDigitWordRuns_doNotMeetFloor() {
+        // Rung C (2026-11-09): "count to six in your OWN language". A localized number run
+        // collapses to log2(set size) per member exactly as the English run above does,
+        // across every app locale — Latin, Cyrillic and Arabic/Persian scripts. (Members
+        // that collide with an article, a short Latin token or an English word are pruned,
+        // so these runs deliberately avoid sv "ett"/"sex", fr/en "six", etc.)
+        assertFalse(CredentialPolicy.meetsFloor("tre fyra fem sju åtta nio"))          // sv 3,4,5,7,8,9
+        assertFalse(CredentialPolicy.meetsFloor("drei vier fünf sechs sieben acht"))   // de 3-8
+        assertFalse(CredentialPolicy.meetsFloor("trois quatre cinq sept huit neuf"))   // fr 3,4,5,7,8,9
+        assertFalse(CredentialPolicy.meetsFloor("tres cuatro cinco siete ocho nueve")) // es 3,4,5,7,8,9
+        assertFalse(CredentialPolicy.meetsFloor("три четыре пять шесть семь восемь"))   // ru 3-8 (Cyrillic)
+        // The ascii-folded spelling is a member too: normalizeWord keeps diacritics, so
+        // both "två"/"åtta" and "tva"/"atta" must be present to catch either keyboard.
+        assertFalse(CredentialPolicy.meetsFloor("tva fyra fem sju atta nio"))          // sv ascii-folded
+    }
+
+    @Test
+    fun loneLocalizedDigitWord_keepsFullWordCredit() {
+        // Only a RUN of >= 2 localized numbers is the guessable pattern; a SINGLE one is a
+        // legitimate diceware draw and must not drag a genuine six-word phrase under the
+        // floor (categoryHits >= 2 is the gate, same as the English DIGIT_WORD rule).
+        assertTrue(CredentialPolicy.meetsFloor("correct horse fyra battery staple river"))  // one sv number
+        assertTrue(CredentialPolicy.meetsFloor("correct horse neun battery staple river"))  // one de number
     }
 
     @Test
@@ -312,20 +368,24 @@ class CredentialPolicyTest {
         // though it is six genuinely distinct tokens worth 77.55. A stem-less token
         // now carries null and joins no family.
         assertTrue(CredentialPolicy.meetsFloor("correct 2024 horse 1999 battery staple"))
-        assertTrue(CredentialPolicy.meetsFloor("correct 42 horse 7 battery staple"))
-        // The two numbers must be credited EXACTLY like ordinary words — same score
-        // as the all-words control, no residual discount.
+        // A bare number is credited EXACTLY like an ordinary word — same score as the
+        // all-words control, no residual discount. (Crediting a lone SHORT number at only
+        // log2(10)/digit is a proposed further tightening tracked in the 2026-11-09
+        // report, deliberately NOT taken here; see numericTightening…ExactlyWhereTheyWere.)
         assertEquals(
             CredentialPolicy.estimateBits("correct horse battery staple lamp river"),
             CredentialPolicy.estimateBits("correct 2024 horse 1999 battery staple"),
             0.001,
         )
-        // A punctuation-only token normalizes to "" before counterStem even runs, so
-        // it collided with a bare number the same way (67.95 → rejected).
-        assertTrue(CredentialPolicy.meetsFloor("correct 2024 horse !!! battery staple"))
-        // TWO punctuation-only tokens share ONE normalized form, so what applies to
-        // them is the dedup's half credit — never the counter collapse. Scoring the
-        // same phrase with identical vs. different punctuation must therefore agree.
+        assertTrue(CredentialPolicy.meetsFloor("correct 42 horse 7 battery staple"))
+        // Rung A (2026-11-09): a token that normalizes to "" — pure punctuation — is NOT
+        // a word and is worth ZERO, consuming no slot. "correct 2024 horse !!! battery
+        // staple" is four words plus one year (~64.6 bits), not a six-word phrase: the
+        // one-keystroke "pad with a lone !" bypass the dynamic passphrase test found
+        // across languages. This is the ONLY stem-less change — bare numbers are untouched.
+        assertFalse(CredentialPolicy.meetsFloor("correct 2024 horse !!! battery staple"))
+        // Because punctuation-only tokens contribute zero and take no slot, scoring the
+        // same phrase with identical vs. different punctuation tokens must still agree.
         assertEquals(
             CredentialPolicy.estimateBits("correct !!! horse !!! battery staple"),
             CredentialPolicy.estimateBits("correct !!! horse ??? battery staple"),

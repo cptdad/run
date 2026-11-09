@@ -198,23 +198,113 @@ struct PassphraseField: View {
     var onSubmit: (() -> Void)? = nil
 
     var body: some View {
-        SecureField(placeholder, text: $text)
-            .textFieldStyle(.plain)
-            .autocorrectionDisabled(true)
-            .textInputAutocapitalization(.never)
-            .textContentType(.oneTimeCode)  // suppress password-manager save prompts
-            .foregroundColor(Color.runTextPrimary)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.runSurface.opacity(0.6))
-            .cornerRadius(10)
-            .disabled(disabled)
-            .onSubmit { onSubmit?() }
-            .onChange(of: text) { value in
-                let cap = Int(CredentialPolicy.shared.MAX_PASSPHRASE_LENGTH)
-                if value.count > cap { text = String(value.prefix(cap)) }
-            }
-            .accessibilityIdentifier(identifier)
+        // The passphrase must be typed by hand, character by character (2026-11-09 user
+        // directive): no Paste in, and — a secret on the clipboard is a seize-and-extract
+        // target — no Copy / Cut / Select-all out. SwiftUI's SecureField exposes no hook
+        // to drop those edit-menu actions, so the field itself is a secure UITextField
+        // that refuses them in canPerformAction (see PasteBlockedTextField). The XCUITest
+        // path the device e2e uses types through the keyboard and is untouched.
+        PasteBlockedSecureField(
+            placeholder: placeholder,
+            text: $text,
+            identifier: identifier,
+            disabled: disabled,
+            returnsDone: onSubmit != nil,
+            onSubmit: onSubmit
+        )
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.runSurface.opacity(0.6))
+        .cornerRadius(10)
+        .onChange(of: text) { value in
+            let cap = Int(CredentialPolicy.shared.MAX_PASSPHRASE_LENGTH)
+            if value.count > cap { text = String(value.prefix(cap)) }
+        }
+    }
+}
+
+/// `SecureField`'s paste-blocked replacement: a secure `UITextField` whose edit menu
+/// offers no Paste / Copy / Cut / Select-all, so the high-risk passphrase can only be
+/// TYPED by hand. Keeps every discipline the old SecureField had —
+/// masking, no autocorrect / autocapitalisation / spell-check, `.oneTimeCode` content
+/// type (suppresses the password-manager save prompt). The accessibilityIdentifier is
+/// set on the UITextField itself, not via SwiftUI's modifier (which would label the host
+/// view), so the XCUITest element the e2e helper types into keeps its id.
+private struct PasteBlockedSecureField: UIViewRepresentable {
+    let placeholder: String
+    @Binding var text: String
+    let identifier: String
+    var disabled: Bool
+    var returnsDone: Bool
+    var onSubmit: (() -> Void)?
+
+    func makeUIView(context: Context) -> PasteBlockedTextField {
+        let field = PasteBlockedTextField()
+        field.isSecureTextEntry = true
+        field.placeholder = placeholder
+        field.autocorrectionType = .no
+        field.autocapitalizationType = .none
+        field.spellCheckingType = .no
+        field.smartQuotesType = .no
+        field.smartDashesType = .no
+        field.smartInsertDeleteType = .no
+        field.textContentType = .oneTimeCode   // suppress password-manager save prompts
+        field.textColor = UIColor(Color.runTextPrimary)
+        field.tintColor = UIColor(Color.runTextPrimary)
+        field.delegate = context.coordinator
+        field.addTarget(context.coordinator,
+                        action: #selector(Coordinator.editingChanged(_:)),
+                        for: .editingChanged)
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        field.accessibilityIdentifier = identifier
+        return field
+    }
+
+    func updateUIView(_ field: PasteBlockedTextField, context: Context) {
+        context.coordinator.onSubmit = onSubmit
+        if field.text != text { field.text = text }
+        field.isEnabled = !disabled
+        field.returnKeyType = returnsDone ? .done : .default
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text, onSubmit: onSubmit) }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        private let text: Binding<String>
+        var onSubmit: (() -> Void)?
+        init(text: Binding<String>, onSubmit: (() -> Void)?) {
+            self.text = text
+            self.onSubmit = onSubmit
+        }
+        @objc func editingChanged(_ field: UITextField) {
+            // Publish upward only; the length cap lives in PassphraseField's .onChange,
+            // which writes the truncated value back through this binding.
+            let value = field.text ?? ""
+            if text.wrappedValue != value { text.wrappedValue = value }
+        }
+        func textFieldShouldReturn(_ field: UITextField) -> Bool {
+            onSubmit?()
+            return true
+        }
+    }
+}
+
+/// A secure `UITextField` that refuses every clipboard edit action — the passphrase is
+/// typed, never pasted in, and never copied out to a clipboard a forensic extraction
+/// would read. Typing through the keyboard is unaffected.
+final class PasteBlockedTextField: UITextField {
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        switch action {
+        case #selector(UIResponderStandardEditActions.paste(_:)),
+             #selector(UIResponderStandardEditActions.copy(_:)),
+             #selector(UIResponderStandardEditActions.cut(_:)),
+             #selector(UIResponderStandardEditActions.select(_:)),
+             #selector(UIResponderStandardEditActions.selectAll(_:)):
+            return false
+        default:
+            return super.canPerformAction(action, withSender: sender)
+        }
     }
 }
 
