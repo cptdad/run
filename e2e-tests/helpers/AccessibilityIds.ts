@@ -247,6 +247,12 @@ export const Ids = {
     groupInviteDialog: 'group_invite_dialog',
     groupInviteJoin: 'group_invite_join',
     groupInviteDecline: 'group_invite_decline',
+    /** "Later" on the invite dialog: closes it without deciding; the invite stays pending as a row. */
+    groupInviteLater: 'group_invite_later',
+    /** A PENDING (undecided, "Later") invitation row in the contact list's groups area. Append the groupId. NOT a joined group: it never starts with `group_row_`. */
+    groupInviteRow: (groupId: string) => `group_invite_row_${groupId}`,
+    /** Prefix of every [groupInviteRow] id, for "any pending invitation row" selectors. */
+    groupInviteRowPrefix: 'group_invite_row_',
     /** A group row in the contact list. Append the groupId. */
     groupRow: (groupId: string) => `group_row_${groupId}`,
     /** Group conversation title (group name). */
@@ -283,6 +289,11 @@ export const Ids = {
      * bubble, present in ALL THREE states on both platforms (the id is on the
      * indicator Text itself, whose content is the state), so read its TEXT to
      * learn the verdict — existence alone only proves a sent bubble renders.
+     * Since 2026-11-12 the "·" and "✓" states are NOT DRAWN (the sent bubble's own
+     * opacity/colour is the visible signal — grey+translucent until delivered); the
+     * element still exists with the same text: Android = transparent-ink Text in a 1dp
+     * box, iOS = clear-ink Text in a 1pt frame (both stay in the a11y tree, so
+     * getText() is unchanged). The failure texts remain visible.
      * Use `$$` + last element for the most recent send
      * (Device.readGroupDeliveryStatus).
      */
@@ -302,6 +313,9 @@ export const Ids = {
     groupInfoBack: 'group_info_back',
     groupInfoLeaveButton: 'group_info_leave_button',
     groupInfoLeaveConfirm: 'group_info_leave_confirm',
+    /** Confirm / cancel buttons of the "Make <name> admin?" dialog (the role is transferred). */
+    makeAdminConfirm: 'make_admin_confirm',
+    makeAdminCancel: 'make_admin_cancel',
     /** The Play Billing tip-jar body inside the Support modal (Android). */
     tipJarBody: 'tip_jar_body',
     /** Unread "●" badge on a group row in the contact list. Append the groupId. */
@@ -593,8 +607,10 @@ export const Ids = {
     /** The "Connection request" CONSENT GATE shown to an introducee (both
      *  platforms): Android `RuneDialog(testTag = "referral_offer_dialog")`
      *  (ContactListScreen.kt) / iOS `RuneDialogOverlay(a11yId:)`
-     *  (ContactListView.swift ReferralOfferAlert). NOT dismissible — the app
-     *  passes onDismissRequest = nil / onScrimTap = nil.
+     *  (ContactListView.swift ReferralOfferAlert). NOT a hard gate since
+     *  2026-11-13: "Later" (referralOfferLater; back press / scrim tap mean the
+     *  same) closes it WITHOUT deciding and the offer becomes a
+     *  referral_offer_row_<introId> list row that reopens it.
      *
      *  CAVEAT — never assert on this id ALONE. On iOS it lands on the RuneCard
      *  CONTAINER via OptionalA11yId, and a SwiftUI container is not guaranteed
@@ -615,6 +631,12 @@ export const Ids = {
     referralApprove: 'referral_approve',
     /** Secondary "Decline" action on the consent gate (declineOffer). */
     referralDecline: 'referral_decline',
+    /** "Later" on the consent gate: closes it without deciding; the offer stays pending as a row. */
+    referralOfferLater: 'referral_offer_later',
+    /** A PENDING (undecided, "Later") introduction row in the contact list. Append the introId (base64url, a11y-safe). NOT a contact row. */
+    referralOfferRow: (introId: string) => `referral_offer_row_${introId}`,
+    /** Prefix of every [referralOfferRow] id, for "any pending introduction row" selectors. */
+    referralOfferRowPrefix: 'referral_offer_row_',
     /** INTRODUCER-side modal: raised each time this device's control-inbox
      *  drain relays an introducee's accept onward — title "Introduction
      *  accepted" (first accept, or a queued one) or "Introduction complete"

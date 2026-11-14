@@ -1,6 +1,8 @@
 package com.vg.run
 
 import com.vg.run.DbKeyRotationPolicy.RotationOutcome
+import com.vg.run.DbKeyRotationPolicy.RotationResult
+import com.vg.run.DbKeyRotationPolicy.StrengtheningRotation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -181,5 +183,91 @@ class DbKeyRotationTest {
         // Retiring a clean handle costs one forced re-unlock; keeping a poisoned
         // one can cost the vault. Both LEAVE_PENDING inputs must retire.
         assertFalse(DbKeyRotationPolicy.rekeyOutcomeKeepsLiveHandle(RotationOutcome.LEAVE_PENDING))
+    }
+
+    // -- 4. RUN-01: the strengthenings that are not a credential change --------
+    //
+    // Decent → Secure (the Lever B enable) and Secure → Maximum (after the Lever B
+    // drop). The end-to-end halves — archived wrapper dead, shown code opens the
+    // file, crash points — run against the real VaultSelector in androidUnitTest
+    // `TierStrengtheningRotationTest`.
+
+    private fun strengthening(
+        authBound: Boolean = false,
+        handle: Boolean = true,
+        pending: Boolean = false,
+        journal: Boolean? = false,
+        recovery: RecoveryBlobPolicy.RecoveryBlobState = RecoveryBlobPolicy.RecoveryBlobState.ABSENT,
+    ) = DbKeyRotationPolicy.strengtheningRotation(authBound, handle, pending, journal, recovery)
+
+    @Test
+    fun strengthening_plainRecoveryFreeVaultWithAHandle_rotates() {
+        assertEquals(StrengtheningRotation.ROTATE, strengthening())
+        // A FORGED `vlt_rc` is a plant, never a code anyone holds: it releases the veto.
+        assertEquals(StrengtheningRotation.ROTATE,
+            strengthening(recovery = RecoveryBlobPolicy.RecoveryBlobState.FORGED))
+    }
+
+    @Test
+    fun strengthening_aProvenRecoveryCode_isNeverKilled_theStepGoesOnUnrotated() {
+        // A real code the user may hold wraps the CURRENT key; re-keying would kill
+        // it with no replacement guaranteed. SKIP, not DEFER: blocking the Lever B
+        // enable forever over a stale-but-real code would be worse than today.
+        assertEquals(StrengtheningRotation.SKIP,
+            strengthening(recovery = RecoveryBlobPolicy.RecoveryBlobState.PROVEN))
+    }
+
+    @Test
+    fun strengthening_anUnreadableRecoverySlot_defers() {
+        // A device-key outage cannot tell a live code from no code: refuse the step.
+        assertEquals(StrengtheningRotation.DEFER,
+            strengthening(recovery = RecoveryBlobPolicy.RecoveryBlobState.UNREADABLE))
+    }
+
+    @Test
+    fun strengthening_neverNextToAnAuthBoundBlob() {
+        // The `vlt_cn` record must be a plain wrap, or the unlock reconcile's second
+        // unwrap could raise a second biometric prompt.
+        assertEquals(StrengtheningRotation.SKIP, strengthening(authBound = true))
+        assertEquals(StrengtheningRotation.SKIP,
+            strengthening(authBound = true, recovery = RecoveryBlobPolicy.RecoveryBlobState.ABSENT, journal = null))
+    }
+
+    @Test
+    fun strengthening_withoutAHandle_isThePreFixFlow() {
+        assertEquals(StrengtheningRotation.SKIP, strengthening(handle = false))
+    }
+
+    @Test
+    fun strengthening_anUnresolvedRecordOrAnUnknownJournal_defers() {
+        assertEquals(StrengtheningRotation.DEFER, strengthening(pending = true))
+        assertEquals(StrengtheningRotation.DEFER, strengthening(journal = true))
+        assertEquals(StrengtheningRotation.DEFER, strengthening(journal = null))
+    }
+
+    @Test
+    fun rotationResult_onlyAProbeProvenAndReadBackProvenPromotionIsRotated() {
+        assertEquals(RotationResult.ROTATED, DbKeyRotationPolicy.rotationResult(RotationOutcome.PROMOTE, true))
+        // PROMOTE with an unproven promotion write: `vlt_c` may still be the OLD key
+        // over a NEW-key file — nothing may be bound to either record yet.
+        assertEquals(RotationResult.UNRESOLVED, DbKeyRotationPolicy.rotationResult(RotationOutcome.PROMOTE, false))
+        assertEquals(RotationResult.UNRESOLVED, DbKeyRotationPolicy.rotationResult(RotationOutcome.DROP_PENDING, true))
+        assertEquals(RotationResult.UNRESOLVED, DbKeyRotationPolicy.rotationResult(RotationOutcome.LEAVE_PENDING, true))
+    }
+
+    @Test
+    fun postDropStep_onlySecureToMaximum_onlyAfterALandedDrop_onlyWithTheCredential() {
+        assertTrue(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(ProtectionLevel.MAXIMUM, true, true))
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(ProtectionLevel.MAXIMUM, false, true),
+            "the drop did not land: Lever B and its code are still live")
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(ProtectionLevel.MAXIMUM, true, false),
+            "no credential in hand: no KEK for the record")
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(ProtectionLevel.CASUAL, true, true),
+            "Secure → Decent is a downgrade")
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(null, true, true))
+        // Swift's storage-token overload agrees.
+        assertTrue(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDropForStorage("maximum", true, true))
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDropForStorage("casual", true, true))
+        assertFalse(ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDropForStorage("bogus", true, true))
     }
 }

@@ -20,6 +20,8 @@
     <string name="group_info_admin_badge">Maamule</string>
     <string name="group_info_leave_group">Ka bax kooxda</string>
     <string name="group_info_make_admin">Ka dhig maamule</string>
+    <string name="group_info_make_admin_confirm_title">Ka dhig %1$s maamule?</string>
+    <string name="group_info_make_admin_confirm_body">Mar dambe maamule ma noqon doontid. Maamuluhu keliya ayaa awood u leh inuu xubno ku daro oo ka saaro.</string>
     <string name="group_info_remove_from_group">Ka saar kooxda</string>
     <string name="group_info_add_member_precondition">Waa inay si toos ah ula lammaaneeyaan xubin kasta. Taas waxaad dammaanad u tahay.</string>
     <string name="group_info_add_member_empty">Ma jiraan xiriiriyayaal ku habboon — qof kasta oo aad la lammaanaysay horeyba ayuu kooxda ku jiraa.</string>

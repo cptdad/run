@@ -36,6 +36,7 @@
     <string name="referral_introduce_body">Выберите, с кем познакомить %1$s. Знакомьте только тех, кого вы знаете и кому доверяете.</string>
     <string name="referral_no_candidates">Нет других контактов для знакомства.</string>
     <string name="referral_introduce_error">Пока нет подключения — попробуйте снова через мгновение.</string>
+    <string name="contact_list_referral_offer_row">Знакомство: «%1$s»</string>
     <string name="referral_offer_title">Запрос на знакомство</string>
     <string name="referral_offer_message">%1$s хочет познакомить вас с «%2$s». Подтвердите, чтобы добавить этот контакт.</string>
     <string name="referral_approve">Подтвердить</string>
@@ -46,6 +47,8 @@
     <string name="referral_relayed_queued">%1$s принимает ваше предложение познакомиться с %2$s. Rún сейчас не может связаться с ретранслятором и передаст данные автоматически при следующем открытии приложения.</string>
     <string name="contact_list_group_invite_title">Приглашение в группу</string>
     <string name="contact_list_group_invite_join">Присоединиться</string>
+    <string name="contact_list_group_invite_row">Приглашение в группу: «%1$s»</string>
+    <string name="contact_list_pending_row_hint">Нажмите, чтобы ответить</string>
     <string name="contact_list_group_invite_joining">Присоединение…</string>
     <string name="contact_list_group_invite_message">%1$s приглашает вас в группу «%2$s».</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s приглашает вас в «%2$s», но ранее эта группа была у вас с ДРУГИМ администратором. Присоединяйтесь только в том случае, если доверяете %1$s управлять составом этой группы.</string>
@@ -88,6 +91,7 @@
     <string name="contact_list_introduced_by">Знакомство через %1$s</string>
     <string name="contact_list_introduced">Знакомство</string>
     <string name="contact_list_repair_chip">Сопрячь заново</string>
+    <string name="contact_maximum_shield_description">Использует максимальную защиту</string>
     <string name="contact_list_unread_messages_description">Непрочитанные сообщения</string>
     <string name="contact_list_group_admin_label">Группа · администратор</string>
     <string name="contact_list_group_label">Группа</string>

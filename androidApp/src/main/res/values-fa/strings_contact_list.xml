@@ -50,6 +50,7 @@
     <string name="referral_introduce_body">انتخاب کنید %1$s را به چه کسانی معرفی کنید. فقط کسانی را معرفی کنید که می‌شناسید و به آن‌ها اعتماد دارید.</string>
     <string name="referral_no_candidates">مخاطب دیگری برای معرفی نیست.</string>
     <string name="referral_introduce_error">هنوز متصل نیستید — چند لحظهٔ دیگر دوباره تلاش کنید.</string>
+    <string name="contact_list_referral_offer_row">معرفی: «%1$s»</string>
     <string name="referral_offer_title">درخواست ارتباط</string>
     <string name="referral_offer_message">%1$s می‌خواهد شما را به «%2$s» معرفی کند. برای افزودن او به مخاطبان، تأیید کنید.</string>
     <string name="referral_approve">تأیید</string>
@@ -62,6 +63,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">دعوت به گروه</string>
     <string name="contact_list_group_invite_join">پیوستن</string>
+    <string name="contact_list_group_invite_row">دعوت به گروه: «%1$s»</string>
+    <string name="contact_list_pending_row_hint">برای پاسخ بزنید</string>
     <string name="contact_list_group_invite_joining">در حال پیوستن…</string>
     <string name="contact_list_group_invite_message">%1$s شما را به گروه «%2$s» دعوت کرده است.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s شما را به «%2$s» دعوت کرده است، اما این گروه را قبلاً زیر نظر مدیر «دیگری» داشتید. فقط در صورتی بپیوندید که به %1$s برای کنترل عضویت این گروه اعتماد دارید.</string>
@@ -122,6 +125,7 @@
     <string name="contact_list_introduced_by">معرفی‌شده توسط %1$s</string>
     <string name="contact_list_introduced">معرفی‌شده</string>
     <string name="contact_list_repair_chip">جفت‌سازی دوباره</string>
+    <string name="contact_maximum_shield_description">از سطح حفاظت «حداکثر» استفاده می‌کند</string>
     <string name="contact_list_unread_messages_description">پیام‌های خوانده‌نشده</string>
     <string name="contact_list_group_admin_label">گروه · مدیر</string>
     <string name="contact_list_group_label">گروه</string>

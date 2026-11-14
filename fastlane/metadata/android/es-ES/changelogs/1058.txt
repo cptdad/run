@@ -1,6 +1,3 @@
-• Máximo: la frase de contraseña se escribe a mano; no se puede pegar.
-• Máximo rechaza más frases de contraseña débiles, como contar en tu idioma o rachas de puntuación.
-• Grupos: un texto que no llegó a todos indica «no entregado a N»; al salir se avisa de que lo no leído puede perderse.
-• El bloqueo no se aplaza; reabrir el código de traslado pide desbloquear.
-• Un traslado cancelado al nuevo teléfono ya no se queda atascado.
-• Acerca de: enlace al código fuente y licencias.
+• Máximo: la frase de contraseña se escribe a mano; no se puede pegar ni copiar.
+• Máximo rechaza más frases de contraseña débiles, como frases célebres, días de la semana, contar en tu idioma o rachas de puntuación.
+• Grupos: el punto de no leído ahora aparece con el primer mensaje de un miembro y se mantiene de forma más fiable al volver a la app.

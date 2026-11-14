@@ -69,6 +69,11 @@ object MoveMetaPolicy {
         // contact that never converged — a burst of grinds and announces on exactly
         // the launch that is already paying for the D4 read-cap rotations.
         "m2-chseen", "ib-bound-seen/", "cap-pend/", "grp-ann/", "grp_", "ref_", "ssn:",
+        // The Maximum shield's two per-contact rows (`MaximumShieldPolicy`): the peer's
+        // remembered claim and the last level we announced. Contact ids survive the move,
+        // so both stay meaningful; dropping the marker would only make the new phone
+        // re-announce to every contact once.
+        "plvl-peer/", "plvl-sent/",
         // The anti-eclipse tombstone
         // (`group_admin:<groupId>`, GroupManager.adminMetaKey) — the ONLY key in the
         // vault whose prefix is `group_` rather than `grp_`, which is exactly why it
@@ -85,6 +90,16 @@ object MoveMetaPolicy {
     val deniedPrefixes: List<String> = listOf(
         "vlt_", "pin_", "inactivity_", "change_pin_", "run.crypto", "review_prompt", "update_nudge",
         "onboard_push_prompt", MoveMetaKeys.PREFIX,
+        // The persisted group unread attribution (`grp-unread/<contactId>`,
+        // GroupUnreadMarkerStore) is the ONE per-contact purge-list key that does NOT
+        // travel, and it is denied here explicitly so a future broad allow prefix cannot
+        // pick it up. It is a ≤ 24 h display hint, not state anything depends on: the
+        // new phone imports the same inbox rows, re-derives the group-inbox depth with
+        // its first peek and falls back to the presence bump (+1 on every shared group)
+        // until the first open/drain — exactly today's pre-fix behaviour, for at most
+        // one day. Carrying it would add per-contact "N group texts in group G at time T"
+        // metadata to a bundle that crosses devices, for no correctness gain.
+        GroupUnreadMarkerStore.PREFIX,
     )
     fun isAllowedKey(key: String): Boolean =
         deniedPrefixes.none { key.startsWith(it) } && allowedPrefixes.any { key.startsWith(it) }

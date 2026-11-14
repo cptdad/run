@@ -104,8 +104,9 @@ class DatabaseManager(
          */
         fun deleteVaultFiles(context: Context) {
             val base = context.getDatabasePath(DATABASE_NAME).path
-            // `-journal` is Android's own sidecar (rollback-journal mode), `-wal`/`-shm`
-            // iOS's (WAL); both platforms sweep all of them.
+            // `-journal` is the rollback-journal sidecar both platforms now use
+            // (Android DELETE mode, iOS TRUNCATE mode since RUN-02); `-wal`/`-shm` are
+            // what a pre-RUN-02 iOS build left. Both platforms sweep all of them.
             VaultFiles.SIDECAR_SUFFIXES.forEach { sfx ->
                 java.io.File(base + sfx).delete()
             }
@@ -555,6 +556,21 @@ class DatabaseManager(
      * which is the only constructor in sqlcipher-android that accepts a raw byte[] key.
      * Parameters after [version]: minimumSupportedVersion=0, errorHandler=null,
      * hook=null, enableWriteAheadLogging=false.
+     *
+     * RUN-02 (2026-11-12): `enableWriteAheadLogging=false` is LOAD-BEARING for
+     * forward secrecy, not a default. Without the WAL open flag, sqlcipher-android
+     * 4.19.0's `SQLiteConnection.setWalModeFromConfiguration` applies
+     * `SQLiteGlobal.getDefaultJournalMode()` = "delete" on every connection (checked
+     * in the AAR's bytecode), i.e. a ROLLBACK journal: `run.db-journal` holds the
+     * pre-images of the transaction in flight — the last COMMITTED state, never an
+     * older one — and is unlinked at commit. Under WAL every superseded Double
+     * Ratchet state (one `_meta` row rewritten per step) would stay in `run.db-wal`
+     * until a checkpoint reset, and db + wal imaged together plus the current db key
+     * rebuild an earlier view and an old chain key — the iOS finding RUN-02 fixed by
+     * leaving WAL there. Never pass `true`, never call `enableWriteAheadLogging()`,
+     * never set `journal_mode` to WAL or PERSIST on this file
+     * (`VaultJournalModeSourceGuardTest`, `VaultJournalResidueTest`). The unlink is
+     * not physical erasure on flash.
      */
     private class SecureDbHelper(
         context: Context,

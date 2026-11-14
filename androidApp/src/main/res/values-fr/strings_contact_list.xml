@@ -45,6 +45,7 @@
     <string name="referral_introduce_body">Choisissez à qui présenter %1$s. Ne présentez que des personnes que vous connaissez et en qui vous avez confiance.</string>
     <string name="referral_no_candidates">Aucun autre contact à présenter.</string>
     <string name="referral_introduce_error">Pas encore connecté — réessayez dans un instant.</string>
+    <string name="contact_list_referral_offer_row">Présentation : « %1$s »</string>
     <string name="referral_offer_title">Demande de mise en relation</string>
     <string name="referral_offer_message">%1$s souhaite vous présenter « %2$s ». Approuvez pour l\'ajouter à vos contacts.</string>
     <string name="referral_approve">Approuver</string>
@@ -57,6 +58,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">Invitation à un groupe</string>
     <string name="contact_list_group_invite_join">Rejoindre</string>
+    <string name="contact_list_group_invite_row">Invitation à un groupe : « %1$s »</string>
+    <string name="contact_list_pending_row_hint">Appuyez pour répondre</string>
     <string name="contact_list_group_invite_joining">Adhésion…</string>
     <string name="contact_list_group_invite_message">%1$s vous invite à rejoindre le groupe « %2$s ».</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s vous invite à « %2$s », mais vous aviez déjà ce groupe sous un administrateur DIFFÉRENT. Ne le rejoignez que si vous faites confiance à %1$s pour gérer les membres de ce groupe.</string>
@@ -117,6 +120,7 @@
     <string name="contact_list_introduced_by">Présenté par %1$s</string>
     <string name="contact_list_introduced">Présenté</string>
     <string name="contact_list_repair_chip">Réappairer</string>
+    <string name="contact_maximum_shield_description">Utilise la protection Maximum</string>
     <string name="contact_list_unread_messages_description">Messages non lus</string>
     <string name="contact_list_group_admin_label">Groupe · admin</string>
     <string name="contact_list_group_label">Groupe</string>

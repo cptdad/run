@@ -16,6 +16,8 @@ data class ContactListSnapshot(
     val groups: List<GroupRecord>,
     val staleIds: Set<String>,
     val pendingIds: Set<String>,
+    /** Contacts that reported Maximum while this device is at MAXIMUM (the shield after the name). Ids only. */
+    val maximumIds: Set<String> = emptySet(),
 )
 
 /**
@@ -26,4 +28,8 @@ data class ContactListSnapshot(
 data class PendingConsent(
     val offer: ReferralOffer?,
     val invite: GroupInvite?,
+    /** EVERY pending invite, in pending order ([invite] is the first). Empty means "just [invite]". */
+    val invites: List<GroupInvite> = emptyList(),
+    /** EVERY pending referral offer, in pending order ([offer] is the first). Empty means "just [offer]". */
+    val offers: List<ReferralOffer> = emptyList(),
 )

@@ -120,7 +120,42 @@ final class SwiftDatabaseBridge: NSObject, DatabaseBridge {
             return stepRc
         }
 
-        sqlite3_exec(db, "PRAGMA journal_mode=WAL;", nil, nil, nil)
+        // RUN-02 (2026-11-12): ROLLBACK journal in TRUNCATE mode, NOT WAL.
+        //
+        // In WAL mode every committed version of a page stays in the -wal until a
+        // checkpoint RESETS the log, and nothing here ever forced one; even then a
+        // reset only rewrites the log from the front, so older frames survive in the
+        // tail. The Double Ratchet state is one `_meta` row rewritten on every step,
+        // so an image of run.db + run.db-wal plus the CURRENT db key let an attacker
+        // replay a WAL prefix, rebuild an earlier committed view and read a chain key
+        // the live ratchet had already deleted (auditor repro, SQLCipher 4.19.0).
+        //
+        // A rollback journal holds page PRE-images of the transaction in flight only,
+        // i.e. the LAST COMMITTED state, never an older one, and TRUNCATE empties the
+        // file at every commit. TRUNCATE rather than DELETE: the 0-byte file keeps its
+        // inode, so the NSFileProtectionComplete + backup exclusion protectDbFiles
+        // sets on it persist. NEVER PERSIST (it only zeroes the header and leaves the
+        // pre-images readable) and never OFF/MEMORY (no crash safety).
+        //
+        // Leaving WAL also checkpoints and unlinks a -wal / -shm an older build or an
+        // unclean exit left behind, at this open. Issued here — after the key is
+        // proven — because the key PROBE opens through this same function and must
+        // not flip the shared file back to WAL. Deliberately unchecked: a refused
+        // switch (another connection holds the file) leaves the vault in WAL and must
+        // never fail an open; IosVaultDatabase reads the mode back and retries at its
+        // write boundaries.
+        //
+        // busy_timeout: a rollback journal makes a reader and the writer's commit
+        // mutually exclusive (WAL did not), so the short-lived probe connection and
+        // the live one now wait for each other briefly instead of failing on SQLITE_BUSY.
+        // journal_size_limit=0: belt for the WAL-fallback case (a reset log is
+        // truncated to 0 bytes instead of being kept at its high-water mark).
+        //
+        // Truncation is NOT physical erasure: freed flash blocks are not overwritten,
+        // and nothing can revoke an image captured earlier.
+        sqlite3_busy_timeout(db, 2500)
+        sqlite3_exec(db, "PRAGMA journal_mode=TRUNCATE;", nil, nil, nil)
+        sqlite3_exec(db, "PRAGMA journal_size_limit=0;", nil, nil, nil)
         return 0  // SQLITE_OK
     }
 

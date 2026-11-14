@@ -178,7 +178,10 @@ private class GtHarness(
     val aMgr = MessageManager(aVault, "http://relay.test", relay)
     val bVault = InMemoryVault()
     val bMgr = MessageManager(bVault, "http://relay.test", relay)
-    val gm = GroupManager(bVault) { bMgr }
+    val gm = GroupManager(bVault) { bMgr }.also { it.noticeGraceClockMs = { monoMs } }
+
+    /** B's monotonic clock for the presence bump's notice grace (advanced by hand). */
+    var monoMs = 1_000_000L
 
     val myMemberId = bytesToHex(ByteArray(8) { 1 })
     val peerMemberId = bytesToHex(ByteArray(8) { 2 })
@@ -250,6 +253,18 @@ private class GtHarness(
 
     /** One background control sweep on B — the path that applies the notices. */
     fun sweepControl(): Boolean = gm.pollAllControls()
+
+    /**
+     * The presence bump's NOTICE GRACE runs out with the notice still missing: the
+     * clock moves past [GroupUnreadTally.NOTICE_LANDING_GRACE_MS] and the next control
+     * cycle checks B's control inbox (its peek answers 0), then that cycle's unread
+     * sweep — the production publish order on both platforms.
+     */
+    fun waitOutNoticeGrace() {
+        monoMs += GroupUnreadTally.NOTICE_LANDING_GRACE_MS
+        sweepControl()
+        gm.contactUnreadCounts()
+    }
 
     /** Latches B's "the relay answered once" flag without draining anything. */
     fun latchRelayRoundTrip() { bMgr.peekControlPending("a") }
@@ -445,6 +460,10 @@ class GroupTextNeverOnContactTest {
         // No notice at all — the exact race the third inbox exists to survive.
 
         assertEquals(emptyMap(), h.gm.contactUnreadCounts(), "the invariant holds with NO notice at all")
+        // The fallback waits for the notice it stands in for (notice grace, 2026-11-13).
+        assertTrue(h.gm.groupUnreadCounts().isEmpty(), "nothing lights while the notice may still be in flight")
+        h.waitOutNoticeGrace()
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts(), "…and still nothing on the contact after it")
         assertEquals(mapOf(h.gid to 1), h.gm.groupUnreadCounts(), "+1 presence bump, never n")
     }
 
@@ -457,6 +476,7 @@ class GroupTextNeverOnContactTest {
         repeat(3) { assertEquals(MessageManager.GroupTextRoute.GRP, h.sendGroupText("crew $it")) }
 
         assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+        h.waitOutNoticeGrace()   // the notice grace (2026-11-13) runs out first
         val groups = h.gm.groupUnreadCounts()
         assertEquals(3, groups.size, "every shared group shows the bump")
         assertTrue(groups.values.all { it == 1 }, "+1, never the 3 blobs actually queued: $groups")
@@ -561,6 +581,8 @@ class GroupTextNeverOnContactTest {
             mapOf("a" to 2), legacy.gm.contactUnreadCounts(),
             "the LEGACY notice compensates exactly one TEXT-inbox blob and nothing else",
         )
+        // The group-inbox text has no `gi` notice: its bump waits out the notice grace.
+        legacy.waitOutNoticeGrace()
         val groups = legacy.gm.groupUnreadCounts()
         assertEquals(
             2, groups[legacy.gid],
@@ -632,6 +654,10 @@ class GroupTextNeverOnContactTest {
             h.relay.requests().none { it.startsWith("GET ") && it.endsWith("/peek") },
             "no per-inbox peek may survive the batch: ${h.relay.requests()}",
         )
+        // No notice: the prime's own pre-drain ran BEFORE its peek, so it is not the
+        // check the notice grace waits for — the next qualifying control cycle is.
+        assertTrue(h.gm.groupUnreadCounts().isEmpty(), "no bump at reveal for a notice-less text")
+        h.waitOutNoticeGrace()
         assertEquals(mapOf(h.gid to 1), h.gm.groupUnreadCounts(), "…and the bump still lands")
     }
 
@@ -675,6 +701,9 @@ class GroupTextNeverOnContactTest {
         h.gm.primeUnreadCounts(emptySet()) { id, n -> seen[id] = n }
 
         assertEquals(mapOf("a" to 0), seen, "the contact dot is right with NO notice applied at all")
+        // A reaped control inbox can never answer the notice grace's check, so the
+        // fallback comes from the backstop ceiling.
+        h.monoMs += GroupUnreadTally.FALLBACK_CEILING_MS
         assertEquals(
             mapOf(h.gid to 1), h.gm.groupUnreadCounts(),
             "and the group still lights — via the presence bump rather than the lost notice",
@@ -773,6 +802,7 @@ class GroupTextNeverOnContactTest {
         assertEquals(MessageManager.GroupTextRoute.GRP, h.sendGroupText("the real one"))
 
         assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+        h.waitOutNoticeGrace()
         assertEquals(
             mapOf(h.gid to 1), h.gm.groupUnreadCounts(),
             "a stale notice must not cancel a later real group text's bump",
@@ -842,6 +872,7 @@ class GroupUnreadTallyPinTest {
         h.gm.scrubInMemory()
         assertEquals(MessageManager.GroupTextRoute.GRP, h.sendGroupText("crew"))
         h.gm.contactUnreadCounts()   // publishes the group-inbox depth
+        h.waitOutNoticeGrace()
         assertEquals(mapOf(h.gid to 1), h.gm.groupUnreadCounts(), "the bump fires: grpNoticed was cleared")
 
         // (iii) The published depth and the per-group count die with the next scrub,
@@ -1056,6 +1087,66 @@ class GroupInboxBackfillTest {
         // A group-only announce must not disturb the pairing's other two rows.
         assertEquals(h.txtToB, h.aVault.getInboxIdForContact("b", "outbound")?.inboxId)
         assertEquals(h.ctlToB, h.aVault.getInboxIdForContact("b", MessageManager.DIR_OUTBOUND_CTL)?.inboxId)
+    }
+
+    // --- EAGER establishment: the durability half of the group unread-dot fix -----
+    // A membership event converges the pair's group inbox PROMPTLY (off the critical
+    // path), so a sender's first group message rides the GROUP inbox (GRP route) and
+    // its dot becomes the peek-derivable presence bump — durable across a session
+    // teardown with nothing persisted. Found by the dynamic real-life e2e
+    // (run 202611100650): the first messages into fresh groups were MAIN-routed and
+    // lost their dot after a background→return.
+
+    @Test
+    fun eagerEstablishment_onAMembershipEvent_makesTheFirstGroupMessageGrpRouted() {
+        if (!aeadUp()) return
+        val h = legacyHarness()                 // no group inboxes either way → A→B would be MAIN
+        h.latchRelayRoundTrip()
+        // Precondition: today's lazy state — A has no group route to B, so its first
+        // group text rides the shared 1:1 MAIN inbox (dot not peek-derivable).
+        assertNull(h.aVault.getInboxIdForContact("b", MessageManager.DIR_OUTBOUND_GRP))
+
+        // A membership event fires the EAGER establishment. Production launches it on
+        // the platform's per-session background scope; the test seam runs it inline.
+        h.gm.groupBackfillLauncher = { work -> work() }
+        h.gm.armGroupInboxBackfill("a")         // B mints its inbound-grp inbox + announces to A
+
+        // B really minted + announced NOW (not deferred to a later sweep)…
+        assertNotNull(h.bVault.getInboxIdForContact("a", MessageManager.DIR_INBOUND_GRP))
+        assertEquals(1, h.relay.mintCount, "exactly one eager mint")
+        // …and A learns the route from the announce.
+        h.aMgr.pollControlMessages("b")
+        assertNotNull(h.aVault.getInboxIdForContact("b", MessageManager.DIR_OUTBOUND_GRP))
+
+        // THE POINT: the first group message now rides the GROUP inbox, so its dot is
+        // the peek-depth presence bump — re-derived from the relay on every session.
+        assertEquals(MessageManager.GroupTextRoute.GRP, h.sendGroupText("first line into the group"))
+
+        // Idempotent: a second membership event does not re-mint (case-3 / converged
+        // is a no-op, and the throttle gates it regardless).
+        h.gm.armGroupInboxBackfill("a")
+        assertEquals(1, h.relay.mintCount, "eager is one-time per pairing, not per event")
+    }
+
+    @Test
+    fun eagerEstablishment_onAColdCircuit_isANoopAndLeavesTheLazyPathToConverge() {
+        if (!aeadUp()) return
+        // FAIL-SOFT: before the relay has answered this transport even once, eager
+        // must grind no PoW (the connect-wait rule) — it falls straight back to the
+        // already-armed lazy sweep, consuming no budget and breaking nothing.
+        val h = legacyHarness()                 // NO latchRelayRoundTrip(): a cold circuit
+        h.gm.groupBackfillLauncher = { work -> work() }
+
+        h.gm.armGroupInboxBackfill("a")
+
+        assertEquals(0, h.relay.mintCount, "eager grinds nothing on a cold circuit")
+        assertNull(h.bVault.getInboxIdForContact("a", MessageManager.DIR_INBOUND_GRP), "no inbox minted")
+
+        // Once the relay HAS answered, the lazy path still converges it — eager spent
+        // no attempt, so the budget is intact (today's behaviour, unchanged).
+        h.latchRelayRoundTrip()
+        assertEquals(MessageManager.GroupBackfillOutcome.ANNOUNCED, h.bMgr.maybeBackfillGroupInbox("a"))
+        assertEquals(1, h.relay.mintCount)
     }
 
     @Test

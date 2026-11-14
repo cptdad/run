@@ -28,6 +28,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Gruppe verlassen</string>
     <string name="group_info_make_admin">Zum Admin machen</string>
+    <string name="group_info_make_admin_confirm_title">%1$s zum Admin machen?</string>
+    <string name="group_info_make_admin_confirm_body">Du bist dann nicht mehr Admin. Nur der Admin kann Mitglieder hinzufügen und entfernen.</string>
     <string name="group_info_remove_from_group">Aus Gruppe entfernen</string>
     <string name="group_info_add_member_precondition">Diese Person muss sich mit jedem Mitglied persönlich gekoppelt haben. Dafür bürgst du.</string>
     <string name="group_info_add_member_empty">Keine passenden Kontakte — alle, mit denen du gekoppelt bist, sind schon in der Gruppe.</string>

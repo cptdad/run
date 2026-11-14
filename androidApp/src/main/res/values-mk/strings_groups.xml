@@ -20,6 +20,8 @@
     <string name="group_info_admin_badge">Администратор</string>
     <string name="group_info_leave_group">Напушти група</string>
     <string name="group_info_make_admin">Направи администратор</string>
+    <string name="group_info_make_admin_confirm_title">Направи %1$s администратор?</string>
+    <string name="group_info_make_admin_confirm_body">Повеќе нема да бидете администратор. Само администраторот може да додава и отстранува членови.</string>
     <string name="group_info_remove_from_group">Отстрани од групата</string>
     <string name="group_info_add_member_precondition">Тие мора да се спарени лично со секој член. Вие гарантирате за тоа.</string>
     <string name="group_info_add_member_empty">Нема подобни контакти — сите со кои сте се спариле веќе се во групата.</string>

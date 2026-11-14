@@ -27,6 +27,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Salir del grupo</string>
     <string name="group_info_make_admin">Hacer administrador</string>
+    <string name="group_info_make_admin_confirm_title">¿Hacer administrador a %1$s?</string>
+    <string name="group_info_make_admin_confirm_body">Dejarás de ser administrador. Solo el administrador puede añadir y quitar miembros.</string>
     <string name="group_info_remove_from_group">Quitar del grupo</string>
     <string name="group_info_add_member_precondition">Tiene que haberse emparejado en persona con todos los miembros. Tú lo estás avalando.</string>
     <string name="group_info_add_member_empty">No hay contactos elegibles: todas las personas con las que te has emparejado ya están en el grupo.</string>

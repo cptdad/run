@@ -24,6 +24,8 @@
     <string name="group_info_admin_badge">Ylläpitäjä</string>
     <string name="group_info_leave_group">Poistu ryhmästä</string>
     <string name="group_info_make_admin">Tee ylläpitäjäksi</string>
+    <string name="group_info_make_admin_confirm_title">Tehdäänkö %1$s ylläpitäjäksi?</string>
+    <string name="group_info_make_admin_confirm_body">Et ole enää ylläpitäjä. Vain ylläpitäjä voi lisätä ja poistaa jäseniä.</string>
     <string name="group_info_remove_from_group">Poista ryhmästä</string>
     <string name="group_info_add_member_precondition">Hänen on täytynyt tehdä paritus kasvokkain jokaisen jäsenen kanssa. Menet siitä takuuseen.</string>
     <string name="group_info_add_member_empty">Ei sopivia kontakteja — kaikki, joiden kanssa olet tehnyt parituksen, ovat jo ryhmässä.</string>

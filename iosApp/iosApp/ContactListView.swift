@@ -77,16 +77,27 @@ private struct GroupInviteItem: Identifiable {
 /// complexity budget (a second inline presentation overran it). Join persists
 /// the group + fans out our tag; Decline drops the invite. Both off the main
 /// thread inside AppState. RuneDialogOverlay (not .alert) for the shared modal
-/// chrome; a consent gate, so no tap-outside dismissal.
+/// chrome. NOT a hard gate: Later (button or scrim tap) closes it without
+/// deciding and the list shows the invite as a row (GroupInvitePresentation.kt).
 private struct GroupInviteAlert: ViewModifier {
     @EnvironmentObject private var appState: AppState
     @Binding var invite: GroupInviteItem?
     @Binding var busy: Bool
     let onChanged: () -> Void
+    /// Fired after "Later" (button or scrim tap) so the list re-derives its rows now.
+    let onDeferred: () -> Void
 
     func body(content: Content) -> some View {
         content.overlay {
             if let inv = invite {
+                // "Later" = close WITHOUT deciding; the scrim tap means the same.
+                // Ignored while a join is in flight, like the button.
+                let later: () -> Void = {
+                    guard !busy else { return }
+                    appState.deferGroupInvite(groupId: inv.id)
+                    invite = nil
+                    onDeferred()
+                }
                 // Loud consent warning — a different contact than the
                 // group's original admin is inviting you (a re-invite eclipse).
                 // Bidi-isolate the peer-supplied group name at the
@@ -105,6 +116,7 @@ private struct GroupInviteAlert: ViewModifier {
                     title: L10n.contactListGroupInviteTitle,
                     message: message,
                     a11yId: "group_invite_dialog",
+                    onScrimTap: later,
                     actions: [
                         RuneDialogAction(busy ? L10n.contactListGroupInviteJoining : L10n.contactListGroupInviteJoin, enabled: !busy,
                                          a11yId: "group_invite_join") {
@@ -117,6 +129,7 @@ private struct GroupInviteAlert: ViewModifier {
                                 onChanged()
                             }
                         },
+                        RuneDialogAction(L10n.nudgeLater, color: .runeAsh, enabled: !busy, a11yId: "group_invite_later") { later() },
                         .secondary(L10n.commonDecline, a11yId: "group_invite_decline") {
                             appState.declineGroupInvite(groupId: inv.id)
                             invite = nil
@@ -129,25 +142,38 @@ private struct GroupInviteAlert: ViewModifier {
 }
 
 /// Referral consent dialog — same extraction rationale + chrome as
-/// GroupInviteAlert above. A consent gate: no tap-outside dismissal.
+/// GroupInviteAlert above. NOT a hard gate: Later (button or scrim tap) closes it
+/// without deciding and the list shows the offer as a row (GroupInvitePresentation.kt).
 private struct ReferralOfferAlert: ViewModifier {
     @EnvironmentObject private var appState: AppState
     @Binding var offer: RefOffer?
     @Binding var busy: Bool
     @Binding var acceptFailed: Bool
     let onChanged: () -> Void
+    /// Fired after "Later" so the list re-derives its rows now.
+    let onDeferred: () -> Void
 
     func body(content: Content) -> some View {
         content.overlay {
             if let o = offer {
+                // Ignored while an accept is in flight, like the button.
+                let later: () -> Void = {
+                    guard !busy else { return }
+                    appState.deferReferralOffer(introId: o.id)
+                    offer = nil
+                    onDeferred()
+                }
                 RuneDialogOverlay(
                     title: L10n.referralOfferTitle,
                     message: L10n.referralOfferMessage(o.introducerAlias, o.peerAlias),
                     a11yId: "referral_offer_dialog",
+                    onScrimTap: later,
                     actions: [
                         RuneDialogAction(busy ? L10n.referralConnecting : (acceptFailed ? L10n.commonRetry : L10n.referralApprove),
                                          enabled: !busy, a11yId: "referral_approve") {
                             let id = o.id
+                            // Un-defer first: a failed accept re-presents as Retry.
+                            appState.undeferReferralOffer(introId: id)
                             offer = nil
                             busy = true
                             acceptFailed = false
@@ -160,6 +186,7 @@ private struct ReferralOfferAlert: ViewModifier {
                                 onChanged()
                             }
                         },
+                        RuneDialogAction(L10n.nudgeLater, color: .runeAsh, enabled: !busy, a11yId: "referral_offer_later") { later() },
                         .secondary(L10n.commonDecline, a11yId: "referral_decline") {
                             appState.declineReferral(introId: o.id)
                             offer = nil
@@ -439,6 +466,11 @@ struct ContactListView: View {
     // GROUP-1 consent gate: a parked group invite awaiting accept/decline.
     @State private var pendingGroupInvite: GroupInviteItem? = nil
     @State private var groupInviteBusy = false
+    // Pending invites closed with "Later" (and not in the dialog now): listed as
+    // "Invitation: ..." rows in the groups area. See syncGroupInvites().
+    @State private var groupInviteRows: [GroupInviteItem] = []
+    // Same for referral offers closed with "Later": "Introduction: ..." rows. See syncReferralOffers().
+    @State private var referralOfferRows: [RefOffer] = []
     // Guideline 1.2 — block / report a contact.
     @State private var showBlockConfirm = false
     @State private var pendingBlockId: String? = nil
@@ -669,6 +701,8 @@ struct ContactListView: View {
         // "Introduced by <alias>", the trust signal that matters in the
         // transitive-trust model.
         var introducerAlias: String? = nil
+        // Maximum shield: the contact reported Maximum and THIS device is at MAXIMUM.
+        var maximumShield: Bool = false
     }
 
     struct GroupItem: Identifiable {
@@ -1159,26 +1193,10 @@ struct ContactListView: View {
             // (referralBusy) so "Connecting…" stays put.
             while !Task.isCancelled {
                 if introduceFrom == nil {
-                    if let o = appState.pendingReferralOffers().first {
-                        if pendingOffer == nil {
-                            pendingOffer = RefOffer(id: o.introId, introducerAlias: o.introducerAlias, peerAlias: o.peerAlias)
-                        }
-                    } else if !referralBusy {
-                        pendingOffer = nil   // consumed (accepted) → dismiss
-                    }
+                    syncReferralOffers()
                     // Group invites share the consent surface — present one only
                     // when no referral prompt is up (a single prompt at a time).
-                    if pendingOffer == nil {
-                        if let inv = appState.pendingGroupInvites().first {
-                            if pendingGroupInvite == nil && !groupInviteBusy {
-                                pendingGroupInvite = GroupInviteItem(id: inv.groupId, inviterAlias: inv.inviterAlias, groupName: inv.groupName, adminMismatch: inv.adminMismatch, priorAdminAlias: inv.priorAdminAlias)
-                            }
-                        } else if !groupInviteBusy {
-                            pendingGroupInvite = nil   // accepted/declined → dismiss
-                        }
-                    } else if !groupInviteBusy {
-                        pendingGroupInvite = nil
-                    }
+                    syncGroupInvites()
                 }
                 try? await Task.sleep(nanoseconds: 4_000_000_000)
             }
@@ -1197,6 +1215,7 @@ struct ContactListView: View {
             busy: $referralBusy,
             acceptFailed: $referralAcceptFailed,
             onChanged: { loadContacts() },
+            onDeferred: { syncReferralOffers(); syncGroupInvites() },
         ))
         // Introducer-side "your intro got relayed" info modal
         // (ReferralManager.onIntroRelayed, wired in AppState at both
@@ -1226,6 +1245,7 @@ struct ContactListView: View {
             invite: $pendingGroupInvite,
             busy: $groupInviteBusy,
             onChanged: { loadContacts() },
+            onDeferred: { syncGroupInvites() },
         ))
         // Anonymous "Report bug" — extracted the same way as the two consent
         // gates above (RuneDialogOverlay has no content slot for the free-text
@@ -2187,6 +2207,27 @@ struct ContactListView: View {
                     RepairBanner(staleCount: contacts.filter { $0.stale }.count,
                                  onTap: onAddContact)
                 }
+                // Pending invitations closed with "Later": not a conversation;
+                // tapping reopens the invitation dialog (Join / Later / Decline).
+                ForEach(referralOfferRows) { off in
+                    Button {
+                        pendingOffer = off
+                        syncReferralOffers()
+                        syncGroupInvites()
+                    } label: {
+                        ReferralOfferListRow(offer: off)
+                    }
+                    .accessibilityIdentifier("referral_offer_row_\(off.id)")
+                }
+                ForEach(groupInviteRows) { inv in
+                    Button {
+                        pendingGroupInvite = inv
+                        syncGroupInvites()
+                    } label: {
+                        GroupInviteListRow(invite: inv)
+                    }
+                    .accessibilityIdentifier("group_invite_row_\(inv.id)")
+                }
                 ForEach(groups) { group in
                     Button {
                         appState.markGroupRead(group.id)
@@ -2355,6 +2396,71 @@ struct ContactListView: View {
 
     // MARK: - Helpers
 
+    /// Which referral offer's dialog is up and which show as rows. The decision is
+    /// GroupInvitePresentation.kt (commonMain), the rule Android's consentToShow /
+    /// referralOfferRows call too. busy=false for the dialog on purpose: an accept in
+    /// flight keeps / re-adopts the "Connecting…" dialog (Approve un-defers first);
+    /// the real busy flag only hides the rows.
+    private func syncReferralOffers() {
+        let pending = appState.pendingReferralOffers()
+        let pendingIds = pending.map { $0.introId }
+        appState.pruneDeferredReferralOffers(pendingIds: pendingIds)
+        let deferred = Array(appState.deferredReferralOfferIds)
+        func item(_ id: String) -> RefOffer? {
+            pending.first(where: { $0.introId == id }).map {
+                RefOffer(id: $0.introId, introducerAlias: $0.introducerAlias, peerAlias: $0.peerAlias)
+            }
+        }
+        if pendingIds.isEmpty {
+            if !referralBusy { pendingOffer = nil }   // consumed (accepted) → dismiss
+        } else {
+            let shownId = pendingOffer?.id
+            let id = GroupInvitePresentation.shared.toAutoPresent(
+                pendingIds: pendingIds, deferredIds: deferred, shownId: shownId, busy: false)
+            if let id {
+                if id != shownId, let next = item(id) { pendingOffer = next }
+            } else if pendingOffer != nil {
+                pendingOffer = nil
+            }
+        }
+        let rowIds = GroupInvitePresentation.shared.rowIds(
+            pendingIds: pendingIds, deferredIds: deferred, shownId: pendingOffer?.id, busy: referralBusy)
+        referralOfferRows = rowIds.compactMap(item)
+    }
+
+    /// Which group invite's dialog is up and which show as rows. The decision is
+    /// GroupInvitePresentation.kt (commonMain), the rule Android's consentToShow /
+    /// groupInviteRows call too; this only maps ids to the Swift items.
+    /// A referral offer on screen outranks the invite dialog (one prompt at a
+    /// time): the invite dialog is cleared unless a join is in flight.
+    private func syncGroupInvites() {
+        let pending = appState.pendingGroupInvites()
+        let pendingIds = pending.map { $0.groupId }
+        appState.pruneDeferredGroupInvites(pendingIds: pendingIds)
+        let deferred = Array(appState.deferredGroupInviteIds)
+        func item(_ id: String) -> GroupInviteItem? {
+            pending.first(where: { $0.groupId == id }).map {
+                GroupInviteItem(id: $0.groupId, inviterAlias: $0.inviterAlias, groupName: $0.groupName,
+                                adminMismatch: $0.adminMismatch, priorAdminAlias: $0.priorAdminAlias)
+            }
+        }
+        if pendingOffer != nil {
+            if !groupInviteBusy { pendingGroupInvite = nil }
+        } else {
+            let shownId = pendingGroupInvite?.id
+            let id = GroupInvitePresentation.shared.toAutoPresent(
+                pendingIds: pendingIds, deferredIds: deferred, shownId: shownId, busy: groupInviteBusy)
+            if let id {
+                if id != shownId, let next = item(id) { pendingGroupInvite = next }
+            } else if pendingGroupInvite != nil {
+                pendingGroupInvite = nil   // accepted/declined → dismiss
+            }
+        }
+        let rowIds = GroupInvitePresentation.shared.rowIds(
+            pendingIds: pendingIds, deferredIds: deferred, shownId: pendingGroupInvite?.id, busy: groupInviteBusy)
+        groupInviteRows = rowIds.compactMap(item)
+    }
+
     private func loadContacts() {
         guard let vault = appState.vault else { return }
         // Guideline 1.2: blocked contacts are removed from the feed instantly
@@ -2362,6 +2468,8 @@ struct ContactListView: View {
         let blockedIds = BlockStore.blocked()
         hasBlockedContacts = !blockedIds.isEmpty
         let allContacts = vault.getAllContacts().filter { !blockedIds.contains($0.contactId) }
+        // Maximum shield ids (empty unless this device is provably at MAXIMUM).
+        let maximumIds = appState.maximumShieldContactIds()
         contacts = allContacts.map { contact in
             // Resolve the voucher's alias (if the introducer is still a contact)
             // so the row can name who introduced this contact.
@@ -2376,7 +2484,8 @@ struct ContactListView: View {
                     || appState.relayLostContacts.contains(contact.contactId),
                 pending: MessageManagerKt.contactAwaitingPeerInbox(vault: vault, contactId: contact.contactId),
                 referred: contact.vouchedByContactId != nil,
-                introducerAlias: introducerAlias
+                introducerAlias: introducerAlias,
+                maximumShield: maximumIds.contains(contact.contactId)
             )
         }
         // getAllContacts() returns full ContactRecords,
@@ -2675,12 +2784,22 @@ private struct ContactRow: View {
                     .foregroundColor(.white)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(contact.alias)
-                    .font(.runeBody)
-                    .foregroundColor(contact.stale ? Color.runTextSecondary : Color.runTextPrimary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .accessibilityIdentifier("contact_name_\(contact.id)")
+                HStack(spacing: 6) {
+                    Text(contact.alias)
+                        .font(.runeBody)
+                        .foregroundColor(contact.stale ? Color.runTextSecondary : Color.runTextPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .accessibilityIdentifier("contact_name_\(contact.id)")
+                    if contact.maximumShield {
+                        // Maximum shield (MaximumShield.kt) — right after the name.
+                        Image(systemName: "shield.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.runTextSecondary)
+                            .accessibilityLabel(L10n.contactMaximumShieldDescription)
+                            .accessibilityIdentifier("contact_maximum_shield_\(contact.id)")
+                    }
+                }
                 if contact.stale {
                     Text(L10n.contactListRepairRequired)
                         .font(.runeCaption2)
@@ -2731,6 +2850,63 @@ private struct ContactRow: View {
 }
 
 // MARK: - Group row
+
+/// A pending group invitation row (closed with "Later"): dashed gold outline avatar,
+/// primary title and a "Tap to answer" hint, so it reads as "not yet a group" yet
+/// is noticed as tappable. Android sibling: GroupInviteRow in ContactListScreen.kt.
+private struct GroupInviteListRow: View {
+    let invite: GroupInviteItem
+
+    var body: some View {
+        PendingAnswerRowBody(title: L10n.contactListGroupInviteRow(bidiIsolate(invite.groupName)))
+    }
+}
+
+/// A pending introduction row (closed with "Later"): same look as GroupInviteListRow.
+/// Android sibling: ReferralOfferRow in ContactListScreen.kt.
+private struct ReferralOfferListRow: View {
+    let offer: RefOffer
+
+    var body: some View {
+        PendingAnswerRowBody(title: L10n.contactListReferralOfferRow(bidiIsolate(offer.peerAlias)))
+    }
+}
+
+/// Shared body of the two pending-answer rows. The enclosing Button (with the
+/// `group_invite_row_` / `referral_offer_row_` identifier) is the single a11y element.
+/// Android sibling: PendingAnswerRow.
+private struct PendingAnswerRowBody: View {
+    let title: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.runeGold, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    .frame(width: 44, height: 44)
+                Text(verbatim: "?")
+                    .font(.runeHeadline)
+                    .foregroundColor(Color.runeGold)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.runeBody)
+                    .foregroundColor(Color.runTextPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Text(L10n.contactListPendingRowHint)
+                    .font(.runeCaption)
+                    .foregroundColor(Color.runTextSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+    }
+}
 
 private struct GroupListRow: View {
     let group: ContactListView.GroupItem

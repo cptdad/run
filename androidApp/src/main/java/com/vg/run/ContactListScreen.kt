@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -92,6 +93,7 @@ import kotlin.math.absoluteValue
 import com.vg.run.ui.theme.RunError
 import com.vg.run.ui.theme.RunSurfaceAlt
 import com.vg.run.ui.theme.RuneDanger
+import com.vg.run.ui.theme.RuneGold
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -157,6 +159,8 @@ fun ContactListScreen(
     val groups = snapshot?.groups ?: emptyList()
     val staleContactIds = snapshot?.staleIds ?: emptySet()
     val pendingContactIds = snapshot?.pendingIds ?: emptySet()
+    // Contacts that reported Maximum while this device is at MAXIMUM (empty otherwise).
+    val maximumContactIds = snapshot?.maximumIds ?: emptySet()
 
     // The one user-initiated overlay on screen (contact menu, confirms, the
     // memory editor, the introduce picker, the settings modals). They are
@@ -211,9 +215,17 @@ fun ContactListScreen(
     // the unread prime, unlock, the accept/decline completions and a 4 s
     // backstop tick; the busy flags are this screen's in-flight state.
     val pendingConsent by viewModel.pendingConsent.collectAsState()
-    LaunchedEffect(pendingConsent, dialog is ContactListDialog.Introduce, referralBusy, groupInviteBusy, declinedIntroId) {
-        val pending = if (declinedIntroId != null && pendingConsent.offer?.introId == declinedIntroId) {
-            pendingConsent.copy(offer = null)
+    // Invites closed with "Later" this session (VM-held: this composition dies on
+    // every conversation open). The effect reads `.value` (always current); the
+    // collected copy is only its re-run key and the rows' input.
+    val deferredInviteIds by viewModel.deferredGroupInviteIds.collectAsState()
+    // Same for referral offers closed with "Later" (introIds).
+    val deferredOfferIds by viewModel.deferredReferralOfferIds.collectAsState()
+    LaunchedEffect(pendingConsent, deferredInviteIds, deferredOfferIds, dialog is ContactListDialog.Introduce, referralBusy, groupInviteBusy, declinedIntroId) {
+        val pending = if (declinedIntroId != null) {
+            val remaining = pendingConsent.offers.ifEmpty { listOfNotNull(pendingConsent.offer) }
+                .filter { it.introId != declinedIntroId }
+            pendingConsent.copy(offer = remaining.firstOrNull(), offers = remaining)
         } else {
             pendingConsent
         }
@@ -223,6 +235,8 @@ fun ContactListScreen(
             introduceOpen = dialog is ContactListDialog.Introduce,
             referralBusy = referralBusy,
             groupInviteBusy = groupInviteBusy,
+            deferredInviteIds = viewModel.deferredGroupInviteIds.value,
+            deferredOfferIds = viewModel.deferredReferralOfferIds.value,
         )
         referralOffer = next.offer
         groupInvite = next.invite
@@ -692,6 +706,27 @@ fun ContactListScreen(
                                 )
                             }
                         }
+                        // Pending invitations closed with "Later": one row each, ahead of
+                        // the joined groups. Not a conversation: tapping reopens the dialog.
+                        // Same for referral offers closed with "Later" (declined-in-flight ones excluded).
+                        items(
+                            referralOfferRows(
+                                pendingConsent.let { pc ->
+                                    val rest = pc.offers.ifEmpty { listOfNotNull(pc.offer) }.filter { it.introId != declinedIntroId }
+                                    pc.copy(offer = rest.firstOrNull(), offers = rest)
+                                },
+                                deferredOfferIds, referralOffer, referralBusy,
+                            ),
+                            key = { "referral_offer_" + it.introId },
+                        ) { off ->
+                            ReferralOfferRow(offer = off, onClick = { referralOffer = off })
+                        }
+                        items(
+                            groupInviteRows(pendingConsent, deferredInviteIds, groupInvite, groupInviteBusy),
+                            key = { "group_invite_" + it.groupId },
+                        ) { inv ->
+                            GroupInviteRow(invite = inv, onClick = { groupInvite = inv })
+                        }
                         items(groups, key = { "group_" + it.groupId }) { group ->
                             GroupRow(
                                 group = group,
@@ -711,6 +746,7 @@ fun ContactListScreen(
                                 contact = contact,
                                 stale = stale,
                                 pending = pendingContactIds.contains(contact.contactId),
+                                maximumShield = maximumContactIds.contains(contact.contactId),
                                 // Resolve the voucher's alias so the row can say who
                                 // introduced this contact — the one trust signal that
                                 // matters in the transitive-trust model.
@@ -1192,9 +1228,17 @@ fun ContactListScreen(
         }
 
         referralOffer?.let { offer ->
-            // Consent gate — onDismissRequest = null: no back-press / tap-outside.
+            // Back press / tap-outside mean "Later": close WITHOUT deciding; the offer
+            // stays pending and the list shows it as a row. Ignored while an accept
+            // is in flight, like the Later button.
+            val deferOffer = {
+                if (!referralBusy) {
+                    referralOffer = null
+                    viewModel.deferReferralOffer(offer.introId)
+                }
+            }
             RuneDialog(
-                onDismissRequest = null,
+                onDismissRequest = deferOffer,
                 testTag = "referral_offer_dialog",
                 title = stringResource(R.string.referral_offer_title),
                 message = stringResource(R.string.referral_offer_message, offer.introducerAlias, offer.peerAlias),
@@ -1209,6 +1253,9 @@ fun ContactListScreen(
                     testTag = "referral_approve",
                     onClick = {
                         val id = offer.introId
+                        // Un-defer first: a failed accept then re-presents as Retry,
+                        // exactly as for a never-deferred offer.
+                        viewModel.undeferReferralOffer(id)
                         referralOffer = null
                         referralBusy = true
                         referralAcceptFailed = false
@@ -1223,6 +1270,10 @@ fun ContactListScreen(
                         }
                     },
                     ),
+                    runeSecondary(
+                        stringResource(R.string.nudge_later),
+                        testTag = "referral_offer_later",
+                    ) { deferOffer() }.copy(enabled = !referralBusy),
                     runeSecondary(stringResource(R.string.common_decline), testTag = "referral_decline") {
                         val id = offer.introId
                         declinedIntroId = id
@@ -1292,11 +1343,19 @@ fun ContactListScreen(
             } else {
                 stringResource(R.string.contact_list_group_invite_message, inv.inviterAlias, isolatedGroupName)
             }
-            // Consent gate — onDismissRequest = null: no back-press / tap-outside.
+            // Back press / tap-outside mean "Later": close WITHOUT deciding. The
+            // invite stays pending; the groups area lists it as a row (ignored while
+            // a join is in flight, like the Later button).
             // RuneDialog exposes testTags as resource-ids, so the buttons carry ids
             // now (e2e previously matched these by their "Join"/"Decline" text).
+            val deferInvite = {
+                if (!groupInviteBusy) {
+                    groupInvite = null
+                    viewModel.deferGroupInvite(inv.groupId)
+                }
+            }
             RuneDialog(
-                onDismissRequest = null,
+                onDismissRequest = deferInvite,
                 testTag = "group_invite_dialog",
                 title = stringResource(R.string.contact_list_group_invite_title),
                 message = body,
@@ -1316,6 +1375,10 @@ fun ContactListScreen(
                             }
                         },
                     ),
+                    runeSecondary(
+                        stringResource(R.string.nudge_later),
+                        testTag = "group_invite_later",
+                    ) { deferInvite() }.copy(enabled = !groupInviteBusy),
                     runeSecondary(stringResource(R.string.common_decline), testTag = "group_invite_decline") {
                         val id = inv.groupId
                         groupInvite = null
@@ -2111,6 +2174,7 @@ private fun ContactRow(
     contact: ContactListItem,
     stale: Boolean,
     pending: Boolean = false,
+    maximumShield: Boolean = false,
     introducerAlias: String? = null,
     unreadCountsFlow: StateFlow<Map<String, Int>>,
     reachable: Boolean,
@@ -2126,6 +2190,7 @@ private fun ContactRow(
     // Captured here (not inline below) — the `.semantics { }` block's lambda
     // is not @Composable, so stringResource() cannot be called inside it.
     val unreadMessagesDescription = stringResource(R.string.contact_list_unread_messages_description)
+    val maximumShieldDescription = stringResource(R.string.contact_maximum_shield_description)
     // Grey out + disable until `reachable` (= rowsEnabled: relay reachable
     // AND the white R's fade-in complete). The fade is animated; the
     // tap-disable is NOT (it flips the instant `reachable` does, so it lifts
@@ -2148,14 +2213,31 @@ private fun ContactRow(
         ContactAvatar(alias = contact.alias, contactId = contact.contactId)
         Spacer(Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = contact.alias,
-                style = MaterialTheme.typography.titleMedium,
-                color = if (stale) RunGrey else RunWhite,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.testTag("contact_name_${contact.contactId}")
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = contact.alias,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (stale) RunGrey else RunWhite,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    // fill = false: a short name keeps the shield right after it, a long
+                    // one still ellipsizes instead of pushing the shield off the row.
+                    modifier = Modifier.weight(1f, fill = false).testTag("contact_name_${contact.contactId}")
+                )
+                if (maximumShield) {
+                    // The Maximum shield (MaximumShield.kt): a bare Text glyph for the same
+                    // reason as the unread dot below — inside the merged clickable row it is
+                    // the one form that stays a queryable, accessible node.
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = "\uD83D\uDEE1",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .semantics { contentDescription = maximumShieldDescription }
+                            .testTag("contact_maximum_shield_${contact.contactId}")
+                    )
+                }
+            }
             if (stale) {
                 Spacer(Modifier.height(2.dp))
                 Text(
@@ -2295,6 +2377,83 @@ private fun GroupRow(
                 modifier = Modifier
                     .semantics { contentDescription = unreadMessagesDescription }
                     .testTag("group_unread_${group.groupId}")
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// GroupInviteRow — a pending group invitation the user closed with "Later".
+// Dashed-look dim card, NOT a conversation: tapping reopens the invitation
+// dialog (Join / Later / Decline). Testtag group_invite_row_<groupId> (does not
+// start with group_row_, so "any joined group row" selectors never match it).
+// iOS sibling: ContactListView.swift GroupInviteListRow.
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun GroupInviteRow(invite: GroupInvite, onClick: () -> Unit) {
+    PendingAnswerRow(
+        title = stringResource(R.string.contact_list_group_invite_row, bidiIsolate(invite.groupName)),
+        testTag = "group_invite_row_${invite.groupId}",
+        onClick = onClick,
+    )
+}
+
+// ---------------------------------------------------------------------------
+// ReferralOfferRow — a pending introduction the user closed with "Later". Same
+// look as GroupInviteRow; tapping reopens the offer dialog (Approve / Later /
+// Decline). Testtag referral_offer_row_<introId> (base64url: a-zA-Z0-9-_, safe).
+// iOS sibling: ContactListView.swift ReferralOfferListRow.
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun ReferralOfferRow(offer: ReferralOffer, onClick: () -> Unit) {
+    PendingAnswerRow(
+        title = stringResource(R.string.contact_list_referral_offer_row, bidiIsolate(offer.peerAlias)),
+        testTag = "referral_offer_row_${offer.introId}",
+        onClick = onClick,
+    )
+}
+
+/**
+ * Shared body of the two pending-answer rows: gold (RuneGold, primary-action accent) "?" avatar outline, primary
+ * title, secondary "Tap to answer" hint (a device test showed the old all-grey row
+ * went unnoticed). Same testTag placement as before. iOS sibling: PendingAnswerRowBody.
+ */
+@Composable
+private fun PendingAnswerRow(title: String, testTag: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(testTag)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, RuneGold, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "?", color = RuneGold, fontSize = 18.sp)
+        }
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = RunWhite,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(R.string.contact_list_pending_row_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = RunGrey,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

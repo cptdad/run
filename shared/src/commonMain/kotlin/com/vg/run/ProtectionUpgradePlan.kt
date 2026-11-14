@@ -88,6 +88,37 @@ object ProtectionUpgradePlan {
         mustRotateCredential: Boolean,
     ): Boolean = mustRotateCredential || persisted != chosen
 
+    /**
+     * RUN-01 — the Settings chain's step after the Lever B DROP: must it now call
+     * [VaultSelector.rotateDbKeyAfterTierUpgrade] with the credential it just set?
+     *
+     * True exactly for Secure → Maximum: the [chosen] tier's strength is a passphrase,
+     * the drop really landed ([droppedLeverB] = `setDbKeyAuthBinding(false)`'s result),
+     * and the chain holds the freshly set credential ([hasCredential]). That
+     * transition's credential change could not re-key (the hardware layer and the
+     * recovery code were still live), so without this step a Secure-era archived
+     * `vlt_c` + the old PIN kept opening the Maximum vault. A downgrade (Secure →
+     * Decent) never asks; the vault-side gates
+     * ([DbKeyRotationPolicy.strengtheningRotation]) decide the rest, so a `true` here
+     * can never cause an unsafe re-key — only an attempt.
+     */
+    fun rotatesDbKeyAfterLeverBDrop(
+        chosen: ProtectionLevel?,
+        droppedLeverB: Boolean,
+        hasCredential: Boolean,
+    ): Boolean = droppedLeverB && hasCredential && chosen?.usesPassphrase == true
+
+    /** [rotatesDbKeyAfterLeverBDrop] over the storage token, for the Swift call site. */
+    fun rotatesDbKeyAfterLeverBDropForStorage(
+        chosenStorageValue: String?,
+        droppedLeverB: Boolean,
+        hasCredential: Boolean,
+    ): Boolean = rotatesDbKeyAfterLeverBDrop(
+        ProtectionLevel.fromStorageOrNull(chosenStorageValue),
+        droppedLeverB,
+        hasCredential,
+    )
+
     /** [needsFinishInSettings] over the storage tokens, for the Swift call site. */
     fun needsFinishInSettingsForStorage(
         chosenStorageValue: String?,

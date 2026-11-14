@@ -356,6 +356,39 @@ extension AppState {
         controller.groupManager?.pendingInvites() ?? []
     }
 
+    /// "Later" on a group invite: the dialog closes without deciding, the invite
+    /// stays pending, and the consent surface stops auto-presenting it this
+    /// session (GroupInvitePresentation.kt in commonMain is the shared rule).
+    func deferGroupInvite(groupId: String) {
+        deferredGroupInviteIds.insert(groupId)
+    }
+
+    /// Drops deferred ids whose invite is no longer pending (a re-invite then
+    /// presents afresh). Call only after a successful pending-list read.
+    func pruneDeferredGroupInvites(pendingIds: [String]) {
+        deferredGroupInviteIds = GroupInvitePresentation.shared.pruneDeferred(
+            pendingIds: pendingIds, deferredIds: deferredGroupInviteIds)
+    }
+
+    /// "Later" on a referral offer: the dialog closes without deciding, the offer
+    /// stays pending and is not auto-presented again this session (same shared rule
+    /// as group invites: GroupInvitePresentation.kt).
+    func deferReferralOffer(introId: String) {
+        deferredReferralOfferIds.insert(introId)
+    }
+
+    /// Approve un-defers first so a failed accept re-presents as Retry.
+    func undeferReferralOffer(introId: String) {
+        deferredReferralOfferIds.remove(introId)
+    }
+
+    /// Drops deferred introIds whose offer is no longer pending. Call only after a
+    /// successful pending-list read.
+    func pruneDeferredReferralOffers(pendingIds: [String]) {
+        deferredReferralOfferIds = GroupInvitePresentation.shared.pruneDeferred(
+            pendingIds: pendingIds, deferredIds: deferredReferralOfferIds)
+    }
+
     /// Accept a parked group invite: persists the group + members and fans out
     /// our KIND_JOIN (disclosing our group tag) — off the main thread, as it
     /// does vault writes + a network fan-out.

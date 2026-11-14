@@ -292,6 +292,10 @@ class MessageManager(
     // worth re-driving failed on the instance that just died; tests inject their
     // own. Defaulted LAST so every existing construction site keeps compiling.
     private val transportFailedSends: TransportFailedSends = TransportFailedSends.shared,
+    // The Maximum shield's receiver ([MaximumShield.onAnnouncement]); null (every test
+    // double, an unwired build) makes a received "plvl" announcement a silent no-op.
+    // Defaulted LAST so every existing construction site keeps compiling.
+    private val maximumShield: MaximumShield? = null,
 ) {
     private val configuredRelayBaseUrl: String = relayBaseUrl
 
@@ -306,7 +310,8 @@ class MessageManager(
         relayBaseUrl: String = RelayConfig.BASE_URL,
         httpClient: PlatformHttpClient,
         localAppVersion: String = "",
-    ) : this(databaseManager, relayBaseUrl, httpClient.asRelayHttp(), localAppVersion)
+        maximumShield: MaximumShield? = null,
+    ) : this(databaseManager, relayBaseUrl, httpClient.asRelayHttp(), localAppVersion, maximumShield = maximumShield)
 
     /**
      * The relay transport every call in this class goes through: the injected
@@ -2546,6 +2551,36 @@ class MessageManager(
     }
 
     /**
+     * Tells [contactId] whether this device is at the MAXIMUM protection tier
+     * ([CONTROL_KIND_PLEVEL], body per [MaximumShieldPolicy.bodyFor]). Only ever
+     * called by [MaximumShield.reconcile], which decides WHEN (steady state sends
+     * nothing). Same pipeline and the same contract as [sendScreenshotNotice]:
+     * push-suppressed, uniform control TTL, best-effort, non-throwing, blocking.
+     */
+    fun sendMaximumAnnouncement(contactId: String, max: Boolean): Boolean = try {
+        sendDirectControl(contactId, CONTROL_KIND_PLEVEL, MaximumShieldPolicy.bodyFor(max), noPush = true, ttlSeconds = CONTROL_APPEND_TTL_SECONDS)
+    } catch (e: Exception) {
+        platformLogWarn(LOG_TAG, "level announcement send failed: ${e::class.simpleName}")
+        false
+    }
+
+    /**
+     * Applies a received [CONTROL_KIND_PLEVEL] announcement. The contact must still
+     * exist (a delete during a poll must not resurrect its `plvl-*` rows); everything
+     * else — the tier gate, strict payload validation, the convergence rule — is
+     * [MaximumShield.onAnnouncement]. Never throws.
+     */
+    private fun applyMaximumAnnouncement(contactId: String, body: String?) {
+        val shield = maximumShield ?: return
+        try {
+            if (!contactExists(contactId)) return
+            shield.onAnnouncement(contactId, body)
+        } catch (e: Exception) {
+            platformLogWarn(LOG_TAG, "level announcement not applied: ${e::class.simpleName}")
+        }
+    }
+
+    /**
      * One send's out-of-band status, for the caller that needs more than a
      * Boolean. Today exactly one does: [sendGroupText]'s 404 fallback has
      * to tell "the peer's group inbox is GONE" from "the relay was unreachable",
@@ -4151,6 +4186,85 @@ class MessageManager(
         FAILED,
     }
 
+    // Serialises group-inbox backfill so the EAGER pass ([eagerBackfillGroupInboxes])
+    // and the control-sweep's lazy runDue never mint for the SAME pairing at once: a
+    // double mint would replace our inbound-grp row twice and could leave the peer
+    // announcing to an inbox we no longer read — transient group-text loss until a
+    // 404 self-heal. NON-BLOCKING by design (a second caller returns SKIPPED instead
+    // of waiting), so a control sweep is never stalled behind a background mint; held
+    // only across ONE contact's attempt. `backfillInFlight` is the per-attempt gate;
+    // `eagerPassInFlight` keeps a burst of membership events from launching redundant
+    // eager coroutines. Both under [backfillLock].
+    private val backfillLock = SyncLock()
+    private var backfillInFlight = false
+    private var eagerPassInFlight = false
+
+    /** @see maybeBackfillGroupInboxInner. The serialising gate that lets the eager
+     *  pass and the lazy sweep share [maybeBackfillGroupInboxInner] without racing the
+     *  throttle into a double mint. A concurrent attempt is a non-blocking SKIPPED —
+     *  the durable throttle + re-arm are the retry policy, so nothing is lost. */
+    internal fun maybeBackfillGroupInbox(contactId: String): GroupBackfillOutcome {
+        val admitted = backfillLock.withLock {
+            if (backfillInFlight) false else { backfillInFlight = true; true }
+        }
+        if (!admitted) return GroupBackfillOutcome.SKIPPED
+        return try {
+            maybeBackfillGroupInboxInner(contactId)
+        } finally {
+            backfillLock.withLock { backfillInFlight = false }
+        }
+    }
+
+    /**
+     * EAGER per-pair group-inbox establishment — the durability half of the group
+     * unread-dot fix. It runs the SAME mint+announce as the lazy control-sweep
+     * backfill ([GroupInboxBackfillArming.runDue]), but PROMPTLY after a membership
+     * event ([GroupManager]'s arming wrappers) and OFF the critical path, so a fresh
+     * group relationship converges its per-pair group inbox AHEAD of the first group
+     * message instead of over many idle sweeps. Once the inbox exists, a group text
+     * rides it (GRP route, [sendGroupTextRouted]) and its dot is re-derivable from the
+     * relay inbox depth on every session — durable across a teardown with nothing
+     * persisted.
+     *
+     * FAIL-SOFT in every direction, and never a new dependency:
+     *  - EMPTY / frozen / torn-down / no completed relay round-trip (cold connect) ⇒
+     *    does nothing, leaving the already-armed LAZY sweep as the backstop;
+     *  - launched fire-and-forget on a background coroutine, so it NEVER blocks or
+     *    delays a group create/join or a message;
+     *  - every per-contact attempt is the throttled, freeze-gated, idempotent
+     *    [maybeBackfillGroupInbox] — a converged pair is a no-op, a cold circuit a
+     *    SKIP, a failed mint a budget slot the lazy path retries.
+     *
+     * It is an optimisation of WHEN the existing backfill runs, not a new code path:
+     * the eligibility, throttle, mint and announce are all unchanged.
+     *
+     * BLOCKING (vault + PoW + network) — the caller ([GroupManager.eagerlyEstablishGroupInboxes])
+     * launches it on a background coroutine via its platform-wired launcher, so this
+     * never runs on a create/join thread. [eagerPassInFlight] keeps a burst of
+     * membership events from running overlapping passes.
+     */
+    internal fun eagerBackfillGroupInboxes(contactIds: List<String>) {
+        if (contactIds.isEmpty() || acksClosed) return
+        // Never grind PoW inside the connect wait — the exact gate the lazy sweep's
+        // runDue uses. If the relay has not answered yet, the armed lazy path converges
+        // it on a later sweep; eager is purely an optimisation of timing.
+        if (!hasCompletedRelayRoundTrip()) return
+        if (moveFrozen("eager group inbox backfill")) return
+        val admitted = backfillLock.withLock {
+            if (eagerPassInFlight) false else { eagerPassInFlight = true; true }
+        }
+        // A pass is already running: the new contacts stay armed for the lazy sweep.
+        if (!admitted) return
+        try {
+            for (contactId in contactIds.distinct().secureShuffled()) {
+                if (acksClosed) break
+                try { maybeBackfillGroupInbox(contactId) } catch (_: Exception) { /* fail-soft */ }
+            }
+        } finally {
+            backfillLock.withLock { eagerPassInFlight = false }
+        }
+    }
+
     /**
      * One throttled backfill/self-heal step for [contactId]'s GROUP inbox.
      *
@@ -4187,8 +4301,12 @@ class MessageManager(
      * contain — live capabilities on a relay that no device will ever own.
      *
      * Never throws. Blocking (vault + PoW + network) — background dispatcher only.
+     *
+     * Reached only through the serialising [maybeBackfillGroupInbox] gate, so the
+     * eager pass and the lazy control-sweep runDue can never both be inside the
+     * throttle's read-then-spend for the same pairing at once.
      */
-    internal fun maybeBackfillGroupInbox(contactId: String): GroupBackfillOutcome {
+    private fun maybeBackfillGroupInboxInner(contactId: String): GroupBackfillOutcome {
         if (moveFrozen("group inbox backfill")) return GroupBackfillOutcome.SKIPPED
         // A cold circuit is the 6a0c138 lesson: never grind PoW before the relay
         // has answered this transport at least once.
@@ -5019,6 +5137,10 @@ class MessageManager(
             // display only (see noteScreenshotNotice).
             if (env.controlKind == CONTROL_KIND_SCREENSHOT && env.groupId == null) {
                 noteScreenshotNotice(contactId, env.timestamp); continue
+            }
+            // 1:1 Maximum-shield announcement: applied to the vault, never surfaced.
+            if (env.controlKind == CONTROL_KIND_PLEVEL && env.groupId == null) {
+                applyMaximumAnnouncement(contactId, env.controlBody); continue
             }
             if (env.groupId == null && env.controlKind != null &&
                 !isKnownDirectControlKind(env.controlKind)
@@ -6452,6 +6574,16 @@ class MessageManager(
             // time, already inside the AEAD) rides along for display only.
             if (env.controlKind == CONTROL_KIND_SCREENSHOT && env.groupId == null) {
                 noteScreenshotNotice(contact.contactId, env.timestamp)
+                lastCounter = counter
+                advanced = true
+                ledger.acceptLegacy(blobIdx)
+                continue
+            }
+            // 1:1 Maximum-shield announcement: same placement and same counter/ack
+            // treatment as the screenshot notice (after the strict-monotonic check, so a
+            // re-served blob applies once); applied to the vault, never surfaced.
+            if (env.controlKind == CONTROL_KIND_PLEVEL && env.groupId == null) {
+                applyMaximumAnnouncement(contact.contactId, env.controlBody)
                 lastCounter = counter
                 advanced = true
                 ledger.acceptLegacy(blobIdx)
@@ -8948,6 +9080,14 @@ class MessageManager(
         const val CONTROL_KIND_SCREENSHOT = "screenshot"
 
         /**
+         * Direct (non-group) "I use Maximum" / "I no longer do" announcement (the Maximum
+         * shield, [MaximumShield]). Body exactly `{"max":"1"}` / `{"max":"0"}`. Wire
+         * value is <= 16 chars. An older build does not know it and drops it silently
+         * (see [isKnownDirectControlKind]).
+         */
+        const val CONTROL_KIND_PLEVEL = "plvl"
+
+        /**
          * The DIRECT (group-less) control kinds a receiver SURFACES or applies past
          * the "unknown direct control" guard. Single allowlist for BOTH receive
          * paths (the legacy static envelope and the ratchet), so the two can never
@@ -8960,7 +9100,7 @@ class MessageManager(
          * exactly what an old build does with [CONTROL_KIND_SCREENSHOT].
          */
         internal fun isKnownDirectControlKind(kind: String): Boolean =
-            kind in DIRECT_REFERRAL_KINDS || kind == CONTROL_KIND_SCREENSHOT
+            kind in DIRECT_REFERRAL_KINDS || kind == CONTROL_KIND_SCREENSHOT || kind == CONTROL_KIND_PLEVEL
 
         /**
          * Ceiling on UNDRAINED direct screenshot notices held in RAM. A paired peer

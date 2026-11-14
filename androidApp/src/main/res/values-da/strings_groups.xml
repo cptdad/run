@@ -27,6 +27,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Forlad gruppen</string>
     <string name="group_info_make_admin">Gør til admin</string>
+    <string name="group_info_make_admin_confirm_title">Gør %1$s til admin?</string>
+    <string name="group_info_make_admin_confirm_body">Du er ikke længere admin. Kun admin kan tilføje og fjerne medlemmer.</string>
     <string name="group_info_remove_from_group">Fjern fra gruppen</string>
     <string name="group_info_add_member_precondition">De skal være parret ansigt til ansigt med hvert eneste medlem. Det går du god for.</string>
     <string name="group_info_add_member_empty">Ingen mulige kontakter — alle, du er parret med, er allerede i gruppen.</string>

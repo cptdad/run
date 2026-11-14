@@ -418,7 +418,14 @@ fun ProtectionLevelSettingsScreen(
                     // next frame) and cleared by the coroutine or by an abandon.
                     commitInFlight = true
                     viewModel.viewModelScope.launch {
-                        if (doDrop) withContext(Dispatchers.IO) { vs.setDbKeyAuthBinding(false) }
+                        val dropped = doDrop && withContext(Dispatchers.IO) { vs.setDbKeyAuthBinding(false) }
+                        // RUN-01, Secure → Maximum: the credential change above could not
+                        // re-key (Lever B + the recovery code were still live), so re-key
+                        // now that the drop has removed both. Best-effort: the vault-side
+                        // gates decide, and the tier committed below is honest either way.
+                        if (ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop(chosen, dropped, credential.isNotEmpty())) {
+                            withContext(Dispatchers.IO) { vs.rotateDbKeyAfterTierUpgrade(credential) }
+                        }
                         val enableResult = if (doEnable) {
                             withContext(Dispatchers.IO) { vs.enableDbKeyAuthBindingWithRecovery(credential) }
                         } else null

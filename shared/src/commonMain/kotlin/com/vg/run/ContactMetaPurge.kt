@@ -58,10 +58,19 @@ internal fun ratchetMetaKeysForContact(contactId: String): List<String> = listOf
     MessageManager.drCtlDeferredKey(contactId),   // deferred sealed control wires — ratchet ciphertext
     MessageManager.drCtlWatermarkKey(contactId),  // peer's ratchet-proven control commitment (receive lock) —
     // both describe THIS pairing's peer build and ratchet; a re-paired contact must re-earn them
+    MaximumShieldPolicy.peerClaimKey(contactId),  // Maximum shield: this contact reported Maximum
+    MaximumShieldPolicy.sentMarkerKey(contactId), // Maximum shield: last level announced to this contact — a
+    // re-paired peer is a NEW device that has heard nothing, so the marker must not outlive the contact
     MessageManager.groupBackfillKey(contactId),   // group-inbox backfill throttle — a
     // re-pair is one of only two things that re-arm the budget (the other is the pairing
     // actually converging), so it MUST die with the contact or a re-paired peer would
     // inherit an exhausted budget and stay on the legacy group route forever
+    GroupUnreadMarkerStore.keyFor(contactId),     // persisted `gi` unread attribution — which
+    // groups this sender's still-pending group texts belong to; a re-paired peer is a new
+    // pairing with an empty group inbox, so it must not inherit dots. Per CONTACT, so it is
+    // here and not in GroupMetaKeys: a group delete DETACHES its units (GroupManager)
+    // instead, and the restore detaches any unit whose group is gone.
+    // DELIBERATELY NOT carried by a device move (MoveMetaPolicy.deniedPrefixes).
     // The pending read-cap rotation markers, one per inbound inbox. Each holds
     // a LIVE capability candidate, so leaving one behind on delete would be a new
     // capability leak in the vault (exactly the residue class this list exists for).

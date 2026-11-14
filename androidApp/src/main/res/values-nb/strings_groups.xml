@@ -24,6 +24,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Forlat gruppen</string>
     <string name="group_info_make_admin">Gjør til admin</string>
+    <string name="group_info_make_admin_confirm_title">Gjøre %1$s til admin?</string>
+    <string name="group_info_make_admin_confirm_body">Du er ikke lenger admin. Bare admin kan legge til og fjerne medlemmer.</string>
     <string name="group_info_remove_from_group">Fjern fra gruppen</string>
     <string name="group_info_add_member_precondition">Vedkommende må ha parkoblet ansikt til ansikt med alle medlemmene. Du går god for det.</string>
     <string name="group_info_add_member_empty">Ingen aktuelle kontakter – alle du har parkoblet med, er allerede i gruppen.</string>

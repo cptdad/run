@@ -43,6 +43,8 @@ struct ConversationView: View {
     // receive but not send. Re-checked after every poll (the announce is
     // applied by pollMessages), so the send button unlocks on its own.
     @State private var hasOutbound: Bool = true
+    // Maximum shield (MaximumShield.kt): this contact reported Maximum and THIS device is at MAXIMUM.
+    @State private var maximumShield: Bool = false
     // Mirrors appState.isRelayReachable, but snaps off instantly when the
     // relay becomes unreachable so the lit runestone is NEVER visible while
     // the relay is down. Fade-in is still animated.
@@ -165,7 +167,11 @@ struct ConversationView: View {
         .navigationBarBackButtonHidden(true)
         .runNavigationBarChrome()
         .toolbar { conversationToolbar }
+        .onReceive(NotificationCenter.default.publisher(for: .contactsChanged)) { _ in
+            refreshMaximumShield()
+        }
         .onAppear  {
+            refreshMaximumShield()
             LogBuffer.shared.append(level: "D", tag: "Chat", message: "conversation opened torConnected=\(appState.isTorConnected) relayReachable=\(appState.isRelayReachable)")
             refreshHasOutbound()
             // Evaluate forwardSecrecyStalled on open. The
@@ -261,12 +267,21 @@ struct ConversationView: View {
         }
         ToolbarItem(placement: .principal) {
             VStack(spacing: 2) {
-                Text(contactAlias())
-                    .font(.runeHeadline)
-                    .foregroundColor(Color.runTextPrimary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .accessibilityIdentifier("conversation_title")
+                HStack(spacing: 6) {
+                    Text(contactAlias())
+                        .font(.runeHeadline)
+                        .foregroundColor(Color.runTextPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .accessibilityIdentifier("conversation_title")
+                    if maximumShield {
+                        Image(systemName: "shield.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.runTextSecondary)
+                            .accessibilityLabel(L10n.contactMaximumShieldDescription)
+                            .accessibilityIdentifier("conversation_maximum_shield")
+                    }
+                }
                 if vouchedByContactId() != nil {
                     // Same provenance signal + style
                     // family as ContactListView's "Introduced by X" subtitle —
@@ -503,6 +518,12 @@ struct ConversationView: View {
     }
 
     // MARK: - Logic
+
+    /// Maximum shield: false unless this device is provably at MAXIMUM and the contact reported it.
+    private func refreshMaximumShield() {
+        let claimed = appState.isMaximumShieldClaimed(contactId: contactId)
+        if claimed != maximumShield { maximumShield = claimed }
+    }
 
     private func contactAlias() -> String {
         guard let vault = appState.vault else { return L10n.conversationContactFallback }
@@ -871,41 +892,58 @@ private struct MessageBubble: View {
         HStack {
             if message.isSent { Spacer(minLength: 60) }
 
-            VStack(alignment: message.isSent ? .trailing : .leading, spacing: 4) {
-                Text(message.text)
-                    .font(.runeBody)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(message.isSent ? Color.runSentBubble : Color.runReceivedBubble)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .accessibilityIdentifier(message.isSent ? "message_bubble_sent" : "message_bubble_received")
-
-                HStack(spacing: 4) {
-                    if message.timestamp > 0 {
-                        Text(Self.formatTime(message.timestamp))
-                            .font(.system(size: 9))
-                            .foregroundColor(Color(hex: 0x666666))
-                    }
-                    if message.isSent {
-                        // L6: ✓ delivered · in-flight ✗ failed (red) — the failed state
-                        // is no longer indistinguishable from a still-pending send.
-                        if message.failed {
-                            Text("✗")
-                                .font(.runeCaption2)
-                                .foregroundColor(.red)
-                                .accessibilityIdentifier("message_failed")
-                        } else {
-                            Text(message.delivered ? "✓" : "·")
-                                .font(.runeCaption2)
-                                .foregroundColor(Color.runTextSecondary)
-                        }
-                    }
+            if message.isSent {
+                // Delivery is the bubble's own opacity/colour (SentBubbleFade, shared with
+                // Android): grey + translucent until the relay accepts, then opaque + real
+                // colour. No ✓ / · glyphs. A failed send is NOT delivered: it stays grey and
+                // translucent and keeps its red ✗ (full opacity, outside the fade).
+                SentBubbleFading(sentAtMs: message.timestamp, delivered: message.delivered) { alpha, mix in
+                    column(alpha: alpha, mix: mix)
                 }
-                .padding(.horizontal, 4)
+            } else {
+                column(alpha: 1, mix: 1)
             }
 
             if !message.isSent { Spacer(minLength: 60) }
+        }
+    }
+
+    private func column(alpha: Double, mix: Double) -> some View {
+        VStack(alignment: message.isSent ? .trailing : .leading, spacing: 4) {
+            Text(message.text)
+                .font(.runeBody)
+                .foregroundColor(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    ZStack {
+                        if message.isSent {
+                            Color(hex: Int(SentBubbleFade.shared.PENDING_GREY_RGB))
+                            Color.runSentBubble.opacity(mix)
+                        } else {
+                            Color.runReceivedBubble
+                        }
+                    }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .opacity(alpha)
+                .accessibilityIdentifier(message.isSent ? "message_bubble_sent" : "message_bubble_received")
+
+            HStack(spacing: 4) {
+                if message.timestamp > 0 {
+                    Text(Self.formatTime(message.timestamp))
+                        .font(.system(size: 9))
+                        .foregroundColor(Color(hex: 0x666666))
+                        .opacity(alpha)
+                }
+                if message.isSent && message.failed {
+                    Text("✗")
+                        .font(.runeCaption2)
+                        .foregroundColor(.red)
+                        .accessibilityIdentifier("message_failed")
+                }
+            }
+            .padding(.horizontal, 4)
         }
     }
 

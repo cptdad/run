@@ -45,6 +45,7 @@
     <string name="referral_introduce_body">Velg hvem du vil introdusere %1$s for. Introduser bare folk du kjenner og stoler på.</string>
     <string name="referral_no_candidates">Ingen andre kontakter å introdusere.</string>
     <string name="referral_introduce_error">Ikke tilkoblet ennå – prøv igjen om et øyeblikk.</string>
+    <string name="contact_list_referral_offer_row">Introduksjon: «%1$s»</string>
     <string name="referral_offer_title">Kontaktforespørsel</string>
     <string name="referral_offer_message">%1$s vil introdusere deg for «%2$s». Godkjenn for å legge vedkommende til som kontakt.</string>
     <string name="referral_approve">Godkjenn</string>
@@ -57,6 +58,8 @@
     <!-- Gruppeinvitasjon -->
     <string name="contact_list_group_invite_title">Gruppeinvitasjon</string>
     <string name="contact_list_group_invite_join">Bli med</string>
+    <string name="contact_list_group_invite_row">Gruppeinvitasjon: «%1$s»</string>
+    <string name="contact_list_pending_row_hint">Trykk for å svare</string>
     <string name="contact_list_group_invite_joining">Blir med…</string>
     <string name="contact_list_group_invite_message">%1$s inviterte deg til gruppen «%2$s».</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s inviterte deg til «%2$s», men denne gruppen hadde du tidligere under en ANNEN administrator. Bli bare med hvis du stoler på at %1$s styrer medlemslisten i gruppen.</string>
@@ -117,6 +120,7 @@
     <string name="contact_list_introduced_by">Introdusert av %1$s</string>
     <string name="contact_list_introduced">Introdusert</string>
     <string name="contact_list_repair_chip">Parkoble på nytt</string>
+    <string name="contact_maximum_shield_description">Bruker Maksimal beskyttelse</string>
     <string name="contact_list_unread_messages_description">Uleste meldinger</string>
     <string name="contact_list_group_admin_label">Gruppe · administrator</string>
     <string name="contact_list_group_label">Gruppe</string>

@@ -1,0 +1,3 @@
+• Maksimi: salalause kirjoitetaan käsin – sitä ei voi liittää eikä kopioida.
+• Maksimi hylkää enemmän heikkoja salalauseita, kuten tunnetut sanonnat, viikonpäivät, laskeminen omalla kielellä tai välimerkkien jonot.
+• Ryhmät: lukemattoman viestin piste näkyy nyt myös jäsenen ensimmäisestä viestistä ja pysyy luotettavammin, kun palaat sovellukseen.

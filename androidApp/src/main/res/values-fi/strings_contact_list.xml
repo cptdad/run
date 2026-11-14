@@ -45,6 +45,7 @@
     <string name="referral_introduce_body">Valitse, kenelle esittelet henkilön %1$s. Esittele vain ihmisiä, jotka tunnet ja joihin luotat.</string>
     <string name="referral_no_candidates">Ei muita kontakteja esiteltäväksi.</string>
     <string name="referral_introduce_error">Yhteyttä ei ole vielä — yritä hetken kuluttua uudelleen.</string>
+    <string name="contact_list_referral_offer_row">Esittely: ”%1$s”</string>
     <string name="referral_offer_title">Yhteyspyyntö</string>
     <string name="referral_offer_message">%1$s haluaa esitellä sinut henkilölle ”%2$s”. Hyväksy, niin hänet lisätään kontaktiksi.</string>
     <string name="referral_approve">Hyväksy</string>
@@ -57,6 +58,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">Ryhmäkutsu</string>
     <string name="contact_list_group_invite_join">Liity</string>
+    <string name="contact_list_group_invite_row">Ryhmäkutsu: ”%1$s”</string>
+    <string name="contact_list_pending_row_hint">Vastaa napauttamalla</string>
     <string name="contact_list_group_invite_joining">Liitytään…</string>
     <string name="contact_list_group_invite_message">%1$s kutsui sinut ryhmään ”%2$s”.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s kutsui sinut ryhmään ”%2$s”, mutta sinulla oli tämä ryhmä aiemmin ERI ylläpitäjän alaisuudessa. Liity vain, jos luotat siihen, että %1$s hallitsee tämän ryhmän jäsenyyksiä.</string>
@@ -117,6 +120,7 @@
     <string name="contact_list_introduced_by">%1$s esitteli</string>
     <string name="contact_list_introduced">Esitelty</string>
     <string name="contact_list_repair_chip">Parita</string>
+    <string name="contact_maximum_shield_description">Käyttää Maksimi-suojausta</string>
     <string name="contact_list_unread_messages_description">Lukemattomia viestejä</string>
     <string name="contact_list_group_admin_label">Ryhmä · ylläpitäjä</string>
     <string name="contact_list_group_label">Ryhmä</string>

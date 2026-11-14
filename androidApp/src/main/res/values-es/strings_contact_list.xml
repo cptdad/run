@@ -49,6 +49,7 @@
     <string name="referral_introduce_body">Elige a quién le presentas a %1$s. Presenta solo a personas que conozcas y en las que confíes.</string>
     <string name="referral_no_candidates">No hay otros contactos a los que presentarle.</string>
     <string name="referral_introduce_error">Todavía no hay conexión. Inténtalo dentro de un momento.</string>
+    <string name="contact_list_referral_offer_row">Presentación: “%1$s”</string>
     <string name="referral_offer_title">Solicitud de conexión</string>
     <string name="referral_offer_message">%1$s quiere presentarte a “%2$s”. Aprueba la solicitud para añadir a esa persona a tus contactos.</string>
     <string name="referral_approve">Aprobar</string>
@@ -61,6 +62,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">Invitación de grupo</string>
     <string name="contact_list_group_invite_join">Unirme</string>
+    <string name="contact_list_group_invite_row">Invitación de grupo: “%1$s”</string>
+    <string name="contact_list_pending_row_hint">Toca para responder</string>
     <string name="contact_list_group_invite_joining">Uniéndome…</string>
     <string name="contact_list_group_invite_message">%1$s te ha invitado al grupo “%2$s”.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s te ha invitado a “%2$s”, pero antes tenías este grupo con OTRO administrador. Únete solo si confías en que %1$s controle quién forma parte de este grupo.</string>
@@ -121,6 +124,7 @@
     <string name="contact_list_introduced_by">Presentado por %1$s</string>
     <string name="contact_list_introduced">Presentado</string>
     <string name="contact_list_repair_chip">Reemparejar</string>
+    <string name="contact_maximum_shield_description">Usa la protección Máximo</string>
     <string name="contact_list_unread_messages_description">Mensajes sin leer</string>
     <string name="contact_list_group_admin_label">Grupo · admin</string>
     <string name="contact_list_group_label">Grupo</string>

@@ -36,11 +36,43 @@ class CredentialPolicyTest {
     }
 
     @Test
-    fun repeatedWords_getHalfCredit() {
+    fun repeatedWords_earnNothing() {
         // 6 distinct words pass; the same word 6 times must NOT.
         assertFalse(CredentialPolicy.meetsFloor("yes yes yes yes yes yes"))
-        // 2 distinct + 4 repeats = 4 word-equivalents ≈ 51.7 bits < 70.
+        // 2 distinct words, however often repeated, stay 2 words ≈ 25.9 bits.
         assertFalse(CredentialPolicy.meetsFloor("red blue red blue red blue"))
+        assertEquals(
+            CredentialPolicy.estimateBits("red blue"),
+            CredentialPolicy.estimateBits("red blue red blue red blue"),
+            0.001,
+        )
+    }
+
+    @Test
+    fun repeatedPhraseBlock_doesNotMeetFloor() {
+        // External review RUN-03 (2026-11-12): a sub-floor phrase typed twice scored
+        // 77.55 and was ACCEPTED at half credit per repeat. Saying it again is one
+        // cracker rule, not four more diceware draws.
+        val base = "correct horse battery staple"
+        val baseBits = CredentialPolicy.estimateBits(base)
+        for (variant in listOf(
+            "$base $base",
+            "$base $base $base",
+            "$base Correct Horse Battery Staple",
+            "$base, $base!",
+            "$base staple battery horse correct",
+            "correct correct horse horse battery battery staple staple",
+        )) {
+            assertFalse(CredentialPolicy.meetsFloor(variant), variant)
+            assertEquals(baseBits, CredentialPolicy.estimateBits(variant), 0.001, variant)
+        }
+        // A five-word phrase cannot be repeated over the floor either, at any length.
+        val five = "correct horse battery staple lamp"
+        assertFalse(CredentialPolicy.meetsFloor("$five $five $five $five"))
+        // Positive controls: six DISTINCT words still pass, and a repeat does not
+        // take anything away from a phrase that already has six.
+        assertTrue(CredentialPolicy.meetsFloor("$five river"))
+        assertTrue(CredentialPolicy.meetsFloor("$five river river"))
     }
 
     @Test
@@ -368,16 +400,19 @@ class CredentialPolicyTest {
         // though it is six genuinely distinct tokens worth 77.55. A stem-less token
         // now carries null and joins no family.
         assertTrue(CredentialPolicy.meetsFloor("correct 2024 horse 1999 battery staple"))
-        // A bare number is credited EXACTLY like an ordinary word — same score as the
-        // all-words control, no residual discount. (Crediting a lone SHORT number at only
-        // log2(10)/digit is a proposed further tightening tracked in the 2026-11-09
-        // report, deliberately NOT taken here; see numericTightening…ExactlyWhereTheyWere.)
+        // A bare 4-digit YEAR is still credited like an ordinary word — 4·log2(10)=13.3 ≥
+        // the 12.9 word credit, so the bare-number cap leaves it at 12.9 and this still
+        // scores EXACTLY the all-words control.
         assertEquals(
             CredentialPolicy.estimateBits("correct horse battery staple lamp river"),
             CredentialPolicy.estimateBits("correct 2024 horse 1999 battery staple"),
             0.001,
         )
-        assertTrue(CredentialPolicy.meetsFloor("correct 42 horse 7 battery staple"))
+        // Rung D-number (2026-11-10, owner call from the 2026-11-09 dynamic report, which
+        // this test previously pinned as "deliberately NOT taken"): a bare SHORT number is
+        // now capped at log2(10)/digit and can no longer pad a sub-floor phrase into a pass.
+        // Four words (51.7) + "42" (6.6) + "7" (3.3) = 61.7 < 70 → REJECTED.
+        assertFalse(CredentialPolicy.meetsFloor("correct 42 horse 7 battery staple"))
         // Rung A (2026-11-09): a token that normalizes to "" — pure punctuation — is NOT
         // a word and is worth ZERO, consuming no slot. "correct 2024 horse !!! battery
         // staple" is four words plus one year (~64.6 bits), not a six-word phrase: the
@@ -521,11 +556,12 @@ class CredentialPolicyTest {
             CredentialPolicy.estimateBits("correct 2024 horse 1999 battery staple"),
             0.001,
         )
-        assertEquals(
-            control,
-            CredentialPolicy.estimateBits("correct 42 horse 7 battery staple"),
-            0.001,
-        )
+        // Rung D-number (2026-11-10): a bare SHORT number is now capped at log2(10)/digit,
+        // so this phrase is deliberately NO LONGER equal to the control — "42" and "7" are
+        // worth 6.6 + 3.3, not 2·12.9 — and it drops below the floor. (The 4-digit-year
+        // phrases here are unchanged: 13.3 ≥ 12.9.)
+        assertFalse(CredentialPolicy.meetsFloor("correct 42 horse 7 battery staple"))
+        assertTrue(CredentialPolicy.estimateBits("correct 42 horse 7 battery staple") < control)
         assertEquals(
             control,
             CredentialPolicy.estimateBits("correct horse battery staple 2024 river"),
@@ -789,5 +825,63 @@ class CredentialPolicyTest {
         assertTrue(CredentialPolicy.meetsFloor("correct horse battery staple lamp river"))
         // The same six words concatenated are one letter run — natural language — and fail.
         assertFalse(CredentialPolicy.meetsFloor("catdogfoxpigcowhen"))
+    }
+
+    // -- 2026-11-10 dynamic-report fixes: localized categories, famous phrases,
+    //    CamelCase segmentation, bare-number cap, native-script digits ---------------
+
+    @Test
+    fun localizedClosedCategoryRuns_doNotMeetFloor() {
+        // Fix #2 (Rung D): weekday / month / colour / … runs in the 12 app locales collapse
+        // to log2(set size) per member, like the English and localized-NUMBER runs before
+        // them — not six independent diceware draws.
+        assertFalse(CredentialPolicy.meetsFloor("montag dienstag mittwoch donnerstag freitag samstag"))  // de weekdays
+        assertFalse(CredentialPolicy.meetsFloor("heinakuu elokuu syyskuu lokakuu marraskuu joulukuu"))   // fi months
+        // A LONE localized category word keeps full credit (a genuine roll may produce one),
+        // so a real phrase with a single localized day/colour still clears with enough words.
+        assertTrue(CredentialPolicy.meetsFloor("montag velvet turbine ladder falcon thunder"))
+    }
+
+    @Test
+    fun famousPhrases_areCappedBelowFloor_butFamousOpenerPlusEntropyStillPasses() {
+        // Fix #4: a culturally shared line (anthem, proverb, prayer, pangram, famous first
+        // line) is one entry on an attacker's phrase list, not its word count.
+        assertFalse(CredentialPolicy.meetsFloor("en boca cerrada no entran moscas"))        // es proverb
+        assertFalse(CredentialPolicy.meetsFloor("the quick brown fox jumps over the lazy dog"))  // en pangram
+        assertFalse(CredentialPolicy.meetsFloor("allons enfants de la patrie le jour de gloire"))  // fr anthem
+        // Case-, space-, punctuation- and diacritic-insensitive: a mangled line still caps
+        // (these despace/CamelCase/punctuation variants were "free no-op" bypasses).
+        assertFalse(CredentialPolicy.meetsFloor("EnBocaCerradaNoEntranMoscas"))
+        assertFalse(CredentialPolicy.meetsFloor("en boca cerrada no entran moscas!"))
+        // PREFIX-only on the stored side: a famous OPENER + genuinely random words keeps its
+        // real added entropy and still passes — the extension is NOT matched as famous.
+        assertTrue(CredentialPolicy.meetsFloor("en boca cerrada no entran moscas zxqwpl frobnicate kettle"))
+    }
+
+    @Test
+    fun camelCasePhrases_areScoredAsWords_notOvercredited() {
+        // Fix #3: CamelCase/PascalCase capitals at each word boundary are class changes that
+        // defeat the same-class-run discount; re-expose the token to the word model (min) so
+        // it cannot out-score its own spaced form.
+        assertFalse(CredentialPolicy.meetsFloor("ToBeOrNotToBe"))
+        assertFalse(CredentialPolicy.meetsFloor("CorrectHorseBatteryStaple"))
+        // GUARD: a genuinely strong random token with lower→upper boundaries but digits /
+        // symbols (NOT a word phrase) keeps its char-model entropy — not re-scored as words.
+        assertTrue(CredentialPolicy.meetsFloor("aB3!xY9\$kQ7%"))
+    }
+
+    @Test
+    fun bareNumberCap_capsShortNumbers_andFoldsNativeScriptDigits() {
+        // Fix #1: a bare SHORT number is worth log2(10)/digit, so it can no longer pad a
+        // sub-floor phrase into a pass; a 4-digit year is unaffected (13.3 ≥ 12.9).
+        assertFalse(CredentialPolicy.meetsFloor("correct horse battery staple lamp 7"))
+        assertTrue(CredentialPolicy.meetsFloor("correct horse battery staple lamp seven"))  // the WORD, lone category
+        // Arabic-Indic / Persian numerals fold to ASCII in normalizeWord, so they are capped
+        // identically — no native-script-digit evasion of the number rules.
+        assertEquals(
+            CredentialPolicy.estimateBits("correct horse battery staple lamp 7"),
+            CredentialPolicy.estimateBits("correct horse battery staple lamp ٧"),  // ٧ Arabic-Indic 7
+            0.001,
+        )
     }
 }

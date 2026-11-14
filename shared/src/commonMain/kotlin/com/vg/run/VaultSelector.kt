@@ -37,6 +37,10 @@ import com.vg.run.DbKeyRotationPolicy.mayRotateDbKey
 import com.vg.run.DbKeyRotationPolicy.RotationOutcome
 import com.vg.run.DbKeyRotationPolicy.rotationOutcomeFromProbes
 import com.vg.run.DbKeyRotationPolicy.rekeyOutcomeKeepsLiveHandle
+import com.vg.run.DbKeyRotationPolicy.StrengtheningRotation
+import com.vg.run.DbKeyRotationPolicy.strengtheningRotation
+import com.vg.run.DbKeyRotationPolicy.RotationResult
+import com.vg.run.DbKeyRotationPolicy.rotationResult
 import com.vg.run.DbKeyPayloadCodec.encodeDbKeyPayload
 import com.vg.run.DbKeyPayloadCodec.openModeOrder
 import com.vg.run.RawKeyAdoptionPolicy.rawKeyAdoptionAllowed
@@ -653,6 +657,35 @@ class VaultSelector internal constructor(
         null
     } catch (_: SelectorMetaDamagedException) {
         null
+    }
+
+    /**
+     * "Is this device at MAXIMUM" for the Maximum shield ([MaximumShield]) — what a
+     * device TELLS its contacts and whether it stores/shows theirs. Never throws.
+     *
+     * Reads the same device-key-AEAD `vlt_lvl` slot as [protectionLevelForEnforcement]
+     * but deliberately NOT through it: enforcement fails SECURE to `Present(MAXIMUM)` on an
+     * unauthenticated (plantable cleartext) value and on an unrecognized token, which for
+     * a wipe window is the right direction and for a CLAIM sent to other people is the
+     * wrong one — a planted `maximum` would make the device announce a tier it is not on.
+     * Only an authenticated, parseable level answers; never chosen, unauthenticated,
+     * unparseable, damaged and a device-key outage are all
+     * [MaximumShieldLevel.AMBIGUOUS], which the shield treats as inert (send nothing,
+     * store nothing, change nothing). Nothing destructive reads this.
+     */
+    fun maximumShieldLevel(): MaximumShieldLevel = try {
+        val read = readSelectorMetaRaw(VaultStoreKeys.PROTECTION_LEVEL)
+        MaximumShieldPolicy.levelOf(
+            present = read != null,
+            authenticated = read?.authenticated == true,
+            storedValue = read?.value,
+        )
+    } catch (_: KeyUnavailableException) {
+        MaximumShieldLevel.AMBIGUOUS
+    } catch (_: SelectorMetaDamagedException) {
+        MaximumShieldLevel.AMBIGUOUS
+    } catch (_: Exception) {
+        MaximumShieldLevel.AMBIGUOUS
     }
 
     /**
@@ -1530,6 +1563,15 @@ class VaultSelector internal constructor(
             pendingAuthBoundBase = null
             return false
         }
+        // Never commit an ab: blob next to an unresolved `vlt_cn` record: the record is
+        // a PLAIN wrap, so the unlock reconcile could promote it over the ab: blob and
+        // silently drop Lever B over a recovery code bound to the other key. Read-only
+        // refusal; the prepared enable is kept for a retry once the record resolves (a
+        // promotion moves `vlt_c`, and the base check above then refuses for good).
+        if (rotationPending()) {
+            platformLogWarn("VaultSelector", "finalize deferred — a DB-key rotation is still pending (vault stays plain)")
+            return false
+        }
         return try {
             store.putStringsSync(mapOf(
                 VaultStoreKeys.WRAPPED_DBKEY to blob,
@@ -1579,6 +1621,15 @@ class VaultSelector internal constructor(
      * vault must be unlocked. Call OFF the main thread (Argon2 + a biometric prompt).
      * On any failure nothing load-bearing is persisted (fail-safe, never bricks).
      * Returns the displayable code exactly once — it is never stored in the clear.
+     *
+     * RUN-01: with a live vault handle and no live recovery code, the enable FIRST
+     * re-keys the database (the `vlt_cn` machinery, decided by probes, promoted with
+     * a read-back gate) while `vlt_c` is still plain, and only then seals the recovery
+     * code — over the NEW key, after probing that key opens the file. A rotation that
+     * does not provably land returns [RecoveryEnableResult.Failed] with no code minted
+     * (the vault is plain and opens by PIN; an unresolved record is reconciled at the
+     * next unlock). So a code this returns is never dead, and an archived pre-enable
+     * `vlt_a` + `vlt_c` no longer opens the vault. Costs one whole-file re-key.
      */
     fun enableDbKeyAuthBindingWithRecovery(credential: String): RecoveryEnableResult {
         // Rate-limit this credential-probe channel at the
@@ -1622,8 +1673,10 @@ class VaultSelector internal constructor(
         var inner: ByteArray? = null
         var dbKey: ByteArray? = null
         var secret: ByteArray? = null
+        // Owned here until its dbKey moves into [dbKey] (wiped by the finally either way).
+        var payload: DbKeyPayload? = null
         try {
-            val stored = store.getString(VaultStoreKeys.WRAPPED_DBKEY) ?: return RecoveryEnableResult.Failed
+            var stored = store.getString(VaultStoreKeys.WRAPPED_DBKEY) ?: return RecoveryEnableResult.Failed
             if (dbKeyProtector.isAuthBoundBlob(stored)) return RecoveryEnableResult.Failed  // already on
             kek = codecs.dbKeyKek(stretched)
             inner = dbKeyProtector.unwrap(stored)             // currently plain → no prompt
@@ -1631,9 +1684,56 @@ class VaultSelector internal constructor(
             // recovery blob wraps R ONLY — the stable dbKey, which opens the vault in
             // passphrase mode whatever mode `vlt_c` is in. The ab: blob below wraps
             // [inner] verbatim, so the mode tag survives the enable unchanged.
-            val payload = codecs.openDbKeyInner(inner, kek) ?: return RecoveryEnableResult.Failed
+            payload = codecs.openDbKeyInner(inner, kek) ?: return RecoveryEnableResult.Failed
+
+            // RUN-01: Decent → Secure is a STRENGTHENING, so the DB key is rotated
+            // HERE — while `vlt_c` is still PLAIN (the `vlt_cn` record is a plain wrap,
+            // so the unlock reconcile can never raise a second biometric prompt) and
+            // strictly BEFORE the recovery code is sealed, so the code returned below
+            // wraps the key the file is provably ON. Without this, an archived Decent-era
+            // `vlt_a` + `vlt_c` + the old PIN + the device key kept opening the Secure
+            // vault. See [strengtheningRotation] for every gate and its fail direction.
+            when (strengtheningRotationFor(stored)) {
+                StrengtheningRotation.DEFER -> {
+                    platformLogWarn("VaultSelector",
+                        "Lever B enable deferred — the DB-key rotation cannot safely run right now (nothing written)")
+                    return RecoveryEnableResult.Failed
+                }
+                StrengtheningRotation.SKIP -> platformLog("VaultSelector",
+                    "Lever B enable without a DB-key rotation (no live handle, or a live recovery code)")
+                StrengtheningRotation.ROTATE -> {
+                    val rotated = rotateDbKeyInPlace(kek, stored, payload)
+                    payload.wipe(); payload = null
+                    inner.secureWipe(); inner = null
+                    // Only a probe-PROVEN, read-back-PROVEN rotation may go on to mint a
+                    // code. Anything else returns Failed with NO code minted: the vault is
+                    // plain and opens by PIN (UNRESOLVED keeps both records for the
+                    // unlock reconcile and has already retired a doubtful handle).
+                    if (rotated != RotationResult.ROTATED) {
+                        platformLogWarn("VaultSelector",
+                            "Lever B enable stopped — DB-key rotation $rotated; no recovery code minted")
+                        return RecoveryEnableResult.Failed
+                    }
+                    // Re-read what `vlt_c` NOW holds — the promoted record — and bind
+                    // everything below to it, never to a copy held in RAM.
+                    stored = store.getString(VaultStoreKeys.WRAPPED_DBKEY) ?: return RecoveryEnableResult.Failed
+                    if (dbKeyProtector.isAuthBoundBlob(stored)) return RecoveryEnableResult.Failed
+                    inner = dbKeyProtector.unwrap(stored)     // plain → no prompt
+                    payload = codecs.openDbKeyInner(inner, kek) ?: return RecoveryEnableResult.Failed
+                    // The shown code must open the FILE: prove the key it will wrap does,
+                    // before any code exists. "Could not tell" fails the enable too —
+                    // the vault stays plain on the rotated key, PIN opens it.
+                    val opensFile = try { vaultFactory.probeKey(payload.dbKey) } catch (_: Exception) { false }
+                    if (!opensFile) {
+                        platformLogWarn("VaultSelector",
+                            "Lever B enable stopped — the rotated key did not probe open; no recovery code minted")
+                        return RecoveryEnableResult.Failed
+                    }
+                }
+            }
             dbKey = payload.dbKey                             // the stable dbKey (R)
             payload.rawKey?.secureWipe()
+            payload = null                                    // dbKey now owned by [dbKey]
 
             // Enable = a genuine plain → auth-bound transition (checked above), so mint
             // a FRESH hardware key: drop any stale/invalidated one first. Without this a
@@ -1692,6 +1792,7 @@ class VaultSelector internal constructor(
             stretched.secureWipe()
             kek?.secureWipe(); inner?.secureWipe(); dbKey?.secureWipe()
             secret?.secureWipe()
+            payload?.wipe()
         }
     }
 
@@ -2375,12 +2476,16 @@ class VaultSelector internal constructor(
      * reported failure is the destructive direction (the caller would tell the user to
      * re-enter a credential that no longer opens the vault). Every branch here either
      * converges immediately or leaves a state the next unlock converges.
+     *
+     * The returned [RotationResult] is for the strengthening steps that must not bind
+     * anything to an unproven key (the Lever B enable mints its recovery code only on
+     * [RotationResult.ROTATED]); the credential change ignores it, as before.
      */
     private fun rotateDbKeyAfterUpgrade(
         pendingBlob: String,
         newDbKey: ByteArray,
         oldPayload: DbKeyPayload,
-    ) {
+    ): RotationResult {
         // Durability gate. The re-key may only start once the NEW key is provably on
         // disk, or a crash straight after it would leave a file nothing can open.
         // (Android: the batch is one prefs commit() that rewrites the file whole, so
@@ -2397,7 +2502,7 @@ class VaultSelector internal constructor(
             platformLogWarn("VaultSelector",
                 "DB-key rotation skipped — the pending record is not provably durable")
             removePendingRotation()
-            return
+            return RotationResult.NOT_ROTATED
         }
         // Re-read the handle: it is owned elsewhere and an auto-lock could have closed
         // it since the pre-flight check. No handle ⇒ nothing was re-keyed, so the
@@ -2406,7 +2511,7 @@ class VaultSelector internal constructor(
         if (vault == null) {
             platformLogWarn("VaultSelector", "DB-key rotation skipped — no live vault handle")
             removePendingRotation()
-            return
+            return RotationResult.NOT_ROTATED
         }
         // No attempt is made to quiesce anything. On Android the connection pool nulls
         // the primary connection while a statement is in flight, so a concurrent poll
@@ -2426,10 +2531,11 @@ class VaultSelector internal constructor(
         val newOpens = try { vaultFactory.probeKey(newDbKey) } catch (_: Exception) { false }
         val oldOpens = probePayload(oldPayload)
         val outcome = rotationOutcomeFromProbes(newKeyOpens = newOpens, oldKeyOpens = oldOpens)
+        var promotionProven = false
         when (outcome) {
             RotationOutcome.PROMOTE -> {
-                promotePendingRotation()
-                platformLog("VaultSelector", "vault DB key rotated on credential upgrade")
+                promotionProven = promotePendingRotation()
+                platformLog("VaultSelector", "vault DB key rotated on a tier strengthening")
             }
             RotationOutcome.DROP_PENDING -> {
                 // Deliberately NOT removePendingRotation() here, even though the probes
@@ -2468,6 +2574,158 @@ class VaultSelector internal constructor(
         // nothing is written and nothing is removed here, so the union invariant
         // holds exactly as before.
         if (!rekeyOutcomeKeepsLiveHandle(outcome)) retireRekeyedVaultHandle(vault)
+        return rotationResult(outcome, promotionProven)
+    }
+
+    /**
+     * The re-key decision for a strengthening that is NOT a credential change (the
+     * Lever B enable; the step after the Lever B drop on the way to MAXIMUM), with its
+     * inputs read here. [storedBlob] is the `vlt_c` the caller is about to act on. Never
+     * throws: every input already fails in its own safe direction ([recoveryBlobState]
+     * → UNREADABLE, [batchJournalPending] → null, both DEFER).
+     */
+    private fun strengtheningRotationFor(storedBlob: String): StrengtheningRotation = strengtheningRotation(
+        dbKeyAuthBound = dbKeyProtector.isAuthBoundBlob(storedBlob),
+        hasVaultHandle = try { vaultProvider() != null } catch (_: Exception) { false },
+        rotationAlreadyPending = try { store.contains(VaultStoreKeys.PENDING_DBKEY) } catch (_: Exception) { true },
+        journalPending = batchJournalPending(),
+        recoveryBlob = recoveryBlobState(),
+    )
+
+    /**
+     * Re-key the live vault WITHOUT a credential change: `vlt_a` is untouched, so the
+     * new key's `vlt_cn` record is sealed under the CURRENT credential's [kek] — the
+     * same KEK [currentBlob] is under — exactly what the unlock reconcile unwraps it
+     * with. The caller has decided [StrengtheningRotation.ROTATE] and holds [kek] plus
+     * the [currentPayload] it just unwrapped from [currentBlob] (still PLAIN).
+     *
+     * Batch A is `{vlt_c = currentBlob (byte-identical), vlt_cn = new key}` — two
+     * entries on purpose: on iOS only a multi-key `putStringsSync` is journalled, and a
+     * replay of THIS journal restores both halves of the union, never half of it (the
+     * same reason the credential change writes `vlt_c` next to `vlt_cn`). From there it
+     * is [rotateDbKeyAfterUpgrade] unchanged: durability gate on `vlt_cn`, re-key,
+     * probes, read-back-gated promotion, retire the handle unless PROMOTE.
+     *
+     * Interruption points: before the batch ⇒ nothing; batch failed/partial ⇒ the
+     * record is dropped best-effort (the file was never re-keyed, and a surviving
+     * record is inert — `vlt_c` still opens the file and the unlock drops it); after
+     * the batch ⇒ the union invariant. A throw from the re-key leg leaves the handle's
+     * codec state unknown, so it is retired like any non-PROMOTE outcome and the
+     * records are kept for the unlock reconcile. Never throws once the new key exists
+     * (only the CSPRNG call before it can, with nothing written).
+     */
+    private fun rotateDbKeyInPlace(
+        kek: ByteArray,
+        currentBlob: String,
+        currentPayload: DbKeyPayload,
+    ): RotationResult {
+        val newKey = generateSecureRandom(DBKEY_LENGTH)
+        var rotationPlain: ByteArray? = null
+        try {
+            val pendingBlob = try {
+                // A re-key target is always PASSPHRASE mode (see rotateDbKeyAfterUpgrade).
+                val plain = encodeDbKeyPayload(newKey, null).also { rotationPlain = it }
+                val blob = codecs.sealDbKeyBlob(plain, kek, authBound = false)
+                store.putStringsSync(mapOf(
+                    VaultStoreKeys.WRAPPED_DBKEY to currentBlob,
+                    VaultStoreKeys.PENDING_DBKEY to blob,
+                ))
+                blob
+            } catch (e: Exception) {
+                platformLogWarn("VaultSelector",
+                    "DB-key rotation not started (${e::class.simpleName}) — nothing re-keyed")
+                removePendingRotation()
+                return RotationResult.NOT_ROTATED
+            }
+            return try {
+                rotateDbKeyAfterUpgrade(pendingBlob, newKey, currentPayload)
+            } catch (e: Exception) {
+                platformLogWarn("VaultSelector",
+                    "DB-key rotation threw (${e::class.simpleName}) — both key records kept for the unlock reconcile")
+                try { vaultProvider()?.let { retireRekeyedVaultHandle(it) } } catch (_: Exception) { }
+                RotationResult.UNRESOLVED
+            }
+        } finally {
+            newKey.secureWipe()
+            rotationPlain?.secureWipe()
+        }
+    }
+
+    /**
+     * RUN-01, Secure → Maximum: re-key the vault AFTER the Lever B drop.
+     *
+     * That transition's credential change cannot re-key ([mayRotateDbKey] vetoes it:
+     * the hardware layer and the recovery code are still live while it runs), and the
+     * drop itself has no credential, so the KEK a `vlt_cn` record needs is not in hand
+     * there. The settings flow therefore calls this as its own step, strictly after
+     * [setDbKeyAuthBinding] (false) has PROVEN the plain blob and dropped `vlt_rc`, with
+     * the credential it just set ([ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop]
+     * decides when, identically on both platforms). By then there is no live recovery
+     * code to kill and no auth-bound blob to prompt for, so this is the Decent →
+     * Maximum rotation with the credential change already behind it.
+     *
+     * Verifies [credential] against `vlt_a` (one KDF derivation, the KEK source) and
+     * rotates only on [StrengtheningRotation.ROTATE] — checked before the KDF so an
+     * ineligible call costs nothing, and again after it. Returns true only for a
+     * [RotationResult.ROTATED] vault; every other answer leaves either the vault
+     * unchanged or both records for the unlock reconcile (and a doubtful handle
+     * retired through [onRekeyHandleRetired]). The result is informational: the tier
+     * the caller commits next is honest either way (MAXIMUM's strength is the
+     * passphrase). Never throws (non-@Throws Swift bridge, Compose coroutine).
+     *
+     * Rate-limited like every other credential-probe entry point (the
+     * [changePinMinDelayMs] floor), so it is not a raw-KDF-speed oracle. Heavy (KDF +
+     * a whole-file re-key) — call OFF the main thread.
+     */
+    fun rotateDbKeyAfterTierUpgrade(credential: String): Boolean {
+        val start = TimeSource.Monotonic.markNow()
+        try {
+            return rotateDbKeyAfterTierUpgradeInner(credential)
+        } catch (e: Exception) {
+            platformLogWarn("VaultSelector", "post-upgrade DB-key rotation failed: ${e::class.simpleName}")
+            return false
+        } finally {
+            enforceChangePinDelay(start)
+        }
+    }
+
+    private fun rotateDbKeyAfterTierUpgradeInner(credential: String): Boolean {
+        val before = store.getString(VaultStoreKeys.WRAPPED_DBKEY) ?: return false
+        if (strengtheningRotationFor(before) != StrengtheningRotation.ROTATE) {
+            platformLog("VaultSelector", "post-upgrade DB-key rotation not eligible — nothing written")
+            return false
+        }
+        val (matches, stretched, _) = try {
+            evalCredential(credential)
+        } catch (_: KeyUnavailableException) {
+            return false
+        }
+        if (!matches || stretched == null) {
+            stretched?.secureWipe()
+            return false
+        }
+        var kek: ByteArray? = null
+        var inner: ByteArray? = null
+        var payload: DbKeyPayload? = null
+        try {
+            // Re-read and re-decide after the KDF: the blob this rotation pairs with
+            // must be the one the decision was made over.
+            val stored = store.getString(VaultStoreKeys.WRAPPED_DBKEY) ?: return false
+            if (stored != before || strengtheningRotationFor(stored) != StrengtheningRotation.ROTATE) return false
+            kek = codecs.dbKeyKek(stretched)
+            inner = dbKeyProtector.unwrap(stored)               // plain → no prompt
+            payload = codecs.openDbKeyInner(inner, kek) ?: return false
+            // Any Lever B enable still prepared in RAM wraps the inner layer this
+            // rotation is about to retire; drop it so it can never be finalized.
+            pendingAuthBoundBlob = null
+            pendingAuthBoundBase = null
+            val result = rotateDbKeyInPlace(kek, stored, payload)
+            platformLog("VaultSelector", "post-upgrade DB-key rotation: $result")
+            return result == RotationResult.ROTATED
+        } finally {
+            stretched.secureWipe()
+            kek?.secureWipe(); inner?.secureWipe(); payload?.wipe()
+        }
     }
 
     /**
@@ -3538,10 +3796,11 @@ class VaultSelector internal constructor(
             // blobs), and adoption's "stored blob unchanged" gate refuses because
             // `vlt_c` moved. Folding this into credentialBlobsMoved is plan-only (P-6).
             maybeReconcileLegacyAuthBoundKey(wrappedB64, inner)
-            // A rotation record is ALWAYS a plain wrap (mayRotateDbKey refuses to
-            // create one over an auth-bound blob), so this second unwrap can never
-            // raise a second biometric prompt. Never throws — an unreadable record is
-            // simply "no candidate key".
+            // A rotation record is ALWAYS a plain wrap (mayRotateDbKey and
+            // strengtheningRotation both refuse to create one over an auth-bound blob,
+            // and finalizeDbKeyAuthBinding refuses to commit one while a record is
+            // pending), so this second unwrap can never raise a second biometric
+            // prompt. Never throws — an unreadable record is simply "no candidate key".
             if (rotationPending()) pendingPayload = readPendingRotationKey(kek)
             unwrapCompleted = true
             return UnwrapOutcome.Ok(dk, pendingPayload, kek)

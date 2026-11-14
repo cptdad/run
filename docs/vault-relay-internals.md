@@ -20,7 +20,7 @@ Every step of this is wrapped on both platforms: **a vault that opened is a vaul
 Enumerating decrypt paths from the paragraph above alone MISSES one. There are **two independent** ways into the vault:
 
 1. **The credential (PIN / passphrase)** — the CR-1 path described above: verifier match → PIN-wrapped SQLCipher passphrase unwrapped under the device key.
-2. **The recovery code** — `VaultStoreKeys.RECOVERY_BLOB` (`vlt_rc`) wraps the *same stable SQLCipher passphrase* under a user-held 160-bit Base32 code, **completely independent of the PIN** (`VaultSelector.enableDbKeyAuthBindingWithRecovery` / `recoverWithCode`). It exists so Lever B cannot brick a vault when the hardware key dies. Consequences: it MUST be crypto-erased by every wipe path (it is — `IosUserDefaultsKeys.all` / `WipeRoutine`), and it is a second credential sink that needs the same rate limiting as unlock (fixed 2026-07-19). `recoverWithCode` deliberately commits the plain (Lever-B-off) blob and deletes the recovery blob **before** the vault open, so a failed open leaves a usable plain vault rather than a brick — do not "fix" that ordering. **After the open, a PRIVATE vault on a device that can still hardware-bind is re-armed at once** (`reconcileTierAfterRecovery` → `tryReEstablishLeverBAfterRecovery`): Lever B goes back on and `vlt_rc` is re-minted under the **same** user-held code, which therefore STAYS a live second decrypt path — the user-facing copy (`protection_recovery_entry_subtitle`, SECURITY_OVERVIEW "Recovery code") must say so, never "the hardware lock stays off". Only when the device can no longer bind (or the re-arm's round trip / read-back fails) does the vault stay plain with `vlt_rc` gone; a later enable then mints a NEW code.
+2. **The recovery code** — `VaultStoreKeys.RECOVERY_BLOB` (`vlt_rc`) wraps the *same SQLCipher passphrase* (stable across PIN changes; re-keyed only on a tier strengthening, and the enable that mints a code re-keys FIRST — see `vlt_cn` below) under a user-held 160-bit Base32 code, **completely independent of the PIN** (`VaultSelector.enableDbKeyAuthBindingWithRecovery` / `recoverWithCode`). It exists so Lever B cannot brick a vault when the hardware key dies. Consequences: it MUST be crypto-erased by every wipe path (it is — `IosUserDefaultsKeys.all` / `WipeRoutine`), and it is a second credential sink that needs the same rate limiting as unlock (fixed 2026-07-19). `recoverWithCode` deliberately commits the plain (Lever-B-off) blob and deletes the recovery blob **before** the vault open, so a failed open leaves a usable plain vault rather than a brick — do not "fix" that ordering. **After the open, a PRIVATE vault on a device that can still hardware-bind is re-armed at once** (`reconcileTierAfterRecovery` → `tryReEstablishLeverBAfterRecovery`): Lever B goes back on and `vlt_rc` is re-minted under the **same** user-held code, which therefore STAYS a live second decrypt path — the user-facing copy (`protection_recovery_entry_subtitle`, SECURITY_OVERVIEW "Recovery code") must say so, never "the hardware lock stays off". Only when the device can no longer bind (or the re-arm's round trip / read-back fails) does the vault stay plain with `vlt_rc` gone; a later enable then mints a NEW code.
 
 **`vlt_rp` — the recovery-enable pending marker (2026-08-02).** Enabling Lever B is two-phase, and abandoning it between the phases (back press, auto-lock mid-transcription, backgrounding, process death) used to leave `vlt_rc` on disk forever over a still-plain vault: a live second decrypt path the user believes was never created. `VaultStoreKeys.RECOVERY_PENDING` (`vlt_rp`) is a device-key-authenticated marker armed **before** the `vlt_rc` write and cleared by every path that legitimately claims or drops the blob; `unlock()` purges an orphan only when the marker is armed AND the key blob is provably plain. Three rules that are load-bearing and non-obvious:
 
@@ -34,14 +34,21 @@ The fix is prospective only: vaults that already carry an orphan have no marker 
 
 The SQLCipher passphrase used to be minted once at provision and never regenerated, so an archived `vlt_c` captured while the vault was weak, plus that old credential, plus the still-current device key, opened **today's** vault: a vault's effective protection was the weakest configuration it had ever had, permanently, for anyone holding a copy from that era. `VaultDatabase.rekey` + `VaultFactory.probeKey` now retire that archived wrap on the one transition where it matters.
 
-**Scope is deliberately narrow.** The rotation fires ONLY inside `changeCredentialInner`, and only when ALL of: it is a credential tier **upgrade** (PIN → passphrase, i.e. CASUAL/PRIVATE → MAXIMUM); `vlt_rc` is **absent**; the current key blob is **plain**, not auth-bound; a live vault handle is available (`vaultProvider`, wired from `RunViewModel.vault` / `IosAppController.vault`); and no rotation is already pending. Never on a same-tier PIN rotation, never on `recoverWithCode`, never on the Lever-B enable. The recovery-blob veto is absolute: `vlt_rc` wraps the *stable* passphrase under a 160-bit code that is displayed once and never persisted, so a re-key would silently kill a code the user has written down.
+**Scope: every tier STRENGTHENING, nothing else (RUN-01, 2026-11-12).** Until RUN-01 only Decent → Maximum re-keyed; Decent → Secure and Secure → Maximum kept the provision-time key, so an archived Decent-era (or Secure-era) `vlt_a` + `vlt_c` + the old PIN + the device key still opened the strengthened vault. Each of the three transitions now re-keys, always while `vlt_c` is **plain** (so the `vlt_cn` record is a plain wrap and the unlock reconcile never raises a second biometric prompt) and never over a live recovery code:
+
+- **Decent → Maximum** — inside `changeCredentialInner` (`mayRotateDbKey`), unchanged: a credential **upgrade** (PIN → passphrase), `vlt_rc` absent/forged, plain blob, a live handle (`vaultProvider`, wired from `RunViewModel.vault` / `IosAppController.vault`), nothing pending.
+- **Decent → Secure** — inside `enableDbKeyAuthBindingWithRecovery`, after the credential verified and BEFORE the hardware wrap and the recovery code: batch `{vlt_c (byte-identical), vlt_cn}` under the current KEK → re-key → probes → read-back-gated promotion. Only `RotationResult.ROTATED` (PROMOTE **and** a proven promotion) goes on; the enable then re-reads `vlt_c`, proves the new key **opens the file** (`probeKey`), and only then seals `vlt_rc` over it — so the code the user is shown and acknowledges is never dead. Anything else returns `Failed` with **no code minted** (vault plain, PIN opens it; an unresolved record is the unlock reconcile's). `finalizeDbKeyAuthBinding` refuses while a `vlt_cn` record is pending.
+- **Secure → Maximum** — the credential change still cannot re-key (the `ab:` blob and a PROVEN `vlt_rc` veto it). The Settings chain (both platforms, `ProtectionUpgradePlan.rotatesDbKeyAfterLeverBDrop`) calls `VaultSelector.rotateDbKeyAfterTierUpgrade(credential)` strictly AFTER `setDbKeyAuthBinding(false)` has proven the plain blob and removed `vlt_rc` — Maximum keeps no recovery code, so there is none to kill. It verifies the credential (KEK source; rate-limited by the change-PIN floor) and runs the same batch → re-key → probes → promotion. Best-effort: the MAXIMUM tier is honest either way.
+
+The two non-credential paths share one pure gate, `DbKeyRotationPolicy.strengtheningRotation`: auth-bound blob or no live handle ⇒ SKIP (onboarding enables before the session owns the handle — the unchanged flow); a pending record, an iOS journal pending/unknown, or an UNREADABLE `vlt_rc` ⇒ DEFER (the step refuses, nothing written, retried later); a **PROVEN** `vlt_rc` ⇒ SKIP — the recovery-blob veto stays absolute: `vlt_rc` wraps the current passphrase under a 160-bit code displayed once and never persisted, so a re-key would silently kill a code the user has written down. Still never on a same-tier PIN rotation and never on `recoverWithCode` / its Lever B re-establish (which re-mints under the SAME code). Known residuals: a vault that reached Secure or Maximum-via-Secure BEFORE this fix is not retro-rotated (a PRIVATE vault would need a replacement code shown — new UI); a crash between the Lever B drop and the post-drop rotation leaves that vault unrotated, and a later re-apply has no credential in hand (`credentialKindProven` skips the chain); Secure → Maximum with an already-proven passphrase (no credential chain) never rotates.
 
 **The invariant is `union {vlt_c, vlt_cn} always contains the key the file is encrypted with`** — the same shape as the read-capability rotation (below), and the reason no cross-storage-engine 2PC is needed. Batch A (one `putStringsSync`) writes the new verifier, `vlt_c` = the **OLD** key under the NEW KEK, and `vlt_cn` = the **NEW** key under the NEW KEK; only then, gated on `vlt_cn` reading back, does the re-key run. Four rules are load-bearing:
 
 - **Decide from probes, never from `rekey`'s return value.** `sqlite3_rekey_v2` returns `SQLITE_OK` on both its commit and its rollback branch. Exactly one of `probeKey(new)` / `probeKey(old)` answering `true` is the only actionable outcome; **both or neither ⇒ change nothing and keep both records**, because `probeKey` cannot distinguish "wrong key" from "could not tell", and keeping the old key over an already-rotated file is a brick.
 - **The promotion's read-back gate is mandatory.** Promotion is a pure byte copy of `vlt_cn` onto `vlt_c`, and `remove(vlt_cn)` may only follow a **proven** write: on iOS `kvPut` no-ops silently on a locked keybag while `remove` succeeds unconditionally, so a dropped copy plus a successful delete leaves `vlt_c` on the old key over a new-key file. Permanent brick.
 - **`unlock()` reconciles before `migrateCredentialToCurrentKdf`**, gated on one cheap `contains` so the steady state is untouched. `vlt_c`'s key is tried first; if it opens, the rotation never landed and the record is dropped. Otherwise `vlt_cn`'s key is tried and promoted **strictly after** the confirmed open — the open is the only positive evidence about which key the file holds. Neither opening is the existing neutral `Error`: never `Denied`, never a wipe, and the records are never removed on an ambiguous path.
-- **Anything that re-wraps `vlt_c` under a fresh KEK must refuse while a record is pending** — the credential change, the KDF migration and the Lever-B enable all defer benignly, because a new KEK would make `vlt_cn` unreadable and collapse the union to one record.
+- **Anything that re-wraps `vlt_c` under a fresh KEK must refuse while a record is pending** — the credential change, the KDF migration and the Lever-B enable all defer benignly, because a new KEK would make `vlt_cn` unreadable and collapse the union to one record. The Lever-B finalize refuses too (an `ab:` blob next to a plain `vlt_cn` could be overwritten by the reconcile's promotion).
+- **Probe `false` is never acted on alone.** On iOS (rollback journal since RUN-02) a probe can block on a concurrent commit and answer `false` on `SQLITE_BUSY`. The only new use of a lone probe is the enable's "does the rotated key open the file?" check, and its `false` only refuses to mint the code (no write, no delete).
 
 A change-credential that reports SUCCESS never reports the rotation's outcome: the credential change has landed, and turning a rotation that may well have succeeded into a reported failure sends the user back to re-enter a credential that already works. Concurrency is deliberately not quiesced — Android's pool NPEs when a statement is in flight, which the library turns into a loud, non-destructive `false`, and the probes decide either way.
 
@@ -188,7 +195,8 @@ earlier still decrypts, so any slot where a replay matters must carry its own ep
   only (Lever B never arms over a forged net). `recoverWithCodeInner` splits the device-layer and
   code-layer decrypts so a forged blob answers the neutral `Error`, never `Denied` — the wipe budget
   is spent only on a wrong code against a REAL blob. The `vlt_cn` rotation never touches `vlt_rc`; a
-  forged blob is left inert and classifies FORGED on every later read.
+  forged blob is left inert and classifies FORGED on every later read. (The Lever B enable's
+  rotation runs BEFORE it mints its own `vlt_rc`, so the new code wraps the rotated key.)
 
 ### No Android prefs write may use `apply()` (2026-07-31)
 
@@ -691,6 +699,56 @@ Two consequences to know:
   wire is never deferred; stale and relay-withheld cap-less blobs never withdraw, a cap-less envelope on a NEW chain
   does; the sweep retries a deferral with an empty control inbox; purge + move coupling.
 
+### The Maximum shield: a mandatory, self-reported "I use Maximum" control kind (2026-11-12)
+
+- **Behaviour (owner decisions, final).** A device whose protection level is MAXIMUM tells each 1:1 contact "I use Maximum"
+  (mandatory, no toggle — the Maximum tier description says so) and tells them when it stops. A device at MAXIMUM remembers
+  which contacts reported it and shows a shield after their name (contact list row + 1:1 conversation title). A device that is
+  NOT at Maximum never sends (except the one "off" on leaving), never stores, never shows. The claim is SELF-REPORTED and
+  unverified — a shield means "this contact says so", not "this contact is at Maximum".
+- **Wire.** `MessageManager.CONTROL_KIND_PLEVEL = "plvl"` (<= `MAX_CONTROL_KIND_CHARS`), a direct (group-less) control message on the
+  per-contact control channel, modelled on the screenshot notice: static control envelope (NOT in `isRatchetSealedControlKind` — a
+  static-key forger who holds a vault image can plant a fake shield, the same exposure a forged `screenshot` notice has), `X-No-Push`,
+  uniform control TTL, after the strict-monotonic counter check, counter advances, blob acked. Body is EXACTLY `{"max":"1"}` or
+  `{"max":"0"}` (`MaximumShieldPolicy.parseBody` — equality, not parsing: any other string, extra field, whitespace or null is dropped).
+  Listed in `isKnownDirectControlKind` (both receive paths consult it) and dispatched ahead of the generic unknown-kind drop at both
+  sites (`applySortedLegacy`, `receiveOverTextRatchet`). On the ratchet CONTROL inbox it is dropped like any unsealable chatty kind.
+- **Older builds.** A build that predates the kind classes it as an unknown direct control: `legacyDropReason` returns
+  "drop: unknown direct control" (warn log, no throw), the blob is ACKED (a drop is acked), the counter is not adopted, nothing is
+  surfaced, nothing is written and no re-pair/404/retry state is touched; the next control blob (any counter above the baseline) is
+  accepted normally, and `sequenceGap` — set on the next surfaced control — has no UI consumer. Pinned by
+  `DrainCharacterisationTest` ("unknown direct control": acked, counter unmoved), `ScreenshotNoticeTest.unknownDirectKind_isDroppedSilently_atTheTransport`
+  and `MaximumShieldTransportTest.anOlderBuild_dropsTheUnknownKindSilently` (same-shaped envelope of a kind this build does not know).
+  The ratchet path is irrelevant to old peers: the kind is never ratchet-sealed.
+- **Receiver state.** `plvl-peer/<contactId>` = "1" while the contact's claim is stored; a 0 deletes it. Written ONLY while this device
+  is at MAXIMUM (`MaximumShield.onAnnouncement` — silent no-op otherwise, "without a trace"); the transport additionally requires the
+  contact to exist, so a delete during a poll cannot resurrect the row. Both keys are in `ratchetMetaKeysForContact` (single purge
+  list) and in `MoveMetaPolicy.allowedPrefixes`.
+- **Sender state / rule.** `plvl-sent/<contactId>` = "1" once an announcement of Maximum was SUCCESSFULLY posted (absent otherwise; a
+  successful 0 DELETES it rather than storing "0" — no permanent per-contact "once Maximum" residue). `MaximumShield.reconcile`: at
+  MAXIMUM and marker != "1" -> send 1, then set the marker; not at MAXIMUM and marker == "1" -> send 0, then delete the marker.
+  Steady state sends and writes NOTHING. It runs from `GroupManager.onControlSweep` (SessionManagers) but is handed to the platform
+  background launcher (`groupBackfillLauncher`) so the sweep's drain is never delayed and unlock/connect never waits on it. So the
+  cadence is "first sweep after unlock + every 60-90 s" — a tier change or a new pairing is announced on the next sweep, not instantly.
+  Bounded: <= 5 attempts per pass, a random 0.8-3 s delay between sends, one pass at a time, a throwing block-list provider skips the
+  pass, blocked contacts are skipped, a pass stops if the level changes mid-burst, and a contact deleted mid-send never gets its
+  marker re-created. A failed send leaves the marker unset, so it is retried next pass.
+- **Convergence for late adopters.** A Maximum device that receives a 1 for a contact it held NO claim for (unknown -> 1 only) stores
+  it and clears its own marker, so its own 1 is sent once more. A 1 for an already-stored claim triggers nothing (no write), which is
+  what stops two Maximum phones ping-ponging: at most three messages, then silence (`MaximumShieldConvergenceTest`).
+- **Leaving Maximum.** `reconcile` deletes every stored peer claim and sends the 0s. The UI reads through `claimedContactIds()` /
+  `isClaimed()`, which return nothing unless the level is provably MAXIMUM, so shields vanish the instant the tier changes.
+- **"Am I at Maximum".** `VaultSelector.maximumShieldLevel()` over the device-key-AEAD `vlt_lvl` slot — deliberately STRICTER than
+  `protectionLevelForEnforcement`, which fails secure to `Present(MAXIMUM)` on an unauthenticated (plantable) value or an
+  unrecognized token. For a claim sent to other people that direction is wrong, so only an authenticated, parseable level answers;
+  never chosen, unauthenticated, unparseable, damaged and a device-key outage are all AMBIGUOUS and AMBIGUOUS is inert (send nothing,
+  store nothing, delete nothing). No destructive path reads it.
+- **Privacy.** No identifier, alias or level in any log line (constant strings only). Never shown for groups / unresolved members:
+  only resolved 1:1 contacts have a `plvl-peer/` row and the UI ids are filtered to the contact list. The announcement itself tells a
+  contact (and a relay observer who can see an append on that inbox) "something changed" — the same visibility any control append has.
+- **Tests.** `MaximumShieldTest` (commonTest): wire strictness, level read, receiver, sender, convergence, purge/move coupling, the
+  real control-envelope round trip, older-build tolerance.
+
 ### Group membership control is durable: 7-day TTL + redrive of refused rosters/leaves (2026-09-08)
 
 - **The gap.** A roster (member removed/added/admin transferred) and a leave were fire-and-forget: `fanOutControl`
@@ -1002,6 +1060,91 @@ vault/relay code.
   shared groups otherwise, self-correcting the moment that inbox is drained. **It is never, under any circumstance, a
   contact row** — a contact with unattributed group-pending and no shared group lights nothing (the blob simply
   expires off the relay in 24 h; group-inbox peeks never drain, exactly like text-inbox peeks never drain).
+- **The presence bump WAITS for the notice it is a fallback for — the NOTICE GRACE (2026-11-13).** Device evidence
+  (cross:multi3 step 16, iPhone SE receiver, first session, no relaunch): two shared groups, one text into one of
+  them, and within ~9 s BOTH were lit. The sender posts the text, then the `gi` notice one inter-send jitter gap
+  (250–2000 ms) later; both platforms' control loop runs `pollAllControls` → `contactUnreadCounts` →
+  `groupUnreadCounts` in that order, so a cycle whose control drain ran before the notice landed and whose peek then
+  saw the text read `unattributed > 0` and lit every shared group until the next cycle (2.5–5 s fast, 60–90 s idle)
+  drained the notice. `GroupUnreadTally.unattributedContacts` now returns only contacts whose fallback is DUE:
+  `unattributed(c) && (checkedAfterGrace(c) || now − since(c) ≥ FALLBACK_CEILING_MS)`. `since(c)` is the
+  MONOTONIC time c's depth was first seen exceeding its notices (a growing depth does not restart it);
+  `checkedAfterGrace(c)` is set by `GroupManager.drainControlInboxes` when a control sweep that STARTED at least
+  `NOTICE_LANDING_GRACE_MS` (15 s = the 2 s jitter gap + a ~13 s notice POST on a slow circuit) after `since(c)`
+  positively covered c — a peek ANSWERED 0, or a drain came back non-empty (recorded after its ingest, so a notice in
+  that batch attributes first). A failed peek/fetch is never credited (`pollChannel` returns an empty list on a failed
+  GET, so an empty drain is not evidence), and the connect-time batch prime's pre-peeked zeros are not credited (that
+  peek predates the sweep stamp). `FALLBACK_CEILING_MS` (180 s) is only the backstop for a contact whose control drain
+  keeps failing. Resets: attribution catching up (`noteActivity`/`restore`), a depth back at or below what is
+  attributed, a group-inbox drain, `scrub`. RAM only, no vault, clock read under the tally lock (pure; injectable via
+  `GroupManager.noticeGraceClockMs`). **Effective delay for a genuinely notice-less text**: the qualifying check and the
+  re-publish are the SAME control cycle on both platforms (no new trigger), so one control cycle after first sight —
+  idle ≤ 90 s + one sweep (~16 s on a 16-contact phone), fast ≈ 15 s + one cycle ≈ 20–35 s; with a broken control
+  drain, the first `groupUnreadCounts` after 180 s (≤ ~290 s at idle cadence). **Attributed texts never wait**: a live
+  `gi` notice or a restored `grp-unread/` unit puts the depth at or below `noticed`, so the prime still lights the
+  named group the frame the list is revealed. A NEW session whose notice was genuinely lost (no marker) shows nothing
+  at reveal — the prime's pre-drain runs before its peek and cannot qualify — and the fallback on every shared group
+  after the first control cycle that starts ≥ 15 s later (normally the loop's second cycle, i.e. ~60–100 s at idle).
+  Known residual: a `gi` notice PARKED behind an unresolved roster (`bufferActivityNotice`) does not count as
+  attribution, so that sender's text still falls back after the grace until the roster resolves and the replay
+  attributes. Tests: `GroupPresenceBumpGraceTest` / `GroupUnreadTallyGraceTest` (commonTest, in
+  `GroupUnreadMarkerTest.kt`); the new state is in the source guard's FORBIDDEN list for the contact path.
+- **The `gi` attribution is PERSISTED in the vault and survives the session teardown (2026-11-12, owner decision
+  "store in vault"; supersedes 964df5b5's "no new persisted field").** The tally maps were RAM-only, and the `gi`
+  notice is consumed off the relay when the control inbox drains, so after every background (Android) / lock (iOS)
+  the next session saw only the group-inbox depth, `unattributed = depth − noticed > 0`, and the presence bump lit
+  EVERY group shared with that sender (prod: one new group message, a dot on all groups). `GroupUnreadMarkerStore`
+  now mirrors it: key `grp-unread/<contactId>`, value `v1;<groupId>=<ms>,<ms>;…;*=<ms>` — one minute-rounded stamp
+  per still-pending `gi` unit, grouped by the groupId it named; `*` = DETACHED (still accounts for one blob on that
+  contact's group inbox, so it still suppresses the bump, but lights no group). ≤ 99 units per contact (the tally's
+  per-member ceiling). Contact/group ids, counts and minute stamps only — never content. Rules, all commonMain, both
+  platforms through `GroupManager` (the tally itself still touches no vault and its lock is never held across
+  SQLCipher):
+  - **Write** only for a `gi` notice the tally COUNTED (`noteActivity` returns false when the ceiling ignored it),
+    live or replayed from the parked-notice buffer (both go through `applyActivityNotice`). Legacy (no-`gi`) notices
+    stay RAM-only. The stamp is the sender's claimed envelope time when positive and not in our future, else our
+    clock (`stampFor`).
+  - **Restore** once per session in `GroupManager`'s `init` (before anything can publish a count or apply a notice —
+    a notice applied first would be counted twice) into `groupUnread[g]` + `grpNoticedByContact[c]`
+    (`GroupUnreadTally.restore`, ceiling respected). Per row: undecodable or for a contact that no longer exists ⇒
+    deleted; units past the TTL or > 5 min in the future ⇒ dropped; a unit whose group is gone or whose sender is no
+    longer a resolved member ⇒ detached. Restored units behave like live ones afterwards.
+  - **Clear / shrink in lockstep**: group-inbox drain (`afterGroupInboxDrain`) clears the contact's row; a consumed
+    group-inbox text or a GROUP_ECHO removes one unit; opening a group (the background `pollGroupIntoBuffer` /
+    `pollGroupPending`, ahead of the transport check — the public `markGroupRead` stays RAM-only because both
+    platforms call it on the main thread) DETACHES that group's units, mirroring RAM where `markGroupRead` clears the
+    dot but keeps `grpNoticed`; leaving / being removed from a group detaches it for every contact; a removed or
+    leaving member's units for that group are detached. Detach rather than delete: the text for a left group is still
+    on that sender's group inbox and must keep suppressing the bump on groups we still share. Deleting the contact
+    purges the row through `ratchetMetaKeysForContact` (it is per contact, hence NOT a `GroupMetaKeys` key).
+  - **TTL + heal (no dot that never clears).** TTL = 24 h (a group text's relay lifetime) from the unit's stamp,
+    applied at every write and at restore. A DEFINITE group-inbox depth `d` (any of the three publishers — the
+    steady sweep, the per-inbox prime, the batch prime; all through `publishGroupInboxDepths`) heals: the vault row
+    keeps only its NEWEST `d` units (`d = 0` deletes it), and RAM retracts the oldest surplus of the RESTORED units
+    only (`retractRestored` — live in-session units keep today's drain-is-the-authority semantics; comparing restored
+    units against the whole depth can only under-heal). An unanswered peek is absent from the depth map and changes
+    nothing (unknown ≠ empty).
+  - **Fail soft.** Every store call swallows its own error (class name logged) and degrades to the presence bump —
+    the pre-fix behaviour; nothing throws into the control drain; a missing/corrupt row is ignored and deleted; an
+    unreadable row at restore is left untouched. A RAM index (contact → grouped groupIds, scrubbed with the session)
+    keeps the hot paths (a drain per member per group poll, a detach per group open) at zero vault I/O when no row
+    exists; it is UNKNOWN (every call goes to the vault) until the restore's enumeration succeeds.
+  - **Device move: NOT exported** — `grp-unread/` is in `MoveMetaPolicy.deniedPrefixes`, the one purge-list key
+    `MoveMetaPolicyPinTest` exempts by name. A ≤ 24 h display hint; the new phone re-derives the depth on its first
+    peek and falls back to the bump until the first open/drain.
+  - **Known residuals.** (a) An opened vault image now yields, per contact, "N group texts in group G, minute T" for the
+    last ≤ 24 h — metadata, no content; the same class the `ssn:` rows already hold. (b) Physical removal: both actuals
+    run `PRAGMA secure_delete = ON` (Android `DatabaseManager` init; iOS `IosVaultDatabase` init), so a cleared or
+    rewritten row's cell is zeroed inside the page at free/overwrite time and does not linger in SQLite free pages;
+    the rollback journal (Android DELETE, iOS TRUNCATE since RUN-02) holds the encrypted page pre-image only during
+    the writing transaction. What remains is RUN-02 residual (b): freed filesystem / NAND blocks below SQLite may
+    still hold earlier (encrypted) journal or page bytes for a chip-level read. (c) A pending (uncommitted) screen
+    drain clears the row at decrypt time; if that screen never commits, the relay re-delivers but the next session
+    falls back to the bump for those texts (as before). A drain whose GET failed also clears (the RAM tally always
+    did). (d) A contact blocked AFTER its unit was written (iOS Block) is not peeked, so no heal reaches it; its unit
+    can relight a group for ≤ 24 h (TTL). (e) Races between a concurrent notice record and a drain/heal can lose or
+    keep one unit; each degrades to the bump or to a dot the next definite peek/TTL heals. Tests:
+    `GroupUnreadMarkerTest` / `GroupUnreadMarkerStoreTest` (commonTest).
 - **The shared-chain drain rule: a conversation poll drains BOTH of that contact's text-bearing inboxes, to keep the ONE ratchet chain
   safe.** Splitting texts across two inboxes makes out-of-order ratchet delivery normal rather than exceptional, so
   `pollGroup(groupId)` additionally drains each resolved member's group inbox, and `pollDirect(contactId)` additionally
@@ -1147,6 +1290,76 @@ injecting tags; never loosen it.
   first landed ratchet send, and `forwardSecrecyStalled(contactId)` (threshold 8) drives the conversation-screen
   notice on both platforms. A non-constant wire tag was NOT adopted (a per-pairing constant prefix
   is learned from the first repeat and risks a wire-format skew for thin gain).
+
+### Superseded vault state must not survive in the SQLite journal: rollback journal on BOTH platforms (RUN-02, 2026-11-12)
+
+- **The finding (external review RUN-02, High, iOS).** The Double Ratchet state (root key, DH private key, chain keys,
+  skipped message keys) is ONE `_meta` row (`dr/<id>/text`) replaced on every step. iOS opened the vault in WAL mode
+  (`SwiftDatabaseBridge.open` ran `PRAGMA journal_mode=WAL`) with no `wal_checkpoint`, `journal_size_limit` or
+  `wal_autocheckpoint` policy anywhere. In WAL mode every committed version of a page stays in `run.db-wal` until a
+  checkpoint RESETS the log — and a reset only rewrites the log from the front, so older frames survive in its tail.
+  `secure_delete` does not reach WAL frames. An image of db + wal taken while the vault is open (or after an unclean
+  exit, which leaves the WAL in place), plus the CURRENT db key obtained later, lets an attacker truncate the WAL to a
+  frame prefix, open that earlier committed view and read a chain key the live ratchet had already deleted — i.e.
+  decrypt recorded ciphertext the forward-secrecy claim says is gone. Reproduced by the auditor on SQLCipher 4.19.0;
+  `VaultJournalResidueTest`'s oracle re-runs the same prefix rebuild against Android's build of it.
+- **The mechanism: a ROLLBACK journal, not WAL + checkpoints.** A rollback journal holds the page PRE-images of the
+  transaction IN FLIGHT only — that is the LAST COMMITTED state, never an older one — and is emptied at commit (TRUNCATE:
+  truncated to 0 bytes; DELETE: unlinked). After a crash mid-commit the hot journal again holds the last committed
+  state, which the next open restores as current. So at no instant does the file set + current key yield a state older
+  than the latest committed one. WAL + a `wal_checkpoint(TRUNCATE)` after every ratchet write was the alternative and
+  is strictly worse here: between a commit and its checkpoint the MAIN file still holds the superseded state (with the
+  new one only in the WAL), a checkpoint can return busy/partial whenever another connection holds a read lock, and a
+  coalesced checkpoint keeps several generations. Per-commit I/O is comparable (both add ~2–3 fsyncs over plain WAL).
+  `journal_mode` is never OFF or MEMORY (crash safety) and never PERSIST (it only zeroes the header and leaves the
+  pre-images readable with the key).
+- **iOS.** `SwiftDatabaseBridge.open` — after the key is proven, so the key PROBE (`iosProbeVaultKey`, same function)
+  can never flip the file back to WAL — sets `sqlite3_busy_timeout(2500)`, `PRAGMA journal_mode=TRUNCATE` and
+  `PRAGMA journal_size_limit=0`. TRUNCATE rather than DELETE because the 0-byte `-journal` keeps its inode, so the
+  NSFileProtectionComplete + backup exclusion `protectDbFiles` sets on it persist; `iosPrecreateProtectedJournal`
+  creates it Complete-class before SQLite first does (never over an existing file — that could be a hot journal; a
+  0-byte journal is inert). Leaving WAL checkpoints and unlinks a `-wal`/`-shm` left by a pre-RUN-02 build or an
+  unclean exit, at that open. `IosVaultDatabase` READS THE MODE BACK in `init` before any write
+  (`enforceRollbackJournal`); `truncate`/`delete` is proof. Anything else — `wal` because leaving WAL needs the file to
+  itself and got SQLITE_BUSY, an empty answer, a throw — arms `rollbackJournalUnproven`, runs a VERIFIED
+  `wal_checkpoint(TRUNCATE)` (proven only on `busy == 0 && log == 0`; busy/partial is not done) and retries both at
+  every write boundary: after a top-level `putMeta`/`deleteMeta`, after the OUTERMOST `withTransaction` (a mode switch is
+  refused inside a transaction), after `rekey`, and before `close`. Boundary retries run with the busy timeout at 0
+  (restored after) so a stuck retry costs a failed PRAGMA, not 2.5 s under the vault lock per ratchet write. Steady
+  state (proven at open) issues nothing at the boundaries. Never fails an open. The busy timeout exists because a
+  rollback journal makes a reader and the writer's commit mutually exclusive (WAL did not): the probe connection and
+  the live one now wait briefly for each other instead of failing on SQLITE_BUSY — a probe that still fails answers
+  `false`, which the `vlt_cn` rule ("both or neither ⇒ change nothing") already treats as non-actionable.
+- **Android — not affected, with evidence.** `DatabaseManager.SecureDbHelper` passes `enableWriteAheadLogging=false`;
+  in sqlcipher-android 4.19.0 `SQLiteConnection.setWalModeFromConfiguration` then applies
+  `SQLiteGlobal.getDefaultJournalMode()` = `"delete"` on every connection (read from the AAR's bytecode; the WAL branch
+  needs open flag `0x20000000`, which the helper sets only when that argument is true). Nothing in the app calls
+  `enableWriteAheadLogging()` or sets `journal_mode`. So Android has always run a rollback DELETE journal; no code change,
+  the `false` is now documented as load-bearing.
+- **Interaction with the `vlt_cn` re-key.** `sqlite3_rekey_v2` rewrites every page in one write transaction. Under WAL
+  the old-key page versions stayed in the log (and the main file) until a checkpoint — readable with the archived
+  old key the rotation exists to retire. Under the rollback journal the pre-images (old key) exist only during the
+  re-key's own commit. iOS now re-keys in the same journal mode Android always has (`RawKeyAdoptionTest` covers
+  re-key on that mode on a real device).
+- **Residual, stated plainly.** (a) An image taken DURING a write transaction gets the journal's pre-images = the last
+  committed state, plus a partially written next state — never anything older; the window is the commit itself
+  (milliseconds; longer only for VACUUM / re-key). (b) Truncation and unlink are not physical erasure: freed APFS/ext4
+  blocks and NAND pages below the filesystem may still hold earlier journal or WAL bytes for a chip-level read; this
+  change does not and cannot claim otherwise, and nothing revokes an image captured earlier. (c) A pre-RUN-02 iOS
+  `-wal` stays on disk until the first unlock under the new build converts the file. (d) In the WAL fallback (switch
+  refused) the exposure between boundaries is the old one, bounded by the next successful retry.
+- **Performance.** Per committed transaction the rollback journal costs roughly 2–3 more fsyncs than WAL (journal
+  write + sync, db write + sync, truncate) — the cost Android has always paid. Not yet measured on iOS hardware; a
+  message drain persists the ratchet in a handful of commits.
+- **Tests.** `VaultJournalModeSourceGuardTest` (JVM: no WAL/PERSIST on any vault connection of either platform, the
+  bridge's mode switch after key verification, the read-back before the first schema write, every boundary present and
+  the `withTransaction` one after COMMIT, Android's `false` flag); `IosRollbackJournalTest` (iosTest, scripted bridge:
+  read-back ordering, zero cost when proven, refused switch ⇒ verified checkpoint + retry, busy and partial checkpoints
+  retried, no retry inside a transaction, rollback path, close and re-key boundaries, non-blocking retry);
+  `VaultJournalResidueTest` (Android instrumented, real SQLCipher: the WAL-prefix oracle, no -wal / no non-empty
+  journal between commits, and the prefix rebuild against a copy of the live vault's file set recovers only the
+  current state). The on-device iOS proof (journal mode of a converted vault, no `-wal` after unlock, the prefix
+  rebuild against a copied container) still needs a physical-device run.
 
 ### The ratchet ROLE is derived from the pairing SECRETS once both sides prove they run the rule (2026-09-18)
 

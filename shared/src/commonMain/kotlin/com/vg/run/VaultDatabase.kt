@@ -280,7 +280,11 @@ interface VaultDatabase {
     //                        and the group-inbox backfill throttle (note the HYPHEN —
     //                        `grp_` below does not match it) — all purged through the
     //                        exact-key list [ratchetMetaKeysForContact].
-    //   `grp_*`              group invite/roster throttles and pending membership
+    //   `plvl-peer/<id>`, `plvl-sent/<id>`
+    //                        the Maximum shield's per-contact claim / last-announced
+    //                        marker ([MaximumShieldPolicy]) — also in the exact-key
+    //                        list [ratchetMetaKeysForContact].
+    //   `grp_*`            group invite/roster throttles and pending membership
     //                        control ([GroupMetaKeys]: `grp_inv_rl:`, `grp_roster_rl:`,
     //                        `grp_ctl_pend:`) — [isGroupMetaResidueForGroup] / …ForContact.
     //   `grp_pinv:`          invites parked awaiting consent, one row per invite,

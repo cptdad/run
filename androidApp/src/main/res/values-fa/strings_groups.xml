@@ -28,6 +28,8 @@
     <string name="group_info_admin_badge">مدیر</string>
     <string name="group_info_leave_group">ترک گروه</string>
     <string name="group_info_make_admin">مدیر کردن</string>
+    <string name="group_info_make_admin_confirm_title">%1$s مدیر شود؟</string>
+    <string name="group_info_make_admin_confirm_body">شما دیگر مدیر نخواهید بود. فقط مدیر می‌تواند عضو اضافه و حذف کند.</string>
     <string name="group_info_remove_from_group">حذف از گروه</string>
     <string name="group_info_add_member_precondition">او باید با تک‌تک اعضا حضوری جفت‌سازی کرده باشد. شما ضامن این هستید.</string>
     <string name="group_info_add_member_empty">مخاطب واجد شرایطی نیست — همهٔ کسانی که با آن‌ها جفت‌سازی کرده‌اید همین حالا در گروه‌اند.</string>

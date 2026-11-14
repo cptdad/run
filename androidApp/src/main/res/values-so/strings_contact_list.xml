@@ -36,6 +36,7 @@
     <string name="referral_introduce_body">Dooro qofka aad %1$s isu barayso. Kaliya isu bar dadka aad taqaanid oo aad kalsoonaan ku qabto.</string>
     <string name="referral_no_candidates">Ma jiraan xiriiriyayaal kale oo la isu bari karo.</string>
     <string name="referral_introduce_error">Weli lama xidhiidhin — dib u isku day daqiiqad gudaheed.</string>
+    <string name="contact_list_referral_offer_row">Isbarasho: “%1$s”</string>
     <string name="referral_offer_title">Codsi xidhiidh</string>
     <string name="referral_offer_message">Waxaa jira codsi ka yimid %1$s oo ah in lagu soo baro “%2$s”. Ansixi si aad xiriiriye ahaan ugu darto.</string>
     <string name="referral_approve">Ansixi</string>
@@ -46,6 +47,8 @@
     <string name="referral_relayed_queued">Isbarashada aad %2$s u samaysay waxaa ansixiyay %1$s. Rún hadda ma gaari karin relay-ga, faahfaahintana si toos ah ayuu u gudbin doonaa marka xigta ee aad app-ka furto.</string>
     <string name="contact_list_group_invite_title">Casuumad kooxeed</string>
     <string name="contact_list_group_invite_join">Ku biir</string>
+    <string name="contact_list_group_invite_row">Casuumad kooxeed: “%1$s”</string>
+    <string name="contact_list_pending_row_hint">Taabo si aad uga jawaabto</string>
     <string name="contact_list_group_invite_joining">Ku biirayaa…</string>
     <string name="contact_list_group_invite_message">Waxaad heshay casuumad ka timid %1$s oo ah inaad ku biirto kooxda “%2$s”.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ Waxaad heshay casuumad ka timid %1$s oo ah kooxda “%2$s”, laakiin hore ayaad kooxdan u haysay maamule KALE. Kaliya ku biir haddii aad kalsoonaan ku qabto maamulka %1$s ee xubinnimada kooxdan.</string>
@@ -88,6 +91,7 @@
     <string name="contact_list_introduced_by">Waxaa ku soo baray %1$s</string>
     <string name="contact_list_introduced">La soo baray</string>
     <string name="contact_list_repair_chip">Dib isku xidh</string>
+    <string name="contact_maximum_shield_description">Wuxuu isticmaalaa ilaalinta Ugu sarreeya</string>
     <string name="contact_list_unread_messages_description">Fariimo aan la akhrin</string>
     <string name="contact_list_group_admin_label">Koox · maamule</string>
     <string name="contact_list_group_label">Koox</string>

@@ -24,6 +24,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Quitter le groupe</string>
     <string name="group_info_make_admin">Nommer admin</string>
+    <string name="group_info_make_admin_confirm_title">Nommer %1$s admin ?</string>
+    <string name="group_info_make_admin_confirm_body">Vous ne serez plus admin. Seul l’admin peut ajouter et retirer des membres.</string>
     <string name="group_info_remove_from_group">Retirer du groupe</string>
     <string name="group_info_add_member_precondition">Cette personne doit s\'être appairée en personne avec chaque membre. Vous vous en portez garant.</string>
     <string name="group_info_add_member_empty">Aucun contact éligible — toutes les personnes avec qui vous êtes appairé sont déjà dans le groupe.</string>

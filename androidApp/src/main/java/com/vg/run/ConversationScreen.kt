@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
@@ -252,6 +253,14 @@ fun ConversationScreen(
         snapshot
     }
     val alias = contactSnapshot.first ?: stringResource(R.string.conversation_alias_unknown)
+    // Maximum shield: re-read (on IO) whenever a vault event lands (a control batch may
+    // have carried the claim or its withdrawal). False unless this device is at MAXIMUM.
+    val vaultEventTick by viewModel.vaultEvents.collectAsState()
+    var maximumShield by remember { mutableStateOf(false) }
+    LaunchedEffect(contactId, vaultEventTick) {
+        maximumShield = withContext(Dispatchers.IO) { viewModel.maximumShield?.isClaimed(contactId) ?: false }
+    }
+    val maximumShieldDescription = stringResource(R.string.contact_maximum_shield_description)
     val vouchedByContactId = contactSnapshot.second
     // Provenance for a referred contact — the same
     // "Introduced by X" signal ContactListScreen.kt already shows, surfaced
@@ -657,14 +666,28 @@ fun ConversationScreen(
             )
             Spacer(Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = alias,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = RunWhite,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.testTag("conversation_title")
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = alias,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = RunWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false).testTag("conversation_title")
+                    )
+                    if (maximumShield) {
+                        // Maximum shield: this contact reported Maximum and this device is at
+                        // MAXIMUM (MaximumShield.kt). Right after the name.
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "\uD83D\uDEE1",
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .semantics { contentDescription = maximumShieldDescription }
+                                .testTag("conversation_maximum_shield")
+                        )
+                    }
+                }
                 if (vouchedByContactId != null) {
                     // Same provenance signal + style
                     // family as ContactRow's "Introduced by X" subtitle
@@ -1083,6 +1106,9 @@ private fun MessageBubble(message: DisplayMessage, delivered: Boolean = false, o
     }
     val alignment = if (message.isSent) Alignment.CenterEnd else Alignment.CenterStart
     val bubbleColor = if (message.isSent) RunBubbleSent else RunBubbleReceived
+    // Sent bubbles: grey + translucent until the relay accepts, then opaque + real colour
+    // (SentBubbleFade). No check mark. Received bubbles are unchanged (look == null).
+    val look = if (message.isSent) rememberSentBubbleLook(message.id, message.timestamp, delivered) else null
 
     // Corner radii: rounded on all sides except the tail corner.
     val shape = if (message.isSent) {
@@ -1103,18 +1129,19 @@ private fun MessageBubble(message: DisplayMessage, delivered: Boolean = false, o
             Box(
                 modifier = Modifier
                     .clip(shape)
-                    .background(bubbleColor)
+                    .sentBubbleBackground(look, bubbleColor)
                     .testTag(if (message.isSent) "message_bubble_sent" else "message_bubble_received")
                     .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = if (message.isSent) 2.dp else 10.dp)
             ) {
                 if (message.isSent) {
-                    // Delivery indicator inside the bubble, right-bottom corner.
-                    // ✓ = relay accepted (HTTP 202). · = pending.
+                    // Delivery is the bubble's own opacity/colour (SentBubbleFade): opaque +
+                    // real colour = relay accepted (HTTP 202); grey + translucent = pending.
                     Column {
                         Text(
                             text = message.text,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = RunWhite
+                            color = RunWhite,
+                            modifier = Modifier.sentBubbleContent(look),
                         )
                         Row(
                             modifier = Modifier.align(Alignment.End),
@@ -1124,14 +1151,10 @@ private fun MessageBubble(message: DisplayMessage, delivered: Boolean = false, o
                                 Text(
                                     text = formatTime(context, message.timestamp),
                                     fontSize = 9.sp,
-                                    color = RunGrey.copy(alpha = 0.6f)
+                                    color = RunGrey.copy(alpha = 0.6f),
+                                    modifier = Modifier.sentBubbleContent(look),
                                 )
                             }
-                            Text(
-                                text = if (delivered) "\u2713" else "\u00B7",
-                                fontSize = 12.sp,
-                                color = if (delivered) RunGrey else RunGrey.copy(alpha = 0.3f)
-                            )
                         }
                     }
                 } else {

@@ -13,8 +13,28 @@ import kotlin.test.assertTrue
 class MoveMetaPolicyPinTest {
     @Test
     fun everyRatchetMetaKeyIsAllowed() {
-        val missing = ratchetMetaKeysForContact("c-pin").filterNot { MoveMetaPolicy.isAllowedKey(it) }
+        val missing = ratchetMetaKeysForContact("c-pin")
+            .filterNot { MoveMetaPolicy.isAllowedKey(it) || it in DELIBERATELY_NOT_CARRIED }
         assertTrue(missing.isEmpty(), "ratchet keys not covered by MoveMetaPolicy: $missing")
+    }
+
+    /**
+     * The ONE purge-list key that deliberately does NOT travel: the persisted group
+     * unread attribution (a ≤ 24 h display hint; the new phone falls back to the
+     * presence bump). Pinned both ways — it IS purged with the contact, and a bundle
+     * never carries it — so the exemption above cannot quietly grow.
+     */
+    @Test
+    fun theGroupUnreadAttributionIsPurgedButNeverCarried() {
+        val k = GroupUnreadMarkerStore.keyFor("c-pin")
+        assertTrue(k in ratchetMetaKeysForContact("c-pin"), "it must die with the contact")
+        assertFalse(MoveMetaPolicy.isAllowedKey(k), "it must not travel in a move bundle")
+        assertFalse(k.startsWith("grp_"), "the hyphen keeps the `grp_` allow prefix off it")
+        assertTrue(DELIBERATELY_NOT_CARRIED == setOf(k), "the exemption list is exactly this one key")
+    }
+
+    private companion object {
+        val DELIBERATELY_NOT_CARRIED = setOf(GroupUnreadMarkerStore.keyFor("c-pin"))
     }
 
     /**

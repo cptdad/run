@@ -1027,7 +1027,26 @@ struct ProtectionLevelSettingsView: View {
             }
         }
 
-        if doDrop { appState.setBiometricUnlock(false) { _ in afterDrop() } } else { afterDrop() }
+        if doDrop {
+            appState.setBiometricUnlock(false) { dropped in
+                // RUN-01, Secure → Maximum: the credential change above could not
+                // re-key (Lever B + the recovery code were still live), so re-key now
+                // that the drop has removed both. Same shared rule as Android;
+                // best-effort — the vault-side gates decide, and the tier committed in
+                // afterDrop() is honest either way.
+                if ProtectionUpgradePlan.shared.rotatesDbKeyAfterLeverBDropForStorage(
+                    chosenStorageValue: chosen,
+                    droppedLeverB: dropped,
+                    hasCredential: !credential.isEmpty
+                ) {
+                    appState.rotateDbKeyAfterTierUpgrade(credential) { _ in afterDrop() }
+                } else {
+                    afterDrop()
+                }
+            }
+        } else {
+            afterDrop()
+        }
     }
 
     var body: some View {

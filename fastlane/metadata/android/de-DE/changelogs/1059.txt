@@ -1,0 +1,3 @@
+• Maximum: Die Passphrase wird von Hand getippt, nicht eingefügt oder kopiert.
+• Maximum lehnt mehr schwache Passphrasen ab: berühmte Sätze, Wochentage, Zählen in der eigenen Sprache oder Satzzeichenfolgen.
+• Gruppen: Der Ungelesen-Punkt erscheint jetzt auch bei der ersten Nachricht eines Mitglieds und bleibt nach der Rückkehr in die App zuverlässiger erhalten.

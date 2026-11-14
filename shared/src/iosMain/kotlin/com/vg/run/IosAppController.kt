@@ -425,6 +425,22 @@ class IosAppController {
     var referralManager: ReferralManager? = null
         private set
 
+    /** The Maximum shield (MaximumShield.kt): built with the session managers, passed to
+     *  each MessageManager (receiver) and read by the contact list / conversation title.
+     *  Android sibling: `RunViewModel.maximumShield`. */
+    private var maximumShield: MaximumShield? = null
+
+    /**
+     * Contact ids that reported Maximum while THIS device is at MAXIMUM — the shield after
+     * the name in the contact list. Empty unless the device is provably at MAXIMUM
+     * (authenticated read; [VaultSelector.maximumShieldLevel]). One `_meta` key scan.
+     * Never throws. Blocking vault read — call off the main thread.
+     */
+    fun maximumShieldContactIds(): Set<String> = maximumShield?.claimedContactIds() ?: emptySet()
+
+    /** Whether the shield shows for [contactId] (1:1 conversation title). Same rules as above. */
+    fun isMaximumShieldClaimed(contactId: String): Boolean = maximumShield?.isClaimed(contactId) ?: false
+
     // -----------------------------------------------------------------------
     // Setup
     // -----------------------------------------------------------------------
@@ -591,6 +607,20 @@ class IosAppController {
         vaultSelector.setDbKeyAuthBinding(enabled)
     } catch (e: Exception) {
         platformLogError("App", "setDbKeyAuthBinding failed: ${e::class.simpleName}")
+        false
+    }
+
+    /**
+     * RUN-01, Secure → Maximum: re-key the vault after the Lever B drop
+     * ([VaultSelector.rotateDbKeyAfterTierUpgrade]) with the credential the chain just
+     * set. True only for a proven rotation; informational. Heavy (KDF + re-key + the
+     * change-PIN delay floor) — Swift runs it off the main thread. Never throws
+     * (non-@Throws bridge).
+     */
+    fun rotateDbKeyAfterTierUpgrade(credential: String): Boolean = try {
+        vaultSelector.rotateDbKeyAfterTierUpgrade(credential)
+    } catch (e: Exception) {
+        platformLogError("App", "rotateDbKeyAfterTierUpgrade failed: ${e::class.simpleName}")
         false
     }
 
@@ -902,9 +932,21 @@ class IosAppController {
         vault = opened
         // Build + cross-wire both session managers in one shared
         // place so the referral-control bridge can't be forgotten.
-        val managers = createSessionManagers(opened) { messageManager }
+        val managers = createSessionManagers(
+            opened,
+            // Eager group-inbox establishment, OFF the critical path: a membership
+            // event converges the pair's group inbox ahead of the first group text
+            // (so its dot is the durable, peek-derivable presence bump). Launched on
+            // the per-session work scope (cancelled by lock / emergencyWipe), blocking
+            // PoW + network so [ioDispatcher]. Fail-soft — a drop just leaves the lazy
+            // control-sweep backfill.
+            groupBackfillLauncher = { work -> sessionWorkScope.launch(ioDispatcher) { work() } },
+            // The shield's "am I at MAXIMUM" read — authenticated-only (VaultSelector.maximumShieldLevel).
+            maximumLevelProbe = { vaultSelector.maximumShieldLevel() },
+        ) { messageManager }
         groupManager = managers.groupManager
         referralManager = managers.referralManager
+        maximumShield = managers.maximumShield
         // "Move to new device": the manager is built with the controller
         // (long before any vault), so a FROZEN vault only announces itself
         // once it is open. Idempotent, and it never downgrades a live
@@ -1016,7 +1058,8 @@ class IosAppController {
             MessageManager(
                 databaseManager = v,
                 httpClient      = httpClient,
-                localAppVersion = localAppVersionFromBundle()
+                localAppVersion = localAppVersionFromBundle(),
+                maximumShield   = maximumShield
             )
         }
         // Never the port: in external mode it is the user's proxy port (LogBuffer -> Debug-mode upload).
@@ -1041,7 +1084,8 @@ class IosAppController {
             MessageManager(
                 databaseManager = v,
                 httpClient      = PlatformHttpClient(),
-                localAppVersion = localAppVersionFromBundle()
+                localAppVersion = localAppVersionFromBundle(),
+                maximumShield   = maximumShield
             )
         }
         platformLog("IosAppController", "MessageManager created with direct HTTP")
@@ -2313,6 +2357,7 @@ class IosAppController {
         referralManager?.scrubInMemory()
         groupManager = null
         referralManager = null
+        maximumShield = null
     }
 
     private fun deleteTorData() {

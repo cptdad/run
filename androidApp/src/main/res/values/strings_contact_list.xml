@@ -58,6 +58,7 @@
     <string name="referral_introduce_body">Select who to introduce %1$s to. Only introduce people you know and trust.</string>
     <string name="referral_no_candidates">No other contacts to introduce.</string>
     <string name="referral_introduce_error">Not connected yet — try again in a moment.</string>
+    <string name="contact_list_referral_offer_row">Introduction: “%1$s”</string>
     <string name="referral_offer_title">Connection request</string>
     <string name="referral_offer_message">%1$s wants to introduce you to “%2$s”. Approve to add them as a contact.</string>
     <string name="referral_approve">Approve</string>
@@ -74,6 +75,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">Group invitation</string>
     <string name="contact_list_group_invite_join">Join</string>
+    <string name="contact_list_group_invite_row">Invitation: “%1$s”</string>
+    <string name="contact_list_pending_row_hint">Tap to answer</string>
     <string name="contact_list_group_invite_joining">Joining…</string>
     <string name="contact_list_group_invite_message">%1$s invited you to the group “%2$s”.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s invited you to “%2$s”, but you previously had this group under a DIFFERENT administrator. Only join if you trust %1$s to control this group’s membership.</string>
@@ -136,6 +139,7 @@
     <string name="contact_list_introduced_by">Introduced by %1$s</string>
     <string name="contact_list_introduced">Introduced</string>
     <string name="contact_list_repair_chip">Re-pair</string>
+    <string name="contact_maximum_shield_description">Uses Maximum protection</string>
     <string name="contact_list_unread_messages_description">Unread messages</string>
     <string name="contact_list_group_admin_label">Group · admin</string>
     <string name="contact_list_group_label">Group</string>

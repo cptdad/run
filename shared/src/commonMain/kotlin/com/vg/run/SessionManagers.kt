@@ -11,6 +11,8 @@ package com.vg.run
 class SessionManagers(
     val groupManager: GroupManager,
     val referralManager: ReferralManager,
+    /** The Maximum shield (null when the platform wired no level probe). */
+    val maximumShield: MaximumShield? = null,
 )
 
 /**
@@ -22,6 +24,18 @@ class SessionManagers(
  */
 fun createSessionManagers(
     vault: VaultDatabase,
+    // Runs the EAGER group-inbox establishment OFF the critical path (durability
+    // half of the group unread-dot fix): the platform hands a background-coroutine
+    // launcher cancelled with the session (Android `viewModelScope`, iOS
+    // `sessionWorkScope`). Wired HERE for the same "can't forget on one platform"
+    // reason as the two bridges below; the DEFAULT is a NO-OP, so the JVM unit
+    // suite (non-thread-safe InMemoryVault) never runs it on a background thread and
+    // an unwired build simply falls back to the lazy control-sweep backfill.
+    groupBackfillLauncher: (() -> Unit) -> Unit = { },
+    // The Maximum shield's "am I at MAXIMUM" read ([VaultSelector.maximumShieldLevel]);
+    // null = the feature is not wired (JVM tests that do not exercise it). Wired HERE,
+    // like the bridges below, so a platform cannot ship the sender without the receiver.
+    maximumLevelProbe: (() -> MaximumShieldLevel)? = null,
     messageManagerProvider: () -> MessageManager?,
 ): SessionManagers {
     // "Move to new device" FREEZE GATE (docs/device-move.md D2). Both managers ask
@@ -52,6 +66,8 @@ fun createSessionManagers(
         if (isMoveFrozen(vault)) null else messageManagerProvider()
     }
     val groupManager = GroupManager(vault, gatedProvider)
+    groupManager.groupBackfillLauncher = groupBackfillLauncher
+    val maximumShield = maximumLevelProbe?.let { MaximumShield(vault, it) }
     val referralManager = ReferralManager(vault, gatedProvider)
     groupManager.onReferralControl = { sender, kind, body ->
         referralManager.handleControl(sender, kind, body)
@@ -93,6 +109,23 @@ fun createSessionManagers(
         // timer of its own. Cheap-gated on one `_meta` read, so a vault that never
         // moved pays a single lookup; never throws (the sweep catches too).
         retryPendingMoveRotations(vault, gatedProvider())
+        // Maximum shield: announce a tier change / a new pairing / the session's first
+        // pass, and retry what a previous pass could not send. A steady-state pass
+        // reads one level + one marker per contact and sends NOTHING. The sends are
+        // spread with random delays, so the pass is handed to the platform's background
+        // launcher instead of delaying this sweep's drain (and never touches unlock or
+        // connect). The default launcher is a no-op (JVM suite), like the backfill's.
+        maximumShield?.let { shield ->
+            groupBackfillLauncher {
+                val mgr = gatedProvider()
+                if (mgr != null) {
+                    val blocked = try { groupManager.blockedContacts() } catch (_: Exception) { null }
+                    // A throwing block-list provider skips the pass: never announce to a
+                    // contact we cannot prove is not blocked.
+                    if (blocked != null) shield.reconcile(blocked) { cid, max -> mgr.sendMaximumAnnouncement(cid, max) }
+                }
+            }
+        }
     }
-    return SessionManagers(groupManager, referralManager)
+    return SessionManagers(groupManager, referralManager, maximumShield)
 }

@@ -348,6 +348,88 @@ class GroupControlProtocolTest {
         assertEquals("bob-contact", bobRow.contactId)
     }
 
+    // -----------------------------------------------------------------------
+    // A SENDER'S FIRST group message into a group must light the recipient's group
+    // dot — even when its KIND_ACTIVITY notice arrives BEFORE the sender is a
+    // resolved member / before we have joined. The notice is consumed off the relay
+    // the instant it is drained, so dropping it on arrival (the old behaviour) lost
+    // the dot for good, while the group text itself stays peek-only on the relay and
+    // is still drainable. Found by the dynamic real-life e2e (run 202611100650).
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun activityNotice_fromAnUnresolvedMember_isParkedThenLightsTheDotOnRosterResolve() {
+        val f = joinedFixture()   // bob is a member slot but UNRESOLVED (contactId == null)
+        val bobPairSecret = generateSecureRandom(32)
+        seedContactWithCaps(f.vault, "bob-contact", bobPairSecret)
+        // Bob's FIRST group text + its activity notice arrive before the admin's
+        // roster has resolved bob's pairwise tag on this device.
+        f.gm.handleControl("bob-contact", f.gid, GroupManager.KIND_ACTIVITY, "{}")
+        assertTrue(
+            f.gm.groupUnreadCounts().isEmpty(),
+            "parked while the sender is unresolved — the dot cannot light yet",
+        )
+        // The admin's roster now resolves bob.
+        val tag = GroupManager.boundTag(bobPairSecret, f.gid, f.bob)
+        val roster =
+            """{"n":"crew","ep":2,"adm":${jsonEscapeString(f.adm)},"mem":[${jsonEscapeString("${f.adm}:")},${jsonEscapeString("${f.me}:")},${jsonEscapeString("${f.bob}:$tag")}]}"""
+        f.gm.handleControl("admin-contact", f.gid, GroupManager.KIND_ROSTER, roster)
+        assertEquals("bob-contact", f.vault.getGroupMembers(f.gid).first { it.memberId == f.bob }.contactId)
+        // The parked notice is replayed on the roster apply → the dot lights.
+        assertEquals(
+            mapOf(f.gid to 1), f.gm.groupUnreadCounts(),
+            "the sender's first group message lights the dot once their membership resolves",
+        )
+    }
+
+    @Test
+    fun activityNotice_forAParkedInvite_isReplayedOnAccept_lightingTheDot() {
+        val vault = InMemoryVault()
+        seedContactWithCaps(vault, "admin-contact", generateSecureRandom(32))
+        val gm = GroupManager(vault, noTransport)
+        val gid = GroupManager.newGroupId()
+        val adm = memberId(10); val me = memberId(20); val bob = memberId(30)
+        val invite =
+            """{"n":"crew","ep":1,"adm":${jsonEscapeString(adm)},"you":${jsonEscapeString(me)},"mem":[${jsonEscapeString(adm)},${jsonEscapeString(me)},${jsonEscapeString(bob)}]}"""
+        gm.handleControl("admin-contact", gid, GroupManager.KIND_INVITE, invite)   // parked, NOT joined
+        // The group's creator writes its first line and ships the activity notice
+        // before we have accepted the invite — the #12/#16/#17 pattern.
+        gm.handleControl("admin-contact", gid, GroupManager.KIND_ACTIVITY, "{}")
+        assertTrue(gm.groupUnreadCounts().isEmpty(), "not joined yet → parked, no dot")
+        assertNull(vault.getGroup(gid), "the invite is genuinely still unaccepted")
+        // Accepting the invite resolves the inviter and replays the parked notice.
+        assertTrue(gm.acceptInvite(gid))
+        assertEquals(
+            mapOf(gid to 1), gm.groupUnreadCounts(),
+            "the group's first message lights the dot the moment we join",
+        )
+    }
+
+    @Test
+    fun activityNotice_fromAGenuineNonMember_isStillDropped_neverParked() {
+        // The buffering must NOT relax the trust gate: a notice for a group we do not
+        // know and have no pending invite for is dropped outright and can never light
+        // a dot, now or after any later roster.
+        val vault = InMemoryVault()
+        seedContactWithCaps(vault, "stranger", generateSecureRandom(32))
+        val gm = GroupManager(vault, noTransport)
+        gm.handleControl("stranger", GroupManager.newGroupId(), GroupManager.KIND_ACTIVITY, "{}")
+        assertTrue(gm.groupUnreadCounts().isEmpty(), "an unknown-group notice is dropped, never parked")
+
+        // …and for a group we ARE fully in, a non-member sender (resolution NOT in
+        // flight) is dropped too — the removed-member property is preserved.
+        val f = joinedFixture()
+        val bobPairSecret = generateSecureRandom(32)
+        seedContactWithCaps(f.vault, "bob-contact", bobPairSecret)
+        val tag = GroupManager.boundTag(bobPairSecret, f.gid, f.bob)
+        val roster =
+            """{"n":"crew","ep":2,"adm":${jsonEscapeString(f.adm)},"mem":[${jsonEscapeString("${f.adm}:")},${jsonEscapeString("${f.me}:")},${jsonEscapeString("${f.bob}:$tag")}]}"""
+        f.gm.handleControl("admin-contact", f.gid, GroupManager.KIND_ROSTER, roster)   // no unresolved slots left
+        seedContactWithCaps(f.vault, "outsider", generateSecureRandom(32))
+        f.gm.handleControl("outsider", f.gid, GroupManager.KIND_ACTIVITY, "{}")
+        assertTrue(f.gm.groupUnreadCounts().isEmpty(), "a non-member's notice is dropped when resolution is done")
+    }
+
     @Test
     fun roster_omittingUs_deletesGroupLocally() {
         val f = joinedFixture()

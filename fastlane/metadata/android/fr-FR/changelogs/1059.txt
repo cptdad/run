@@ -1,0 +1,3 @@
+• Maximum : la phrase secrète se saisit à la main, sans coller ni copier.
+• Maximum refuse plus de phrases secrètes faibles : phrases célèbres, jours de la semaine, compter dans votre langue ou des suites de ponctuation.
+• Groupes : le point non lu apparaît désormais pour le premier message d'un membre et reste affiché de façon plus fiable à votre retour dans l'app.

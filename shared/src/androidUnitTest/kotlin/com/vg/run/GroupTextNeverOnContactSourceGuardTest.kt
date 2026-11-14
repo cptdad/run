@@ -225,6 +225,10 @@ class GroupTextNeverOnContactSourceGuardTest {
             "Chan.GRP",
             "fromGroupInbox",
             "ACTIVITY_FIELD_GROUP_INBOX",
+            // The presence bump's notice grace (2026-11-13) — group-dot state only.
+            "unattributedSinceMs",
+            "noticeCheckedAfterGrace",
+            "controlInboxChecked",
         )
     }
 }

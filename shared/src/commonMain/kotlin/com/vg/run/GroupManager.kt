@@ -598,6 +598,13 @@ class GroupManager(
         groupOf = { vault.getGroup(it) },
         membersOf = { vault.getGroupMembers(it) },
         toMessage = { contactId, groupId, g, members, rm -> toGroupMessage(contactId, groupId, g, members, rm) },
+        // A parked notice that just resolved is replayed through the SAME entry point
+        // handleActivity uses — so the per-member SUM ceiling still applies, and a
+        // counted `gi` notice is persisted exactly like a live one. `tally` and
+        // `unreadMarkers` are declared below; this lambda only runs at flush time (post-init).
+        applyNotice = { groupId, senderContactId, onGroupInbox, noticeAtMs ->
+            applyActivityNotice(senderContactId, groupId, onGroupInbox, noticeAtMs)
+        },
     )
 
     // The DURABLE side of screenshot notices (the RAM side is [ConversationBuffers]):
@@ -655,11 +662,27 @@ class GroupManager(
         return mgr
     }
 
-    // The four session-scoped unread tallies (group dot, legacy compensator,
-    // group-inbox depth, `gi`-notice count), under their own lock: see
+    // Test seam for the presence bump's NOTICE GRACE ([GroupUnreadTally.unattributedContacts]).
+    // MONOTONIC in production — deliberately NOT [clockMs] (wall clock): a wall-clock
+    // step must neither hold a fallback dot back nor fire it early. Read under the
+    // tally's lock, so it must stay a pure clock read. Declared before [tally].
+    internal var noticeGraceClockMs: () -> Long = { GroupUnreadTally.monotonicNowMs() }
+
+    // The session-scoped unread tallies (group dot, legacy compensator,
+    // group-inbox depth, `gi`-notice count, restored units), under their own lock: see
     // [GroupUnreadTally]. Never named after the group count — the source guard
     // forbids that substring on the contact path.
-    private val tally = GroupUnreadTally()
+    private val tally = GroupUnreadTally(nowMs = { noticeGraceClockMs() })
+
+    // The DURABLE mirror of the tally's `gi` attribution (owner decision 2026-11-12):
+    // per sender contact, which group(s) its still-pending `gi` notices named, so a
+    // session that starts after a teardown restores the right group dot instead of
+    // presence-bumping every group shared with that sender. Written/cleared in
+    // lockstep with the tally, always OUTSIDE the tally's lock (SyncLock is
+    // non-reentrant on iOS and must never be held across SQLCipher); restored once,
+    // in `init`. Fail-soft: any vault failure falls back to the presence bump. See
+    // GroupUnreadMarkerStore.kt for the format, the TTL/heal rules and the purge coupling.
+    private val unreadMarkers = GroupUnreadMarkerStore(vault, clock = { clockMs() })
 
     // One-shot connect-time unread prime ([primeUnreadCounts]) — at most one pass
     // may be in flight. A Tor reconnect re-wires the transport and can re-fire the
@@ -782,6 +805,38 @@ class GroupManager(
             }
         } catch (e: Exception) {
             platformLogWarn(TAG, "parked-invite rehydrate failed — continuing empty: ${e::class.simpleName}")
+        }
+        // Restore the group unread attribution the previous session persisted, BEFORE
+        // anything can publish a group count or apply a new notice (construction is
+        // single-threaded and this instance is not yet published; a live notice
+        // applied before the restore would be counted twice). Never throws.
+        restoreUnreadAttribution()
+    }
+
+    /**
+     * Once per session (from `init`): hands the vault mirror of the `gi`
+     * attribution back to the RAM tally. A unit whose group is gone or whose sender
+     * is no longer a resolved member is DETACHED by the store (it still accounts for
+     * a blob on that sender's group inbox, it lights nothing). Fail-soft: on any
+     * failure the tally simply starts empty — today's presence-bump behaviour.
+     */
+    private fun restoreUnreadAttribution() {
+        try {
+            val membersByGroup = HashMap<String, Set<String>>()
+            val restored = unreadMarkers.restore(
+                contactExists = { vault.getContact(it) != null },
+                isMember = { contactId, groupId ->
+                    contactId in membersByGroup.getOrPut(groupId) {
+                        if (vault.getGroup(groupId) == null) emptySet()
+                        else vault.getGroupMembers(groupId).mapNotNullTo(HashSet()) { it.contactId }
+                    }
+                },
+            )
+            var n = 0
+            for ((contactId, units) in restored) n += tally.restore(contactId, units.map { it.groupId })
+            if (n > 0) platformLog(TAG, "group unread attribution restored: $n")
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "group unread attribution restore failed — continuing empty: ${e::class.simpleName}")
         }
     }
 
@@ -1040,8 +1095,11 @@ class GroupManager(
         // (aliases + contactIds); the DURABLE `ssn:` rows are untouched — see
         // [ConversationBuffers.scrub].
         buffers.scrub()
-        // All four unread tallies (contactIds/groupIds + counts).
+        // All five unread tallies (contactIds/groupIds + counts). The vault mirror of
+        // the `gi` attribution is deliberately untouched (it exists to survive this);
+        // only its RAM index (contactIds/groupIds) goes.
         tally.scrub()
+        unreadMarkers.scrub()
         departureLock.withLock { departureAnnounced.clear() }
         // (groupId, contactId) pairs — social-graph state in the same class as
         // [departureAnnounced], so it goes in the same scrub. Losing it costs one
@@ -1164,8 +1222,9 @@ class GroupManager(
         bufferAll: Boolean,
     ): IngestResult {
         // THE DRAIN IS AUTHORITATIVE for both group-inbox tallies — see
-        // [GroupUnreadTally.groupInboxDrained].
+        // [GroupUnreadTally.groupInboxDrained] — and for their vault mirror.
         tally.groupInboxDrained(contactId)
+        unreadMarkers.clear(contactId)
         if (group.isEmpty()) return IngestResult(emptyList(), emptyList())
         return ingest(contactId, group, wantGroupId, bufferAll, fromGroupInbox = true)
     }
@@ -1294,6 +1353,12 @@ class GroupManager(
         // Same rule as pollDirect, and ahead of the transport check for the same
         // reason: polling the group means its conversation is open.
         screenshotStore.markSeen(groupId)
+        // …and the vault mirror of its unread dot follows [markGroupRead]: the
+        // persisted units stop lighting this group but keep accounting for their
+        // blobs (a later session must not presence-bump for them). Here, on the
+        // background poll, not in [markGroupRead] itself — that one is called from
+        // the main thread on both platforms and stays RAM-only.
+        unreadMarkers.detachGroup(groupId)
         // Unresolved-sender buffer: re-attribute any group texts that were buffered while their sender was
         // unresolved — resolution may have converged since. Delivered ones land in
         // their group's screen buffer, where the caller takes them.
@@ -1445,6 +1510,7 @@ class GroupManager(
      */
     fun pollGroupPending(groupId: String): PendingDrain<GroupMessage> {
         screenshotStore.markSeen(groupId)
+        unreadMarkers.detachGroup(groupId)   // see pollGroupIntoBuffer
         buffers.flushResolvedGroupTexts()
         val mgr = transport("pollGroup") ?: return buffers.parkedGroupOnly(groupId, null)
         val blocked = blockedContactsSafe()
@@ -1584,11 +1650,73 @@ class GroupManager(
         groupMemberContacts = { groupId -> vault.getGroupMembers(groupId).map { it.contactId } },
     )
 
-    /** See [GroupInboxBackfillArming.arm]. */
-    internal fun armGroupInboxBackfill(contactId: String) = backfill.arm(contactId)
+    /** See [GroupInboxBackfillArming.arm]. Arms the LAZY sweep AND kicks the EAGER
+     *  establishment (fail-soft) so a membership event converges the pair's group
+     *  inbox ahead of the first send. */
+    internal fun armGroupInboxBackfill(contactId: String) {
+        backfill.arm(contactId)
+        eagerlyEstablishGroupInboxes(listOf(contactId))
+    }
 
-    /** See [GroupInboxBackfillArming.armForGroup]. */
-    internal fun armGroupInboxBackfillForGroup(groupId: String) = backfill.armForGroup(groupId)
+    /** See [GroupInboxBackfillArming.armForGroup]. Arms the LAZY sweep for every
+     *  resolved member AND kicks the EAGER establishment for them (fail-soft). */
+    internal fun armGroupInboxBackfillForGroup(groupId: String) {
+        backfill.armForGroup(groupId)
+        eagerlyEstablishGroupInboxes(
+            try { vault.getGroupMembers(groupId).map { it.contactId } } catch (_: Exception) { emptyList() }
+        )
+    }
+
+    /**
+     * Runs [eagerlyEstablishGroupInboxes]'s blocking mint+announce OFF the critical
+     * path. Wired ONCE per session by the platform (RunViewModel / AppState) to a
+     * background-coroutine launcher; the DEFAULT is a NO-OP, which means two things,
+     * both deliberate:
+     *  - eager establishment is FAIL-SOFT off by default — an unwired build simply
+     *    keeps today's lazy control-sweep backfill (no behaviour lost, only the
+     *    durability optimisation);
+     *  - the JVM unit suite's [InMemoryVault] is NOT thread-safe, so the default
+     *    no-op guarantees no test ever touches a vault from a background thread it
+     *    did not start. The eager tests install a synchronous launcher explicitly.
+     * Same long-lived-object placement as [blockedContacts] / [onControlSweep], so
+     * it survives MessageManager recreation on a Tor reconnect.
+     */
+    var groupBackfillLauncher: (() -> Unit) -> Unit = { }
+
+    /**
+     * EAGER per-pair group-inbox establishment (durability half of the group
+     * unread-dot fix): at a MEMBERSHIP EVENT, run [MessageManager.eagerBackfillGroupInboxes]
+     * via [groupBackfillLauncher] so the pair's group inbox converges PROMPTLY and
+     * ahead of the first group message — which then rides the GROUP inbox (GRP
+     * route) and gets the peek-depth presence-bump backstop that re-derives on every
+     * session (durable, nothing persisted). Deliberately NOT wired into
+     * [GroupInboxBackfillArming.armOnceForSession] (that connect-time arm must stay
+     * lazy — no PoW on a cold circuit). FAIL-SOFT: unresolved / blocked contacts are
+     * filtered out, a null transport is a no-op, the eager pass itself refuses on a
+     * cold circuit / freeze / teardown, and the LAZY sweep (armed above) remains the
+     * backstop. The launcher runs it on a background coroutine, so it NEVER blocks or
+     * delays create/join.
+     */
+    private fun eagerlyEstablishGroupInboxes(contactIds: List<String?>) {
+        val resolved = contactIds.filterNotNull().filter { it.isNotEmpty() }.distinct()
+        if (resolved.isEmpty()) return
+        // Never during the connect-time unread prime: a PoW mint on that cold
+        // circuit is the exact cost the lazy runDue gates out, and a membership
+        // control applied by the prime's own pre-drain must not kick one. The
+        // backfill is still armed, so the lazy sweep converges it once the prime
+        // settles. (The eager pass itself also refuses before the first relay
+        // round-trip — belt and braces.)
+        if (primeLock.withLock { primeInFlight }) return
+        val blocked = blockedContactsSafe()
+        val targets = resolved.filter { it !in blocked }
+        if (targets.isEmpty()) return
+        val mgr = messageManager() ?: return
+        try {
+            groupBackfillLauncher { mgr.eagerBackfillGroupInboxes(targets) }
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "eager group-inbox establishment failed to launch: ${e::class.simpleName}")
+        }
+    }
 
     /**
      * The per-contact control drain shared by the background sweep ([pollAllControls])
@@ -1644,6 +1772,10 @@ class GroupManager(
         // per-contact serial peek below is then used exactly as before — never a
         // silent "assume empty". [prePeeked] (the connect-time BATCH peek) short-
         // circuits it with an already-answered map of the same shape.
+        // The presence bump's NOTICE GRACE: stamped BEFORE this sweep's first request,
+        // so "this check started ≥ grace after the depth was seen" can only be
+        // conservative ([GroupUnreadTally.controlInboxChecked]).
+        val checkStartedAtMs = tally.controlSweepStartedAtMs()
         val peeked = prePeeked
             ?: if (concurrency > 1) peekControlInboxesBounded(mgr, contacts, concurrency) else null
         var anyReceived = false
@@ -1661,7 +1793,12 @@ class GroupManager(
                     // A contact whose DEFERRED sealed control is due (hold expired, or a
                     // retry requested by a text drain) drains anyway — the drain is what
                     // retries / ages out the deferral. A merely-held deferral does not.
-                    if (peeked[c.contactId] == 0 && !hasDeferredSealedControl(mgr, c.contactId)) continue
+                    if (peeked[c.contactId] == 0 && !hasDeferredSealedControl(mgr, c.contactId)) {
+                        // A positive 0 is "the notice is not there". Not credited for a
+                        // [prePeeked] map: that batch peek ran BEFORE [checkStartedAtMs].
+                        if (prePeeked == null) tally.controlInboxChecked(c.contactId, checkStartedAtMs)
+                        continue
+                    }
                     // The peeks are done and were jittered inside the fan-out; only a
                     // DRAIN is still a request, so only a drain pays the inter-request
                     // sleep. Paying it per CONTACT here would spend 16 × 250 ms on
@@ -1686,7 +1823,10 @@ class GroupManager(
                         // Nothing queued → nothing to drain, and nothing can have changed
                         // this contact's awaiting state either (an announce arrives only
                         // through a drain), so the transition check below is moot as well.
-                        if (pending == 0 && !hasDeferredSealedControl(mgr, c.contactId)) continue
+                        if (pending == 0 && !hasDeferredSealedControl(mgr, c.contactId)) {
+                            tally.controlInboxChecked(c.contactId, checkStartedAtMs)
+                            continue
+                        }
                     }
                 }
                 // An inbox announce is applied as a vault side-effect INSIDE the poll
@@ -1703,6 +1843,12 @@ class GroupManager(
                 if (received.isNotEmpty()) {
                     anyReceived = true
                     ingest(c.contactId, received, wantGroupId = null, bufferAll = true, background = true)
+                    // AFTER the ingest: a notice in this batch has already attributed (and
+                    // reset the grace), so this only credits a check that came back
+                    // without it. Only a NON-EMPTY drain counts — an empty list is also
+                    // what a failed GET returns (pollChannel swallows it), and a failed
+                    // fetch proves nothing about the notice.
+                    tally.controlInboxChecked(c.contactId, checkStartedAtMs)
                 }
                 // Peer's inbox just landed (awaiting → ready) with no surfaced message:
                 // still a meaningful drain, so the UI re-queries and "Waiting for their
@@ -2091,13 +2237,18 @@ class GroupManager(
         // This group text just left the relay (returned or buffered) — drop it
         // from whichever pending tally described it.
         tally.consumed(contactId, fromGroupInbox)
+        // …and ONE unit from the vault mirror, when the RAM side gave one back: a
+        // group-inbox text (its `gi` unit) or an echo (its group dot). In practice the
+        // group-inbox case is already empty — [afterGroupInboxDrain] cleared the whole
+        // mirror for this contact a moment ago — so this is the lockstep, not the work.
+        if (fromGroupInbox || (!background && gid != wantGroupId)) unreadMarkers.removeOne(contactId, gid)
         when {
             background -> buffers.toGroupScreen(gid, gm)
             gid == wantGroupId -> if (!bufferAll) group.add(gm) else buffers.toGroupScreen(gid, gm)
             else -> {
                 // GROUP_ECHO: shown at once in the screen that fetched it, so the
                 // group's own dot has nothing left to point at.
-                tally.shownElsewhere(gid)
+                tally.shownElsewhere(gid, contactId)
                 if (wantGroupId == null) {
                     val echo = DirectItem(
                         contactId, gm.text, gm.timestamp, gm.dedupeId,
@@ -2779,6 +2930,9 @@ class GroupManager(
             platformLogError(TAG, "removeMember persist failed: ${e::class.simpleName}")
             return false
         }
+        // Their persisted unread units for this group stop lighting it (after the
+        // commit — never inside a vault transaction).
+        member.contactId?.let { unreadMarkers.detachMember(it, groupId) }
         broadcastRoster(groupId, alsoTo = member.contactId)
         return true
     }
@@ -2901,6 +3055,11 @@ class GroupManager(
         try { vault.deleteGroup(groupId) } catch (e: Exception) {
             platformLogWarn(TAG, "leaveGroup local delete failed: ${e::class.simpleName}")
         }
+        // The persisted unread units naming this group are DETACHED, not deleted: the
+        // key is per contact (purged with the contact), and a text for the left group
+        // still sits on that sender's group inbox, so it must keep suppressing the
+        // presence bump on the groups we still share — it just names no group now.
+        unreadMarkers.detachGroup(groupId)
         onLocalDelete?.invoke()
         // noPush: a departure updates the roster silently; it is not a message.
         // The body names the epoch we left at AND our memberId, so a copy
@@ -3323,6 +3482,12 @@ class GroupManager(
         // nothing here) and before the join fan-out.
         ctlRedrive.purgeForGroup(invite.groupId)
 
+        // We are now a member (the group row is committed and the inviter is
+        // resolved): replay any activity notice we parked while this was still just
+        // an invite, so the group's first message lights its dot the moment we join.
+        // Non-inviter members stay parked until their roster resolves them.
+        buffers.flushResolvedActivityNotices()
+
         // Consent given → NOW disclose our tag list and announce the join.
         val hash = membershipHash(invite.groupId, invite.epoch, invite.memberIds)
         val joinBody = buildJoinBody(invite.groupId, invite.myMemberId)
@@ -3523,6 +3688,7 @@ class GroupManager(
             try { vault.deleteGroup(groupId) } catch (e: Exception) {
                 platformLogWarn(TAG, "removed-from-group local delete failed: ${e::class.simpleName}")
             }
+            unreadMarkers.detachGroup(groupId)   // same rule as leaveGroup
             return
         }
 
@@ -3549,10 +3715,15 @@ class GroupManager(
             // "left" notice inside announceDeparture).
             for ((memberId, contactId) in removed) {
                 announceDeparture(groupId, memberId, contactId, NOTICE_REMOVED_KEY)
+                unreadMarkers.detachMember(contactId, groupId)
             }
             // Unresolved-sender buffer: this roster may have just RESOLVED a member whose group text we
             // buffered while it was unresolved — surface any now-attributable texts.
             buffers.flushResolvedGroupTexts()
+            // …and any ACTIVITY NOTICE parked for a member this roster just resolved:
+            // replay it so that sender's first group message lights the group dot
+            // (same resolution point, same reason).
+            buffers.flushResolvedActivityNotices()
         } catch (e: Exception) {
             platformLogError(TAG, "roster apply failed: ${e::class.simpleName}")
         }
@@ -3696,6 +3867,7 @@ class GroupManager(
             platformLogWarn(TAG, "leave apply failed: ${e::class.simpleName}")
             return
         }
+        unreadMarkers.detachMember(senderContactId, groupId)
         // Post a system notice so the remaining members see who left.
         announceDeparture(groupId, member.memberId, senderContactId, NOTICE_LEFT_KEY)
         // If we are admin, re-roster the survivors.
@@ -3764,23 +3936,84 @@ class GroupManager(
         body: String,
         claimedSentAtMs: Long = 0L,
     ) {
-        if (vault.getGroup(groupId) == null) return
-        if (vault.getGroupMembers(groupId).none { it.contactId == senderContactId }) return
-        // Every control append now carries the uniform 7-day relay ttl
-        // while a group TEXT still expires on the relay's 24 h default, so a device
-        // that was closed for days could drain notices whose texts are long gone and
-        // light a group dot with nothing behind it. Ignore a notice that is older
-        // than [MAX_ACTIVITY_NOTICE_AGE_MS]. Suppress-direction only, and a missing
+        // Stale-notice gate FIRST (it moved ahead of the membership checks so a stale
+        // notice is never parked either). Every control append carries the uniform
+        // 7-day relay ttl while a group TEXT still expires on the relay's 24 h
+        // default, so a device closed for days could drain notices whose texts are
+        // long gone and light a group dot with nothing behind it. Ignore a notice
+        // older than [MAX_ACTIVITY_NOTICE_AGE_MS]. Suppress-direction only; a missing
         // or zero stamp is accepted exactly as before — see that constant.
         if (claimedSentAtMs > 0L && clockMs() - claimedSentAtMs > MAX_ACTIVITY_NOTICE_AGE_MS) {
             platformLogWarn(TAG, "stale activity notice ignored (older than the text retention)")
             return
         }
         val onGroupInbox = firstStringFieldAnywhere(body, ACTIVITY_FIELD_GROUP_INBOX) == "1"
+        // The stamp a persisted `gi` unit carries (its TTL anchor) — see
+        // [GroupUnreadMarkerStore.stampFor]. Computed once, so a parked notice keeps it.
+        val noticeAtMs = GroupUnreadMarkerStore.stampFor(claimedSentAtMs, clockMs())
+        val g = vault.getGroup(groupId)
+        if (g == null) {
+            // We have not JOINED this group yet. If an invite for it is parked
+            // awaiting our consent, this notice describes a real group text that will
+            // be sitting unseen the instant we accept — PARK it and replay on accept
+            // ([acceptInvite] → flushResolvedActivityNotices), so the very first
+            // message into a freshly joined group still lights its dot instead of
+            // being lost (the notice is consumed off the relay the moment it drains).
+            // Any other unknown group — declined, left, or a stranger's — is dropped
+            // exactly as before.
+            if (hasPendingInviteForGroup(groupId)) {
+                buffers.bufferActivityNotice(groupId, senderContactId, onGroupInbox, noticeAtMs)
+            }
+            return
+        }
+        val members = vault.getGroupMembers(groupId)
+        if (members.none { it.contactId == senderContactId }) {
+            // The sender is not YET a resolved member. If member↔member resolution is
+            // still in flight (unresolved slots remain) this is a real member whose
+            // roster tags have not landed on this device — PARK the notice and replay
+            // it on the roster apply that resolves them ([handleRoster] →
+            // flushResolvedActivityNotices), the SAME asymmetry [acceptGroupText]
+            // already closes for the group TEXT: dropping it here loses the group dot
+            // for that sender's first message for good. Once the roster is FULLY
+            // resolved a still-non-member sender is a genuine stranger / removed
+            // member, so it is dropped — preserving "a removed member's traffic is
+            // dropped".
+            val resolutionInFlight = members.any { it.contactId == null && it.memberId != g.myMemberId }
+            if (resolutionInFlight) {
+                buffers.bufferActivityNotice(groupId, senderContactId, onGroupInbox, noticeAtMs)
+            } else {
+                platformLogWarn(TAG, "drop: activity notice from non-member contact")
+            }
+            return
+        }
         // Bounded per member on the SUM of the two tallies — see
         // [GroupUnreadTally.noteActivity].
-        tally.noteActivity(senderContactId, groupId, onGroupInbox)
+        applyActivityNotice(senderContactId, groupId, onGroupInbox, noticeAtMs)
     }
+
+    /**
+     * The ONE entry point an accepted activity notice is counted through — live
+     * ([handleActivity]) and parked-then-replayed ([ConversationBuffers.flushResolvedActivityNotices])
+     * alike. Counts it into the RAM tally (per-member ceiling there), then — only
+     * for a COUNTED `gi` notice — persists the attribution, outside the tally's
+     * lock. A notice the ceiling ignored is not persisted; a legacy (no-`gi`)
+     * notice stays RAM-only exactly as before. The persist is fail-soft and never
+     * throws into the control drain.
+     */
+    private fun applyActivityNotice(senderContactId: String, groupId: String, onGroupInbox: Boolean, noticeAtMs: Long) {
+        val counted = tally.noteActivity(senderContactId, groupId, onGroupInbox)
+        if (counted && onGroupInbox) unreadMarkers.record(senderContactId, groupId, noticeAtMs)
+    }
+
+    /** True while an invite for [groupId] is parked awaiting the user's consent —
+     *  the window in which a group's first text (and its activity notice) can arrive
+     *  before we have joined. Scopes the parked-notice buffer to groups we are
+     *  actually about to join, so an unknown-group notice from a stranger is still
+     *  dropped outright. Sibling of [hasPendingInviteFrom] (keyed by group, not
+     *  inviter). Never throws. */
+    private fun hasPendingInviteForGroup(groupId: String): Boolean = try {
+        pendingInviteLock.withLock { pendingInvites.containsKey(groupId) }
+    } catch (_: Exception) { false }
 
     /**
      * A peer reported taking a screenshot of this group ([KIND_SCREENSHOT]).
@@ -3862,8 +4095,25 @@ class GroupManager(
      *
      * ```
      * unattributed(c) = max(0, groupInboxPending[c] - grpNoticed[c])
-     * bump(g)         = 1  iff some resolved member c of g has unattributed(c) > 0
+     * due(c)          = unattributed(c) > 0 AND the NOTICE GRACE has run out for c
+     * bump(g)         = 1  iff some resolved member c of g has due(c)
      * ```
+     *
+     * **It waits for the notice it is a fallback for** (device, 2026-11-13: two shared
+     * groups, one text into one of them, BOTH lit for one sweep). The sender ships the
+     * text and then the notice one jitter gap later; a sweep whose control drain ran
+     * before the notice landed and whose peek then saw the text read
+     * `unattributed > 0` and lit every shared group until the next cycle drained the
+     * notice. So the bump for c lights only once a control check of c that STARTED at
+     * least [GroupUnreadTally.NOTICE_LANDING_GRACE_MS] (15 s) after the depth was first
+     * seen came back without the notice — or, if c's control drain keeps failing, once
+     * the depth has stood [GroupUnreadTally.FALLBACK_CEILING_MS] (180 s). A notice that
+     * lands during the wait attributes normally and the bump never shows. Both
+     * platforms publish this at the end of every control cycle, right after that
+     * cycle's drain, so the qualifying check and the re-publish are the same cycle.
+     * Worst case for a genuinely notice-less text: one control cycle after first sight
+     * (idle ≤ ~90 s + the sweep, fast ≈ 15–25 s), or ~180 s + one cycle via the
+     * backstop. An ATTRIBUTED text (live or restored `gi` unit) never waits.
      *
      * Four properties, each deliberate:
      *
@@ -3953,8 +4203,26 @@ class GroupManager(
             // set is empty and the sweep is byte-identical to what it always was.
             groupSharingContactIds(blockedContactIds),
         )
-        tally.notePeekedGroupInboxDepths(peeked.group)
+        publishGroupInboxDepths(peeked.group)
         return peeked
+    }
+
+    /**
+     * Every GROUP-inbox depth a peek pass ANSWERED (unknown ≠ empty: an inbox the
+     * relay did not answer for is absent from [depths] and changes nothing) goes to
+     * the tally for the presence bump, AND heals the `gi` attribution: when the
+     * definite depth is below what is attributed, the surplus describes texts that
+     * are no longer on the relay. The RAM side heals only units RESTORED from the
+     * vault ([GroupUnreadTally.retractRestored]); the vault mirror keeps only its
+     * newest `depth` units ([GroupUnreadMarkerStore.healTo]). Vault I/O happens only
+     * for a contact that holds a marker, never under the tally's lock.
+     */
+    private fun publishGroupInboxDepths(depths: Map<String, Int>) {
+        tally.notePeekedGroupInboxDepths(depths)
+        for ((contactId, depth) in depths) {
+            tally.retractRestored(contactId, depth)
+            unreadMarkers.healTo(contactId, depth)
+        }
     }
 
     /**
@@ -4287,7 +4555,7 @@ class GroupManager(
                 }
             }
         }
-        tally.notePeekedGroupInboxDepths(groupDepths)
+        publishGroupInboxDepths(groupDepths)
         platformLog(TAG, "unread prime: peeked ${targets.size} contact(s)")
         appendPrimePassDone(answered[0], targets.size, startedAtMs)
     }
@@ -4453,7 +4721,7 @@ class GroupManager(
         // drains is what tells a depth apart from an unattributed one, and a
         // presence bump raised before it landed would flash on every shared group.
         // They feed the GROUP dot only — never a contact row.
-        tally.notePeekedGroupInboxDepths(
+        publishGroupInboxDepths(
             buildMap { for (t in groupTargets) counts[t.inboxId]?.let { put(t.contactId, it) } }
         )
         ConnectionLog.append(
@@ -4510,7 +4778,9 @@ class GroupManager(
         )
     }
 
-    /** Clear a group's unread dot — call when its conversation is opened. */
+    /** Clear a group's unread dot — call when its conversation is opened. RAM-only
+     *  (both platforms call it on the main thread); the vault mirror follows on the
+     *  group poll that the open starts ([pollGroupIntoBuffer] / [pollGroupPending]). */
     fun markGroupRead(groupId: String) = tally.markGroupRead(groupId)
 
     // -----------------------------------------------------------------------

@@ -910,3 +910,73 @@ extension View {
             .textContentType(.password)
     }
 }
+
+// MARK: - Sent-bubble "did it get through yet" look (owner directive 2026-11-12)
+//
+// Replaces the small ✓ / · marks: a pending sent bubble is GREY + TRANSLUCENT and creeps up to a
+// cap well below opaque; the relay's acceptance animates it to opaque + its real colour. Every
+// number comes from commonMain SentBubbleFade (shared with Android's SentBubbleLook.kt — keep in
+// step). State is per message (the ForEach id keeps this view's @State), the creep clock derives
+// from the message's own send timestamp so a recycled pending bubble resumes instead of replaying,
+// and a bubble already delivered when first built starts opaque (mix initialised to 1).
+// Reduce Motion: no animation, just the two states.
+
+struct SentBubbleFading<Content: View>: View {
+    let sentAtMs: Int64
+    let delivered: Bool
+    /// (opacity for bubble + text + timestamp, 0 = pending grey … 1 = real sent-bubble colour)
+    let content: (_ alpha: Double, _ mix: Double) -> Content
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var mix: Double
+    @State private var creepDone = false
+    @State private var frozenPending: Double? = nil
+    @State private var firstSeenMs: Int64 = Int64(Date().timeIntervalSince1970 * 1000)
+
+    init(sentAtMs: Int64, delivered: Bool, @ViewBuilder content: @escaping (_ alpha: Double, _ mix: Double) -> Content) {
+        self.sentAtMs = sentAtMs
+        self.delivered = delivered
+        self.content = content
+        _mix = State(initialValue: delivered ? 1 : 0)
+    }
+
+    private var startedAt: Int64 { sentAtMs > 0 ? sentAtMs : firstSeenMs }
+
+    private func pendingAlpha(at date: Date) -> Double {
+        if reduceMotion { return Double(SentBubbleFade.shared.reducedMotionPendingAlpha()) }
+        let nowMs = Int64(date.timeIntervalSince1970 * 1000)
+        return Double(SentBubbleFade.shared.pendingAlpha(elapsedMs: nowMs - startedAt))
+    }
+
+    private func remainingCreepNs() -> UInt64 {
+        let elapsed = Int64(Date().timeIntervalSince1970 * 1000) - startedAt
+        return UInt64(max(0, SentBubbleFade.shared.CREEP_MS - elapsed)) * 1_000_000
+    }
+
+    var body: some View {
+        let creeping = !delivered && !reduceMotion && !creepDone
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !creeping)) { ctx in
+            let pending = frozenPending ?? (creepDone ? Double(SentBubbleFade.shared.PENDING_CAP) : pendingAlpha(at: ctx.date))
+            let alpha = Double(SentBubbleFade.shared.transitionAlpha(pendingAlpha: Float(pending), progress: Float(mix)))
+            content(alpha, mix)
+        }
+        .onChange(of: delivered) { nowDelivered in
+            if nowDelivered {
+                frozenPending = pendingAlpha(at: Date())
+                if reduceMotion {
+                    mix = 1
+                } else {
+                    withAnimation(.easeInOut(duration: Double(SentBubbleFade.shared.DELIVERED_MS) / 1000.0)) { mix = 1 }
+                }
+            } else {
+                frozenPending = nil
+                mix = 0
+            }
+        }
+        .task(id: delivered) {
+            guard !delivered, !reduceMotion else { return }
+            try? await Task.sleep(nanoseconds: remainingCreepNs())
+            if !Task.isCancelled { creepDone = true }
+        }
+    }
+}

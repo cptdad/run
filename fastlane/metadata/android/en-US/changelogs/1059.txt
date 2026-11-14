@@ -1,0 +1,3 @@
+• Maximum: the passphrase is typed by hand — it can't be pasted or copied.
+• Maximum rejects more weak passphrases, like famous phrases, weekdays or counting in your language, or runs of punctuation.
+• Groups: the unread dot now shows for a member's first message and more reliably stays when you come back to the app.

@@ -1,0 +1,3 @@
+• Maximal: lösenfrasen skrivs för hand – den går inte att klistra in eller kopiera.
+• Maximal underkänner fler svaga lösenfraser, som kända fraser, veckodagar eller att räkna på ditt språk, eller rader av skiljetecken.
+• Grupper: pricken för olästa visas nu för en medlems första meddelande och ligger kvar mer pålitligt när du kommer tillbaka till appen.

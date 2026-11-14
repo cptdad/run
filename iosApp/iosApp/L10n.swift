@@ -292,6 +292,8 @@ enum L10n {
     static func contactListGroupInviteMismatch(_ p1: String, _ p2: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_group_invite_mismatch", value: "⚠️ %1$@ invited you to “%2$@”, but you previously had this group under a DIFFERENT administrator. Only join if you trust %1$@ to control this group’s membership.", comment: ""), p1, p2) }
     /// en: "⚠️ %1$s invited you to “%2$s”, but you previously had this group under a DIFFERENT administrator (originally administered by “%3$s”). Only join if you trust %1$s to control this group’s membership."
     static func contactListGroupInviteMismatchWithPrior(_ p1: String, _ p2: String, _ p3: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_group_invite_mismatch_with_prior", value: "⚠️ %1$@ invited you to “%2$@”, but you previously had this group under a DIFFERENT administrator (originally administered by “%3$@”). Only join if you trust %1$@ to control this group’s membership.", comment: ""), p1, p2, p3) }
+    /// en: "Invitation: “%1$s”"
+    static func contactListGroupInviteRow(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_group_invite_row", value: "Invitation: “%1$@”", comment: ""), p1) }
     /// en: "Group invitation"
     static var contactListGroupInviteTitle: String { NSLocalizedString("contact_list_group_invite_title", value: "Group invitation", comment: "") }
     /// en: "Group"
@@ -324,12 +326,16 @@ enum L10n {
     static var contactListNoMemoryYet: String { NSLocalizedString("contact_list_no_memory_yet", value: "No memory yet", comment: "") }
     /// en: "Notifications"
     static var contactListNotifications: String { NSLocalizedString("contact_list_notifications", value: "Notifications", comment: "") }
+    /// en: "Tap to answer"
+    static var contactListPendingRowHint: String { NSLocalizedString("contact_list_pending_row_hint", value: "Tap to answer", comment: "") }
     /// en: "Would you like to report this contact for objectionable content or abuse? Reports are reviewed and acted on within 24 hours. Your report is sent from your own email app, so it will show us your email address — and the draft is stored by that app, outside Rún, where it won't be erased if you wipe Rún."
     static var contactListPostBlockReportMessage: String { NSLocalizedString("contact_list_post_block_report_message", value: "Would you like to report this contact for objectionable content or abuse? Reports are reviewed and acted on within 24 hours. Your report is sent from your own email app, so it will show us your email address — and the draft is stored by that app, outside Rún, where it won't be erased if you wipe Rún.", comment: "") }
     /// en: "Protection level"
     static var contactListProtectionLevel: String { NSLocalizedString("contact_list_protection_level", value: "Protection level", comment: "") }
     /// en: "Push notifications"
     static var contactListPushNotifications: String { NSLocalizedString("contact_list_push_notifications", value: "Push notifications", comment: "") }
+    /// en: "Introduction: “%1$s”"
+    static func contactListReferralOfferRow(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_referral_offer_row", value: "Introduction: “%1$@”", comment: ""), p1) }
     /// en: "Remove"
     static var contactListRemoveMemoryButton: String { NSLocalizedString("contact_list_remove_memory_button", value: "Remove", comment: "") }
     /// en (other): "%1$d contacts need re-pairing. Tap to add them again."
@@ -356,6 +362,8 @@ enum L10n {
     static var contactListUnreadMessagesDescription: String { NSLocalizedString("contact_list_unread_messages_description", value: "Unread messages", comment: "") }
     /// en: "Waiting for their inbox…"
     static var contactListWaitingForInbox: String { NSLocalizedString("contact_list_waiting_for_inbox", value: "Waiting for their inbox…", comment: "") }
+    /// en: "Uses Maximum protection"
+    static var contactMaximumShieldDescription: String { NSLocalizedString("contact_maximum_shield_description", value: "Uses Maximum protection", comment: "") }
     /// en: "Unknown"
     static var conversationAliasUnknown: String { NSLocalizedString("conversation_alias_unknown", value: "Unknown", comment: "") }
     /// en: "Block"
@@ -530,6 +538,10 @@ enum L10n {
     static var groupInfoLeaveUnreadWarning: String { NSLocalizedString("group_info_leave_unread_warning", value: "Anything you sent that the others have not read yet may never be shown to them.", comment: "") }
     /// en: "Make admin"
     static var groupInfoMakeAdmin: String { NSLocalizedString("group_info_make_admin", value: "Make admin", comment: "") }
+    /// en: "You will no longer be admin. Only the admin can add and remove members."
+    static var groupInfoMakeAdminConfirmBody: String { NSLocalizedString("group_info_make_admin_confirm_body", value: "You will no longer be admin. Only the admin can add and remove members.", comment: "") }
+    /// en: "Make %1$s admin?"
+    static func groupInfoMakeAdminConfirmTitle(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("group_info_make_admin_confirm_title", value: "Make %1$@ admin?", comment: ""), p1) }
     /// en (other): "%1$d members"
     static func groupInfoMembers(_ n: Int) -> String { String.localizedStringWithFormat(NSLocalizedString("group_info_members", comment: ""), n) }
     /// en: "No verified pairing with this member yet"
@@ -962,8 +974,8 @@ enum L10n {
     static var protectionTierNamePrivate: String { NSLocalizedString("protection_tier_name_private", value: "Secure", comment: "") }
     /// en: "Six digit pin code for opening Rún. Can be brute forced by forensic tools in hours, so Rún relies fully on the phone protection. On Android, keyboard suggestions and emoji stay on, so the keyboard may learn words you type."
     static var protectionTierTaglineCasual: String { NSLocalizedString("protection_tier_tagline_casual", value: "Six digit pin code for opening Rún. Can be brute forced by forensic tools in hours, so Rún relies fully on the phone protection. On Android, keyboard suggestions and emoji stay on, so the keyboard may learn words you type.", comment: "") }
-    /// en: "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable."
-    static var protectionTierTaglineMaximum: String { NSLocalizedString("protection_tier_tagline_maximum", value: "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable.", comment: "") }
+    /// en: "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable. Contacts who also use Maximum can see that you do."
+    static var protectionTierTaglineMaximum: String { NSLocalizedString("protection_tier_tagline_maximum", value: "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable. Contacts who also use Maximum can see that you do.", comment: "") }
     /// en: "Six digit pin code, but the vault key is sealed in the phone's security chip and released only by your fingerprint or face. A seized phone resists forensic brute-forcing even if its passcode is cracked. On Android, keyboard suggestions and emoji stay on, so the keyboard may learn words you type."
     static var protectionTierTaglinePrivate: String { NSLocalizedString("protection_tier_tagline_private", value: "Six digit pin code, but the vault key is sealed in the phone's security chip and released only by your fingerprint or face. A seized phone resists forensic brute-forcing even if its passcode is cracked. On Android, keyboard suggestions and emoji stay on, so the keyboard may learn words you type.", comment: "") }
     /// en: "Choose protection level against forensic attacks"

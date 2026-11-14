@@ -29,6 +29,8 @@
     <string name="group_info_admin_badge">Admin</string>
     <string name="group_info_leave_group">Lämna gruppen</string>
     <string name="group_info_make_admin">Gör till admin</string>
+    <string name="group_info_make_admin_confirm_title">Göra %1$s till admin?</string>
+    <string name="group_info_make_admin_confirm_body">Du är då inte längre admin. Bara admin kan lägga till och ta bort medlemmar.</string>
     <string name="group_info_remove_from_group">Ta bort ur gruppen</string>
     <string name="group_info_add_member_precondition">Personen måste ha parkopplat personligen med varje medlem. Du går i god för det.</string>
     <string name="group_info_add_member_empty">Inga möjliga kontakter — alla du har parkopplat med är redan med i gruppen.</string>

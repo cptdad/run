@@ -858,11 +858,15 @@ struct GroupInfoView: View {
     @State private var isAdmin = false
     @State private var members: [MemberDisplay] = []
     @State private var eligibleToAdd: [Candidate] = []
+    // What reload() last showed — compared by watchRoster() (see there).
+    @State private var rosterStamp: String? = nil
     @State private var working = false
     @State private var showAddPicker = false
     @State private var showLeaveConfirm = false
     @State private var showChooseAdmin = false
     @State private var actionMember: MemberDisplay? = nil
+    @State private var makeAdminTarget: MemberDisplay? = nil
+    @State private var showMakeAdminConfirm = false
     // Surfaced when the admin-handoff write fails
     // so we do NOT leave into a permanently unmanageable (no-admin) group.
     @State private var transferFailed = false
@@ -924,6 +928,7 @@ struct GroupInfoView: View {
                 }
             }
             .onAppear { reload() }
+            .task { await watchRoster() }
             // Member actions (admin only): remove / transfer admin. Transfer
             // is offered only for RESOLVED members — an unreachable admin
             // could never coordinate the group. A Rune menu card (tap-outside
@@ -941,6 +946,16 @@ struct GroupInfoView: View {
                         actions: [
                             .secondary(L10n.commonCancel) { },
                             RuneDialogAction(L10n.groupInfoLeaveConfirmAction, color: .runeDanger, a11yId: "group_info_leave_confirm") { leave() },
+                        ])
+            .runeDialog(isPresented: $showMakeAdminConfirm,
+                        title: L10n.groupInfoMakeAdminConfirmTitle(bidiIsolate(makeAdminTarget?.alias ?? "")),
+                        message: L10n.groupInfoMakeAdminConfirmBody,
+                        a11yId: "make_admin_alert",
+                        actions: [
+                            .secondary(L10n.commonCancel, a11yId: "make_admin_cancel") { },
+                            RuneDialogAction(L10n.groupInfoMakeAdmin, a11yId: "make_admin_confirm") {
+                                if let m = makeAdminTarget { transferAdmin(to: m) }
+                            },
                         ])
             .runeDialog(isPresented: $transferFailed, title: L10n.groupInfoTransferFailedTitle,
                         message: L10n.groupInfoTransferFailedMessage,
@@ -1014,9 +1029,11 @@ struct GroupInfoView: View {
                         .padding(.vertical, 10)
                     if member.resolved {
                         Button {
-                            let m = member
+                            // ONE admin per group: this hands the role over, so
+                            // confirm first. Android sibling: GroupInfoScreen.kt makeAdminTarget.
+                            makeAdminTarget = member
                             actionMember = nil
-                            transferAdmin(to: m)
+                            showMakeAdminConfirm = true
                         } label: {
                             Text(L10n.groupInfoMakeAdmin)
                                 .font(.runeBody)
@@ -1222,6 +1239,27 @@ struct GroupInfoView: View {
 
     // MARK: logic
 
+    /// A roster applied by the background control sweep while this sheet is open (admin
+    /// handed over, member added / removed / resolved) must show without closing and
+    /// reopening it: poll the shared roster stamp and reload on a change. Skipped while
+    /// our own membership op runs (it reloads when it finishes) and when the vault could
+    /// not be read. Android sibling: GroupInfoScreen's LaunchedEffect.
+    private func watchRoster() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            if Task.isCancelled { return }
+            guard let vault = appState.vault else { continue }
+            let gid = groupId
+            let now = await Task.detached(priority: .utility) {
+                GroupRosterStampKt.groupRosterStamp(vault: vault, groupId: gid)
+            }.value
+            if Task.isCancelled { return }
+            if now == GroupRosterStampKt.ROSTER_STAMP_UNAVAILABLE || now == rosterStamp || working { continue }
+            reload()
+            if now == nil { return }   // left or removed: reload() called onLeft()
+        }
+    }
+
     private func reload() {
         guard let vault = appState.vault else { return }
         guard let group = vault.getGroup(groupId: groupId) else {
@@ -1229,6 +1267,7 @@ struct GroupInfoView: View {
             onLeft()
             return
         }
+        rosterStamp = GroupRosterStampKt.groupRosterStamp(vault: vault, groupId: groupId)
         groupName = group.name
         isAdmin = group.isAdmin
         let rows = vault.getGroupMembers(groupId: groupId)
@@ -1352,6 +1391,19 @@ private struct PrivateBubble: View {
     var body: some View {
         HStack {
             if sent { Spacer(minLength: 60) }
+            if sent {
+                // Grey + translucent until delivered, then opaque + real colour (SentBubbleFade).
+                SentBubbleFading(sentAtMs: message.timestamp, delivered: message.delivered == 1) { alpha, mix in
+                    bubble(alpha: alpha, mix: mix)
+                }
+            } else {
+                bubble(alpha: 1, mix: 1)
+            }
+            if !sent { Spacer(minLength: 60) }
+        }
+    }
+
+    private func bubble(alpha: Double, mix: Double) -> some View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 5) {
                     Image(systemName: "lock.fill")
@@ -1387,21 +1439,24 @@ private struct PrivateBubble: View {
                             .font(.system(size: 9))
                             .foregroundColor(Color(hex: 0x666666))
                     }
-                    if sent {
-                        Text(message.delivered == 1 ? "✓" : "·")
-                            .font(.runeCaption2)
-                            .foregroundColor(Color.runTextSecondary)
-                    }
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(sent ? Color.runPrivateBubbleSent : Color.runPrivateBubble)
+            .background(
+                ZStack {
+                    if sent {
+                        Color(hex: Int(SentBubbleFade.shared.PENDING_GREY_RGB))
+                        Color.runPrivateBubbleSent.opacity(mix)
+                    } else {
+                        Color.runPrivateBubble
+                    }
+                }
+            )
             .clipShape(RoundedRectangle(cornerRadius: 18))
+            .opacity(alpha)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(sent ? "group_private_sent_bubble" : "group_private_bubble")
-            if !sent { Spacer(minLength: 60) }
-        }
     }
 }
 
@@ -1438,10 +1493,33 @@ private struct GroupBubble: View {
         }
     }
 
+    /// Every member copy accepted (the old "✓" condition).
+    private var allDelivered: Bool {
+        if let delivered = message.delivered, let total = message.total {
+            return total > 0 && (total - delivered) + (message.unreachable ?? 0) == 0
+        }
+        return false
+    }
+
     private var bubble: some View {
         HStack {
             if message.isSent { Spacer(minLength: 60) }
 
+            if message.isSent {
+                // Grey + translucent until EVERY member copy is accepted (a refused/partial send
+                // never becomes opaque), then opaque + real colour (SentBubbleFade). No ✓ / ·.
+                SentBubbleFading(sentAtMs: message.timestamp, delivered: allDelivered) { alpha, mix in
+                    column(alpha: alpha, mix: mix)
+                }
+            } else {
+                column(alpha: 1, mix: 1)
+            }
+
+            if !message.isSent { Spacer(minLength: 60) }
+        }
+    }
+
+    private func column(alpha: Double, mix: Double) -> some View {
             VStack(alignment: message.isSent ? .trailing : .leading, spacing: 4) {
                 VStack(alignment: .leading, spacing: 2) {
                     if !message.isSent {
@@ -1455,8 +1533,18 @@ private struct GroupBubble: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(message.isSent ? Color.runSentBubble : Color.runReceivedBubble)
+                .background(
+                    ZStack {
+                        if message.isSent {
+                            Color(hex: Int(SentBubbleFade.shared.PENDING_GREY_RGB))
+                            Color.runSentBubble.opacity(mix)
+                        } else {
+                            Color.runReceivedBubble
+                        }
+                    }
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 18))
+                .opacity(alpha)
                 .accessibilityIdentifier(message.isSent ? "group_bubble_sent" : "group_bubble_received")
 
                 HStack(spacing: 4) {
@@ -1469,6 +1557,7 @@ private struct GroupBubble: View {
                         Text(Self.formatTime(message.timestamp))
                             .font(.system(size: 9))
                             .foregroundColor(Color(hex: 0x666666))
+                            .opacity(alpha)
                     }
                     if message.isSent {
                         deliveryMark
@@ -1476,15 +1565,16 @@ private struct GroupBubble: View {
                 }
                 .padding(.horizontal, 4)
             }
-
-            if !message.isSent { Spacer(minLength: 60) }
-        }
     }
 
     // e2e: every branch below carries the SAME a11y id — the indicator's text
     // IS the state ("·" pending / "✓" all delivered / "d/t" partial), so tests
     // read the label of the LAST group_delivery_status element. Id must stay
     // byte-identical to the Android testTag (GroupConversationScreen.kt).
+    // "·" and "✓" are no longer DRAWN (the bubble's opacity/colour is the signal)
+    // but stay in the accessibility tree as a clear-ink Text in a 1 pt frame — a
+    // .hidden()/opacity-0 view would be dropped from the XCUITest tree. The failure
+    // texts stay visible (red, full opacity).
     @ViewBuilder
     private var deliveryMark: some View {
         if let delivered = message.delivered, let total = message.total {
@@ -1495,17 +1585,24 @@ private struct GroupBubble: View {
                 Text(L10n.groupDeliveryNotDelivered(Int(undelivered))).font(.runeCaption2).foregroundColor(.red)
                     .accessibilityIdentifier("group_delivery_status")
             } else if total > 0 {
-                Text("✓").font(.runeCaption2).foregroundColor(Color.runTextSecondary)
-                    .accessibilityIdentifier("group_delivery_status")
+                hiddenStatus("✓")
             } else {
                 // Nobody addressable (0/0).
                 Text("\(delivered)/\(total)").font(.runeCaption2).foregroundColor(.red)
                     .accessibilityIdentifier("group_delivery_status")
             }
         } else {
-            Text("·").font(.runeCaption2).foregroundColor(Color.runTextSecondary)
-                .accessibilityIdentifier("group_delivery_status")
+            hiddenStatus("·")
         }
+    }
+
+    private func hiddenStatus(_ glyph: String) -> some View {
+        Text(glyph)
+            .font(.runeCaption2)
+            .foregroundColor(.clear)
+            .frame(width: 1, height: 1)
+            .clipped()
+            .accessibilityIdentifier("group_delivery_status")
     }
 
     private var senderColor: Color {

@@ -34,6 +34,14 @@ internal class ConversationBuffers(
     private val groupOf: (String) -> GroupRecord?,
     private val membersOf: (String) -> List<GroupMemberRecord>,
     private val toMessage: (contactId: String, groupId: String, g: GroupRecord, members: List<GroupMemberRecord>, rm: ReceivedMessage) -> GroupMessage,
+    // Replays a parked activity notice once its group + sender have resolved
+    // (GroupManager → GroupUnreadTally.noteActivity). Kept as a callback for the
+    // same reason [toMessage] is: this class never touches the vault or the tally
+    // directly, so the one lock it owns is never nested with either — the replay
+    // runs OUTSIDE [lock], like [flushResolvedGroupTexts]'s [toGroupScreen].
+    // [noticeAtMs] is the notice's minute-rounded stamp, carried through so the
+    // replay can persist the same `gi` attribution a live notice would.
+    private val applyNotice: (groupId: String, senderContactId: String, onGroupInbox: Boolean, noticeAtMs: Long) -> Unit,
 ) {
     private companion object {
         const val TAG = "GroupManager"
@@ -50,6 +58,8 @@ internal class ConversationBuffers(
     // Same one-line-per-episode discipline for the unresolved-sender buffer, which
     // a flooding sender can trip on every arrival.
     private var pendingUnresolvedOverflowWarned = false
+    // …and for the parked activity-notice buffer below.
+    private var pendingActivityOverflowWarned = false
 
     // Unresolved-sender buffer: decryptable group texts whose sender is not YET a
     // resolved member on this device (member↔member resolution still in flight).
@@ -60,6 +70,19 @@ internal class ConversationBuffers(
     // unresolved/removed sender cannot park unbounded plaintext.
     private data class PendingGroupText(val rm: ReceivedMessage, val bufferedAt: Long)
     private val pendingUnresolvedGroupText = mutableMapOf<String, MutableList<PendingGroupText>>()
+
+    // Parked activity-notice buffer: a KIND_ACTIVITY notice whose group this device
+    // has not JOINED yet (an invite still parked for consent) or whose SENDER is not
+    // YET a resolved member (member↔member resolution in flight). A notice is
+    // consumed off the relay the instant it is drained, so dropping it on arrival
+    // would lose the GROUP unread dot for a sender's FIRST message into the group
+    // for good. It is parked instead — keyed exactly like [pendingUnresolvedGroupText]
+    // ("groupId<NUL>senderContactId"), bounded by the SAME caps, TTL-pruned — and
+    // replayed by [flushResolvedActivityNotices] on the roster apply / invite accept
+    // that resolves it. Holds only (onGroupInbox, the notice's minute stamp) per
+    // notice: no plaintext, no alias, no counter. Guarded by [lock]; emptied by [scrub].
+    private data class PendingActivity(val onGroupInbox: Boolean, val noticeAtMs: Long, val bufferedAt: Long)
+    private val pendingActivityNotices = mutableMapOf<String, MutableList<PendingActivity>>()
 
     private fun unresolvedKey(groupId: String, contactId: String) = groupId + "\u0000" + contactId
 
@@ -190,9 +213,11 @@ internal class ConversationBuffers(
     // Session end (GroupManager.scrubInMemory).
     fun scrub() = lock.withLock {
         groupScreenItems.clear(); directScreenItems.clear(); pendingUnresolvedGroupText.clear()
+        pendingActivityNotices.clear()
         // A fresh session should be able to warn again if it happens again.
         screenItemsOverflowWarned = false
         pendingUnresolvedOverflowWarned = false
+        pendingActivityOverflowWarned = false
         // Screenshot notices carry a peer alias + contactId — social-graph
         // state in the same class as the buffers above, so it goes in the same
         // critical section. The DURABLE `ssn:` rows are deliberately NOT touched
@@ -312,5 +337,78 @@ internal class ConversationBuffers(
             }
         }
         for (gm in deliver) toGroupScreen(gm.groupId, gm)
+    }
+
+    /**
+     * Parked activity-notice buffer: park a KIND_ACTIVITY notice whose group we have
+     * not joined yet, or whose sender is not yet a resolved member. Bounded per
+     * (group, sender) AND globally with the SAME caps and the SAME oldest-of-the-
+     * biggest-key eviction as [bufferUnresolvedGroupText], so a flooding sender can
+     * only ever destroy its own parked notices and never starve an honest one.
+     */
+    fun bufferActivityNotice(groupId: String, senderContactId: String, onGroupInbox: Boolean, noticeAtMs: Long) = lock.withLock {
+        val key = unresolvedKey(groupId, senderContactId)
+        val evicted = evictForCapacityLocked(
+            pendingActivityNotices, key,
+            perKeyMax = MAX_PENDING_UNRESOLVED_PER_SENDER,
+            totalMax = MAX_PENDING_UNRESOLVED_GROUP_TEXTS,
+        )
+        pendingActivityNotices.getValue(key).add(PendingActivity(onGroupInbox, noticeAtMs, clock()))
+        if (evicted && !pendingActivityOverflowWarned) {
+            pendingActivityOverflowWarned = true
+            platformLogWarn(TAG, "parked activity-notice buffer at capacity — evicted the oldest parked notice(s)")
+        }
+    }
+
+    /**
+     * Parked activity-notice buffer: replay every parked notice whose group now
+     * EXISTS and whose sender is now a RESOLVED member — i.e. the roster apply /
+     * invite accept just made it attributable. Each replay re-runs
+     * [GroupUnreadTally.noteActivity] (through [applyNotice]) so the GROUP dot lights
+     * for that sender's first message. Called after each roster apply and at invite
+     * accept, exactly where [flushResolvedGroupTexts] is.
+     *
+     * Same lock discipline as [flushResolvedGroupTexts]: SNAPSHOT under [lock],
+     * resolve against the vault OUTSIDE it (SyncLock is non-reentrant on iOS and must
+     * never be held across SQLCipher), then re-apply to the CURRENT list by identity.
+     * An entry that arrived after the snapshot is kept untouched; one scrubbed
+     * meanwhile is simply absent. A still-unjoined group or still-unresolved sender
+     * is KEPT until it resolves or its TTL expires; it is never dropped early, and it
+     * is never a drainable message, so the only state it holds is a one-bit flag.
+     * [applyNotice] runs OUTSIDE the lock.
+     */
+    fun flushResolvedActivityNotices() {
+        val now = clock()
+        val snapshot: List<Pair<String, List<PendingActivity>>> = lock.withLock {
+            pendingActivityNotices.map { (key, list) -> key to list.toList() }
+        }
+        if (snapshot.isEmpty()) return
+        // Vault reads, outside the lock.
+        val resolved = HashSet<String>()   // keys whose (group, sender) are now attributable
+        for ((key, _) in snapshot) {
+            val (gid, cid) = splitUnresolvedKey(key)
+            if (groupOf(gid) == null) continue                            // not joined yet — keep
+            if (membersOf(gid).none { it.contactId == cid }) continue     // sender still unresolved — keep
+            resolved.add(key)
+        }
+        val replay = mutableListOf<Pair<Triple<String, String, Boolean>, Long>>()   // ((groupId, senderContactId, onGroupInbox), noticeAtMs)
+        lock.withLock {
+            for ((key, seen) in snapshot) {
+                val current = pendingActivityNotices[key] ?: continue
+                val (gid, cid) = splitUnresolvedKey(key)
+                val ready = key in resolved
+                val kept = mutableListOf<PendingActivity>()
+                for (p in current) {
+                    if (seen.none { it === p }) { kept.add(p); continue }   // arrived after the snapshot
+                    when {
+                        now - p.bufferedAt > PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS -> { /* expired → drop */ }
+                        ready -> replay.add(Triple(gid, cid, p.onGroupInbox) to p.noticeAtMs)
+                        else -> kept.add(p)
+                    }
+                }
+                if (kept.isEmpty()) pendingActivityNotices.remove(key) else pendingActivityNotices[key] = kept
+            }
+        }
+        for ((t, at) in replay) applyNotice(t.first, t.second, t.third, at)
     }
 }

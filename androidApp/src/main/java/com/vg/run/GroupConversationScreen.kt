@@ -859,6 +859,8 @@ private fun PrivateBubble(
     onReply: () -> Unit,
 ) {
     val sent = message.kind == GroupRowKind.PRIVATE_SENT
+    // Sent: grey + translucent until every copy is accepted, then opaque + real colour (SentBubbleFade).
+    val look = if (sent) rememberSentBubbleLook(message.id, message.timestamp, delivery?.allDelivered == true) else null
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = if (sent) Alignment.CenterEnd else Alignment.CenterStart,
@@ -870,7 +872,7 @@ private fun PrivateBubble(
                         if (sent) RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
                         else RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
                     )
-                    .background(if (sent) PrivateBubbleSent else PrivateBubbleReceived)
+                    .sentBubbleBackground(look, if (sent) PrivateBubbleSent else PrivateBubbleReceived)
                     .testTag(if (sent) "group_private_sent_bubble" else "group_private_bubble")
                     .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = if (sent) 2.dp else 6.dp)
             ) {
@@ -888,7 +890,7 @@ private fun PrivateBubble(
                             modifier = if (sent) Modifier else Modifier.testTag("group_private_label"),
                         )
                     }
-                    Text(text = message.text, style = MaterialTheme.typography.bodyLarge, color = RunWhite)
+                    Text(text = message.text, style = MaterialTheme.typography.bodyLarge, color = RunWhite, modifier = Modifier.sentBubbleContent(look))
                     Row(
                         modifier = Modifier.align(Alignment.End),
                         verticalAlignment = Alignment.CenterVertically,
@@ -911,14 +913,8 @@ private fun PrivateBubble(
                             Text(
                                 text = formatTime(LocalContext.current, message.timestamp),
                                 fontSize = 9.sp,
-                                color = RunGrey.copy(alpha = 0.6f)
-                            )
-                        }
-                        if (sent) {
-                            Text(
-                                text = if (delivery?.allDelivered == true) "✓" else "·",
-                                fontSize = 12.sp,
-                                color = if (delivery?.allDelivered == true) RunGrey else RunGrey.copy(alpha = 0.3f),
+                                color = RunGrey.copy(alpha = 0.6f),
+                                modifier = Modifier.sentBubbleContent(look),
                             )
                         }
                     }
@@ -966,6 +962,9 @@ private fun GroupMessageBubble(
     }
     val alignment = if (message.isSent) Alignment.CenterEnd else Alignment.CenterStart
     val bubbleColor = if (message.isSent) RunBubbleSent else RunBubbleReceived
+    // Sent: grey + translucent until EVERY member copy is accepted (a refused/partial send never
+    // becomes opaque), then opaque + real colour (SentBubbleFade). No check mark.
+    val look = if (message.isSent) rememberSentBubbleLook(message.id, message.timestamp, delivery?.allDelivered == true && delivery.undelivered == 0) else null
     val shape = if (message.isSent) {
         RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
     } else {
@@ -984,7 +983,7 @@ private fun GroupMessageBubble(
             Box(
                 modifier = Modifier
                     .clip(shape)
-                    .background(bubbleColor)
+                    .sentBubbleBackground(look, bubbleColor)
                     .testTag(if (message.isSent) "group_bubble_sent" else "group_bubble_received")
                     .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = if (message.isSent) 2.dp else 8.dp)
             ) {
@@ -1004,7 +1003,8 @@ private fun GroupMessageBubble(
                     Text(
                         text = message.text,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = RunWhite
+                        color = RunWhite,
+                        modifier = Modifier.sentBubbleContent(look),
                     )
                     Row(
                         modifier = Modifier.align(Alignment.End),
@@ -1023,32 +1023,36 @@ private fun GroupMessageBubble(
                             Text(
                                 text = formatTime(LocalContext.current, message.timestamp),
                                 fontSize = 9.sp,
-                                color = RunGrey.copy(alpha = 0.6f)
+                                color = RunGrey.copy(alpha = 0.6f),
+                                modifier = Modifier.sentBubbleContent(look),
                             )
                         }
                         if (message.isSent) {
-                            Text(
-                                text = when {
-                                    delivery == null -> "·"                            // pending
-                                    // Refused copies + members with no resolved contact (no
-                                    // retry, no backfill) — be honest, in words.
-                                    delivery.undelivered > 0 ->
-                                        stringResource(R.string.group_delivery_not_delivered, delivery.undelivered)
-                                    delivery.allDelivered -> "✓"                       // all copies accepted
-                                    else -> "${delivery.delivered}/${delivery.total}"  // nobody addressable (0/0)
-                                },
-                                fontSize = 12.sp,
-                                color = when {
-                                    delivery == null -> RunGrey.copy(alpha = 0.3f)
-                                    delivery.allDelivered -> RunGrey
-                                    else -> RunError
-                                },
-                                // e2e: the delivered/total indicator, present in all
-                                // three states (the text IS the state). Id must stay
-                                // byte-identical to the iOS deliveryMark's
-                                // accessibilityIdentifier (GroupViews.swift).
-                                modifier = Modifier.testTag("group_delivery_status"),
-                            )
+                            // e2e: the delivered/total indicator, present in all three
+                            // states (the text IS the state: "·" pending / "✓" all delivered /
+                            // "not delivered to N" / "d/t"). Id must stay byte-identical to the
+                            // iOS deliveryMark's accessibilityIdentifier (GroupViews.swift).
+                            // "·" and "✓" are no longer DRAWN (the bubble's opacity/colour is
+                            // the signal) but stay in the accessibility tree; the failure texts
+                            // stay visible, in red, at full opacity.
+                            when {
+                                delivery == null -> HiddenDeliveryStatus("·", "group_delivery_status")  // pending
+                                // Refused copies + members with no resolved contact (no
+                                // retry, no backfill) — be honest, in words.
+                                delivery.undelivered > 0 -> Text(
+                                    text = stringResource(R.string.group_delivery_not_delivered, delivery.undelivered),
+                                    fontSize = 12.sp,
+                                    color = RunError,
+                                    modifier = Modifier.testTag("group_delivery_status"),
+                                )
+                                delivery.allDelivered -> HiddenDeliveryStatus("✓", "group_delivery_status")  // all copies accepted
+                                else -> Text(                                       // nobody addressable (0/0)
+                                    text = "${delivery.delivered}/${delivery.total}",
+                                    fontSize = 12.sp,
+                                    color = RunError,
+                                    modifier = Modifier.testTag("group_delivery_status"),
+                                )
+                            }
                         }
                     }
                 }

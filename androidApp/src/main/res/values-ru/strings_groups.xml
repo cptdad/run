@@ -22,6 +22,8 @@
     <string name="group_info_admin_badge">Администратор</string>
     <string name="group_info_leave_group">Покинуть группу</string>
     <string name="group_info_make_admin">Назначить администратором</string>
+    <string name="group_info_make_admin_confirm_title">Назначить %1$s администратором?</string>
+    <string name="group_info_make_admin_confirm_body">Вы больше не будете администратором. Только администратор может добавлять и удалять участников.</string>
     <string name="group_info_remove_from_group">Удалить из группы</string>
     <string name="group_info_add_member_precondition">Новый участник должен лично выполнить сопряжение с каждым участником группы. Вы ручаетесь за это.</string>
     <string name="group_info_add_member_empty">Нет подходящих контактов — все, с кем вы сопряжены, уже в группе.</string>

@@ -12036,6 +12036,89 @@
         }
       }
     },
+    "contact_list_group_invite_row": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دعوة إلى مجموعة: «%1$@»"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppeinvitation: “%1$@”"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppeneinladung: „%1$@“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitation: “%1$@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación de grupo: “%1$@”"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دعوت به گروه: «%1$@»"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ryhmäkutsu: ”%1$@”"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitation à un groupe : « %1$@ »"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Покана за група: „%1$@“"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppeinvitasjon: «%1$@»"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приглашение в группу: «%1$@»"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casuumad kooxeed: “%1$@”"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppinbjudan: ”%1$@”"
+          }
+        }
+      }
+    },
     "contact_list_group_invite_title": {
       "extractionState": "manual",
       "localizations": {
@@ -13364,6 +13447,89 @@
         }
       }
     },
+    "contact_list_pending_row_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط للرد"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryk for at svare"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Antworten tippen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to answer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca para responder"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برای پاسخ بزنید"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vastaa napauttamalla"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appuyez pour répondre"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Допрете за одговор"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trykk for å svare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите, чтобы ответить"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taabo si aad uga jawaabto"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryck för att svara"
+          }
+        }
+      }
+    },
     "contact_list_post_block_report_message": {
       "extractionState": "manual",
       "localizations": {
@@ -13609,6 +13775,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Push-notiser"
+          }
+        }
+      }
+    },
+    "contact_list_referral_offer_row": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقديم: «%1$@»"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduktion: “%1$@”"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorstellung: „%1$@“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduction: “%1$@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presentación: “%1$@”"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معرفی: «%1$@»"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esittely: ”%1$@”"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Présentation : « %1$@ »"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Претставување: „%1$@“"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduksjon: «%1$@»"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомство: «%1$@»"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isbarasho: “%1$@”"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduktion: ”%1$@”"
           }
         }
       }
@@ -14880,6 +15129,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Väntar på deras inkorg…"
+          }
+        }
+      }
+    },
+    "contact_maximum_shield_description": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يستخدم مستوى الحماية \"الحد الأقصى\""
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bruger Maksimal beskyttelse"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutzt Maximum-Schutz"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses Maximum protection"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa la protección Máximo"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "از سطح حفاظت «حداکثر» استفاده می‌کند"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käyttää Maksimi-suojausta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilise la protection Maximum"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Користи максимална заштита"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bruker Maksimal beskyttelse"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использует максимальную защиту"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wuxuu isticmaalaa ilaalinta Ugu sarreeya"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Använder Maximalt skydd"
           }
         }
       }
@@ -22101,6 +22433,172 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gör till admin"
+          }
+        }
+      }
+    },
+    "group_info_make_admin_confirm_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لن تكون مشرفًا بعد الآن. وحده المشرف يستطيع إضافة الأعضاء وإزالتهم."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du er ikke længere admin. Kun admin kan tilføje og fjerne medlemmer."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist dann nicht mehr Admin. Nur der Admin kann Mitglieder hinzufügen und entfernen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will no longer be admin. Only the admin can add and remove members."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejarás de ser administrador. Solo el administrador puede añadir y quitar miembros."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شما دیگر مدیر نخواهید بود. فقط مدیر می‌تواند عضو اضافه و حذف کند."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Et ole enää ylläpitäjä. Vain ylläpitäjä voi lisätä ja poistaa jäseniä."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous ne serez plus admin. Seul l’admin peut ajouter et retirer des membres."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повеќе нема да бидете администратор. Само администраторот може да додава и отстранува членови."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du er ikke lenger admin. Bare admin kan legge til og fjerne medlemmer."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы больше не будете администратором. Только администратор может добавлять и удалять участников."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mar dambe maamule ma noqon doontid. Maamuluhu keliya ayaa awood u leh inuu xubno ku daro oo ka saaro."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du är då inte längre admin. Bara admin kan lägga till och ta bort medlemmar."
+          }
+        }
+      }
+    },
+    "group_info_make_admin_confirm_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعيين %1$@ كمشرف؟"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gør %1$@ til admin?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ zum Admin machen?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make %1$@ admin?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Hacer administrador a %1$@?"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ مدیر شود؟"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tehdäänkö %1$@ ylläpitäjäksi?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nommer %1$@ admin ?"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Направи %1$@ администратор?"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gjøre %1$@ til admin?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назначить %1$@ администратором?"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ka dhig %1$@ maamule?"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Göra %1$@ till admin?"
           }
         }
       }
@@ -40231,79 +40729,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "عبارة مرور طويلة بدلًا من رمز PIN — قوية بما يكفي حتى لا تستطيع أي أداة تحليل جنائي كسرها بالقوة الغاشمة، حتى من هاتف غير مقفل. تعمل لوحة المفاتيح في وضع كلمة المرور: لا يُتعلَّم أي شيء مما تكتبه ولا يُقترح، وعلى Android لا يتوفّر مفتاح الرموز التعبيرية."
+            "value": "عبارة مرور طويلة بدلًا من رمز PIN — قوية بما يكفي حتى لا تستطيع أي أداة تحليل جنائي كسرها بالقوة الغاشمة، حتى من هاتف غير مقفل. تعمل لوحة المفاتيح في وضع كلمة المرور: لا يُتعلَّم أي شيء مما تكتبه ولا يُقترح، وعلى Android لا يتوفّر مفتاح الرموز التعبيرية. يمكن لجهات الاتصال التي تستخدم \"الحد الأقصى\" أيضًا أن ترى أنك تستخدمه."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "En lang adgangssætning i stedet for en PIN-kode — så stærk, at intet forensisk værktøj kan knække den med brute force, selv fra en oplåst telefon. Tastaturet kører i adgangskodetilstand: intet af det, du skriver, bliver lært eller foreslået, og på Android er emoji-tasten utilgængelig."
+            "value": "En lang adgangssætning i stedet for en PIN-kode — så stærk, at intet forensisk værktøj kan knække den med brute force, selv fra en oplåst telefon. Tastaturet kører i adgangskodetilstand: intet af det, du skriver, bliver lært eller foreslået, og på Android er emoji-tasten utilgængelig. Kontakter, der også bruger Maksimal, kan se, at du gør det."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eine lange Passphrase statt eines PIN-Codes — stark genug, dass kein forensisches Werkzeug sie per Brute Force knacken kann, selbst bei einem entsperrten Telefon. Die Tastatur läuft im Passwortmodus: Nichts, was du tippst, wird gelernt oder vorgeschlagen, und unter Android ist die Emoji-Taste nicht verfügbar."
+            "value": "Eine lange Passphrase statt eines PIN-Codes — stark genug, dass kein forensisches Werkzeug sie per Brute Force knacken kann, selbst bei einem entsperrten Telefon. Die Tastatur läuft im Passwortmodus: Nichts, was du tippst, wird gelernt oder vorgeschlagen, und unter Android ist die Emoji-Taste nicht verfügbar. Kontakte, die ebenfalls Maximum nutzen, können sehen, dass du es auch tust."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable."
+            "value": "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable. Contacts who also use Maximum can see that you do."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Una frase de contraseña larga en lugar de un código PIN, tan fuerte que ninguna herramienta forense puede romperla por fuerza bruta, ni siquiera desde un teléfono desbloqueado. El teclado funciona en modo contraseña: nada de lo que escribes se aprende ni se sugiere, y en Android la tecla de emojis no está disponible."
+            "value": "Una frase de contraseña larga en lugar de un código PIN, tan fuerte que ninguna herramienta forense puede romperla por fuerza bruta, ni siquiera desde un teléfono desbloqueado. El teclado funciona en modo contraseña: nada de lo que escribes se aprende ni se sugiere, y en Android la tecla de emojis no está disponible. Los contactos que también usan Máximo pueden ver que tú lo usas."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "به‌جای PIN، یک عبارت عبور بلند — آن‌قدر قوی که هیچ ابزار فارنزیکی نمی‌تواند آن را با جستجوی فراگیر بشکند، حتی از روی گوشی باز. صفحه‌کلید در حالت گذرواژه کار می‌کند: هیچ‌چیزی از آنچه می‌نویسید یاد گرفته یا پیشنهاد نمی‌شود، و در Android کلید ایموجی در دسترس نیست."
+            "value": "به‌جای PIN، یک عبارت عبور بلند — آن‌قدر قوی که هیچ ابزار فارنزیکی نمی‌تواند آن را با جستجوی فراگیر بشکند، حتی از روی گوشی باز. صفحه‌کلید در حالت گذرواژه کار می‌کند: هیچ‌چیزی از آنچه می‌نویسید یاد گرفته یا پیشنهاد نمی‌شود، و در Android کلید ایموجی در دسترس نیست. مخاطبینی که آن‌ها هم از «حداکثر» استفاده می‌کنند می‌توانند ببینند که شما هم از آن استفاده می‌کنید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pitkä salalause PIN-koodin sijaan — niin vahva, ettei mikään forensinen työkalu pysty murtamaan sitä brute force -hyökkäyksellä, ei edes avatusta puhelimesta. Näppäimistö toimii salasanatilassa: mitään kirjoittamaasi ei opita eikä ehdoteta, eikä Androidissa emoji-näppäin ole käytettävissä."
+            "value": "Pitkä salalause PIN-koodin sijaan — niin vahva, ettei mikään forensinen työkalu pysty murtamaan sitä brute force -hyökkäyksellä, ei edes avatusta puhelimesta. Näppäimistö toimii salasanatilassa: mitään kirjoittamaasi ei opita eikä ehdoteta, eikä Androidissa emoji-näppäin ole käytettävissä. Kontaktit, jotka käyttävät myös tasoa Maksimi, näkevät, että sinäkin käytät sitä."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Une longue phrase secrète à la place d'un code PIN — assez forte pour qu'aucun outil forensique ne puisse la casser par force brute, même depuis un téléphone déverrouillé. Le clavier passe en mode mot de passe : rien de ce que vous tapez n'est appris ni suggéré, et sur Android la touche emoji est indisponible."
+            "value": "Une longue phrase secrète à la place d'un code PIN — assez forte pour qu'aucun outil forensique ne puisse la casser par force brute, même depuis un téléphone déverrouillé. Le clavier passe en mode mot de passe : rien de ce que vous tapez n'est appris ni suggéré, et sur Android la touche emoji est indisponible. Les contacts qui utilisent aussi Maximum peuvent voir que vous l'utilisez."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Долга тајна фраза наместо PIN-код — доволно силна за да не може ниту една форензичка алатка да ја разбие со груба сила, дури и од отклучен телефон. Тастатурата работи во режим за лозинка: ништо од тоа што го пишувате не се учи ниту се предлага, а на Android копчето за емоџи е недостапно."
+            "value": "Долга тајна фраза наместо PIN-код — доволно силна за да не може ниту една форензичка алатка да ја разбие со груба сила, дури и од отклучен телефон. Тастатурата работи во режим за лозинка: ништо од тоа што го пишувате не се учи ниту се предлага, а на Android копчето за емоџи е недостапно. Контактите што исто така користат „Максимално“ можат да видат дека и вие го користите."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "En lang passfrase i stedet for en PIN-kode – sterk nok til at ingen etterforskningsverktøy kan knekke den med brute force, selv fra en ulåst telefon. Tastaturet kjører i passordmodus: ingenting du skriver blir lært eller foreslått, og på Android er emoji-tasten utilgjengelig."
+            "value": "En lang passfrase i stedet for en PIN-kode – sterk nok til at ingen etterforskningsverktøy kan knekke den med brute force, selv fra en ulåst telefon. Tastaturet kjører i passordmodus: ingenting du skriver blir lært eller foreslått, og på Android er emoji-tasten utilgjengelig. Kontakter som også bruker Maksimal, kan se at du gjør det."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Длинная парольная фраза вместо PIN-кода — достаточно надёжная, чтобы её не смог подобрать ни один криминалистический инструмент, даже с разблокированного телефона. Клавиатура работает в режиме пароля: ничего из набранного вами не запоминается и не подсказывается, а на Android клавиша эмодзи недоступна."
+            "value": "Длинная парольная фраза вместо PIN-кода — достаточно надёжная, чтобы её не смог подобрать ни один криминалистический инструмент, даже с разблокированного телефона. Клавиатура работает в режиме пароля: ничего из набранного вами не запоминается и не подсказывается, а на Android клавиша эмодзи недоступна. Контакты, которые тоже используют «Максимальный», видят, что вы им пользуетесь."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weedh sir ah oo dheer halkii PIN ahaan — mid xoog badan oo aan qalab forensic ah brute force ku jebin karin, xitaa haddii taleefanku furan yahay. Keyboard-ku wuxuu ku shaqeeyaa habka erayga sirta ah: waxa aad qorto lama barto lamana soo jeediyo, Android-kana badhanka emoji-ga lama heli karo."
+            "value": "Weedh sir ah oo dheer halkii PIN ahaan — mid xoog badan oo aan qalab forensic ah brute force ku jebin karin, xitaa haddii taleefanku furan yahay. Keyboard-ku wuxuu ku shaqeeyaa habka erayga sirta ah: waxa aad qorto lama barto lamana soo jeediyo, Android-kana badhanka emoji-ga lama heli karo. Xiriirada isticmaala Ugu sarreeya sidoo kale way arki karaan inaad adigu isticmaasho."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "En lång lösenfras i stället för en PIN-kod — så stark att inget forensiskt verktyg kan knäcka den med brute force, inte ens från en upplåst telefon. Tangentbordet körs i lösenordsläge: inget du skriver lärs in eller föreslås, och på Android är emoji-tangenten inte tillgänglig."
+            "value": "En lång lösenfras i stället för en PIN-kod — så stark att inget forensiskt verktyg kan knäcka den med brute force, inte ens från en upplåst telefon. Tangentbordet körs i lösenordsläge: inget du skriver lärs in eller föreslås, och på Android är emoji-tangenten inte tillgänglig. Kontakter som också använder Maximal kan se att du gör det."
           }
         }
       }

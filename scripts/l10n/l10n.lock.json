@@ -46,7 +46,7 @@
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     },
     "whatsnew": {
-      "en": "• Maximum: the passphrase is typed by hand — it can't be pasted.\n• Maximum rejects more weak passphrases, like counting in your language or runs of punctuation.\n• Groups: a text that missed members says \"not delivered to N\"; leaving warns that unread texts may be lost.\n• Locks can't be postponed; showing a move code again asks you to unlock.\n• A cancelled move import no longer gets stuck.\n• About links to the source code and lists the licences.",
+      "en": "• Maximum: contacts who also use Maximum get a shield by their name.\n• A sent message turns from grey to full colour once the relay has it.\n• Group invitations and introductions can be answered later from the chat list.\n• Make admin now asks before you hand over the admin role.\n• Groups: the unread dot shows only on the group that got the message.\n• Security fixes from an external review.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     }
   },
@@ -631,6 +631,10 @@
       "en": "⚠️ %1$s invited you to “%2$s”, but you previously had this group under a DIFFERENT administrator (originally administered by “%3$s”). Only join if you trust %1$s to control this group’s membership.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
+    "contact_list_group_invite_row": {
+      "en": "Invitation: “%1$s”",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
     "contact_list_group_invite_title": {
       "en": "Group invitation",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
@@ -695,6 +699,10 @@
       "en": "Notifications",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
+    "contact_list_pending_row_hint": {
+      "en": "Tap to answer",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
     "contact_list_post_block_report_message": {
       "en": "Would you like to report this contact for objectionable content or abuse? Reports are reviewed and acted on within 24 hours. Your report is sent from your own email app, so it will show us your email address — and the draft is stored by that app, outside Rún, where it won't be erased if you wipe Rún.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
@@ -705,6 +713,10 @@
     },
     "contact_list_push_notifications": {
       "en": "Push notifications",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
+    "contact_list_referral_offer_row": {
+      "en": "Introduction: “%1$s”",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
     "contact_list_remove_memory_button": {
@@ -753,6 +765,10 @@
     },
     "contact_list_waiting_for_inbox": {
       "en": "Waiting for their inbox…",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
+    "contact_maximum_shield_description": {
+      "en": "Uses Maximum protection",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
     "conversation_alias_unknown": {
@@ -1101,6 +1117,14 @@
     },
     "group_info_make_admin": {
       "en": "Make admin",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
+    "group_info_make_admin_confirm_body": {
+      "en": "You will no longer be admin. Only the admin can add and remove members.",
+      "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
+    },
+    "group_info_make_admin_confirm_title": {
+      "en": "Make %1$s admin?",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
     "group_info_no_verified_pairing": {
@@ -1976,7 +2000,7 @@
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
     "protection_tier_tagline_maximum": {
-      "en": "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable.",
+      "en": "A long passphrase instead of a pin code — strong enough that no forensic tool can brute force it, even from an unlocked phone. The keyboard runs in password mode: nothing you type is learned or suggested, and on Android the emoji key is unavailable. Contacts who also use Maximum can see that you do.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,so,sv"
     },
     "protection_tier_tagline_private": {

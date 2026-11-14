@@ -156,8 +156,8 @@ object CredentialPolicy {
      * CONSERVATIVE passphrase entropy estimate, in bits.
      *
      * Model selection: input with ≥ 2 whitespace-separated words is scored as
-     * a diceware-style phrase (words × ~12.9 bits, repeated words at half
-     * credit) — NOT with the character model, which grossly overrates natural
+     * a diceware-style phrase (distinct words × ~12.9 bits, a repeated word
+     * earns nothing) — NOT with the character model, which grossly overrates natural
      * words ("correct horse battery staple" is ~52 bits of word choice, not
      * the ~130 bits its 28 characters would suggest). A single token is
      * scored as length × log2(charset of the classes present), with a run of
@@ -174,7 +174,19 @@ object CredentialPolicy {
     fun estimateBits(passphrase: String): Double {
         val trimmed = passphrase.trim()
         if (trimmed.isEmpty()) return 0.0
+        val raw = estimateBitsRaw(trimmed)
+        // Famous-phrase cap (2026-11-10, dynamic report fix #4). A line from the shared
+        // culture — a national anthem, a common prayer, a proverb, a pangram, a famous
+        // first line — is NOT its word-entropy however many words it has; an attacker
+        // reads it straight off a phrase list. Cap any input whose canonical (case-,
+        // space- and diacritic-insensitive) form IS, or is a leading span of, a known
+        // famous phrase. min() keeps it monotone-decreasing — nothing that failed before
+        // starts passing, and a famous OPENER extended with genuinely random words is not
+        // matched (only the prefix direction), so real added entropy still counts.
+        return if (isFamousPhrase(trimmed)) minOf(raw, FAMOUS_PHRASE_CAP) else raw
+    }
 
+    private fun estimateBitsRaw(trimmed: String): Double {
         val words = trimmed.split(whitespace).filter { it.isNotEmpty() }
         // A genuine single token is scored with the
         // same-class-run discount ON — a token that never (or rarely) changes
@@ -182,7 +194,25 @@ object CredentialPolicy {
         // long same-class run inside a mixed token ("Sunshine2024!" → "unshine",
         // "2024") is dictionary/pattern-guessable far below its charset×length
         // product. Neither may clear the MAXIMUM floor on length alone.
-        if (words.size < 2) return charModelBits(trimmed, discountSameClassRuns = true)
+        if (words.size < 2) {
+            val single = charModelBits(trimmed, discountSameClassRuns = true)
+            // CamelCase / PascalCase ("ToBeOrNotToBe", "CorrectHorseBatteryStaple") is a
+            // spaceless phrase whose capitals at each word boundary are CLASS CHANGES that
+            // defeat the same-class-run discount — so the char model over-credits it (exactly
+            // hashcat's CamelCase-despace rule, the 2026-11-09 dynamic test's biggest single-
+            // token bypass: ToBeOrNotToBe scored 70.1). If the token splits on lower→upper
+            // boundaries into ≥ 2 segments, ALSO score those segments with the word model and
+            // take the min: the segments lowercase-normalize to the same words the spaced
+            // phrase would, so a CamelCase phrase can no longer out-score its own spaced form.
+            // min() keeps it monotone-decreasing — a genuinely strong PascalCase password's
+            // segments are non-dictionary and still earn ~12.9 each, so nothing that cleared
+            // the floor on real entropy starts failing. GUARD: only an ALL-LETTER token is
+            // treated as a possible CamelCase phrase — a random token with digits/symbols
+            // ("aB3!xY9$kQ7%") also has lower→upper boundaries but is NOT a word phrase, and
+            // its genuine char-model entropy must not be re-scored as a handful of "words".
+            val caseSegments = if (trimmed.all { it.isLetter() }) splitCaseBoundaries(trimmed) else emptyList()
+            return if (caseSegments.size >= 2) minOf(single, wordModelBits(caseSegments)) else single
+        }
         // A space-separated SEQUENCE ("1 2 3 4 5 6", "a b c d e f",
         // "abc def ghi jkl mno pqr") would otherwise route to the word model and dodge
         // the char-model run/keyboard/sequence penalties — re-opening, for phrases, the
@@ -226,7 +256,7 @@ object CredentialPolicy {
         // ~7776-word list (12.9 bits each). A human picking the most FREQUENT words
         // ("the and for you but not") draws from a far smaller effective set, so
         // credit a common word at half — an all-common-word phrase (the concrete
-        // bypass) then falls well below the floor. Repeated words at half too.
+        // bypass) then falls well below the floor. A repeated word earns nothing.
         //
         // Tokens are NORMALIZED before both the dedup and
         // every lookup. The old code used a bare `w.lowercase()`, so punctuation
@@ -274,13 +304,20 @@ object CredentialPolicy {
             // a sixth "word" ("Ja vi elsker dette landet" 64.6 → "Ja vi elsker dette
             // landet !" 77.55). Zero credit, and it consumes no word slot.
             if (w.isEmpty()) continue
-            // NOTE a BARE short number ("42", "7") still keeps full word credit here by
-            // deliberate prior decision (numericTightening_leavesLegitimatePhrasesExactly-
-            // WhereTheyWere): only a RUN of numbers (year run, arithmetic progression) or
-            // a counter FAMILY is penalised, never a lone number. Crediting a lone number
-            // at only log2(10)/digit would close a "pad with a short number" bypass but
-            // reverses that decision — an owner call, surfaced in the 2026-11-09 report,
-            // not taken here. The year / progression / counter rules below are unchanged.
+            // Rung D-number (2026-11-10, owner call taken from the 2026-11-09 dynamic report
+            // which this block previously deferred). A BARE number is not a 12.9-bit diceware
+            // draw — a uniformly random number carries only log2(10) per digit. Cap it there,
+            // so padding a sub-floor phrase with a short number no longer buys a full word
+            // slot ("Ja vi elsker dette landet 7": the five words score 64.6, and the "7" now
+            // adds 3.3 → 67.9, refused, not 12.9 → 77.5). A 4-digit year still earns ~full
+            // credit (4·log2(10)=13.3 > 12.9, so min() leaves it at 12.9), which is correct —
+            // a uniformly random year really does carry that much — and the year-run /
+            // progression / counter rules below still bind on a RUN of them. Native-script
+            // digits were folded to ASCII in [normalizeWord], so Arabic-Indic / Persian
+            // numerals are capped too. Only ever lowers the word model: monotone-decreasing,
+            // and it fires at provisioning/rotation only (never unlock), with the live meter
+            // showing the shortfall.
+            if (isAsciiNumber(w)) base = minOf(base, BITS_PER_COUNTER * w.length)
             // A CLOSED-CATEGORY run. Two or more tokens drawn from the same
             // small, fully enumerable set ("one two three four five six", weekdays,
             // months, the NATO alphabet, colours, planets, bare letters) are not
@@ -294,8 +331,14 @@ object CredentialPolicy {
             // A YEAR run — the closed-category idea applied to the one
             // "closed set" a human reaches for when asked for six *numbers*.
             if (yearRun && isYearShaped(w)) base = minOf(base, BITS_PER_YEAR)
-            // Common word → half diceware credit.
-            val penalizeCommon = w in COMMON_WORDS && ++commonSeen > COMMON_FREEBIES
+            // Common word → half diceware credit. Rung D-common (2026-11-10): the same
+            // treatment extended to the high-frequency / function words of the 12 app
+            // locales (LOCALIZED_COMMON_WORDS), so an all-function-word phrase in any
+            // supported language falls the way the English one does ("der die das und oder
+            // aber", "je tu il nous vous ils", "yo tu el ella nosotros vosotros"). Half
+            // credit, monotone-decreasing, and a genuine diceware list excludes bare
+            // function words so a real phrase is unaffected.
+            val penalizeCommon = (w in COMMON_WORDS || w in LOCALIZED_COMMON_WORDS) && ++commonSeen > COMMON_FREEBIES
             if (penalizeCommon) base = minOf(base, BITS_PER_WORD / 2.0)
             // A word+COUNTER family ("cat1 cat2 cat3 …"). The tokens are all
             // distinct, so dedup saw six independent words; in truth the family is
@@ -312,7 +355,13 @@ object CredentialPolicy {
             // member keeps whatever credit it earned above; every later one carries
             // the step's own ~log2(10) bits. See [numericProgressionMembers].
             if (index in progression) base = minOf(base, BITS_PER_COUNTER)
-            bits += if (seen.add(w)) base else base * 0.5
+            // A REPEATED word earns NOTHING (2026-11-12, external review RUN-03). It used
+            // to earn half credit, so a sub-floor phrase typed twice cleared the floor:
+            // "correct horse battery staple" scored 51.7 (refused) and the same four words
+            // twice scored 77.55 (accepted) — yet "say it again" is one cracker rule, worth
+            // about a bit however long the repeated block is. A repeat is not a new
+            // independent draw, so it adds no word credit at all; only DISTINCT words count.
+            if (seen.add(w)) bits += base
         }
         return bits
     }
@@ -324,7 +373,492 @@ object CredentialPolicy {
      * penalty (nor buy a second "distinct word" credit for the same word).
      */
     private fun normalizeWord(w: String): String =
-        w.lowercase().filter { it.isLetterOrDigit() }
+        buildString { for (c in w.lowercase()) if (c.isLetterOrDigit()) append(foldAsciiDigit(c)) }
+
+    /**
+     * Fold the decimal digits of the app's non-Latin locales to ASCII 0-9 so the
+     * numeric rules ([isAsciiNumber], [isYearShaped], [numericProgressionMembers] and
+     * the bare-number cap in [wordModelBits]) see them. Arabic-Indic (ar) and Extended
+     * Arabic-Indic (fa) numerals otherwise slipped every number rule, which only matched
+     * '0'..'9' — the one-keystroke "pad with a native-script digit" bypass the
+     * 2026-11-09 dynamic test found. Explicit ranges (not digitToInt) keep the fold
+     * byte-identical on every KMP target; a non-digit is returned unchanged.
+     */
+    private fun foldAsciiDigit(c: Char): Char = when (c) {
+        in '٠'..'٩' -> '0' + (c - '٠')   // Arabic-Indic ٠..٩
+        in '۰'..'۹' -> '0' + (c - '۰')   // Extended Arabic-Indic (Persian/Urdu) ۰..۹
+        else -> c
+    }
+
+    /**
+     * Split a single token at lower→upper CASE BOUNDARIES ("ToBeOrNotToBe" →
+     * [To, Be, Or, Not, To, Be]). Used only to re-expose a CamelCase phrase to the
+     * word model in [estimateBits]; the result is never the final score, only a min()
+     * input, so an imperfect split can only lower an over-credited token, never raise
+     * one. A token with no internal lower→upper transition yields a single-element list
+     * (the caller then ignores it and keeps the plain char-model score).
+     */
+    private fun splitCaseBoundaries(token: String): List<String> {
+        val out = ArrayList<String>()
+        val cur = StringBuilder()
+        for (i in token.indices) {
+            val c = token[i]
+            if (i > 0 && c.isUpperCase() && token[i - 1].isLowerCase()) {
+                out.add(cur.toString()); cur.setLength(0)
+            }
+            cur.append(c)
+        }
+        if (cur.isNotEmpty()) out.add(cur.toString())
+        return out
+    }
+
+    // -----------------------------------------------------------------------
+    // Famous-phrase corpus (2026-11-10, dynamic report fix #4). A culturally shared
+    // line — anthem, prayer, proverb, pangram, famous first line — carries almost no
+    // guessing entropy however many words it has; it is one entry on an attacker's
+    // phrase list. [FAMOUS_PHRASES] holds such lines in CANONICAL form; [isFamousPhrase]
+    // caps any input that matches, space-/case-/diacritic-insensitively. The corpus is
+    // SEEDED from the dynamic test's own accepted famous-category phrases (ground truth:
+    // every one actually cleared the floor) plus a per-locale expansion, and is meant to
+    // grow. Monotone-decreasing — it only ever lowers a score.
+    // -----------------------------------------------------------------------
+
+    /** A famous phrase is findable in a dictionary attack of well under 2^30 guesses;
+     *  the exact cap only needs to sit below the 70-bit floor and land in the weak meter
+     *  bucket (< 45), so the user sees "weak", not a near-miss. */
+    private const val FAMOUS_PHRASE_CAP = 30.0
+
+    /** Minimum canonical length for a famous-phrase match — ~4-5 words. Keeps a short
+     *  canonical form from colliding with an unrelated passphrase, and bounds the prefix
+     *  scan to inputs long enough to be a real famous span. */
+    private const val FAMOUS_MIN_CANON_LEN = 15
+
+    /** True when [trimmed]'s canonical form IS, or is a LEADING span of, a known famous
+     *  phrase. Prefix-only on the stored side: a famous OPENER followed by genuinely
+     *  random words is NOT matched, so "anthem line + 3 random words" keeps its entropy. */
+    private fun isFamousPhrase(trimmed: String): Boolean {
+        val canon = canonicalFold(trimmed)
+        if (canon.length < FAMOUS_MIN_CANON_LEN) return false
+        if (canon in FAMOUS_PHRASES) return true
+        for (p in FAMOUS_PHRASES) if (p.length > canon.length && p.startsWith(canon)) return true
+        return false
+    }
+
+    /**
+     * Canonical form for the famous-phrase match: lowercased, Latin diacritics folded to
+     * their base letter, Arabic harakat / combining marks dropped, native-script digits
+     * folded to ASCII (see [foldAsciiDigit]), and EVERY non-alphanumeric removed — so
+     * "Ja, vi elsker dette landet!", "ja vi elsker dette landet" and "Jà vì elsker…"
+     * collapse to one key. This is why a single stored entry catches a famous line
+     * however it is cased, spaced, punctuated or diacritic-stripped (the exact mangle
+     * families the dynamic test used as free no-ops). Mirrors scripts/.../locdata/merge.py.
+     */
+    private fun canonicalFold(s: String): String = buildString {
+        for (raw in s.lowercase()) {
+            val d = foldAsciiDigit(raw)
+            if (d != raw) { append(d); continue }          // folded a native-script digit
+            val ch = ARABIC_FOLD[raw] ?: raw               // normalize hamza seats / Persian letters
+            when {
+                ch == 'ё' -> append('е')                   // Cyrillic yo → ye
+                LATIN_FOLD[ch] != null -> append(LATIN_FOLD[ch]!!)
+                isCombiningMark(ch) -> {}                  // drop harakat / combining marks
+                ch.isLetterOrDigit() -> append(ch)
+                else -> {}                                 // drop spaces / punctuation
+            }
+        }
+    }
+
+    /** Arabic/Persian letter normalization for [canonicalFold] (standard search fold):
+     *  hamza seats → bare alif, waw-hamza → waw, alif-maqsura & Persian yeh → Arabic yeh,
+     *  Persian keheh → Arabic kaf, teh-marbuta → heh — so one stored prayer/anthem catches
+     *  its spelling variants. Mirrors merge.py's ARABIC_FOLD. */
+    private val ARABIC_FOLD: Map<Char, Char> = mapOf(
+        'ٱ' to 'ا', 'أ' to 'ا', 'إ' to 'ا', 'آ' to 'ا',
+        'ؤ' to 'و', 'ئ' to 'ي', 'ى' to 'ي', 'ی' to 'ي',
+        'ک' to 'ك', 'ة' to 'ه',
+    )
+
+    /** True for Unicode combining marks dropped by [canonicalFold] — general combining
+     *  diacritics plus the Arabic harakat/tatweel/Quranic-annotation ranges. */
+    private fun isCombiningMark(c: Char): Boolean {
+        val o = c.code
+        return o in 0x0300..0x036F || o in 0x064B..0x065F || o == 0x0670 || o == 0x0640 || o in 0x06D6..0x06ED
+    }
+
+    /** Latin accented letter → base, for [canonicalFold]. Expanding folds (æ→ae, ß→ss,
+     *  œ→oe, þ→th) match the two spellings users actually type. Mirrors merge.py's FOLD. */
+    private val LATIN_FOLD: Map<Char, String> = mapOf(
+        'à' to "a", 'á' to "a", 'â' to "a", 'ã' to "a", 'ä' to "a", 'å' to "a", 'ą' to "a", 'ā' to "a", 'ă' to "a",
+        'æ' to "ae", 'ç' to "c", 'ć' to "c", 'č' to "c",
+        'è' to "e", 'é' to "e", 'ê' to "e", 'ë' to "e", 'ę' to "e", 'ě' to "e", 'ē' to "e", 'ė' to "e",
+        'ì' to "i", 'í' to "i", 'î' to "i", 'ï' to "i", 'ī' to "i", 'į' to "i",
+        'ł' to "l", 'ñ' to "n", 'ń' to "n", 'ň' to "n",
+        'ò' to "o", 'ó' to "o", 'ô' to "o", 'õ' to "o", 'ö' to "o", 'ø' to "o", 'ő' to "o", 'ō' to "o",
+        'œ' to "oe", 'ß' to "ss", 'š' to "s", 'ś' to "s", 'ş' to "s",
+        'ù' to "u", 'ú' to "u", 'û' to "u", 'ü' to "u", 'ů' to "u", 'ű' to "u", 'ū' to "u",
+        'ý' to "y", 'ÿ' to "y", 'ž' to "z", 'ź' to "z", 'ż' to "z", 'ð' to "d", 'þ' to "th",
+    )
+
+    /** Famous-phrase corpus — FILLED by scripts/.../locdata/merge.py (ground truth +
+     *  per-locale expansion). Placeholder until the data integration edit. */
+    private val FAMOUS_PHRASES: Set<String> = setOf(
+        "abirdinthehandisworthtwo", "abirdinthehandisworthtwointhebush",
+        "acaballoregaladonolemireseldiente", "acaballoregaladonoselemiraeldiente",
+        "actionsspeaklouderthanwords", "actionsspeaklouderthanwordsalways",
+        "aebletfalderikkelangtfrastammen", "afdaboolandahabwaakujiraa",
+        "aguaquenohasdebeberdejalacorrer", "ahvousdiraijemamancequicausemontourment",
+        "aikaparantaakaikkihaavatjasurut", "ainsifontfontfontlespetitesmarionnettes",
+        "alhamdulillahirabbilalaminarrahmanirrahimimalikiyawmiddin",
+        "allaahulaailaahaillaahuwalxayyulqayyuum", "allagodatingartrestycken",
+        "allahuakbarallahuakbarlaailaahaillallah", "allahuakbarlailahaillaallah2024",
+        "allahummasallialamuhammadinwaalaaalihi", "allefuglersmadeer",
+        "allemeineentchenschwimmenaufdem", "allemeineentchenschwimmenaufdemsee",
+        "allemenschenwerdenbruderwodeinsanfterflugelweilt", "allergutendingesinddrei2024",
+        "allevogelsindschonda2024", "allforoneandoneforall", "allonsenfantsdelapatrie1792",
+        "allonsenfantsdelapatrie2024", "allonsenfantsdelapatrielejour",
+        "allonsenfantsdelapatrielejourdegloire", "allonsenfantsdelapatrielejourdegloireestarrive",
+        "allthatglittersisnotgold", "alouettegentillealouettealouettejeteplumerai",
+        "alussaolivatsuokuokkajajussi", "alussaolivatsuokuokkajajussiniin",
+        "amaltiempobuenacarasiempre", "amanfangschufgotthimmelunderde",
+        "ambrunnenvordemtoredastehteinlindenbaum", "anappleadaykeepsthedoctoraway",
+        "anappleadaykeepsthedoctoraway2024", "anappleadaykeepsthedoctoraway7",
+        "anotherbrickinthewall", "apreslapluielebeautemps", "aqoonlaaaniwaaiftiinlaaan",
+        "aqoonlaaaniwaaiftiinlaaan1", "aqoonlaaaniwaaiftiinlaaan2024",
+        "aqoonlaaaniwaaiftiinlaaanookale", "aqoonlaaniwaaiftiinlaan", "aquienmadrugadiosleayuda",
+        "arrozconlechemequierocasar", "arrozconlechemequierocasarconunasenoritadelacapital",
+        "aserrinaserranlosmaderosdesanjuan", "ashhaduallaailaahaillallaahmuxammadrasuulullaah",
+        "assalamualaykumwarahmatullahiwabarakatuhu",
+        "astaghfirullahrabbiminkullidhanbinwaatubuilayh", "attvaraellerintevaradetarfragan",
+        "atvaereellerikkevaeredetersporgsmalet", "auclairdelalunemonamipierrot",
+        "auclairdelalunemonamipierrotpretemoitaplume", "auclairdelalunepierrot",
+        "aujourdhuimamanestmorte", "auxarmescitoyensformezvosbataillons",
+        "auxarmescitoyensformezvosbataillons1792", "auxarmescitoyensformezvosbataillonsauxarmes",
+        "avaereellerikkevaeredetersporsmalet", "ayatulkursiallahulailahaillahuwa",
+        "b1sm1llah1rrahman1rrah1malhamdul1llah1rabb1lalam1n", "babavitalammhardu",
+        "backebackekuchenderbackerhatgerufen", "baebaelillelamhardunoe",
+        "battreenfagelihandenantio", "battreenfagelihandenantioiskogen",
+        "beautyisintheeyeofthebeholder", "bedreenfuglihandenendti", "bedreforevarennettersnar",
+        "beenwaaloodhashaarunbaaselagudhintaa", "besamebesamemuchocomosifueraestanoche",
+        "birdsofafeatherflocktogether",
+        "bismillaahirraxmaanirraxiimalxamdulillaahirabbilcaalamiin",
+        "bismillahirrahmanirrahimalhamdulillah",
+        "bismillahirrahmanirrahimalhamdulillahirabbilalamin",
+        "blessedarethemeekfortheyshallinherittheearth", "blinkalillastjarnadar",
+        "blinkalillastjarnadaruppepa", "bortabramenhemmabastja", "bortebramenhjemmebest",
+        "camaronqueseduermeselollevalacorriente", "caminantenohaycaminosehacecaminoalandar",
+        "chacunvoitmidiasaporte", "cielitolindocantaynollores",
+        "cincolobitostienelalobablancosynegrosdetrasdelaescoba", "clavametuamorcomounaestaca",
+        "coloresperanzanoshagaverlavida", "coloresperanzanoshagaverlavidadeotrocolor",
+        "contigoaprendiqueexistennuevasemociones",
+        "contrenousdelatyrannieletendardsanglantestleve",
+        "corazonespinadocorazonespinadocomomeduele", "corazonpartiocomopudistehacermeestoami",
+        "creoendiospadretodopoderosocreadordelcieloydelatierra", "criacuervosytesacaranlosojos",
+        "curiositykilledthecatbutsatisfactionbroughtitback", "danoshoynuestropandecadadia",
+        "danslafermedemathurinilyadesvaches", "debajodeunbotontontonqueencontromartintintin",
+        "decoloresdecoloressevistenloscampos", "deldichoalhechohaymuchotrecho",
+        "denblomstertidnukommer", "densomgapareftermycketmisterofta", "densomlersistlerbest",
+        "derballistrunddasspieldauertneunzigminuten", "dereretyndigtland2024",
+        "dereretyndigtlanddetstar", "dereretyndigtlanddetstarmedbredeboge",
+        "derfruehevogelfaengtdenwurm", "derfruhevogelfangtdenwurm",
+        "derherristmeinhirtemirwirdnichtsmangeln",
+        "dermondistaufgegangendiegoldnensternleinprangen",
+        "despacitoquierorespirartucuellodespacito", "detbugtersigibakkedal",
+        "deterikkegullaltsomglimrer", "deteringenskamasnu",
+        "deutschlanddeutschlanduberallesinderwelt",
+        "deutschlanddeutschlanduberallesuberallesinderwelt", "deutschlanduberallesinderwelt1922",
+        "dimeconquienandasytedirequieneres", "diostesalvemariallenaeresdegraciaelsenorescontigo",
+        "donnenousaujourdhuinotrepaindecejour", "dontcountyourchickensbeforetheyhatch",
+        "dugamladufriadufjaellhoeganord", "dugamladufriadufjallhoganord",
+        "dugamladufriadufjallhoganord1", "dugamladufriadufjallhoganord2024",
+        "dugamladufriadufjallhoganord7", "dugamladufriadufjallhoganorddutysta",
+        "duskaintetrodetblirsommar", "dutronarpaminnenfranfornstoradar",
+        "eenymeenyminymoecatchatigerbythetoe", "eikannatanuolaistaennenkuintipahtaa",
+        "eimitaanuuttaauringonallakoskaan", "einigkeitrechtfreiheitvaterlanddeutschlandeinigkeit",
+        "einigkeitundrechtundfreiheit1848", "einigkeitundrechtundfreiheit1871",
+        "einigkeitundrechtundfreiheit7", "einigkeitundrechtundfreiheitfurdasdeutschevaterland",
+        "einmannleinstehtimwaldeganzstillundstumm", "einprositdergemutlichkeit",
+        "eisemiesjokakaatuuvaan", "eiseolekaikkikullankimallus",
+        "elqueabuenarbolsearrimabuenasombralecobija", "elquenoarriesganogananipierde",
+        "elskerdetogtenkerpavarfarogmor", "elvelozmurcielagohinducomiafelizcardillo",
+        "elvelozmurcielagohinducomiafelizcardilloykiwi", "enbocacerradanoentranmoscas",
+        "enbocacerradanoentranmoscas2024", "enhverersinegenlykkessmed", "enunlugardelamancha",
+        "enunlugardelamanchadecuyonombre", "enunlugardelamanchadecuyonombrenoquieroacordarme",
+        "eraseunavezuncircoquealegraba", "esirrtdermenschsolangerstrebt",
+        "estrellitadondeestasmepreguntoqueseras", "estrellitadondeestasquierosaberqueeres",
+        "everycloudhasasilverlining", "eyiraneymarzeporgoharey", "fadervardusomerihimmelen",
+        "fadervardusomerihimmelenhelligetvordedittnavn", "fadervarsomarihimmelenhelgat",
+        "fadervarsomarihimmelenhelgatvardedittnamn", "fadervordusomerihimlene",
+        "fadervordusomerihimlenehelligetvaereditnavn",
+        "fahrenheitjacelsiusyrjosivatasanbackgammonpeliinvolkswagenissa",
+        "feliznavidadmerrychristmasjoyeuxnoel", "feliznavidadprosperoanoyfelicidad",
+        "floatlikeabutterflystinglikeabee", "flygandebackasinersokahwilapamjukatuvor",
+        "forgodsolovedtheworld", "fourscoreandsevenyearsago", "franklymydearidontgiveadamn",
+        "franzjagtimkomplettverwahrlostentaxiquerdurchbayern",
+        "frerejacquesdormezvoussonnezlesmatines", "frerejacquesfrerejacquesdormezvousdormezvous",
+        "freudeschoenergoetterfunkentochterauselysium",
+        "freudeschonergotterfunkentochterauselysium",
+        "freudeschonergotterfunkentochterauselysium1785", "frihetjamlikhetbroderskapkarlekhopptro",
+        "fuchsduhastdiegansgestohlen", "furetvaerbittovervannetmeddetusenhjem",
+        "gloireaupereetaufilsetausaintesprit", "gloriaalpadreyalhijoyalespiritusanto",
+        "godsaveourgraciousqueenlongliveournoblequeen", "grauteurerfreundistalletheorie",
+        "gudsignevartdyrefedrelandog", "gutenmorgenliebesonnewiegehtesdir",
+        "gutenmorgenschonentagnochdir", "habiaunavezunbarcochiquitito",
+        "hadalbadaniwaahadhimoyareoodheer", "hailmaryfullofgracethelordiswiththee",
+        "hanschenkleingingalleinindie", "hanschenkleingingalleinindieweitewelthinein",
+        "harkommerpippilangstrumptjolahopptjolahejtjolahoppsan", "hejtomtegubbarslaiglasen",
+        "hejtomtegubbarslaiglasenochlat", "helangarsjunghoppfaderallanlallanlej",
+        "hellereenfuglihandenendtipataget", "hellodarknessmyoldfriend",
+        "herecomesthesunlittledarling", "herraonminunpaimenenieiminulta",
+        "herraonpaimeneniгосподепастир", "herrasiunatkoonjavarjelkoonsinuaaina",
+        "hojblygomvandtfraeksexquizpawc", "holamundoприветмирbonjourmonde",
+        "holaquetalcomoestasamigo", "honestyisthebestpolicy", "hooyomacaanwaankujeclahayaadiyoaad",
+        "hoppehoppereiterwennerfallt", "howvexinglyquickdaftzebrasjump",
+        "hvorbogenspejlersintopibolgenbla", "hyvaajouluajaonnellistauuttavuotta",
+        "hyvaajouluajaonnellistauuttavuotta2026", "ichbineinberliner", "ichdenkealsobinich",
+        "ichliebedichduliebstmich", "ichliebedichfurimmermeinschatz",
+        "ichweissnichtwassollesbedeutendassichsotraurigbin", "idagerdetolfertsfodselsdaghurra",
+        "idanmarkerjegfodtderhar", "ifyoucantbeatthemjointhem",
+        "ilcourtilcourtlefuretlefuretdubois", "iletaitunefoisdansuneforetlointaine",
+        "ilkowadajirbaywaxkugooyaan", "ilpleutilpleutbergererentretesblancsmoutons",
+        "ilyalongtempsquejetaimejamaisjenetoublierai", "imagineallthepeoplelivingfortoday1971",
+        "imfruhtauzubergewirziehnfallera", "imsevimsespindelklattraruppfortraden",
+        "innaataynakalkawtharfasallilirabbikawanhar",
+        "inthebeginninggodcreatedtheheavensandtheearth", "isaisameidanjokaolettaivaissa",
+        "isameidanjokaolettaivaissa2026", "isameidanjokaolettaivaissapyhitetty",
+        "isameidanjokaolettaivaissapyhitettyolkoon",
+        "isameidanjokaolettaivaissapyhitettyolkoonsinunnimesi", "isameidanоченашjokaкој",
+        "itwasthebestoftimesitwastheworstoftimes", "jamahanlevajamahanleva",
+        "jamahanlevautihundradear", "janojussinmaenlaskuolivauhdikasjahauska",
+        "javielskerdettelandet2024", "javielskerdettelandetsom", "javielskerdettelandetsomdet",
+        "javielskerdettelandetsomdetstigerfrem",
+        "jecroisendieuleperetoutpuissantcreateurducieletdelaterre", "jepensedoncjesuis1",
+        "jepensedoncjesuis1637", "jepensedoncjesuisdescartes", "jepensedoncjesuisdoncjepense",
+        "jetaimemoinonplustoujours", "jevoussaluemariepleinedegrace",
+        "jevoussaluemariepleinedegraceleseigneurestavecvous",
+        "jokakuuseenkurkottaasekatajaankapsahtaa", "jovanojovankekrajvardarotsedismori",
+        "jovencilloemponzonadodewhiskyfigurotaexhibe",
+        "jukolantaloetelaisessahameessasijaitseemaenrinteessa",
+        "jumalaompilinnammejavahvaturvamme", "kaikkimitatarvitsetonrakkauttanyt",
+        "kayfahalukayaakhiantabikhayrinalhamdulillah", "keepyourfriendscloseandyourenemiescloser",
+        "knowledgeispowerfrancisbacon", "koivujatahtiolikaunissatu",
+        "kommteinvogelgeflogensetztsichnieder", "kongchristianstodvedhojenmast",
+        "kongchristianstodvedhojenmastirogogdamp", "korokorokirkkoonpapinmuorinkanssa",
+        "laailaahaillallaahmuxammadrasuulullaah", "lacamisanegratengolacamisanegra",
+        "laciguenatocabaelsaxofondetrasdelpalenque",
+        "laciguenatocabaelsaxofondetrasdelpalenquedepaja",
+        "lacucarachalacucarachayanopuedecaminar", "lafuerzateacompanejovenpadawan",
+        "lahawlawalaquwwataillabillahilaliyyiladheem", "lailahaillallahlailahaillallahmuhammad",
+        "lailahaillallahmuhammadurrasulullah",
+        "lailahaillallahmuhammadurrasulullahsallallahualayhi",
+        "lamacarenaeeehmacarenadaleatucuerpo", "lappetitvientenmangeantditonsouvent",
+        "lavidaesuncarnaval2024", "lavidaesuncarnavalparareir", "lavidanovalenada7",
+        "lavieestunlongfleuvetranquille", "leiserieseltderschneestillundstarr",
+        "lennalennaleppakerttukesanensilampoon", "lessentielestinvisiblepourlesyeux",
+        "levifrenardbrunsautepardessuslechienparesseux", "lhabitnefaitpaslemoine",
+        "liberteegalitefraternite178917921794", "liberteegalitefraterniteoulamort",
+        "liberteegalitefraterniterepubliquefrancaisemarianne", "lifeislikeaboxofchocolates",
+        "lillepeteredderkop", "longtempsjemesuiscouchedebonneheure",
+        "lospollitosdicenpiopiopiocuandotienenhambre", "maaonniinkauniskirkasluojan",
+        "maaonniinkauniskirkasluojantaivas", "magacayguwaacabdiwaxaankudhashaymuqdisho",
+        "mamajustkilledamangun1975", "manskaintesaljaskinnetforranbjornen",
+        "manskalikkeskuehundenpaharene", "masvalepajaroenmanoqueciento",
+        "masvalepajaroenmanoquecientovolando", "masvaletardequenunca", "masvaletardequenunca8",
+        "maxamedcabdillexasansayidwuxuuahaahalyey", "maytheforcebewithyou",
+        "maytheforcebewithyou7", "maytheforcebewithyoualways1977",
+        "melimliavimamulikhmelozhanimasreli", "mellombakkarogbergutmedhavet", "mesterjakobsoverdu",
+        "meuniertudorstonmoulinvatropvite", "mexicanosalgritodeguerra2024",
+        "mexicanosalgritodeguerra9", "micasaessucasaamigo",
+        "mieleniminuntekeviaivoniajattelevilaulamahan", "minkanuorenaoppiisenvanhanataitaa",
+        "morgenstundharguldimundda", "morgenstundhatgoldimmund", "morgenstundhatgoldimmund1",
+        "morgenstundhatgoldimmund2024", "morgonstundharguldmorgenstundhargullmorgen",
+        "muchosanosdespuesfrentealpelotondefusilamientoelcoronelaurelianobuendia",
+        "nabadiyocaanosoomaaliyahanoolaatoweligeed", "ninwalbameeshuukadhashayjacayl",
+        "ninwalbameeshuukadhashayjacaylbuu", "ninwalbameeshuukadhashayjacaylbuuuqabaa",
+        "nodejesparamananaloquepuedashacerhoy", "nohaymalqueporbiennovenga",
+        "notreperequiesauxcieux", "notreperequiesauxcieuxquetonnomsoitsanctifie",
+        "nowyouseemenowyoudont", "nuapuristakuulusepolkantahtijalakani",
+        "nukkuunukkuumattipienipaansaalla", "nurdiehartenkommenindengarten",
+        "nutandastusenjuleljuspajordensmorka", "ohsaycanyouseebythedawnsearlylight",
+        "oikallissuomenmaasaihanajakaunis", "oimaammesuomisynnyinmaasoi1917",
+        "oimaammesuomisynnyinmaasoisana", "oimaammesuomisynnyinmaasoisana2024",
+        "oimaammesuomisynnyinmaasoisanakultainen", "oisuomikatsosinunpaivaskoittaa",
+        "oisuomikatsosinunpaivaskoittaanyt", "ojosquenovencorazonquenosiente",
+        "olkauniskesailtakunlaaksossakavelin", "oneforallandallforone",
+        "onnellisuuseiolemaaranpaavaanmatka", "onnevoitbienquaveclecoeur",
+        "onsuurempilahjaantaakuinsaada", "otannenbaumotannenbaumwietreusinddeineblatter",
+        "ourfatherwhoartinheaven", "ourfatherwhoartinheaven2024",
+        "ourfatherwhoartinheavenhallowedbethyname", "outofsightoutofmind",
+        "ovelsegjormestersiermanofte", "packmyboxwithfivedozenliquorjugs",
+        "padrenuestroqueestasenelcielosantificadoseatunombre", "padrenuestroqueestasenloscielos",
+        "parempipyypivossakuinkymmenenoksalla", "pekkatopohantaasuimetsanpienessatalossa",
+        "peoplewholiveinglasshousesshouldntthrowstones", "perroqueladranomuerde5",
+        "petitapetitloiseaufaitsonnid", "pienikaunispienipaivansadejamenninkainen",
+        "pierrequiroulenamassepasmousse", "piippolanvaarillaolitaloiaiaioo",
+        "pinponesunmunecomuyguapodecarton", "portezcevieuxwhiskyaujugeblondquifume",
+        "promenonsnousdanslesboispendantqueleloup", "qolobaacalankeedwaaceynoo",
+        "qolobaacalankeedwaaceynooinnagakeenoomee", "quelluevaquelluevalavirgendelacueva",
+        "queseraserawhateverwillbe", "quetonregneviennequetavolontesoitfaitesurlaterrecommeauciel",
+        "quevivaespanavivaelrey", "quevivamexicosenoresquevivamexico",
+        "quisemeleventrecoltelatempete", "quiseressemblesassemble", "quivaalachasseperdsaplace",
+        "quivoleunoeufvoleunboeuf",
+        "quizdeltagernespistejordbaermedflodemenscirkusklovnenwaltherspilledepaxylofon",
+        "qulaudhubirabbilfalaqminsharrima", "qulaudhubirabbinnasmalikinnasilahin",
+        "qulhuwallahuahadallahussamadlamyalid", "quunsangimpurabreuvenossillons",
+        "rabbanaatinafiddunyahasanatanwafil", "rakassuomisynnyinmaakaunisjavapaa",
+        "ravenraskaroverisenochtittar", "readyornothereicome", "redenistsilberschweigenistgold",
+        "riennesertdecouririlfautpartirapoint", "rowrowrowyourboatgentlydownthestream",
+        "s00maaliyeeyt00s00iskutiirsadaeehadba", "saheinknabeinrosleinstehn",
+        "saintemariemerededieupriezpournouspauvrespecheurs",
+        "salamalaykumwarahmatullahiwabarakatuhudear",
+        "sanasanacolitaderanasinosanashoysanarasmanana",
+        "santamariamadredediosruegapornosotrospecadores", "santificadoseatunombrevengatureino",
+        "sarzadazufuqmehrkhavaranfarr", "savezvousplanterleschouxalamodedecheznous",
+        "sayhellotomylittlefriend", "seinodernichtseindasisthierdiefrage",
+        "sgtpepperslonelyheartsclubband", "sininenvalkoinensuomenlippuliehuukorkealla",
+        "siniristilippuliehuusuomentaivaanallaylpeana",
+        "siniristilippummesuomenlippukaunispuhdasvalkoinen", "sinoloseyoquien",
+        "smagrodornasmagrodornaarlustigaattse", "sommanroperiskogenfarmansvar",
+        "sonnezlesmatinesdingdangdong", "soomaaliyahanoolaatosoomaaliyahanoolaatoweligeed",
+        "soomaaliyeeytoosooiskutiirsadahadbakiinataagdaranee",
+        "soomaaliyeeytoosootoosooiskutiirsada1991", "soomaaliyeeytoosootoosooiskutiirsadaee",
+        "soyuznerushimyrespubliksvobodnykhsplotilanavekivelikaya", "sphinxofblackquartzjudgemyvow",
+        "sticksandstonesmaybreakmybones", "stillenachtheiligenachtallesschlafteinsamwacht",
+        "subhaanallaahwalxamdulillaahwalaailaahaillallaahwallaahuakbar",
+        "subhanallahwalhamdulillahwalailahaillallah",
+        "subhanallahwalhamdulillahwalailahaillallah99",
+        "subhanallahwalhamdulillahwalailahaillallahwallahuakbar", "surlepontdavignononydanse",
+        "surlepontdavignononydanseonydanse", "sweetcarolinegoodtimesneverseemedsogood",
+        "sweethomealabamawheretheskiesaresoblue", "taallapohjantahdenallaelamajatkuuedelleenaina",
+        "taallapohjantahdenallaelamaonrauhallista", "tengounamunecavestidadeazulzapatitosblancos",
+        "tequieromuchoятебялюблю", "tervesuomikaunissynnyinmaammekallispohjola",
+        "theearlybirdcatchestheworm", "theearlybirdcatchestheworm1999",
+        "theearlybirdcatchestheworm7", "theearlybirdgetstheworm", "thegrassisalwaysgreener",
+        "thegrassisalwaysgreenerontheotherside", "thelordismyshepherd",
+        "thelordismyshepherdishallnotwant", "thelordismyshepherdpsalm1611",
+        "thepenismightierthanthesword", "thequickbrownfoxjumpsoverthelazydog", "tobeornottobe2024",
+        "tobeornottobethatisthequestion", "tobeornottobethatisthequestion1603",
+        "toomanycooksspoilthebroth", "toutcequibrillenestpasor", "tuikituikitahtonen",
+        "tuikituikitahtoneniltaisinsaloistat", "twinkletwinklelittlestarhowiwonderwhatyouare",
+        "ubimmertreuundredlichkeitbisandeinkuhlesgrab", "ukkonooaukkonooaolikunnonmies",
+        "unesourisvertequicouraitdanslherbe", "untiensvautmieuxquedeuxtulauras",
+        "vainamoinensoittikantelettamerenrannallakauniisti",
+        "varpunenjouluaamunaistuikatollalumisellapienena",
+        "varsaerezulufrabadeoyaspiltejowhistogquickstep", "vaterunserderdubistimhimmel",
+        "vaterunserimhimmelgeheiligtwerdedeinname",
+        "vengaanosotrostureinohagasetuvoluntadenlatierracomoenelcielo",
+        "verdequetequieroverdevientoverde", "vielskerdettelandetsomstiger",
+        "viveleventviveleventdhiver", "viveleventviveleventviveleventdhiver",
+        "vivirmividalalalala", "vouloircestpouvoirmaispouvoircestagir",
+        "waxaanahayninsoomaaliahoomuslim", "weallliveinayellowsubmarine1966",
+        "wedontneednoeducationwedontneednothoughtcontrol",
+        "werandereneinegrubegrabtfalltselbsthinein", "werreitetsospatdurchnachtundwind",
+        "whatyouseeiswhatyouget", "wheninromedoastheromansdo", "whenlifegivesyoulemons",
+        "whenthegoinggetstough", "whenthegoinggetstoughthetoughgetgoing",
+        "withgreatpowercomesgreatresponsibility", "woeinwilleistdaistaucheinweg",
+        "yosolosequenosenada", "yosoyunhombresincerodedondecrecelapalma", "youcanthandlethetruth",
+        "youwinsomeyoulosesome", "zwolfboxkampferjagenviktorqueruberdengrossensylterdeich",
+        "аяидушагаюпомоскве", "безмаканеманаука", "безмаканеманаукаeivaivatta",
+        "безтруданевыловишьирыбкуизпруда", "белеетпарусодинокийвтуманеморяголубом",
+        "биљанаплатнобелешенаохридскитеизвори", "блазесијанамајкати",
+        "бурямглоюнебокроетвихриснежныекрутя", "влесуродиласьелочкавлесуонаросла",
+        "вместевеселошагатьпопросторампопросторам", "воиметонаотецотсинотдухот",
+        "волканогикормятачеловекаруки", "волковбоятьсявлеснеходить",
+        "воспелипесназаслободатамакедонскагорда",
+        "всесчастливыесемьипохожидругнадругакаждаянесчастливаясемьянесчастливапосвоему",
+        "вставайстранаогромнаявставайнасмертныйбой", "втравесиделкузнечиксовсемкакогуречик",
+        "выходиланаберегкатюшанавысокийберег", "гляжувозерасиниевполяхвижу",
+        "господипомилујнасгрешнитеденессите", "даживеевардардопоследенздив",
+        "даживееслободнаинезависнамакедонија", "двеглависепопаметниодедна",
+        "денесденеснадмакедонијасераѓа", "денеснадмакедонијасераѓа1944",
+        "денеснадмакедонијасераѓаново", "денеснадмакедонијасераѓановосонце",
+        "денеснадмакедонијасераѓановосонценаслободата", "денеснадмакедонијаслободадомживот",
+        "деньпобедыкаконбылотнасдалек", "другпознаетсявбеде", "еленоќеркоеленоснежанобелогрло",
+        "жилбылубабушкисеренькийкозлик", "жилибылидеддабаба", "зајдизајдијасносонцезајдипомрачисе",
+        "каковтаткотаковсин", "калинкакалинкакалинкамоявсадуягодамалинка",
+        "катюшавыходиланаберегкрутойвысокий", "когападнанабалканоткрвавапланина",
+        "којкопагробдругомусампаѓа", "којкопагробдругомусампаѓавонего", "којраноранидвесреќиграби",
+        "којсокоготаковнакрај", "люблюгрозувначалемаякогдавесеннийпервыйгром",
+        "магепсанодтвоитеочисумјас", "македонијоземјомилародиноубавамоја",
+        "македонскодевојчекиткашаренавоградина", "македонскодевојчекиткашаренавоградинанабрана",
+        "мойдядясамыхчестныхправилкогданевшутку", "мойдядясамыхчестныхправилкогданевшуткузанемог",
+        "морозисолнцеденьчудесный", "морозисолнцеденьчудесный1",
+        "надеждамойкомпасземнойаудачанаградазасмелость", "невсетозолоточтоблестит",
+        "невсетозолоточтоблеститярко", "неимейсторублейаимейстодрузей",
+        "ниесмемакедонцигордиислободни", "низпиринпланинапееславејпиле",
+        "ойморозморознеморозьменя", "ойтоневечертоневечер", "оросевиенабелосело",
+        "оросевиенависокосело", "оросевиенаселосега", "отченашижеесинанебесах",
+        "отченашсущийнанебесахдасвятитсяимятвое", "оченашкојсинанебесата",
+        "оченашкојсинанебесата1991", "оченашкојсинанебесатада",
+        "оченашкојсинанебесатадасесветииметотвое", "пилепеенагранчезеленоубаво",
+        "повтореньематьученья", "повторувањетоемајканазнаењето",
+        "подоброденесјајцеотколкуутрекокошка", "пријателсепознававоневолјавистинска",
+        "пустьбегутнеуклюжепешеходыполужам", "пустьвсегдабудетсолнцепустьвсегдабудетнебо",
+        "работатагокрасичовекот", "работатагокрасичовекотнеоблеката",
+        "раскинулосьмореширокоиволныбушуютвдали", "расцветалияблониигрушипоплылитуманынадрекой",
+        "ревелабурягромгремелвомраке", "россиясвященнаянашадержавароссиялюбимаянашастрана",
+        "семьразотмерьодинразотрежь", "семьразотмерьодинразотрежьдерево",
+        "скажикадядяведьнедароммоскваспаленнаяпожаром", "снощитидојдовнаврататадушо",
+        "солнцежешконадвардарблескасилно",
+        "союзнерушимыйреспубликсвободныхсплотиланавекивеликаярусь",
+        "степьдастепькругомпутьдалеклежит", "съешьжеещеэтихмягкихфранцузскихбулок",
+        "съешьжеещеэтихмягкихфранцузскихбулокдавыпейчаю", "тешконатојштонеманикого",
+        "тивкаводабрегронисекогашполека", "тишеедешьдальшебудешь",
+        "тишеедешьдальшебудешьцелымдоедешь", "трпидушоцрнотиекркушо",
+        "улукоморьядубзеленыйзлатаяцепьнадубетом", "унылаяпораочейочарованьеприятнамнетвоякраса",
+        "чтопосеешьтоипожнешь", "чтопосеешьтоипожнешь2024", "чтопосеешьтоипожнешь7",
+        "широкастранамояроднаямноговнейлесовполей", "штомиемилоемдраго",
+        "штосечуестругастругабистравода", "япомнючудноемгновеньепередомнойявиласьты",
+        "јованојованкекрајвардаротседишмори", "ادميراعقلميبايدنهزر", "اذاالشعبيوماارادالحياهفلا",
+        "اذاغامرتفيشرفمرومفلاتقنعبمادونالنجوم", "استغفراللهالعظيم", "اشهدانلاالهالاالله",
+        "اشهدانلاالهالااللهواشهدانمحمدارسولالله", "اطلبواالعلممنالمهدالياللحد",
+        "الاياايهاالساقيادركاساوناولها", "الجارقبلالداروالرفيققبلالطريق",
+        "الحبوالسلاموالحريهلكلالشعوبالعربيه", "الحمدللهربالعالمين",
+        "الخيلوالليلوالبيداءتعرفنيوالسيفوالرمحوالقرطاسوالقلم", "السلامعليكمورحمهاللهوبركاته2024",
+        "السلامعليكمورحمهاللهوبركاته7", "السلامعليكميااصدقاييالاعزاءجميعا", "الصبرمفتاحالفرج",
+        "الطيورعلياشكالهاتقع", "العجلهمنالشيطانوالتانيمنالرحمن", "العقلالسليمفيالجسمالسليم",
+        "العلمفيالصغركالنقشعليالحجر", "الكلاممنفضهوالسكوتمنذهب", "اللهاكبراللهاكبرلاالهالاالله",
+        "اللهاكبركبيراوالحمدللهكثيرا", "اللهلاالهالاهوالحيالقيوم",
+        "اللهمانكعفوكريمتحبالعفوفاعفعنا", "اللهمصلعليسيدنامحمدواله",
+        "الوطنالعربيمنالمحيطاليالخليج", "الوقتكالسيفانلمتقطعهقطعك",
+        "اناالبحرفياحشايهالدركامنفهلسالواالغواصعنصدفاتي", "اناللهوانااليهراجعون",
+        "انماالاعمالبالنياتوانمالكلامريمانوي", "اهدناالصراطالمستقيم", "اياكنعبدواياكنستعين",
+        "ايايرانايمرزپرگهرايخاكتسرچشمههنر", "اينقافلهعمرعجبميگذرد", "اگرانتركشيرازيبهدست",
+        "اگرانتركشيرازيبهدستارددلمارا", "باركجبهمنزلنميرسد", "بسماللهالرحمنالرحيم",
+        "بسماللهالرحمنالرحيمالحمدللهربالعالمين",
+        "بسماللهالرحمنالرحيمالحمدللهربالعالمينالرحمنالرحيم",
+        "بسماللهتوكلتعلياللهلاحولولاقوهالابالله", "بسيرنجبردمدراينسالسي", "بشنوازنيچونحكايتميكند",
+        "بشنوازنيچونحكايتميكندازجداييهاشكايتميكند", "بلاديبلاديبلاديلكحبيوفوادي",
+        "بنيادماعضاييكديگرندكهدرافرينشزيكگوهرند", "بنيادماعضاييكپيكرند2024",
+        "بنيادماعضاييكپيكرند5", "بهنامخداوندبخشندهمهربان", "بهنامخداوندجانوخرد",
+        "بهنامخداوندجانوخردكزينبرترانديشهبرنگذرد", "توانابودهركهدانابود",
+        "توانابودهركهدانابود2024", "حسبناللهونعمالوكيل", "حسبياللهونعمالوكيلنعمالموليونعمالنصير",
+        "حماهالديارعليكمسلامابتانتذلالنفوسالكرام", "خدايابهاميدتوزندگيميكنم", "خيرالكلامماقلودل",
+        "دانشنوراستونادانيتاريكياست", "دانهفلفلسياهوخالمهرويانسياه", "دراينجهانهيچكسبيغمنيست",
+        "درختدوستيبنشانكهكامدلبهبارارد", "دلميرودزدستمصاحبدلانخدارا", "دوستانباشدكهگيرددستدوست",
+        "دوستانباشدكهگيرددستدوستدرپريشانحالي", "دوستدارمتوراايوطنمن", "دوصدگفتهچوننيمكردارنيست",
+        "رباغفرليولوالديوللمومنينيوميقومالحساب", "ربنااتنافيالدنياحسنهوفيالاخرهحسنه",
+        "ربنالاتواخذنااننسينااواخطانا", "سبحاناللهالحمدللهاللهاكبرلاالهالاالله",
+        "سبحاناللهوالحمدللهولاالهالااللهواللهاكبر", "سبحاناللهوبحمدهسبحاناللهالعظيم",
+        "سبحاناللهوبحمدهسبحاناللهالعظيم2024", "سحرخيزباشتاكامرواباشي",
+        "سرزدازافقمهرخاورانفروغديدهحقباوران", "سلامبرهمهدوستانعزيزمن", "سلامعليكمورحمهاللهوبركاته",
+        "سلامعليكمورحمهاللهوبركاته2024", "سلاممنصبابرديارقودمعلايكفكفيادمشق",
+        "شتابكارشيطاناستودرنگكارخدا", "صباحالخيريااحباييجميعا7", "صبركليدگشايشهركاراست",
+        "عشقاساننموداولوليافتادمشكلها", "عشقيعنيدوستداشتنبيقيد", "عليقدراهلالعزمتاتيالعزايم",
+        "عيدفطرمباركسعيدعليكم2024", "فيالتانيالسلامهوفيالعجلهالندامه", "قلهواللهاحداللهالصمد",
+        "قلهواللهاحداللهالصمدلميلد", "كتابخوببهتريندوستانساناست", "كلعاموانتمبخيردايما2024",
+        "كلكمراعوكلكممسوولعنرعيته", "كناولاتكنتلكهيالمساله", "لاالهالااللهمحمدرسولالله",
+        "لاالهالااللهمحمدرسولالله2024", "لاالهالااللهمحمدرسولاللهالله", "لاالهالااللهوحدهلاشريكله",
+        "لاتحزناناللهمعنادايما", "لاحولولاقوهالابالله", "لاضررولاضرارفيالاسلام",
+        "ماكلمايتمنيالمرءيدركه", "مصرياامالبلادانتغايتيوالمراد", "منايرانيهستموبهوطنمافتخارميكنم",
+        "منتخدايراعزوجلكهطاعتشموجبقربتاست", "منجدوجدومنزرعحصد",
+        "منجدوجدومنزرعحصدومنسارعليالدربوصل", "منحسناسلامالمرءتركهمالايعنيه", "منعاشقتوهستمايعشقمن",
+        "منلميشكرالناسلميشكرالله", "موطنيموطنيالجلالوالجمالوالسناء",
+        "موطنيموطنيالجلالوالجمالوالسناءوالبهاءفيرباك", "ميخوركهبهزيرگلبسيخواهيخفت",
+        "نابردهرنجگنجميسرنميشود", "هرروزصبحزودبيدارشو", "هركسيكودورماندازاصلخويش",
+        "هركهبامشبيشبرفشبيشتر", "هركهطاووسخواهدجورهندوستانكشد", "هركهنانماراخوردنانماراميدهد",
+        "هرچهبگنددنمكشميزنند", "واذاالشعبيوماارادالحياهفلابدانيستجيبالقدر",
+        "چراغيكهبهخانهرواستبهمسجدحراماست", "چوايراننباشدتنمنمباد", "گرصبركنيزغورهحلواسازي",
+    )
 
     /**
      * Common words up to this count used to keep full diceware credit,
@@ -496,6 +1030,16 @@ object CredentialPolicy {
     private enum class ClosedCategory(val bitsPerMember: Double) {
         DIGIT_WORD(log2(21.0)),      // zero..twenty (English)
         LOCALIZED_DIGIT_WORD(log2(213.0)),  // 0..~20 across the 12 app locales, pruned — see LOCALIZED_DIGIT_WORDS
+        // Rung D (2026-11-10, dynamic report fix #2): the English closed categories below,
+        // localized to the 12 app locales (sv de fr es nb da fi ar fa so ru mk) exactly as
+        // the numbers were (Rung C), with the same homograph pruning. bitsPerMember =
+        // log2(merged pruned set size); only a RUN of ≥ 2 members is capped. Monotone-
+        // decreasing. See the LOCALIZED_* sets (generated by locdata/merge.py).
+        LOCALIZED_WEEKDAY(log2(195.0)),
+        LOCALIZED_MONTH(log2(258.0)),
+        LOCALIZED_COLOUR(log2(465.0)),
+        LOCALIZED_COMPASS(log2(122.0)),
+        LOCALIZED_FAMILY(log2(229.0)),
         WEEKDAY(log2(7.0)),
         MONTH(log2(12.0)),
         NATO(log2(26.0)),
@@ -510,6 +1054,11 @@ object CredentialPolicy {
         w.length == 1 && w[0] in 'a'..'z' -> ClosedCategory.SINGLE_LETTER
         w in DIGIT_WORDS -> ClosedCategory.DIGIT_WORD
         w in LOCALIZED_DIGIT_WORDS -> ClosedCategory.LOCALIZED_DIGIT_WORD
+        w in LOCALIZED_WEEKDAYS -> ClosedCategory.LOCALIZED_WEEKDAY
+        w in LOCALIZED_MONTHS -> ClosedCategory.LOCALIZED_MONTH
+        w in LOCALIZED_COLOURS -> ClosedCategory.LOCALIZED_COLOUR
+        w in LOCALIZED_COMPASS -> ClosedCategory.LOCALIZED_COMPASS
+        w in LOCALIZED_FAMILY -> ClosedCategory.LOCALIZED_FAMILY
         w in WEEKDAYS -> ClosedCategory.WEEKDAY
         w in MONTHS -> ClosedCategory.MONTH
         w in NATO_ALPHABET -> ClosedCategory.NATO
@@ -576,6 +1125,174 @@ object CredentialPolicy {
         "شش", "صفر", "عشرة", "عشرون", "عشرين", "نوزده",
         "هجده", "هشت", "هفت", "هفده", "پانزده", "پنج",
         "چهار", "چهارده", "یازده",
+    )
+
+    // Rung D localized closed-category sets (2026-11-10, dynamic report fix #2),
+    // generated by scripts/passphrase-adversary/locdata/merge.py: weekday / month /
+    // colour / compass / kinship terms across the 12 app locales, homograph-pruned and
+    // made disjoint from each other and the English sets. Both diacritic and ascii-folded
+    // spellings are members (normalizeWord keeps diacritics). Capped only on a RUN of >=2.
+    private val LOCALIZED_WEEKDAYS = setOf(
+        "arbacada", "arbaco", "axad", "axadda", "dienstag", "dienstags", "dimanche", "dimanches",
+        "dom", "domingo", "domingos", "donnerstag", "donnerstags", "fredag", "fredagar",
+        "fredagen", "fredager", "freitag", "freitags", "isniin", "isniinta", "jeudi", "jeudis",
+        "jimcaha", "jimco", "jue", "jueves", "keskiviikko", "keskiviikkoa", "keskiviikkoisin",
+        "keskiviikkona", "khamiis", "khamiista", "lauantai", "lauantaina", "lauantaisin",
+        "lauantaita", "loerdag", "loerdagar", "loerdagen", "loerdager", "lordag", "lordagar",
+        "lordagen", "lordager", "lundi", "lundis", "lunes", "lördag", "lördagar", "lördagen",
+        "lørdag", "lørdagen", "lørdager", "maanantai", "maanantaina", "maanantaisin",
+        "maanantaita", "maandag", "maandagar", "maandagen", "mandag", "mandagar", "mandagen",
+        "mandager", "mardi", "mardis", "martes", "mercredi", "mercredis", "miercoles", "mittwoch",
+        "mittwochs", "miércoles", "montag", "montags", "måndag", "måndagar", "måndagen", "onsdag",
+        "onsdagar", "onsdagen", "onsdager", "perjantai", "perjantaina", "perjantaisin",
+        "perjantaita", "sab", "sabado", "sabados", "sabti", "sabtida", "samedi", "samedis",
+        "samstag", "samstags", "soendag", "soendagar", "soendagen", "soendager", "sondag",
+        "sondagar", "sondagen", "sondager", "sonnabend", "sonnabends", "sonntag", "sonntags",
+        "sunnuntai", "sunnuntaina", "sunnuntaisin", "sunnuntaita", "sáb", "sábado", "sábados",
+        "söndag", "söndagar", "söndagen", "søndag", "søndagen", "søndager", "talaadada", "talaado",
+        "tiistai", "tiistaina", "tiistaisin", "tiistaita", "tirsdag", "tirsdagen", "tirsdager",
+        "tisdag", "tisdagar", "tisdagen", "torsdag", "torsdagar", "torsdagen", "torsdager",
+        "torstai", "torstaina", "torstaisin", "torstaita", "vendredi", "vendredis", "viernes",
+        "wochenende", "воскресенье", "вторник", "вторникот", "недела", "неделата", "петок",
+        "петокот", "понеделник", "понеделникот", "понедельник", "пятница", "сабота", "саботата",
+        "среда", "средата", "суббота", "четверг", "четврток", "четвртокот", "آدینه", "احد",
+        "اربعاء", "الأحد", "الأربعاء", "الإثنين", "الاثنين", "الاحد", "الاربعاء", "الثلاثاء",
+        "الجمعة", "الخميس", "السبت", "ثلاثاء", "جمعة", "جمعه", "خميس", "دوشنبه", "سبت", "سهشنبه",
+        "شنبه", "يومالأحد", "يومالأربعاء", "يومالاثنين", "يومالثلاثاء", "يومالجمعة", "يومالخميس",
+        "يومالسبت", "پنجشنبه", "چهارشنبه", "یکشنبه",
+    )
+    private val LOCALIZED_MONTHS = setOf(
+        "abr", "abriil", "abriisha", "abril", "agoostada", "agoosto", "agosto", "aout", "août",
+        "aprils", "augusti", "augusts", "avr", "avril", "decembre", "desember", "dezember",
+        "dezembers", "dic", "diciembre", "diseembar", "diseembarka", "décembre", "elokuu",
+        "elokuun", "elokuussa", "elokuuta", "ene", "enero", "febraayada", "febraayo", "febrero",
+        "februar", "februari", "februars", "fevr", "fevrier", "févr", "février", "heinaekuu",
+        "heinaekuun", "heinaekuussa", "heinaekuuta", "heinakuu", "heinakuun", "heinakuussa",
+        "heinakuuta", "heinäkuu", "heinäkuun", "heinäkuussa", "heinäkuuta", "helmikuu",
+        "helmikuun", "helmikuussa", "helmikuuta", "huhtikuu", "huhtikuun", "huhtikuussa",
+        "huhtikuuta", "jaenner", "janaayada", "janaayo", "janner", "januar", "januari",
+        "januarimaanad", "januarimanad", "januarimånad", "januars", "janv", "janvier", "joulukuu",
+        "joulukuun", "joulukuussa", "joulukuuta", "juil", "juillet", "juin", "juli", "julio",
+        "julis", "juni", "junio", "junis", "juun", "juunka", "jänner", "kesaekuu", "kesaekuun",
+        "kesaekuussa", "kesaekuuta", "kesakuu", "kesakuun", "kesakuussa", "kesakuuta", "kesäkuu",
+        "kesäkuun", "kesäkuussa", "kesäkuuta", "lokakuu", "lokakuun", "lokakuussa", "lokakuuta",
+        "luuliyada", "luuliyo", "maajada", "maajo", "maaliskuu", "maaliskuun", "maaliskuussa",
+        "maaliskuuta", "maarsada", "maarso", "maerz", "maerzen", "mais", "maj", "marraskuu",
+        "marraskuun", "marraskuussa", "marraskuuta", "marts", "marz", "marzen", "marzo", "märz",
+        "märzen", "nofembar", "nofembarka", "novembers", "novembre", "noviembre", "octobre",
+        "octubre", "oktober", "oktobers", "oktoobar", "oktoobarka", "sebtembar", "sebtembarka",
+        "septembers", "septembre", "septiembre", "set", "setiembre", "syyskuu", "syyskuun",
+        "syyskuussa", "syyskuuta", "tammikuu", "tammikuun", "tammikuussa", "tammikuuta",
+        "toukokuu", "toukokuun", "toukokuussa", "toukokuuta", "август", "августа", "апрель",
+        "апреля", "април", "декабрь", "декабря", "декември", "июль", "июля", "июнь", "июня", "май",
+        "март", "марта", "мая", "мај", "ноември", "ноябрь", "ноября", "октомври", "октябрь",
+        "октября", "сентябрь", "сентября", "септември", "февраль", "февраля", "февруари", "январь",
+        "января", "јануари", "јули", "јуни", "آب", "آبان", "آذار", "آذر", "آوریل", "أبريل",
+        "أغسطس", "أكتوبر", "أيار", "أيلول", "إبريل", "اب", "ابريل", "اذار", "اردیبهشت", "اسفند",
+        "اغسطس", "اكتوبر", "امرداد", "اوت", "ايار", "ايلول", "اکتبر", "بهمن", "تشرين",
+        "تشرينالأول", "تشرينالثاني", "تموز", "تیر", "حزيران", "خرداد", "دجنبر", "دسامبر", "ديسمبر",
+        "دی", "سبتمبر", "سپتامبر", "شباط", "شتنبر", "شهریور", "غشت", "فبراير", "فروردین", "فوریه",
+        "كانون", "كانونالأول", "كانونالثاني", "مارس", "ماي", "مايو", "مرداد", "مه", "مهر", "می",
+        "نوامبر", "نوفمبر", "نونبر", "نيسان", "يناير", "يوليه", "يوليو", "يوليوز", "يونيه",
+        "يونيو", "ژانویه", "ژوئن", "ژوئیه",
+    )
+    private val LOCALIZED_COLOURS = setOf(
+        "amarilla", "amarillas", "amarillo", "amarillos", "anil", "argent", "argente", "argentee",
+        "argenté", "argentée", "azul", "azules", "añil", "beis", "bla", "blaa", "blaaa", "blaat",
+        "blaatt", "blanc", "blanca", "blancas", "blanche", "blanches", "blanco", "blancos",
+        "blancs", "blat", "blatt", "blau", "blaue", "blaues", "bleu", "bleue", "bleues", "bleus",
+        "blå", "blåa", "blåt", "blått", "braun", "braune", "brun", "bruna", "brune", "brunes",
+        "bruns", "brunt", "buluug", "bunni", "caddaan", "cagaar", "cas", "cawl", "celeste",
+        "celestes", "dahab", "dorada", "dorado", "dore", "doree", "doré", "dorée", "gelb", "gelbe",
+        "gelbes", "gra", "graa", "graaa", "graat", "graatt", "grat", "gratt", "grau", "graue",
+        "graues", "gris", "grise", "grises", "groen", "groena", "groenn", "groenne", "groent",
+        "gron", "grona", "gronn", "gronne", "gront", "gruen", "gruene", "gruenes", "grun", "grune",
+        "grunes", "grå", "gråa", "gråt", "grått", "grön", "gröna", "grönt", "grøn", "grønn",
+        "grønne", "grønt", "grün", "grüne", "grünes", "guduud", "gul", "gula", "guld", "gule",
+        "gull", "gult", "harmaa", "harmaan", "harmaata", "hopea", "huruud", "hvid", "hvide",
+        "hvidt", "hvit", "hvite", "hvitt", "jaale", "jaune", "jaunes", "keltainen", "keltaisen",
+        "keltaiset", "keltaista", "kulta", "lila", "lilla", "lyserod", "lyserode", "lyseroed",
+        "lyseroede", "lyserød", "lyserøde", "madow", "marron", "marrones", "marrons", "marrón",
+        "morada", "moradas", "morado", "morados", "musta", "mustaa", "mustan", "mustat", "naranja",
+        "naranjas", "negra", "negras", "negro", "negros", "noir", "noire", "noires", "noirs",
+        "oranges", "oransje", "oranssi", "oranssia", "oranssin", "oro", "plata", "plateada",
+        "plateado", "pourpre", "pourpres", "punainen", "punaisen", "punaiset", "punaista",
+        "purppura", "purpura", "púrpura", "rod", "roda", "rode", "rodt", "roed", "roeda", "roede",
+        "roedt", "roett", "roja", "rojas", "rojo", "rojos", "rosa", "rosane", "rosas", "rosor",
+        "rote", "rotes", "rott", "rouges", "ruskea", "ruskeaa", "ruskean", "röd", "röda", "rött",
+        "rød", "røde", "rødt", "schwarz", "schwarze", "schwarzes", "silber", "sininen", "sinisen",
+        "siniset", "sinista", "sinistae", "sinistä", "soelv", "solv", "sorte", "svart", "svarta",
+        "svarte", "sølv", "turquesa", "turquesas", "vaaleanpunainen", "vaaleanpunaisen",
+        "valkoinen", "valkoisen", "valkoiset", "valkoista", "verde", "verdes", "vert", "verte",
+        "vertes", "verts", "vihrea", "vihreaa", "vihreae", "vihreaeae", "vihreaen", "vihreaet",
+        "vihrean", "vihreat", "vihreä", "vihreän", "vihreät", "vihreää", "violeta", "violetas",
+        "violets", "violett", "violette", "violettes", "violetti", "violettia", "vit", "vita",
+        "vitt", "weiss", "weisse", "weisses", "weiß", "weiße", "weißes", "бел", "бела", "белая",
+        "бели", "бело", "белое", "белые", "белый", "виолетов", "виолетова", "виолетови",
+        "виолетово", "голубая", "голубое", "голубой", "голубые", "желтая", "желтое", "желтые",
+        "желтый", "жолт", "жолта", "жолти", "жолто", "жёлтая", "жёлтое", "жёлтые", "жёлтый",
+        "зелен", "зелена", "зеленая", "зелени", "зелено", "зеленое", "зеленые", "зеленый",
+        "зелёная", "зелёное", "зелёные", "зелёный", "златен", "златна", "златни", "златно",
+        "золотая", "золотое", "золотой", "золотые", "кафеав", "кафеава", "кафеави", "кафеаво",
+        "коричневая", "коричневое", "коричневые", "коричневый", "красная", "красное", "красные",
+        "красный", "оранжевая", "оранжевое", "оранжевые", "оранжевый", "портокалов", "портокалова",
+        "портокалови", "портокалово", "розов", "розова", "розовая", "розови", "розово", "розовое",
+        "розовые", "розовый", "серая", "серебряная", "серебряное", "серебряные", "серебряный",
+        "серое", "серые", "серый", "сив", "сива", "сиви", "сиво", "син", "сина", "синее", "сини",
+        "синие", "синий", "сино", "синяя", "сребрен", "сребрена", "сребрени", "сребрено",
+        "фиолетовая", "фиолетовое", "фиолетовые", "фиолетовый", "црвен", "црвена", "црвени",
+        "црвено", "црн", "црна", "црни", "црно", "черная", "черное", "черные", "черный", "чёрная",
+        "чёрное", "чёрные", "чёрный", "آبی", "أبيض", "أحمر", "أخضر", "أرجواني", "أزرق", "أسود",
+        "أصفر", "ابيض", "احمر", "اخضر", "ارغوانی", "ازرق", "اسود", "اصفر", "الأبيض", "الأحمر",
+        "الأخضر", "الأرجواني", "الأزرق", "الأسود", "الأصفر", "الابيض", "الاحمر", "الاخضر",
+        "الارجواني", "الازرق", "الاسود", "الاصفر", "البرتقالي", "البنفسجي", "البني", "الذهبي",
+        "الرمادي", "الزهري", "الفضي", "الوردي", "برتقالي", "بنفسجي", "بنفش", "بني", "بيضاء",
+        "حمراء", "خاکستری", "خضراء", "ذهبي", "رمادي", "زرد", "زرشکی", "زرقاء", "زهري", "سبز",
+        "سرخ", "سرمهای", "سفید", "سوداء", "سیاه", "صفراء", "صورتی", "طلایی", "طوسی", "فضي",
+        "فیروزهای", "قرمز", "قهوهای", "مشکی", "نارنجی", "نقرهای", "وردي", "کبود", "یشمی",
+    )
+    private val LOCALIZED_COMPASS = setOf(
+        "bari", "etela", "etelae", "etelä", "galbeed", "ita", "itae", "itä", "kaakko", "koillinen",
+        "koonfur", "koonfurbari", "koonfurgalbeed", "laensi", "lansi", "lounas", "luode", "länsi",
+        "norden", "nordest", "nordeste", "nordoest", "nordost", "nordosten", "nordouest",
+        "nordvaest", "nordvast", "nordvest", "nordväst", "nordwesten", "nordøst", "noreste",
+        "noroccidente", "noroeste", "norr", "norte", "oest", "oeste", "oester", "ost", "osten",
+        "oster", "ouest", "pohjoinen", "soder", "soeder", "soer", "soeroest", "soervest", "sor",
+        "sorost", "sorvest", "suden", "sudest", "sudeste", "sudoeste", "sudosten", "sudouest",
+        "sudwesten", "sued", "sueden", "suedosten", "suedwesten", "sureste", "suroeste", "syd",
+        "sydoest", "sydost", "sydvaest", "sydvast", "sydvest", "sydväst", "sydøst", "söder", "sør",
+        "sørvest", "sørøst", "süden", "südosten", "südwesten", "vaest", "vaester", "vast",
+        "vaster", "väst", "väster", "waqooyi", "waqooyibari", "waqooyigalbeed", "westen", "öst",
+        "öster", "øst", "восток", "запад", "исток", "север", "северовосток", "северозапад",
+        "североисток", "юг", "юговосток", "югозапад", "југ", "југозапад", "југоисток", "جنوب",
+        "جنوبشرق", "جنوبشرقي", "جنوبشرقی", "جنوبغرب", "جنوبغربي", "جنوبغربی", "شرق", "شمال",
+        "شمالشرق", "شمالشرقي", "شمالشرقی", "شمالغرب", "شمالغربي", "شمالغربی", "غرب",
+    )
+    private val LOCALIZED_FAMILY = setOf(
+        "aabe", "aabo", "abti", "abuela", "abuelita", "abuelito", "abuelo", "adeer", "aeiti",
+        "aiti", "aviomies", "awoowe", "ayeeyo", "bedstemor", "bestefar", "bestemor", "bror",
+        "bruder", "cunug", "datter", "dotter", "eeddo", "ehefrau", "ehemann", "ektemann", "eltern",
+        "enfant", "eno", "epouse", "epoux", "esposa", "esposo", "fader", "farbror", "farfar",
+        "farmor", "femme", "fille", "foeraelder", "foeraeldrar", "foraeldre", "foralder",
+        "foraldrar", "forelder", "foreldre", "forældre", "frau", "frere", "fru", "frère",
+        "förälder", "föräldrar", "gabadh", "gabar", "grandmere", "grandmère", "grandpere",
+        "grandpère", "grossmutter", "grossvater", "großmutter", "großvater", "habaryar", "hermana",
+        "hermano", "hija", "hijo", "hooyo", "hustru", "ilmo", "isa", "isae", "isi", "isoaeiti",
+        "isoaiti", "isoisa", "isoisae", "isoisä", "isoäiti", "isä", "kone", "lapsi", "madre",
+        "maman", "mamie", "mand", "marido", "meme", "mies", "moder", "morbror", "morfar", "mormor",
+        "moster", "mujer", "mummo", "mutter", "mutti", "mémé", "naag", "nieta", "nieto", "nin",
+        "nino", "niño", "oma", "oncle", "onkel", "opa", "padre", "papy", "pepe", "pere", "poika",
+        "père", "pépé", "schwester", "seda", "sedae", "sedä", "seta", "setae", "setä", "sisar",
+        "sisko", "soen", "soenn", "soester", "soeur", "sohn", "sonn", "soster", "syster", "sønn",
+        "søster", "sœur", "taeti", "tante", "tati", "tochter", "tytaer", "tytar", "tytär", "täti",
+        "ukki", "vaimo", "vanhemmat", "vanhempi", "vater", "vati", "veli", "waalid", "walaal",
+        "wiil", "xaas", "äiti", "épouse", "époux", "баба", "бабушка", "брат", "вујко", "дед",
+        "дедо", "дедушка", "дете", "дочка", "дочь", "дядя", "жена", "маж", "мама", "мать", "мајка",
+        "муж", "отец", "папа", "ребенок", "ребёнок", "родител", "родитель", "сестра", "сопруг",
+        "сопруга", "сын", "татко", "тетка", "тетя", "тётя", "чичко", "ќерка", "أب", "أخ", "أخت",
+        "أم", "ابن", "ابنة", "اخ", "اخت", "ام", "بابا", "برادر", "بنت", "جد", "جدة", "خال", "خالة",
+        "خاله", "خواهر", "دایی", "دختر", "زن", "زوج", "زوجة", "شوهر", "عم", "عمة", "عمه", "عمو",
+        "مادر", "مادربزرگ", "ماما", "مامان", "همسر", "والد", "والدة", "پدر", "پدربزرگ", "پسر",
     )
 
     private val WEEKDAYS = setOf(
@@ -800,6 +1517,126 @@ object CredentialPolicy {
         "qwertzuiopü", "asdfghjklöä", "yxcvbnm",          // German QWERTZ
         "azertyuiop", "qsdfghjklm", "wxcvbn",             // French AZERTY
         "йцукенгшщзхъ", "фывапролджэ", "ячсмитьбю",       // Russian ЙЦУКЕН
+    )
+
+    // Localized high-frequency / function words (2026-11-10, dynamic report fix #2b),
+    // generated by merge.py from the per-locale "common" lists: the non-English analog of
+    // COMMON_WORDS, half-credited the same way so an all-function-word phrase in any app
+    // locale falls below the floor. Disjoint from the localized closed-category sets.
+    private val LOCALIZED_COMMON_WORDS: Set<String> = setOf(
+        "aad", "aan", "abajo", "abend", "aber", "adieu", "adiga", "adios", "adiós", "adjo",
+        "adjoe", "adjö", "aer", "aften", "ahora", "aina", "alas", "aldri", "aldrig", "alla",
+        "alle", "aller", "allerede", "alli", "alltid", "allí", "alors", "als", "altid", "ama",
+        "aniga", "annaga", "aqui", "aquí", "arag", "arriba", "att", "auch", "auf", "aus", "aussi",
+        "aux", "avec", "avez", "avoir", "avons", "ayaa", "baa", "bajo", "beau", "bei", "bien",
+        "bis", "bist", "bitte", "ble", "blev", "bli", "blir", "blive", "bliver", "bon", "bonjour",
+        "bonsoir", "bra", "buenas", "bueno", "buenos", "ces", "cet", "cette", "chez", "comme",
+        "comment", "como", "cuando", "cusub", "daalig", "daarlig", "daer", "dag", "dalig", "danke",
+        "dann", "dans", "dar", "darf", "darlig", "das", "dass", "decir", "deg", "dein", "deja",
+        "del", "dem", "denn", "der", "dere", "derecha", "des", "desde", "det", "dhahay", "dhaho",
+        "dheer", "dias", "dich", "dig", "din", "dir", "donc", "donde", "dont", "dort", "droite",
+        "durch", "där", "dålig", "dårlig", "déjà", "días", "efter", "ehka", "ehkae", "ehkä", "ein",
+        "eine", "einem", "einen", "einer", "eivaet", "eivat", "eivät", "ella", "ellas", "elle",
+        "eller", "elles", "ellos", "emme", "encore", "ennen", "entre", "eres", "esta", "estamos",
+        "estan", "estar", "estas", "estoy", "está", "están", "estás", "etes", "etre", "ett",
+        "etta", "ettae", "ette", "etter", "että", "euch", "eux", "faar", "fadlan", "fahan",
+        "faire", "fais", "farvel", "fiican", "foer", "foere", "fore", "fra", "fraan", "fran",
+        "från", "fuer", "fur", "före", "für", "gaaban", "gammal", "gammel", "garo", "gegen",
+        "gennem", "genom", "gjennom", "gracias", "grande", "gross", "groß", "guten", "haa", "habe",
+        "haben", "haber", "hacer", "hacia", "hadde", "hade", "haen", "haer", "halla", "hallaa",
+        "hallo", "hallå", "haluan", "han", "har", "hast", "hasta", "hatte", "haut", "havde",
+        "haye", "hayn", "hei", "hej", "hemos", "hende", "henne", "hidas", "hier", "hinter",
+        "hoeger", "hoejre", "hoeyre", "hoger", "hojre", "hola", "hon", "honom", "hoyre", "hun",
+        "huomenta", "hur", "hurtig", "hvis", "hvordan", "hyva", "hyvae", "hyvin", "hyvä", "hän",
+        "här", "höger", "højre", "høyre", "ich", "ici", "idinka", "ihm", "ihn", "ihr", "ikke",
+        "ilman", "ils", "iltaa", "immer", "imow", "inaad", "ingen", "innaga", "inte", "inuu",
+        "isaga", "iso", "ist", "iyada", "iyaga", "iyo", "izquierda", "jaelkeen", "jag", "jalkeen",
+        "jamais", "jeg", "jer", "jetzt", "jir", "jiraa", "jos", "jälkeen", "kaalay", "kaas", "kan",
+        "kann", "kannst", "kanske", "kanskje", "kanssa", "kaunis", "kein", "kiitoksia", "kiitos",
+        "klein", "koennen", "konnen", "koska", "kuin", "kuka", "kun", "kunde", "kunne", "kuwaas",
+        "kuwan", "kvaell", "kvall", "kveld", "kväll", "kylla", "kyllae", "kyllä", "können",
+        "laakiin", "laangsam", "langsam", "langsom", "leh", "les", "leur", "lidt", "lille",
+        "links", "lite", "liten", "los", "lui", "långsam", "maa", "maaske", "maaste", "mae",
+        "mahadsanid", "malaha", "malo", "maske", "maste", "maya", "med", "meg", "meget", "mein",
+        "menen", "menos", "merci", "mes", "mich", "mig", "mihin", "mika", "mikae", "miksi", "mikä",
+        "milloin", "min", "mina", "minae", "minä", "mir", "mis", "missa", "missae", "missä",
+        "miten", "mitt", "mod", "moi", "moins", "mon", "morgen", "morgon", "muss", "mutta", "muy",
+        "mycket", "mye", "myoes", "myos", "myös", "måske", "måste", "naa", "naagra", "naar",
+        "nabad", "nach", "nacht", "naekemiin", "naemae", "naer", "nagra", "nakemiin", "nama",
+        "nar", "nat", "natt", "neben", "ned", "nei", "nein", "nej", "ner", "neu", "nicht", "nie",
+        "niin", "noch", "noches", "noen", "nogen", "nopea", "noqo", "nosotras", "nosotros",
+        "notre", "nous", "nouveau", "nuestro", "nuevo", "nunca", "nuo", "nyt", "näkemiin", "nämä",
+        "när", "några", "når", "oben", "och", "ocksa", "ocksaa", "också", "oder", "oever", "ogow",
+        "ogsa", "ogsaa", "også", "ohne", "oikea", "ole", "olemme", "olen", "olet", "olette", "oli",
+        "olla", "ont", "opp", "oss", "oui", "ovat", "paa", "paalla", "paeaellae", "paeivaeae",
+        "paha", "paivaa", "paljon", "para", "pardon", "pequena", "pequeno", "pequeño", "perdon",
+        "perdón", "pero", "peut", "peutetre", "peutêtre", "pieni", "poder", "por", "porque",
+        "pourquoi", "pouvoir", "prendre", "puede", "puedo", "pues", "päivää", "päällä", "qaado",
+        "quand", "que", "querer", "qui", "quien", "quiere", "quiero", "quiza", "quizas", "quizá",
+        "quizás", "quoi", "qurux", "qué", "rab", "rabaa", "rask", "rechts", "redan", "saa",
+        "saber", "sae", "salaan", "salut", "samee", "sameeyaa", "sans", "savoir", "schlecht",
+        "schnell", "schoen", "schon", "schön", "sedan", "sehr", "seid", "sein", "seit", "ser",
+        "ses", "sida", "sie", "siella", "siellae", "siellä", "siempre", "sii", "sina", "sinae",
+        "sind", "sinä", "sisaellae", "sisalla", "sisällä", "sitten", "ska", "skal", "skulle",
+        "smuk", "snabb", "snaella", "snalla", "snill", "snälla", "sobre", "sois", "soll", "som",
+        "sommes", "somos", "sont", "sous", "stor", "suis", "sus", "svp", "taalla", "taas", "tack",
+        "taeaellae", "taemae", "tahay", "tai", "tak", "takk", "tal", "tama", "tambien", "también",
+        "tardes", "tehda", "tehdae", "tehdä", "tener", "tengo", "terve", "tes", "tiene", "til",
+        "till", "toda", "todo", "todos", "toi", "ton", "toujours", "tous", "tout", "toute",
+        "tschuess", "tschuss", "tschüss", "tulee", "tuo", "tus", "tämä", "täällä", "uber", "uden",
+        "ueber", "ulkona", "una", "unas", "und", "une", "unos", "uns", "unser", "unten", "unter",
+        "upp", "usted", "ustedes", "utan", "uten", "uusi", "vaar", "vacker", "vaehaen", "vaenster",
+        "vaer", "vaere", "vahan", "vaikka", "vain", "vais", "vakker", "vamos", "vanha", "vanster",
+        "var", "vara", "vas", "vasen", "ved", "venir", "venlig", "venstre", "ver", "vers", "veux",
+        "vez", "vid", "viejo", "viel", "viela", "vielae", "vielleicht", "vielä", "vieux", "vil",
+        "vill", "ville", "voi", "voin", "voir", "voit", "von", "vont", "vor", "vores", "vosotras",
+        "vosotros", "votre", "vouloir", "vous", "voy", "vuestro", "vähän", "vänster", "vår", "vær",
+        "være", "waa", "waad", "waan", "waannu", "wanaagsan", "waren", "weil", "wenig", "wenn",
+        "werde", "werden", "weyn", "wie", "wir", "wird", "wirst", "wollen", "wuu", "xun", "yahay",
+        "yar", "yli", "yloes", "ylos", "ylös", "yoetae", "yota", "yötä", "zum", "zur", "zwischen",
+        "êtes", "être", "über", "а", "ако", "бев", "без", "беше", "би", "бидејќи", "благодарам",
+        "большой", "будет", "бы", "был", "была", "были", "было", "быть", "в", "вам", "вас", "ваш",
+        "веќе", "ви", "видеть", "вие", "во", "вот", "все", "всегда", "всё", "вы", "гледам",
+        "говорить", "голем", "да", "дадам", "дать", "дека", "делать", "для", "до", "добар",
+        "добрый", "думать", "е", "еве", "его", "ее", "ей", "ему", "если", "есть", "еще", "ещё",
+        "её", "же", "за", "зборувам", "здесь", "здраво", "здравствуйте", "знам", "знать", "знаю",
+        "и", "идти", "из", "извини", "извините", "или", "им", "има", "имам", "иметь", "иногда",
+        "исто", "их", "к", "кај", "кога", "когда", "кого", "кое", "конечно", "который", "кој",
+        "која", "красивый", "кто", "ли", "лош", "мал", "маленький", "между", "мене", "меня",
+        "меѓу", "ми", "мислам", "млад", "мне", "многу", "могу", "можам", "може", "можеби", "может",
+        "можно", "мой", "молам", "молодой", "мочь", "мој", "му", "мы", "на", "наверное", "над",
+        "надо", "нам", "нас", "наш", "не", "неа", "него", "нет", "ни", "нив", "ние", "низ",
+        "никогаш", "никогда", "но", "нов", "новый", "нормално", "нужно", "о", "об", "ова", "оваа",
+        "овде", "овој", "од", "одам", "около", "околу", "он", "она", "они", "оно", "оној", "от",
+        "оти", "очень", "па", "первый", "плохой", "по", "под", "пожалуйста", "пока", "последен",
+        "последний", "потому", "правам", "прв", "пред", "преку", "при", "привет", "пријатно",
+        "про", "с", "сакам", "свой", "свој", "се", "себе", "себя", "сега", "сейчас", "секако",
+        "секогаш", "си", "сказать", "сме", "со", "спасибо", "стар", "старый", "сте", "сум", "та",
+        "таа", "также", "там", "таму", "твой", "твој", "тебе", "тебя", "ти", "тие", "тоа", "тогаш",
+        "тогда", "тоже", "тот", "тој", "треба", "тука", "туку", "тут", "ты", "у", "убав", "уже",
+        "уште", "фала", "хороший", "хотеть", "хочу", "чао", "часто", "через", "често", "что",
+        "чтобы", "што", "эта", "это", "этот", "я", "јас", "ќе", "آره", "آسان", "آمد", "آنها",
+        "أجل", "أحب", "أخذ", "أراد", "أستغفرالله", "أكبر", "أكيد", "أن", "أنا", "أنت", "أنتم",
+        "أهلا", "أهلاوسهلا", "أو", "إذا", "إلى", "إنشاء", "إنشاءالله", "إيمان", "اجل", "احب",
+        "اخذ", "اذا", "اراد", "اره", "از", "اسان", "است", "استغفرالله", "اكبر", "اكيد", "البته",
+        "الحمد", "الحمدلله", "الخير", "السلام", "الله", "اللهأكبر", "اللهاكبر", "الهی", "الى",
+        "اما", "امد", "ان", "انا", "انت", "انتم", "انشاء", "انشاءالله", "انشاالله", "انها", "اهلا",
+        "اهلاوسهلا", "او", "اون", "اگر", "ایشان", "با", "باركاللهفيك", "باشه", "ببخشید", "ببین",
+        "بخیر", "بد", "بدون", "برای", "برو", "بزرگ", "بسمالله", "بعد", "بلند", "بله", "به",
+        "بهنامخدا", "بود", "بين", "بگو", "بیا", "تا", "تحت", "تمام", "تو", "توكلتعلىالله", "ثم",
+        "جاء", "جانم", "جديد", "جزاكاللهخيرا", "جميل", "جيد", "حبيبتي", "حبيبي", "حتما", "حتى",
+        "حسبيالله", "خب", "خداحافظ", "خدانگهدار", "خدایا", "خواست", "خواهش", "خواهشمیکنم", "خوب",
+        "خوبی", "خودت", "خودم", "خوشگل", "داد", "دارم", "داشت", "در", "درود", "دوست", "دوستدارم",
+        "دون", "دید", "ذهب", "رب", "رسول", "رفت", "روی", "زیاد", "زیبا", "زیر", "سبحان",
+        "سبحانالله", "سخت", "سلام", "سهل", "شب", "شببخیر", "شد", "شكرا", "شما", "صباح",
+        "صباحالخير", "صبح", "صبحبخیر", "صعب", "صغير", "صلىاللهعليهوسلم", "ضعيف", "طبعا", "طويل",
+        "عزیزم", "عشق", "عفوا", "على", "عمل", "عن", "عند", "فعل", "فوق", "في", "قال", "قبل",
+        "قديم", "قدیمی", "قرآن", "قربانت", "قشنگ", "قصير", "قليل", "قوي", "كان", "كبير", "كثير",
+        "لأن", "لا", "لاإلهإلاالله", "لان", "لكن", "لو", "ما", "ماشاءالله", "ماشاالله", "متشکرم",
+        "مثل", "محمد", "مرحبا", "مرسی", "مساء", "مساءالخير", "مع", "ممنون", "من", "میخواهم",
+        "میروم", "میکنم", "نحن", "نخیر", "نعم", "نه", "هست", "هم", "هو", "هي", "و", "وجد", "ولی",
+        "يارب", "يريد", "يقول", "يكون", "پس", "پیش", "چطوری", "چون", "کرد", "کم", "کنار", "که",
+        "کوتاه", "کوچک", "گفت", "یا", "یاالله", "یاعلی",
     )
 
     // Most-common English words (function words + high-frequency vocabulary). Not a

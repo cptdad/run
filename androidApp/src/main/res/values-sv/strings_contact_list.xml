@@ -57,6 +57,7 @@
     <string name="referral_introduce_body">Välj vem du vill introducera %1$s för. Introducera bara personer du känner och litar på.</string>
     <string name="referral_no_candidates">Inga andra kontakter att introducera.</string>
     <string name="referral_introduce_error">Inte ansluten än — försök igen om en stund.</string>
+    <string name="contact_list_referral_offer_row">Introduktion: ”%1$s”</string>
     <string name="referral_offer_title">Kontaktförfrågan</string>
     <string name="referral_offer_message">%1$s vill introducera dig för ”%2$s”. Godkänn för att lägga till personen som kontakt.</string>
     <string name="referral_approve">Godkänn</string>
@@ -69,6 +70,8 @@
     <!-- Gruppinbjudan (samtyckesspärr GROUP-1) -->
     <string name="contact_list_group_invite_title">Gruppinbjudan</string>
     <string name="contact_list_group_invite_join">Gå med</string>
+    <string name="contact_list_group_invite_row">Gruppinbjudan: ”%1$s”</string>
+    <string name="contact_list_pending_row_hint">Tryck för att svara</string>
     <string name="contact_list_group_invite_joining">Går med…</string>
     <string name="contact_list_group_invite_message">%1$s har bjudit in dig till gruppen ”%2$s”.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s har bjudit in dig till ”%2$s”, men du hade tidigare den här gruppen under en ANNAN administratör. Gå bara med om du litar på att %1$s styr vilka som är med i gruppen.</string>
@@ -129,6 +132,7 @@
     <string name="contact_list_introduced_by">Introducerad av %1$s</string>
     <string name="contact_list_introduced">Introducerad</string>
     <string name="contact_list_repair_chip">Parkoppla om</string>
+    <string name="contact_maximum_shield_description">Använder Maximalt skydd</string>
     <string name="contact_list_unread_messages_description">Olästa meddelanden</string>
     <string name="contact_list_group_admin_label">Grupp · admin</string>
     <string name="contact_list_group_label">Grupp</string>

@@ -26,14 +26,18 @@ package com.vg.run
  * their peer's inbox announce → "Waiting…") read the vault per contact, which
  * is why the whole load is off the main thread.
  */
-internal fun loadContactListSnapshot(vault: VaultDatabase): ContactListSnapshot {
+internal fun loadContactListSnapshot(vault: VaultDatabase, maximumShield: MaximumShield? = null): ContactListSnapshot {
     val records = vault.getAllContacts()
     val contacts = records.map { it.toListItem() }
     records.forEach { it.sharedSecret.secureWipe() }
     val groups = vault.getAllGroups()
     val staleIds = contacts.filter { contactNeedsRepair(vault, it.contactId) }.map { it.contactId }.toSet()
     val pendingIds = contacts.filter { contactAwaitingPeerInbox(vault, it.contactId) }.map { it.contactId }.toSet()
-    return ContactListSnapshot(contacts, groups, staleIds, pendingIds)
+    // Maximum shield: empty unless this device is provably at MAXIMUM; only ids that are
+    // still resolved 1:1 contacts (a stale claim row for a gone contact is never shown).
+    val known = contacts.map { it.contactId }.toSet()
+    val maximumIds = (maximumShield?.claimedContactIds() ?: emptySet()).filter { it in known }.toSet()
+    return ContactListSnapshot(contacts, groups, staleIds, pendingIds, maximumIds)
 }
 
 /**
@@ -84,13 +88,18 @@ internal data class ConsentShown(val offer: ReferralOffer?, val invite: GroupInv
  * and what is on screen now ([shown]). One prompt at a time, offers first.
  *
  *  1. While the introduce picker is open ([introduceOpen]) nothing changes.
- *  2. A pending offer: keep the shown offer, or adopt the pending one if none
- *     is shown.
+ *  2. A pending offer: keep the shown offer, or adopt the first pending one NOT
+ *     deferred with "Later" ([deferredOfferIds]) if none is shown. A deferred offer
+ *     stays pending but is not presented (it is a list row,
+ *     [referralOfferRows]), so a pending invite may present instead (no loop).
+ *     The accept-in-flight "Connecting…" re-adoption is unchanged: the Approve
+ *     button un-defers the offer first.
  *  3. No pending offer and no accept in flight ([referralBusy]): the offer was
  *     consumed, so dismiss it. (Mid-accept the "Connecting…" state stays put.)
  *  4. An offer is shown and no join in flight ([groupInviteBusy]): no invite.
- *  5. No offer: adopt the pending invite if none is shown and not busy; clear
- *     it once none is pending and not busy.
+ *  5. No offer: adopt the first pending invite NOT deferred with "Later"
+ *     ([deferredInviteIds]) if none is shown and not busy; clear it once none is
+ *     pending and not busy ([GroupInvitePresentation.toAutoPresent]).
  *
  * Syncing both ways matters: after a successful accept the offer leaves
  * pendingOffers, so the dialog must clear rather than linger on "Approve".
@@ -101,19 +110,86 @@ internal fun consentToShow(
     introduceOpen: Boolean,
     referralBusy: Boolean,
     groupInviteBusy: Boolean,
+    deferredInviteIds: Set<String> = emptySet(),
+    deferredOfferIds: Set<String> = emptySet(),
 ): ConsentShown {
     if (introduceOpen) return shown
+    val pendingOffers = pending.offers.ifEmpty { listOfNotNull(pending.offer) }
     val offer = when {
-        pending.offer != null -> shown.offer ?: pending.offer
-        !referralBusy -> null
-        else -> shown.offer
+        pendingOffers.isEmpty() -> if (!referralBusy) null else shown.offer
+        else -> {
+            // busy = false on purpose: an accept in flight keeps/re-adopts the dialog.
+            val id = GroupInvitePresentation.toAutoPresent(
+                pendingIds = pendingOffers.map { it.introId },
+                deferredIds = deferredOfferIds.toList(),
+                shownId = shown.offer?.introId,
+                busy = false,
+            )
+            when {
+                id == null -> null
+                shown.offer?.introId == id -> shown.offer
+                else -> pendingOffers.firstOrNull { it.introId == id }
+            }
+        }
     }
     val invite = when {
         offer != null -> if (!groupInviteBusy) null else shown.invite
-        pending.invite != null ->
-            if (shown.invite == null && !groupInviteBusy) pending.invite else shown.invite
-        !groupInviteBusy -> null
-        else -> shown.invite
+        else -> {
+            val pendingInvites = pending.invites.ifEmpty { listOfNotNull(pending.invite) }
+            val id = GroupInvitePresentation.toAutoPresent(
+                pendingIds = pendingInvites.map { it.groupId },
+                deferredIds = deferredInviteIds.toList(),
+                shownId = shown.invite?.groupId,
+                busy = groupInviteBusy,
+            )
+            when {
+                id == null -> null
+                shown.invite?.groupId == id -> shown.invite
+                else -> pendingInvites.firstOrNull { it.groupId == id }
+            }
+        }
     }
     return ConsentShown(offer, invite)
+}
+
+/**
+ * The pending invites to list as "Invitation: ..." rows in the groups area: those
+ * the user closed with Later and that are not in a dialog now
+ * ([GroupInvitePresentation.rowIds], the rule iOS calls too).
+ */
+internal fun groupInviteRows(
+    pending: PendingConsent,
+    deferredInviteIds: Set<String>,
+    shown: GroupInvite?,
+    groupInviteBusy: Boolean,
+): List<GroupInvite> {
+    val pendingInvites = pending.invites.ifEmpty { listOfNotNull(pending.invite) }
+    val ids = GroupInvitePresentation.rowIds(
+        pendingIds = pendingInvites.map { it.groupId },
+        deferredIds = deferredInviteIds.toList(),
+        shownId = shown?.groupId,
+        busy = groupInviteBusy,
+    )
+    return ids.mapNotNull { id -> pendingInvites.firstOrNull { it.groupId == id } }
+}
+
+/**
+ * The pending referral offers to list as "Introduction: ..." rows: those the user
+ * closed with Later and that are not in a dialog now
+ * ([GroupInvitePresentation.rowIds], the same rule invites use and iOS calls too).
+ */
+internal fun referralOfferRows(
+    pending: PendingConsent,
+    deferredOfferIds: Set<String>,
+    shown: ReferralOffer?,
+    referralBusy: Boolean,
+): List<ReferralOffer> {
+    val pendingOffers = pending.offers.ifEmpty { listOfNotNull(pending.offer) }
+    val ids = GroupInvitePresentation.rowIds(
+        pendingIds = pendingOffers.map { it.introId },
+        deferredIds = deferredOfferIds.toList(),
+        shownId = shown?.introId,
+        busy = referralBusy,
+    )
+    return ids.mapNotNull { id -> pendingOffers.firstOrNull { it.introId == id } }
 }

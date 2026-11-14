@@ -42,6 +42,12 @@ class RatchetMetaCleanupTest {
                 // converging), so an inherited exhausted record would leave the
                 // re-paired peer on the legacy group route for good.
                 "grp-ann/abc",
+                // The Maximum shield's per-contact rows: the peer's claim and the last level
+                // announced to it. A re-paired peer is a new device that has heard nothing.
+                "plvl-peer/abc", "plvl-sent/abc",
+                // The persisted group unread attribution (which groups this sender's
+                // pending group texts belong to). A re-paired peer must not inherit dots.
+                "grp-unread/abc",
             ),
             keys.toSet(),
         )

@@ -50,6 +50,7 @@
     <string name="referral_introduce_body">اختر لمن تريد تقديم %1$s. لا تقدّم إلا أشخاصًا تعرفهم وتثق بهم.</string>
     <string name="referral_no_candidates">لا توجد جهات اتصال أخرى لتقديمها.</string>
     <string name="referral_introduce_error">لم يكتمل الاتصال بعد — حاول مجددًا بعد لحظات.</string>
+    <string name="contact_list_referral_offer_row">تقديم: «%1$s»</string>
     <string name="referral_offer_title">طلب تواصل</string>
     <string name="referral_offer_message">يريد %1$s تقديمك إلى «%2$s». وافق لإضافته كجهة اتصال.</string>
     <string name="referral_approve">موافقة</string>
@@ -62,6 +63,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">دعوة إلى مجموعة</string>
     <string name="contact_list_group_invite_join">انضمام</string>
+    <string name="contact_list_group_invite_row">دعوة إلى مجموعة: «%1$s»</string>
+    <string name="contact_list_pending_row_hint">اضغط للرد</string>
     <string name="contact_list_group_invite_joining">جارٍ الانضمام…</string>
     <string name="contact_list_group_invite_message">دعاك %1$s إلى المجموعة «%2$s».</string>
     <string name="contact_list_group_invite_mismatch">⚠️ دعاك %1$s إلى «%2$s»، لكن هذه المجموعة كانت لديك سابقًا تحت مشرف مختلف تمامًا. لا تنضم إلا إذا كنت تأتمن %1$s على التحكم في عضوية هذه المجموعة.</string>
@@ -122,6 +125,7 @@
     <string name="contact_list_introduced_by">قدّمه %1$s</string>
     <string name="contact_list_introduced">مُقدَّم</string>
     <string name="contact_list_repair_chip">إعادة اقتران</string>
+    <string name="contact_maximum_shield_description">يستخدم مستوى الحماية \"الحد الأقصى\"</string>
     <string name="contact_list_unread_messages_description">رسائل غير مقروءة</string>
     <string name="contact_list_group_admin_label">مجموعة · مشرف</string>
     <string name="contact_list_group_label">مجموعة</string>

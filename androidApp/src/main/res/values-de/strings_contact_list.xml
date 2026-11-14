@@ -50,6 +50,7 @@
     <string name="referral_introduce_body">Wähle, wem du %1$s vorstellen möchtest. Stelle nur Menschen vor, die du kennst und denen du vertraust.</string>
     <string name="referral_no_candidates">Keine weiteren Kontakte zum Vorstellen.</string>
     <string name="referral_introduce_error">Noch nicht verbunden — versuch es gleich erneut.</string>
+    <string name="contact_list_referral_offer_row">Vorstellung: „%1$s“</string>
     <string name="referral_offer_title">Verbindungsanfrage</string>
     <string name="referral_offer_message">%1$s möchte dich „%2$s“ vorstellen. Bestätige, um die Person als Kontakt hinzuzufügen.</string>
     <string name="referral_approve">Bestätigen</string>
@@ -62,6 +63,8 @@
     <!-- Group invite (GROUP-1 consent gate) -->
     <string name="contact_list_group_invite_title">Gruppeneinladung</string>
     <string name="contact_list_group_invite_join">Beitreten</string>
+    <string name="contact_list_group_invite_row">Gruppeneinladung: „%1$s“</string>
+    <string name="contact_list_pending_row_hint">Zum Antworten tippen</string>
     <string name="contact_list_group_invite_joining">Tritt bei…</string>
     <string name="contact_list_group_invite_message">%1$s hat dich in die Gruppe „%2$s“ eingeladen.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s hat dich zu „%2$s“ eingeladen, aber du hattest diese Gruppe zuvor unter einem ANDEREN Administrator. Tritt nur bei, wenn du darauf vertraust, dass %1$s über die Mitglieder dieser Gruppe bestimmt.</string>
@@ -122,6 +125,7 @@
     <string name="contact_list_introduced_by">Vorgestellt von %1$s</string>
     <string name="contact_list_introduced">Vorgestellt</string>
     <string name="contact_list_repair_chip">Neu koppeln</string>
+    <string name="contact_maximum_shield_description">Nutzt Maximum-Schutz</string>
     <string name="contact_list_unread_messages_description">Ungelesene Nachrichten</string>
     <string name="contact_list_group_admin_label">Gruppe · Admin</string>
     <string name="contact_list_group_label">Gruppe</string>

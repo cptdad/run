@@ -1496,6 +1496,20 @@ final class AppState: ObservableObject {
     // sibling: RunViewModel's equivalent queue over the same hook.
     @Published var referralRelayEvents: [ReferralRelayEvent] = []
 
+    // Group invites the user closed with "Later" this session (group ids only,
+    // RAM only, NOT @Published: ContactListView re-derives its rows itself).
+    // The consent surface does not auto-present them again; they show as rows in
+    // the groups area. Cleared in clearInMemoryIdentifierMaps() (lock / wipe).
+    // Lives here, not in the view, so it survives the list's view lifecycle.
+    // Android sibling: RunViewModel.deferredGroupInviteIds.
+    var deferredGroupInviteIds: Set<String> = []
+
+    // Referral offers (introIds, base64url) closed with "Later" this session: the
+    // same non-blocking rule and lifetime as deferredGroupInviteIds (RAM only, not
+    // @Published, cleared with it). Approve un-defers first so a failed accept
+    // re-presents as Retry. Android sibling: RunViewModel.deferredReferralOfferIds.
+    var deferredReferralOfferIds: Set<String> = []
+
     // In-app store-review nudge (ReviewPromptPolicy.kt in commonMain — the
     // pure decision function; everything here is orchestration). A one-shot
     // per-session SIGNAL, not a dialog: ContactListView's
@@ -2308,6 +2322,9 @@ final class AppState: ObservableObject {
         // commonMain). The vault's own copy is erased/re-arms with the vault; this
         // is only the in-RAM mirror.
         showUpdateNudge = nil
+        // "Later" group-invite ids: a new session presents each pending invite once again.
+        deferredGroupInviteIds = []
+        deferredReferralOfferIds = []
         // contactId-keyed ratchet-health SIGNALS, re-derived from the vault by
         // refreshForwardSecrecyStalled / refreshRatchetRefused on the next
         // conversation open, send and poll tick, so clearing them can neither
@@ -2354,6 +2371,10 @@ final class AppState: ObservableObject {
     }
 
     var currentProtectionLevel: String { controller.currentProtectionLevel() }
+    /// Maximum shield (MaximumShield.kt): contacts that reported Maximum while THIS device is
+    /// at MAXIMUM — empty otherwise. Blocking vault read. Android sibling: `RunViewModel.maximumShield`.
+    func maximumShieldContactIds() -> Set<String> { controller.maximumShieldContactIds() }
+    func isMaximumShieldClaimed(contactId: String) -> Bool { controller.isMaximumShieldClaimed(contactId: contactId) }
     // Returns false on a transient device-key outage (nothing written; Kotlin logs
     // and defers instead of throwing across the bridge). Callers must ABORT their
     // apply flow on false: proceeding would rotate the credential
@@ -2551,6 +2572,14 @@ final class AppState: ObservableObject {
     func setBiometricUnlock(_ enabled: Bool, completion: @escaping @MainActor (Bool) -> Void) {
         let controller = self.controller
         offMain({ controller.setDbKeyAuthBinding(enabled: enabled) }, then: completion)
+    }
+
+    /// RUN-01, Secure → Maximum: re-key the vault AFTER the Lever B drop, with the
+    /// credential the settings chain just set (VaultSelector.rotateDbKeyAfterTierUpgrade).
+    /// Heavy (KDF + re-key) — off the main thread; the Bool is informational.
+    func rotateDbKeyAfterTierUpgrade(_ credential: String, completion: @escaping @MainActor (Bool) -> Void) {
+        let controller = self.controller
+        offMain({ controller.rotateDbKeyAfterTierUpgrade(credential: credential) }, then: completion)
     }
 
     // -----------------------------------------------------------------------

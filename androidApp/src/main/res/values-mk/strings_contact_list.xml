@@ -36,6 +36,7 @@
     <string name="referral_introduce_body">Изберете на кого да претставите %1$s. Претставувајте само луѓе што ги познавате и им верувате.</string>
     <string name="referral_no_candidates">Нема други контакти за претставување.</string>
     <string name="referral_introduce_error">Сè уште не сте поврзани — обидете се повторно за момент.</string>
+    <string name="contact_list_referral_offer_row">Претставување: „%1$s“</string>
     <string name="referral_offer_title">Барање за поврзување</string>
     <string name="referral_offer_message">%1$s сака да ве претстави на „%2$s“. Одобрете за да ги додадете како контакт.</string>
     <string name="referral_approve">Одобри</string>
@@ -46,6 +47,8 @@
     <string name="referral_relayed_queued">%1$s го одобри вашето претставување на %2$s. Rún не можеше да стигне до релето сега и ќе ги проследи податоците автоматски следниот пат кога ќе ја отворите апликацијата.</string>
     <string name="contact_list_group_invite_title">Покана за група</string>
     <string name="contact_list_group_invite_join">Приклучи се</string>
+    <string name="contact_list_group_invite_row">Покана за група: „%1$s“</string>
+    <string name="contact_list_pending_row_hint">Допрете за одговор</string>
     <string name="contact_list_group_invite_joining">Се приклучува…</string>
     <string name="contact_list_group_invite_message">%1$s ве покани во групата „%2$s“.</string>
     <string name="contact_list_group_invite_mismatch">⚠️ %1$s ве покани во „%2$s“, но претходно ја имавте оваа група под ДРУГ администратор. Приклучете се само ако имате доверба во %1$s да го контролира членството во оваа група.</string>
@@ -88,6 +91,7 @@
     <string name="contact_list_introduced_by">Претставено од %1$s</string>
     <string name="contact_list_introduced">Претставено</string>
     <string name="contact_list_repair_chip">Спари повторно</string>
+    <string name="contact_maximum_shield_description">Користи максимална заштита</string>
     <string name="contact_list_unread_messages_description">Непрочитани пораки</string>
     <string name="contact_list_group_admin_label">Група · администратор</string>
     <string name="contact_list_group_label">Група</string>

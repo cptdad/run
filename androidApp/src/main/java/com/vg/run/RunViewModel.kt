@@ -696,6 +696,11 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
     var referralManager: ReferralManager? = null
         private set
 
+    /** The Maximum shield (MaximumShield.kt): built with the session managers, passed to
+     *  each MessageManager (receiver) and read by the contact list / conversation title. */
+    var maximumShield: MaximumShield? = null
+        private set
+
     // -----------------------------------------------------------------------
     // Move to new device (docs/device-move.md)
     // -----------------------------------------------------------------------
@@ -1444,7 +1449,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                     val snap = withContext(Dispatchers.IO) {
                         val v = vault ?: return@withContext null
                         try {
-                            loadContactListSnapshot(v)
+                            loadContactListSnapshot(v, maximumShield)
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Exception) {
@@ -1476,10 +1481,58 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // on IO, and a null manager simply reads as "nothing pending".
         val rm = referralManager
         val gm = groupManager
+        var invites: List<GroupInvite>? = null
+        try { invites = gm?.pendingInvites() } catch (_: Exception) { }
+        if (invites != null) {
+            // Only after a SUCCESSFUL read: a withdrawn / declined invite's "Later"
+            // must not outlive it (a re-invite of the same group presents afresh).
+            val pruned = GroupInvitePresentation.pruneDeferred(invites.map { it.groupId }, _deferredGroupInviteIds.value)
+            if (pruned.size != _deferredGroupInviteIds.value.size) _deferredGroupInviteIds.value = pruned
+        }
+        var offers: List<ReferralOffer>? = null
+        try { offers = rm?.pendingOffers() } catch (_: Exception) { }
+        if (offers != null) {
+            // Same rule as invites: a consumed / expired offer's "Later" must not outlive it.
+            val prunedOffers = GroupInvitePresentation.pruneDeferred(offers.map { it.introId }, _deferredReferralOfferIds.value)
+            if (prunedOffers.size != _deferredReferralOfferIds.value.size) _deferredReferralOfferIds.value = prunedOffers
+        }
         _pendingConsent.value = PendingConsent(
-            offer = try { rm?.pendingOffers()?.firstOrNull() } catch (_: Exception) { null },
-            invite = try { gm?.pendingInvites()?.firstOrNull() } catch (_: Exception) { null },
+            offer = offers?.firstOrNull(),
+            offers = offers ?: emptyList(),
+            invite = invites?.firstOrNull(),
+            invites = invites ?: emptyList(),
         )
+    }
+
+    /**
+     * Group invites the user closed with "Later" this session (RAM only; group ids,
+     * no aliases). The consent surface does not auto-present them again — they show
+     * as rows in the groups area instead ([GroupInvitePresentation]). Lives here, not
+     * in the screen, because the contact list is a NavHost destination whose
+     * composition (and `remember` state) dies on every conversation open. Cleared
+     * on lock / wipe / teardown with the rest of the session state.
+     */
+    private val _deferredGroupInviteIds = MutableStateFlow<Set<String>>(emptySet())
+    val deferredGroupInviteIds: StateFlow<Set<String>> = _deferredGroupInviteIds.asStateFlow()
+
+    fun deferGroupInvite(groupId: String) {
+        _deferredGroupInviteIds.value = _deferredGroupInviteIds.value + groupId
+    }
+
+    /**
+     * Referral offers (introIds, base64url) the user closed with "Later" this
+     * session — the same non-blocking rule as [deferredGroupInviteIds], RAM only,
+     * cleared with it. Approve un-defers first so a failed accept re-presents as Retry.
+     */
+    private val _deferredReferralOfferIds = MutableStateFlow<Set<String>>(emptySet())
+    val deferredReferralOfferIds: StateFlow<Set<String>> = _deferredReferralOfferIds.asStateFlow()
+
+    fun deferReferralOffer(introId: String) {
+        _deferredReferralOfferIds.value = _deferredReferralOfferIds.value + introId
+    }
+
+    fun undeferReferralOffer(introId: String) {
+        _deferredReferralOfferIds.value = _deferredReferralOfferIds.value - introId
     }
 
     private fun startConsentTick() {
@@ -1955,9 +2008,21 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         recordUnlockBookkeeping(openedVault)
         // Build + cross-wire both session managers in one shared place so the
         // referral-control bridge can't be forgotten on one platform.
-        val managers = createSessionManagers(openedVault) { messageManager }
+        val managers = createSessionManagers(
+            openedVault,
+            // Eager group-inbox establishment, OFF the critical path: a membership
+            // event converges the pair's group inbox ahead of the first group text
+            // (so its dot is the durable, peek-derivable presence bump). Cancelled
+            // with the session (viewModelScope dies in onCleared); blocking PoW +
+            // network, so Dispatchers.IO. Fail-soft — a drop just leaves the lazy
+            // control-sweep backfill.
+            groupBackfillLauncher = { work -> viewModelScope.launch(Dispatchers.IO) { work() } },
+            // The shield's "am I at MAXIMUM" read — authenticated-only (VaultSelector.maximumShieldLevel).
+            maximumLevelProbe = { vaultSelector.maximumShieldLevel() },
+        ) { messageManager }
         groupManager = managers.groupManager
         referralManager = managers.referralManager
+        maximumShield = managers.maximumShield
         // Assigned PROMPTLY, right after construction — the setter flushes a
         // latched rehydrate-time finalize (a peer's accept that landed while we
         // were dead), so a late assignment here would silently miss it. Bumping
@@ -2912,7 +2977,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
      * proxy path, so the two can never wire a session differently.
      */
     private fun wireRelayTransport(openedVault: VaultDatabase, client: PlatformHttpClient) {
-        messageManager = MessageManager(openedVault, httpClient = client, localAppVersion = BuildConfig.VERSION_NAME)
+        messageManager = MessageManager(openedVault, httpClient = client, localAppVersion = BuildConfig.VERSION_NAME, maximumShield = maximumShield)
         startRelayCheck()
         startDebugLogPeriodicUpload()
         startControlPoll()
@@ -4457,6 +4522,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         referralManager?.scrubInMemory()
         groupManager = null
         referralManager = null
+        maximumShield = null
         _isRelayReachable.value = false
         _relayHandshakeComplete.value = false
         _unreadPrimeSettled.value = false
@@ -4520,6 +4586,8 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // point, rather than left to a composition's dispose.
         _contactList.value = null
         _pendingConsent.value = PendingConsent(null, null)
+        _deferredGroupInviteIds.value = emptySet()
+        _deferredReferralOfferIds.value = emptySet()
         _unreadCounts.value = emptyMap()
         _groupUnreadCounts.value = emptyMap()
         _relayLostContacts.value = emptySet()
@@ -4628,6 +4696,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         referralManager?.scrubInMemory()
         groupManager = null
         referralManager = null
+        maximumShield = null
         // The transport is gone with the managers above, so neither claim may
         // survive the lock. [relayHandshakeComplete]'s own kdoc states the rule
         // ("reset only when the transport itself is torn down — Tor restart /

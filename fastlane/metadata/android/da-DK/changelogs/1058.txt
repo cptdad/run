@@ -1,6 +1,3 @@
-• Maksimal: adgangssætningen skrives i hånden – den kan ikke indsættes.
-• Maksimal afviser flere svage adgangssætninger, som at tælle på dit sprog eller rækker af tegnsætning.
-• Grupper: en tekst, der ikke nåede alle, viser »ikke leveret til N«; at forlade advarer om, at ulæste tekster kan gå tabt.
-• Låsning kan ikke udskydes; at vise flyttekoden igen kræver oplåsning.
-• En annulleret flytning til ny telefon hænger ikke længere fast.
-• Om: link til kildekoden og licenserne.
+• Maksimal: adgangssætningen skrives i hånden – den kan ikke indsættes eller kopieres.
+• Maksimal afviser flere svage adgangssætninger, som kendte vendinger, ugedage, at tælle på dit sprog eller rækker af tegnsætning.
+• Grupper: prikken for ulæste vises nu for et medlems første besked og bliver mere pålideligt stående, når du vender tilbage til appen.

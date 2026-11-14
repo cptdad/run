@@ -1,0 +1,6 @@
+• Maximal: kontakter som också använder Maximal får en sköld vid sitt namn.
+• Ett skickat meddelande går från grått till full färg när reläet har tagit emot det.
+• Gruppinbjudningar och introduktioner kan besvaras senare från chattlistan.
+• Gör till admin frågar nu innan du lämnar över admin-rollen.
+• Grupper: pricken för olästa visas bara på gruppen som fick meddelandet.
+• Säkerhetsrättningar efter en extern granskning.

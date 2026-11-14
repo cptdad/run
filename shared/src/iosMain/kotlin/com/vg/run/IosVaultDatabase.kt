@@ -65,8 +65,10 @@ internal fun iosVaultFileExists(): Boolean =
  * rather than raising, so this never throws.
  */
 internal fun iosDeleteVaultFiles() {
-    // `-wal`/`-shm` are iOS's own sidecars (WAL mode), `-journal` Android's; both
-    // platforms sweep all of them.
+    // `-journal` is iOS's own sidecar since RUN-02 (rollback journal, TRUNCATE mode —
+    // a 0-byte file between transactions); `-wal`/`-shm` are what builds before it
+    // (WAL mode) leave until the first open converts the file. Both platforms sweep
+    // all of them.
     val fm = NSFileManager.defaultManager
     val dbPath = iosVaultDbPath()
     for (suffix in VaultFiles.SIDECAR_SUFFIXES) {
@@ -102,6 +104,43 @@ internal fun iosProtectVaultDbFiles(dbPath: String) {
         )
     }
 }
+
+/**
+ * RUN-02: make sure the rollback journal exists BEFORE SQLite first creates it, so
+ * it is born NSFileProtectionComplete instead of inheriting the directory's weaker
+ * default class. In TRUNCATE mode SQLite keeps reusing this inode (it empties it at
+ * every commit, it never unlinks it), so the class set here — and the backup
+ * exclusion [iosProtectVaultDbFiles] adds right after — covers every later
+ * transaction's pre-images. Without it, a vault upgraded from the WAL build would
+ * hold its first session's journal in the default class until the next open.
+ *
+ * NEVER touches an existing file: an existing `-journal` may be a HOT journal
+ * (unclean exit mid-commit) that SQLite must roll back — overwriting it would tear
+ * the vault. A 0-byte journal is ignored by SQLite's hot-journal check (it needs at
+ * least one non-zero header byte), so creating an empty one is inert. Only done
+ * next to a real db file. Best-effort, never throws.
+ */
+internal fun iosPrecreateProtectedJournal(dbPath: String) {
+    try {
+        val fm = NSFileManager.defaultManager
+        if (!fm.fileExistsAtPath(dbPath)) return
+        val journal = "$dbPath-journal"
+        if (fm.fileExistsAtPath(journal)) return
+        fm.createFileAtPath(
+            journal,
+            contents = null,
+            attributes = mapOf<Any?, Any?>(NSFileProtectionKey to NSFileProtectionComplete),
+        )
+    } catch (_: Throwable) {
+        // Hygiene only: SQLite creates the file itself if this did not.
+    }
+}
+
+/** `sqlite3_busy_timeout` SwiftDatabaseBridge.open sets (RUN-02); keep in lockstep. */
+private const val BRIDGE_BUSY_TIMEOUT_MS = 2500L
+
+/** SQLite's journal-mode words — the only mode text RUN-02's warning may log. */
+private val KNOWN_JOURNAL_MODES = setOf("delete", "truncate", "persist", "memory", "wal", "off")
 
 /** Size of the vault DB file in bytes, 0 when absent. Shared by the #28 guards. */
 private fun iosVaultDbFileSize(dbPath: String): Long {
@@ -145,10 +184,11 @@ internal fun iosProbeVaultKey(dbKey: ByteArray): Boolean {
         val keyMaterial = dbKey.copyOf()
         try {
             val rc = bridge.open(dbPath, keyMaterial)
-            // Unconditional, before anything can return: the open (and its
-            // `PRAGMA journal_mode=WAL`) may have materialised a -wal/-shm, and a
-            // probe must never leave an unprotected, backed-up sidecar holding
-            // vault pages. A no-op on files that already exist / never appeared.
+            // Unconditional, before anything can return: the open (its hot-journal
+            // rollback, its `PRAGMA journal_mode=TRUNCATE` — RUN-02) may have
+            // materialised or rewritten a sidecar, and a probe must never leave an
+            // unprotected, backed-up sidecar holding vault pages. A no-op on files
+            // that already exist / never appeared.
             iosProtectVaultDbFiles(dbPath)
             if (rc == 0) {
                 val rows = bridge.query("SELECT count(*) AS n FROM sqlite_master", NSMutableArray())
@@ -182,6 +222,17 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
     // writes re-acquire it — a non-reentrant NSLock would self-deadlock there. Reentrancy
     // is otherwise behaviourally identical for the per-method lock/unlock pairs.
     private val lock = NSRecursiveLock()
+
+    // RUN-02 state, guarded by [lock] (init runs before the instance is shared).
+    // DECLARED ABOVE `init` ON PURPOSE: Kotlin runs property initialisers and init
+    // blocks in source order, so a field declared below would be reset to its
+    // initialiser AFTER init's enforceRollbackJournal() had armed it.
+    /** True while this connection is NOT proven to be on a rollback journal. */
+    private var rollbackJournalUnproven = false
+    /** Open withTransaction depth: a journal-mode switch is refused inside a transaction. */
+    private var txnDepth = 0
+    /** One warning per unproven episode, so a stuck retry cannot flood the log. */
+    private var rollbackJournalWarned = false
 
     init {
         val dbPath = iosVaultDbPath()
@@ -281,12 +332,24 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
         // is defense-in-depth for ordinary (non-wipe) deletes.
         exec("PRAGMA secure_delete = ON")
 
-        // Protect the DB file and its WAL/SHM sidecars at rest with
+        // RUN-02: prove the connection is on the rollback journal the bridge asked
+        // for (SwiftDatabaseBridge.open — see the rationale there) BEFORE the first
+        // write of this session. The bridge's switch is unchecked by design; this is
+        // the read-back. Leaving WAL is also what checkpoints + unlinks a -wal that a
+        // pre-RUN-02 build or an unclean exit left on disk, so on success no older
+        // committed view survives this open. A refused switch (SQLITE_BUSY: another
+        // connection holds the file) never fails the open — it empties the WAL as far
+        // as it can, verified, and arms the retry at every later write boundary.
+        enforceRollbackJournal()
+        iosPrecreateProtectedJournal(dbPath)
+
+        // Protect the DB file and its journal sidecars at rest with
         // NSFileProtectionComplete (inaccessible whenever the device is locked)
         // as early as possible — immediately after open, before any schema or
-        // seeding writes. The main file exists now; the -wal/-shm are created
-        // on first write, so this is re-applied after createTables()/seeding
-        // below to cover them too. Background DB access no longer exists (no
+        // seeding writes. The main file exists now; the -journal (RUN-02: pre-created
+        // just above when absent; SQLite's own on first write otherwise) is covered
+        // here or by the re-application after createTables()/seeding below — as are
+        // a WAL-fallback's -wal/-shm. Background DB access no longer exists (no
         // background reader remains), so Complete (vs the weaker default
         // CompleteUntilFirstUserAuthentication, which stays readable while the
         // device is locked) cannot break a background read.
@@ -301,8 +364,111 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
         exec("INSERT OR IGNORE INTO _meta (key, value) VALUES ('seeded', '1')")
 
         // Re-apply protection now that createTables() has materialised the
-        // -wal/-shm sidecars (and the pages they hold).
+        // journal sidecar (and the pages it held during those writes) — or, in the
+        // WAL-fallback case, the -wal/-shm.
         protectDbFiles(dbPath)
+    }
+
+    // -----------------------------------------------------------------------
+    // RUN-02 — no superseded vault state may stay recoverable from the journal.
+    //
+    // The Double Ratchet state (root key, DH private key, chain keys, skipped
+    // message keys) is ONE `_meta` row replaced on every step. Under WAL every
+    // replaced version sat in run.db-wal until a checkpoint reset the log (never
+    // forced), so db + wal imaged together, plus the current db key, rebuilt an
+    // earlier committed view and an old chain key — undoing forward secrecy for
+    // recorded ciphertext. The bridge now opens in rollback-journal TRUNCATE mode,
+    // whose sidecar only ever holds the pre-images of the transaction in flight
+    // (= the last COMMITTED state, never an older one) and is emptied at commit.
+    //
+    // This class only VERIFIES that and retries when it is not true. Boundaries:
+    // init (after the open, before any write), after every top-level write that
+    // persists `_meta` (putMeta / deleteMeta, outside a transaction), after the
+    // outermost withTransaction, after a re-key, and before close. Steady state
+    // (proven at init) costs one Boolean read per boundary — nothing is issued.
+    //
+    // Honest limit: truncation/unlink is not physical erasure on flash, and nothing
+    // here can revoke an image an attacker already holds.
+    // -----------------------------------------------------------------------
+
+    /**
+     * Ask for the rollback journal and READ BACK the answer. `truncate`/`delete` are
+     * proof (both empty the sidecar at commit); anything else — `wal` because the
+     * switch out of WAL needs the file to itself and got SQLITE_BUSY, an empty row
+     * set, a throw — is not. While unproven, also run a TRUNCATE checkpoint and
+     * verify it (busy == 0 and an emptied log) so the superseded frames leave the
+     * WAL now rather than at the next successful switch; a busy / partial checkpoint
+     * is NOT treated as done — the flag stays armed and the next boundary retries
+     * both. Never throws, never fails an open (brick safety: a vault that opened is
+     * a vault that opened). Runs through [bridge]'s `query` (PRAGMAs that return a
+     * row), never `execute`.
+     *
+     * [blocking] = false (every write boundary) runs the attempt with the
+     * connection's busy timeout at 0 and restores it afterwards: a retry that cannot
+     * get the file must cost a failed PRAGMA, not the bridge's 2.5 s busy wait (twice)
+     * under [lock] on every ratchet write. Only the open-time attempt waits.
+     */
+    private fun enforceRollbackJournal(blocking: Boolean = true) {
+        if (blocking) { enforceRollbackJournalAttempt(); return }
+        val savedTimeoutMs = try {
+            (queryRows("PRAGMA busy_timeout").firstOrNull()?.values?.firstOrNull() as? NSNumber)?.longLongValue
+        } catch (_: Throwable) { null }
+        try { queryRows("PRAGMA busy_timeout = 0") } catch (_: Throwable) { }
+        try {
+            enforceRollbackJournalAttempt()
+        } finally {
+            // Restore what the bridge set (unreadable ⇒ the bridge's own value).
+            val restore = savedTimeoutMs?.takeIf { it in 0L..60_000L } ?: BRIDGE_BUSY_TIMEOUT_MS
+            try { queryRows("PRAGMA busy_timeout = $restore") } catch (_: Throwable) { }
+        }
+    }
+
+    private fun enforceRollbackJournalAttempt() {
+        val mode = try {
+            (queryRows("PRAGMA journal_mode = TRUNCATE").firstOrNull()?.values?.firstOrNull() as? String)
+                ?.lowercase()
+        } catch (_: Throwable) { null }
+        if (mode == "truncate" || mode == "delete") {
+            if (rollbackJournalUnproven) platformLog("IosVaultDB", "rollback journal now in effect")
+            rollbackJournalUnproven = false
+            rollbackJournalWarned = false
+            return
+        }
+        rollbackJournalUnproven = true
+        val walEmptied = walCheckpointTruncateProven()
+        if (!rollbackJournalWarned) {
+            rollbackJournalWarned = true
+            // Fixed vocabulary only: SQLite's own mode word (or "unknown"), a boolean.
+            val shown = if (mode != null && mode in KNOWN_JOURNAL_MODES) mode else "unknown"
+            platformLogWarn(
+                "IosVaultDB",
+                "rollback journal not in effect (mode=$shown, wal emptied=$walEmptied) - retrying at write boundaries",
+            )
+        }
+    }
+
+    /**
+     * `PRAGMA wal_checkpoint(TRUNCATE)` with its result row checked: proven only
+     * when `busy == 0` and `log == 0` (the log was reset AND truncated). A
+     * `busy == 1`, a non-zero `log` (frames still in the file), a missing row or a
+     * throw all answer false. Not in WAL mode at all (`log == -1`) answers true —
+     * there is no WAL to hold anything.
+     */
+    private fun walCheckpointTruncateProven(): Boolean = try {
+        val row = queryRows("PRAGMA wal_checkpoint(TRUNCATE)").firstOrNull()
+        val busy = (row?.get("busy") as? NSNumber)?.longLongValue
+        val log = (row?.get("log") as? NSNumber)?.longLongValue
+        busy == 0L && (log == 0L || log == -1L)
+    } catch (_: Throwable) { false }
+
+    /**
+     * A write boundary: retry [enforceRollbackJournal] while it is unproven and no
+     * transaction is open (the switch is refused inside one; the outermost
+     * withTransaction calls this after its COMMIT/ROLLBACK). A no-op in the steady
+     * state. Caller holds [lock].
+     */
+    private fun afterWriteBoundary() {
+        if (rollbackJournalUnproven && txnDepth == 0) enforceRollbackJournal(blocking = false)
     }
 
     /**
@@ -323,8 +489,8 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
      *
      * Body extracted to the top-level [iosProtectVaultDbFiles] so [iosProbeVaultKey]
      * — which opens a bridge handle WITHOUT constructing this class — re-applies the
-     * identical set. Its open runs `PRAGMA journal_mode=WAL`, which can materialise a
-     * `-wal`/`-shm` that would otherwise be created outside this guard.
+     * identical set. Its open can roll back a hot journal or (on a not-yet-converted
+     * pre-RUN-02 vault) touch a `-wal`/`-shm`, outside this guard otherwise.
      */
     private fun protectDbFiles(dbPath: String) = iosProtectVaultDbFiles(dbPath)
 
@@ -487,6 +653,8 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
         try {
             // execChecked: a lost ratchet-state persist must THROW (fail-closed).
             execChecked("INSERT OR REPLACE INTO _meta (key, value) VALUES (?, ?)", key, value)
+            // RUN-02 boundary: this is the ratchet-secret write. No-op once proven.
+            afterWriteBoundary()
         } finally { lock.unlock() }
     }
 
@@ -495,7 +663,10 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
         // execChecked (Android parity: SQLiteDatabase.delete throws): every caller is
         // already a swallowing best-effort helper or sits inside a try / withTransaction,
         // so a failed DELETE now rolls a transaction back instead of committing around it.
-        try { execChecked("DELETE FROM _meta WHERE key = ?", key) } finally { lock.unlock() }
+        try {
+            execChecked("DELETE FROM _meta WHERE key = ?", key)
+            afterWriteBoundary()   // RUN-02 boundary (no-op once proven)
+        } finally { lock.unlock() }
     }
 
     /**
@@ -520,6 +691,7 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
     // interleave a write onto the shared connection between BEGIN and COMMIT.
     override fun withTransaction(block: () -> Unit) {
         lock.lock()
+        txnDepth++
         try {
             execChecked("BEGIN")
             try {
@@ -530,6 +702,11 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
                 throw e
             }
         } finally {
+            txnDepth--
+            // RUN-02 boundary, AFTER the COMMIT/ROLLBACK (a journal-mode switch is
+            // refused inside a transaction). Never throws, so it cannot mask the
+            // block's own exception. No-op once proven.
+            afterWriteBoundary()
             lock.unlock()
         }
     }
@@ -866,6 +1043,11 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
                 bridge.rekey(keyMaterial) == 0
             } finally {
                 keyMaterial.secureWipe()
+                // RUN-02 boundary: in the WAL fallback a re-key would leave every
+                // OLD-key page version in the log. No-op once proven (the rollback
+                // journal is emptied by the re-key's own commit). Never throws and
+                // never changes this method's return value.
+                afterWriteBoundary()
             }
         } catch (_: Throwable) {
             false
@@ -880,6 +1062,11 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
     override fun close() {
         lock.lock()
         try {
+            // RUN-02 boundary: one last switch / verified checkpoint attempt while the
+            // handle still exists (sqlite3_close also checkpoints a WAL, but only when
+            // it is the last connection and gets the lock). No-op once proven; never
+            // throws, so the close below always runs.
+            if (!closed) afterWriteBoundary()
             closed = true
             bridge.close()
         } finally { lock.unlock() }

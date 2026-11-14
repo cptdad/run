@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -170,12 +171,28 @@ fun GroupInfoScreen(
     var memberAction by remember { mutableStateOf<MemberDisplay?>(null) }
     var showAddPicker by remember { mutableStateOf(false) }
     var showLeaveConfirm by remember { mutableStateOf(false) }
+    var makeAdminTarget by remember { mutableStateOf<MemberDisplay?>(null) }
     var showChooseAdmin by remember { mutableStateOf(false) }
     // Shown when transferAdmin returns false (the
     // chosen successor left between the sheet opening and the tap) instead of
     // leaving anyway, which would strand the group with a dead adminMemberId.
     var transferFailed by remember { mutableStateOf(false) }
     var working by remember { mutableStateOf(false) }
+
+    // A roster applied by the background control sweep while this screen is open (admin
+    // handed over, member added / removed / resolved) must show without closing and
+    // reopening it: poll the shared roster stamp and re-read on a change. Skipped while
+    // our own membership op runs (it refreshes when it finishes) and when the vault could
+    // not be read. A vanished group re-reads too, which routes to onLeft above.
+    val shownStamp by rememberUpdatedState(remember(refreshKey) { groupRosterStamp(vault, groupId) })
+    val busy by rememberUpdatedState(working)
+    LaunchedEffect(groupId) {
+        while (true) {
+            kotlinx.coroutines.delay(2_000)
+            val now = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { groupRosterStamp(vault, groupId) }
+            if (now != ROSTER_STAMP_UNAVAILABLE && now != shownStamp && !busy) refreshKey++
+        }
+    }
 
     /** Runs a blocking membership operation off the main thread, then refreshes the
      *  screen. Guarded so only one runs at a time.
@@ -402,9 +419,10 @@ fun GroupInfoScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
-                            val id = target.memberId
+                            // A group has ONE admin: this hands the role over, so
+                            // confirm first (iOS sibling: GroupViews.swift makeAdminTarget).
+                            makeAdminTarget = target
                             memberAction = null
-                            runMembershipOp { viewModel.groupManager?.transferAdmin(groupId, id) }
                         }
                         .padding(horizontal = 24.dp, vertical = 14.dp)
                         .testTag("member_action_make_admin")
@@ -481,6 +499,35 @@ fun GroupInfoScreen(
                     }
                 }
             }
+        }
+    }
+
+    // ----- Make-admin confirmation (the role is TRANSFERRED, not shared) -----
+    makeAdminTarget?.let { target ->
+        RuneScrimOverlay(
+            onDismiss = { makeAdminTarget = null },
+            testTag = "make_admin_alert",
+        ) {
+            RuneCardBody {
+                RuneDialogTitle(stringResource(
+                    R.string.group_info_make_admin_confirm_title,
+                    String(Character.toChars(0x2068)) + target.alias + String(Character.toChars(0x2069))))
+                RuneDialogMessage(stringResource(R.string.group_info_make_admin_confirm_body))
+            }
+            RuneActionRow(listOf(
+                runeSecondary(stringResource(R.string.common_cancel), testTag = "make_admin_cancel") {
+                    makeAdminTarget = null
+                },
+                RuneDialogAction(
+                    label = stringResource(R.string.group_info_make_admin),
+                    testTag = "make_admin_confirm",
+                    onClick = {
+                        val id = target.memberId
+                        makeAdminTarget = null
+                        runMembershipOp { viewModel.groupManager?.transferAdmin(groupId, id) }
+                    },
+                ),
+            ))
         }
     }
 
