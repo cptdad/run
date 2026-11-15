@@ -1672,7 +1672,29 @@ first SETEVENTS; both: again after every accepted app-fired NEWNYM, and Android 
 `HS_DESC` against all addresses (`RelayAddressRace.parseDescriptorEvent` → `RelayDescriptorWatchdog.
 parseEvent(line, list)`, only the slot INDEX leaves it); the FIRST `RECEIVED` of the race wins and its
 URL becomes `BASE_URL`; a `FAILED` of one address never ends the race. The winner is STICKY across a
-NEWNYM / new Tor process until the re-race decides (never back to a slower slot 1 meanwhile). A winner
+NEWNYM / new Tor process until the re-race decides (never back to a slower slot 1 meanwhile).
+DEMOTION (2026-11-15; prod incident that morning: three in-process Tor restarts + NEWNYMs failed, a
+fresh process worked — the race is process-wide and decides on the DESCRIPTOR, so an address whose
+descriptor is fetchable but whose intro/rendezvous is dead kept winning until the process died):
+`RelayAddressRace.demoteUnansweredWinner` (via `RelayEndpoints`) runs where a stall ladder GIVES UP —
+Android `RunViewModel.restartTor` (the auto restart after the stall watch's two NEWNYMs AND the manual
+Reconnect, after the internal-retry deferral, before the transport is torn down), iOS
+`AppState.maybeLatchStalled` (the `.stalled` latch — iOS cannot restart Tor) and `reconnectRelay`
+(before its NEWNYM). Never in external SOCKS proxy mode, never pre-unlock (speculative start, warm-up,
+keep-alive adoption never call it). Rule: no-op with ONE address; refused when the winner had a real
+relay answer since the current Tor HS state began (`noteRelayAnswered`, fed by every
+`MessageManager.markRelayRoundTripCompleted` and an answered warm-up; cleared by
+`noteTorHsStateReset`); refused when the current winner only inherited the session from a demotion and
+has not had a Tor HS state of its own yet (so iOS's `.stalled` latch + Reconnect cannot burn two slots
+without a race in between). Effect: the demoted slot leaves `BASE_URL` AT ONCE (first non-demoted slot
+in list order; the switch hook aborts the stuck probe); its `RECEIVED` cannot decide a race while a
+non-demoted address is still in it (held, and it wins after all if every other address `FAILED`); the
+hedge targets non-demoted addresses first. At most N-1 slots are demoted (demoting the last eligible
+one clears the set first — it rotates, never deadlocks). Lifetime: until the first real relay answer
+anywhere in the process (clears the whole set), RAM only. Panel line (uncoded, both platforms from
+`RelayAddressRace.demotedPhrase`): "address K of N set aside after no answer - using address M" — slot
+numbers only. Tests: `RelayAddressRaceDemotionTest`, `RelayAddressRaceParitySourceTest
+.bothLaddersDemoteWhereTheyGiveUp_andAnswersFeedTheRace`. A winner
 CHANGE calls the session's hook (`RunViewModel` / `IosAppController` bind
 `MessageManager.noteRelayAddressSwitched`): the probe / batch peek in flight is queued on the loser's
 descriptor, so it is aborted and re-run at once exactly like the NEWNYM abort below (unbooked; panel

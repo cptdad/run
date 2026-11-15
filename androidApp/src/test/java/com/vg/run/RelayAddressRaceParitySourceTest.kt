@@ -91,6 +91,38 @@ class RelayAddressRaceParitySourceTest {
         assertTrue(ios.contains("RelayEndpoints.race.bindSwitchListener(this) { messageManager?.noteRelayAddressSwitched() }"))
     }
 
+    /**
+     * DEMOTION (2026-11-15): both stall ladders set the stuck address aside where
+     * they give up — Android inside `restartTor` (auto restart AND manual Reconnect,
+     * after the internal-retry deferral, before the transport is torn down), iOS at
+     * the `.stalled` latch and in `reconnectRelay` before its NEWNYM — never in
+     * external proxy mode, and every real answer feeds the race.
+     */
+    @Test
+    fun bothLaddersDemoteWhereTheyGiveUp_andAnswersFeedTheRace() {
+        val restart = vm.indexOf("private fun restartTor() {")
+        val body = vm.substring(restart, vm.indexOf("\n    }", restart))
+        val demote = body.indexOf("if (!externalProxyMode) RelayEndpoints.demoteUnansweredWinner()")
+        assertTrue("Android: restartTor demotes", restart >= 0 && demote >= 0)
+        assertTrue("Android: after the internal-retry deferral", body.indexOf("isMidInternalRetry == true") in 0 until demote)
+        assertTrue("Android: before the transport is torn down", demote < body.indexOf("messageManager = null"))
+        val app = src("iosApp/iosApp/AppState.swift")
+        val latch = app.indexOf("private func maybeLatchStalled()")
+        val latchBody = app.substring(latch, app.indexOf("\n    }", latch))
+        assertTrue("iOS: the .stalled latch demotes outside external proxy mode",
+            latchBody.contains("if !ExternalProxyMode.shared.isExternalThisProcess {") &&
+                latchBody.contains("RelayEndpoints.shared.demoteUnansweredWinner()"))
+        val rc = app.indexOf("func reconnectRelay() {")
+        val rcBody = app.substring(rc, app.indexOf("\n    }", rc))
+        val d = rcBody.indexOf("RelayEndpoints.shared.demoteUnansweredWinner()")
+        assertTrue("iOS: Reconnect demotes before its NEWNYM, in the embedded-Tor branch",
+            d > rcBody.indexOf("refreshExternalProxyReachability(force: true)") && d < rcBody.indexOf("TorManager.shared.requestNewCircuit()"))
+        val mm = src("shared/src/commonMain/kotlin/com/vg/run/MessageManager.kt")
+        val mark = mm.indexOf("private fun markRelayRoundTripCompleted() {")
+        assertTrue("every real answer feeds the race",
+            mm.substring(mark, mm.indexOf("\n    }", mark)).contains("RelayEndpoints.noteRelayAnswered(configuredRelayBaseUrl)"))
+    }
+
     @Test
     fun noGlueLogLineInterpolatesAnAddress() {
         val logCall = Regex("""\b(platformLog|platformLogWarn|platformLogError|torLog|LogBuffer\.append|ConnectionLog\.append|ConnectionLog\.shared\.append)\s*\(([^\n]*)""")

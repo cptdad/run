@@ -1,0 +1,7 @@
+• Maksimal: et skjold markerer kontakter, der også bruger Maksimal.
+• Sendte beskeder får fuld farve, når relæet har modtaget dem.
+• Besvar gruppeinvitationer og introduktioner senere fra chatlisten.
+• Gør til admin spørger, før du overdrager rollen.
+• Grupper: prikken for ulæste vises kun på den gruppe, der fik beskeden.
+• Hvis relæet ikke svarer, prøver appen en anden vej i stedet for at sidde fast.
+• Sikkerhedsrettelser efter en ekstern gennemgang.

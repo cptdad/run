@@ -1,6 +1,7 @@
-• Maximum: contacts who also use Maximum get a shield by their name.
-• A sent message turns from grey to full colour once the relay has it.
-• Group invitations and introductions can be answered later from the chat list.
-• Make admin now asks before you hand over the admin role.
+• Maximum: a shield marks contacts who also use Maximum.
+• Sent messages turn full colour once the relay has them.
+• Answer group invitations and introductions later from the chat list.
+• Make admin asks before handing over the role.
 • Groups: the unread dot shows only on the group that got the message.
+• If the relay does not answer, the app tries another route instead of staying stuck.
 • Security fixes from an external review.

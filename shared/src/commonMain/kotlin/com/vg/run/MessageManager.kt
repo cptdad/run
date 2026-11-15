@@ -1004,6 +1004,10 @@ class MessageManager(
     /** The ONE writer of [relayRoundTripCompleted] (a monotonic latch: only ever set). */
     private fun markRelayRoundTripCompleted() {
         relayRoundTripCompleted = true
+        // Every real answer (not just the first): the address race's demotion
+        // bookkeeping — this HS state's winner answered, demotions are cleared.
+        // No-op unless this transport talks to one of the race's addresses.
+        RelayEndpoints.noteRelayAnswered(configuredRelayBaseUrl)
     }
 
     /**

@@ -46,7 +46,7 @@
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     },
     "whatsnew": {
-      "en": "• Maximum: contacts who also use Maximum get a shield by their name.\n• A sent message turns from grey to full colour once the relay has it.\n• Group invitations and introductions can be answered later from the chat list.\n• Make admin now asks before you hand over the admin role.\n• Groups: the unread dot shows only on the group that got the message.\n• Security fixes from an external review.",
+      "en": "• Maximum: a shield marks contacts who also use Maximum.\n• Sent messages turn full colour once the relay has them.\n• Answer group invitations and introductions later from the chat list.\n• Make admin asks before handing over the role.\n• Groups: the unread dot shows only on the group that got the message.\n• If the relay does not answer, the app tries another route instead of staying stuck.\n• Security fixes from an external review.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     }
   },

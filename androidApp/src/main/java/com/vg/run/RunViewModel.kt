@@ -3269,6 +3269,15 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
             ConnectionLog.append(ConnectionLog.Kind.STALL, "Tor restart deferred - an internal retry is in flight")
             return
         }
+        // Several onion addresses: the ladder is giving up on this attempt, so the
+        // address it was stuck on is set aside for the next race (RelayAddressRace
+        // "DEMOTION" — a no-op with one address, after a real answer in this Tor HS
+        // state, or twice in a row without a fresh one). Covers BOTH callers: the
+        // stall watch's auto restart and the manual Reconnect. Never in external
+        // proxy mode (no race is run there). Before the transport is torn down, so
+        // the switch hook can still abort its stuck probe. iOS sibling:
+        // AppState.maybeLatchStalled / reconnectRelay.
+        if (!externalProxyMode) RelayEndpoints.demoteUnansweredWinner()
         relayCheckJob?.cancel()
         debugLogPeriodicJob?.cancel()
         controlPollJob?.cancel()

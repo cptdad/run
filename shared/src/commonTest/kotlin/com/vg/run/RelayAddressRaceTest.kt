@@ -459,3 +459,161 @@ class RelayUrlListGenerationTest {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// DEMOTION (2026-11-15): the stall ladder gave up on an attempt that never got a
+// relay answer — the address it was stuck on is set aside for the next race.
+// ---------------------------------------------------------------------------
+class RelayAddressRaceDemotionTest {
+
+    private fun RelayAddressRace.feed(action: String, address: String): RelayAddressRace.Observation =
+        observe(assertNotNull(parseDescriptorEvent(hsDesc(action, address)), "event for a configured address"))
+
+    /** A race over [urls] whose current Tor HS state was won by [winner]. */
+    private fun wonBy(urls: List<String>, winner: String): RelayAddressRace {
+        val race = RelayAddressRace(urls)
+        race.beginRace()
+        race.feed("REQUESTED", winner)
+        race.feed("RECEIVED", winner)
+        return race
+    }
+
+    @Test
+    fun singleAddress_demotionIsANoOp() {
+        val race = RelayAddressRace(listOf(URL_A))
+        var switches = 0
+        race.bindSwitchListener(this) { switches++ }
+        assertEquals(-1, race.demoteUnansweredWinner())
+        assertFalse(race.isDemoted(0))
+        assertEquals(URL_A, race.currentBaseUrl())
+        race.noteRelayAnswered()
+        assertEquals(-1, race.demoteUnansweredWinner())
+        assertEquals(0, switches)
+    }
+
+    @Test
+    fun baseUrl_movesOffTheDemotedSlotAtOnce_toTheFirstEligibleInListOrder() {
+        val race = wonBy(listOf(URL_A, URL_B, URL_C), ADDR_C)
+        var switches = 0
+        race.bindSwitchListener(this) { switches++ }
+        assertEquals(URL_C, race.currentBaseUrl())
+        assertEquals(2, race.demoteUnansweredWinner())
+        assertTrue(race.isDemoted(2))
+        assertEquals(URL_A, race.currentBaseUrl(), "first non-demoted slot, list order")
+        assertEquals(URL_A, race.resolve(URL_C), "a URL captured earlier follows too")
+        assertEquals(1, switches, "the probe stuck on the demoted address is aborted")
+        assertNull(race.descriptorReceivedAtMs(), "the new address's descriptor is not known")
+    }
+
+    @Test
+    fun demotedWinner_cannotWinTheNextRace() {
+        val race = wonBy(listOf(URL_A, URL_B, URL_C), ADDR_B)
+        race.demoteUnansweredWinner()
+        race.noteTorHsStateReset()                       // the restart / NEWNYM
+        assertEquals(URL_A, race.currentBaseUrl())
+        race.beginRace()
+        listOf(ADDR_A, ADDR_B, ADDR_C).forEach { race.feed("REQUESTED", it) }
+        val held = race.feed("RECEIVED", ADDR_B)
+        assertEquals(-1, held.wonSlot, "the demoted address's descriptor does not decide")
+        assertTrue(race.needsWait(URL_A), "the race is still open")
+        assertTrue(race.hedgeTargetSlot() != 1, "the hedge targets the eligible addresses")
+        val won = race.feed("RECEIVED", ADDR_C)
+        assertEquals(2, won.wonSlot)
+        assertEquals(URL_C, race.currentBaseUrl())
+    }
+
+    @Test
+    fun demotedAddress_winsAfterAll_whenEveryOtherAddressFails() {
+        val race = wonBy(listOf(URL_A, URL_B), ADDR_B)
+        race.demoteUnansweredWinner()
+        race.noteTorHsStateReset()
+        race.beginRace()
+        race.feed("REQUESTED", ADDR_A)
+        race.feed("REQUESTED", ADDR_B)
+        assertEquals(-1, race.feed("RECEIVED", ADDR_B).wonSlot)
+        val o = race.feed("FAILED", ADDR_A)
+        assertEquals(1, o.wonSlot, "no eligible alternative left: the held descriptor wins")
+        assertEquals(URL_B, race.currentBaseUrl())
+        assertFalse(race.needsWait(URL_A))
+    }
+
+    @Test
+    fun demotedAddress_receivedAfterTheOthersFailed_winsDirectly() {
+        val race = wonBy(listOf(URL_A, URL_B), ADDR_A)
+        race.demoteUnansweredWinner()
+        race.noteTorHsStateReset()
+        race.beginRace()
+        race.feed("REQUESTED", ADDR_A)
+        race.feed("REQUESTED", ADDR_B)
+        race.feed("FAILED", ADDR_B)
+        assertEquals(0, race.feed("RECEIVED", ADDR_A).wonSlot)
+    }
+
+    @Test
+    fun aWinnerThatAnsweredInThisHsState_isNotDemoted() {
+        val race = wonBy(listOf(URL_A, URL_B), ADDR_B)
+        race.noteRelayAnswered()
+        assertEquals(-1, race.demoteUnansweredWinner())
+        assertEquals(URL_B, race.currentBaseUrl())
+        // A NEWNYM / new Tor: the answer belonged to the old circuits.
+        race.noteTorHsStateReset()
+        assertEquals(1, race.demoteUnansweredWinner())
+        assertEquals(URL_A, race.currentBaseUrl())
+    }
+
+    @Test
+    fun theInheritingSlot_getsAHsStateOfItsOwn_beforeItCanBeDemoted() {
+        val race = wonBy(listOf(URL_A, URL_B, URL_C), ADDR_B)
+        assertEquals(1, race.demoteUnansweredWinner())
+        assertEquals(-1, race.demoteUnansweredWinner(), "slot 1 inherited the session but was never tried")
+        assertEquals(URL_A, race.currentBaseUrl())
+        race.noteTorHsStateReset()
+        assertEquals(0, race.demoteUnansweredWinner())
+        assertEquals(URL_C, race.currentBaseUrl())
+        assertTrue(race.isDemoted(0) && race.isDemoted(1) && !race.isDemoted(2))
+    }
+
+    @Test
+    fun demotingTheLastEligibleSlot_resetsTheSet_soItRotates() {
+        val race = wonBy(listOf(URL_A, URL_B), ADDR_A)
+        assertEquals(0, race.demoteUnansweredWinner())
+        assertEquals(URL_B, race.currentBaseUrl())
+        race.noteTorHsStateReset()
+        assertEquals(1, race.demoteUnansweredWinner(), "B failed too")
+        assertFalse(race.isDemoted(0), "never all N: the set starts over")
+        assertTrue(race.isDemoted(1))
+        assertEquals(URL_A, race.currentBaseUrl())
+    }
+
+    @Test
+    fun aRealAnswer_clearsEveryDemotion() {
+        val race = wonBy(listOf(URL_A, URL_B, URL_C), ADDR_A)
+        race.demoteUnansweredWinner()
+        race.noteTorHsStateReset()
+        race.demoteUnansweredWinner()
+        assertTrue(race.isDemoted(0) && race.isDemoted(1))
+        race.noteRelayAnswered()
+        assertFalse(race.isDemoted(0) || race.isDemoted(1) || race.isDemoted(2))
+        assertEquals(URL_C, race.currentBaseUrl(), "the winner itself is unchanged (sticky)")
+        // ...and a previously demoted address can win the next race again.
+        race.noteTorHsStateReset()
+        race.beginRace()
+        listOf(ADDR_A, ADDR_B, ADDR_C).forEach { race.feed("REQUESTED", it) }
+        assertEquals(0, race.feed("RECEIVED", ADDR_A).wonSlot)
+    }
+
+    @Test
+    fun relayEndpoints_answerOnAForeignUrl_neverTouchesTheRace() {
+        // No race exists for a URL outside the process-wide list; never throws,
+        // never initialises RelayConfig by itself.
+        RelayEndpoints.noteRelayAnswered("http://other.example")
+    }
+
+    @Test
+    fun demotedPhrase_carriesSlotNumbersOnly() {
+        val line = RelayAddressRace.demotedPhrase(2, 1, 3)
+        assertEquals("address 2 of 3 set aside after no answer - using address 1", line)
+        assertFalse(line.contains(".onion"))
+        assertEquals(line, ConnectionLog.redact(line), "nothing in it for the redactor to scrub")
+    }
+}

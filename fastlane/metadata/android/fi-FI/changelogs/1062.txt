@@ -1,0 +1,7 @@
+• Maksimi: kilpi merkitsee yhteystiedot, jotka käyttävät myös Maksimia.
+• Lähetetty viesti saa täydet värit, kun välityspalvelin on vastaanottanut sen.
+• Vastaa ryhmäkutsuihin ja esittelyihin myöhemmin keskustelulistasta.
+• Tee ylläpitäjäksi kysyy ennen roolin luovuttamista.
+• Ryhmät: lukemattoman viestin piste näkyy vain ryhmässä, joka sai viestin.
+• Jos välityspalvelin ei vastaa, sovellus kokeilee toista reittiä eikä jää jumiin.
+• Tietoturvakorjauksia ulkoisen tarkastuksen pohjalta.

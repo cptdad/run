@@ -1,0 +1,7 @@
+• Maksimal: et skjold markerer kontakter som også bruker Maksimal.
+• Sendte meldinger får full farge når relayet har mottatt dem.
+• Svar på gruppeinvitasjoner og introduksjoner senere fra chattelisten.
+• Gjør til admin spør før du gir fra deg rollen.
+• Grupper: prikken for uleste vises bare på gruppen som fikk meldingen.
+• Hvis relayet ikke svarer, prøver appen en annen vei i stedet for å henge seg opp.
+• Sikkerhetsrettelser etter en ekstern gjennomgang.

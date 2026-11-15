@@ -1,6 +1,7 @@
-• Máximo: los contactos que también usan Máximo llevan un escudo junto a su nombre.
-• Un mensaje enviado pasa del gris a su color completo en cuanto el relay lo tiene.
-• Las invitaciones de grupo y las presentaciones pueden responderse más tarde desde la lista de chats.
-• «Hacer administrador» ahora pregunta antes de que cedas el rol de administrador.
+• Máximo: un escudo marca a los contactos que también usan Máximo.
+• Los mensajes enviados se ven a todo color en cuanto el relay los tiene.
+• Responde luego a invitaciones de grupo y presentaciones desde la lista de chats.
+• «Hacer administrador» pregunta antes de ceder el rol.
 • Grupos: el punto de no leído solo aparece en el grupo que recibió el mensaje.
-• Correcciones de seguridad tras una revisión externa.
+• Si el relay no responde, la app prueba otra ruta y no se queda atascada.
+• Correcciones de seguridad tras revisión externa.

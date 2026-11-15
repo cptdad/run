@@ -1,0 +1,7 @@
+• Maximal: en sköld markerar kontakter som också använder Maximal.
+• Skickade meddelanden får full färg när reläet har tagit emot dem.
+• Svara på gruppinbjudningar och introduktioner senare från chattlistan.
+• Gör till admin frågar innan rollen lämnas över.
+• Grupper: pricken för olästa visas bara på gruppen som fick meddelandet.
+• Om reläet inte svarar provar appen en annan väg i stället för att fastna.
+• Säkerhetsrättningar efter en extern granskning.

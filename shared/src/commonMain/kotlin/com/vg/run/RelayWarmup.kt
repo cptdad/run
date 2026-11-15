@@ -184,6 +184,8 @@ object RelayWarmup {
             }
         }
         val elapsedMs = currentTimeMillis() - startedAtMs
+        // A real answer counts for the race's demotion bookkeeping too.
+        if (answered && race != null && relayBaseUrl in race.urls) race.noteRelayAnswered()
         ConnectionLog.append(
             ConnectionLog.Kind.RELAY,
             if (answered) "rendezvous warm-up done in ${formatSeconds(elapsedMs)} s" else LINE_FAILED,

@@ -1,0 +1,7 @@
+• Máximo: un escudo marca a los contactos que también usan Máximo.
+• Los mensajes enviados se ven a todo color en cuanto el relay los tiene.
+• Responde luego a invitaciones de grupo y presentaciones desde la lista de chats.
+• «Hacer administrador» pregunta antes de ceder el rol.
+• Grupos: el punto de no leído solo aparece en el grupo que recibió el mensaje.
+• Si el relay no responde, la app prueba otra ruta y no se queda atascada.
+• Correcciones de seguridad tras revisión externa.

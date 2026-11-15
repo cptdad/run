@@ -32,6 +32,32 @@ import kotlin.time.TimeSource
  * keeps using it until a new `RECEIVED` decides again, so a NEWNYM never sends
  * the session back to a slower slot 1 in the meantime.
  *
+ * DEMOTION (2026-11-15). The race decides on the DESCRIPTOR, so an address whose
+ * descriptor is fetchable but whose introduction/rendezvous is dead keeps winning
+ * — and because the winner is process-wide and sticky, it survived every in-process
+ * Tor restart until the app process died (prod incident 2026-11-15: three Tor
+ * restarts + NEWNYMs failed, a fresh process worked). [demoteUnansweredWinner] is
+ * called where the platform's stall ladder GIVES UP on the current attempt
+ * (Android `RunViewModel.restartTor` — the auto restart and the manual Reconnect;
+ * iOS `AppState.maybeLatchStalled` and `reconnectRelay`). The rule:
+ *  - only with ≥ 2 addresses ([isRacing]); one address = a no-op, exactly as before;
+ *  - only when the winner had NO real relay answer since the current Tor HS state
+ *    began ([noteRelayAnswered] / [noteTorHsStateReset]) — a winner that answered
+ *    on these circuits is not the address's fault;
+ *  - never twice without a fresh Tor HS state in between: the slot that inherits
+ *    the session must get at least one race/Tor of its own before it can be set aside;
+ *  - the demoted slot stops being the session's address AT ONCE (the first
+ *    non-demoted slot in list order takes over and the in-flight probe is aborted
+ *    through the switch hook), and its `RECEIVED` cannot decide a later race while
+ *    a non-demoted address is still in it (not `FAILED`). If every other address
+ *    fails, an already-received demoted address wins after all;
+ *  - at most N-1 slots are demoted: demoting the last eligible one clears the set
+ *    first, so the rule rotates instead of deadlocking;
+ *  - LIFETIME: until the first real relay answer anywhere in the process
+ *    ([noteRelayAnswered], from `MessageManager`'s round-trip latch and the
+ *    warm-up), which clears the whole set; RAM only, so a new process starts clean.
+ * One fixed panel line per demotion ([demotedPhrase]: slot NUMBERS only, uncoded).
+ *
  * RACE ON THE DESCRIPTOR, NOT ON CONNECTIONS. Only `HSFETCH` is raced — no
  * extra HTTP request, no extra stream, no extra intro/rendezvous circuit. The
  * relay sees nothing new; the HSDirs see one descriptor query per address.
@@ -137,6 +163,16 @@ class RelayAddressRace(candidateUrls: List<String>) {
     private val fedOutstanding = IntArray(urls.size)
     private var hedgeRotation = 0
 
+    /** Per slot: set aside by [demoteUnansweredWinner] (see the class header). */
+    private val demoted = BooleanArray(urls.size)
+    /** Per slot: a demoted address's `RECEIVED` was held back in the open race. */
+    private val heldReceived = BooleanArray(urls.size)
+    /** A real relay answer arrived since the current Tor HS state began. */
+    private var answeredThisState = false
+    /** The current winner inherited the session from a demotion and has not had a
+     *  Tor HS state of its own yet — it cannot be demoted before it has. */
+    private var untriedSinceDemotion = false
+
     /** Bumped whenever a waiter of [awaitWinner] may have to stop waiting. */
     private val settled = MutableStateFlow(0L)
 
@@ -223,6 +259,7 @@ class RelayAddressRace(candidateUrls: List<String>) {
             begunThisState = true
             raceOpen = true
             failedThisRace.fill(false)
+            heldReceived.fill(false)
             hedgeRotation = 0
             true
         }
@@ -258,16 +295,17 @@ class RelayAddressRace(candidateUrls: List<String>) {
                 RelayDescriptorEvent.Action.RECEIVED -> {
                     val counted = fedOutstanding[slot] > 0
                     if (counted) fedOutstanding[slot]--
-                    if (raceOpen) {
+                    if (raceOpen && demoted[slot] && eligibleAlternativeLocked()) {
+                        // A demoted address cannot decide while a non-demoted one
+                        // is still in this race; remembered in case they all fail.
+                        heldReceived[slot] = true
+                        counted
+                    } else if (raceOpen) {
                         // THE decision: the first descriptor of this race wins.
                         // Always fed — it is what closes the hedge's episode.
-                        raceOpen = false
-                        resolvedThisState = true
-                        switched = slot != winnerSlot
-                        winnerSlot = slot
+                        switched = decideLocked(slot, receivedAtMs)
                         won = slot
                         wakeWaiters = true
-                        winnerDescriptorAtMs = receivedAtMs
                         true
                     } else {
                         // A descriptor for the address the session uses NOW (a later
@@ -284,6 +322,16 @@ class RelayAddressRace(candidateUrls: List<String>) {
                         // One address failing never ends the race.
                         failedThisRace[slot] = true
                         if (failedThisRace.all { it }) wakeWaiters = true
+                        // Every non-demoted address failed: a demoted one whose
+                        // descriptor already arrived is eligible again and wins.
+                        if (!eligibleAlternativeLocked()) {
+                            val held = urls.indices.firstOrNull { heldReceived[it] && !failedThisRace[it] }
+                            if (held != null) {
+                                switched = decideLocked(held, DescriptorHedge.nowMs())
+                                won = held
+                                wakeWaiters = true
+                            }
+                        }
                     }
                     counted
                 }
@@ -313,11 +361,86 @@ class RelayAddressRace(candidateUrls: List<String>) {
             begunThisState = false
             resolvedThisState = false
             failedThisRace.fill(false)
+            heldReceived.fill(false)
             fedOutstanding.fill(0)
             hedgeRotation = 0
             winnerDescriptorAtMs = null
+            // A fresh HS state: nothing has answered on it yet, and a slot that
+            // inherited the session from a demotion now gets its own attempt.
+            answeredThisState = false
+            untriedSinceDemotion = false
         }
         settled.update { it + 1 }
+    }
+
+    // --------------------------------------------------------------- demotion
+
+    /**
+     * A REAL relay answer (any HTTP status) arrived on the session's address. Marks
+     * the current Tor HS state as answered (its winner can no longer be demoted in
+     * it) and clears every demotion — see the class header for the lifetime.
+     */
+    fun noteRelayAnswered() {
+        if (!isRacing) return
+        lock.withLock {
+            answeredThisState = true
+            demoted.fill(false)
+            heldReceived.fill(false)
+        }
+    }
+
+    /**
+     * The platform's stall ladder gave up on the current attempt (see the class
+     * header for the exact call sites and rule). Sets the current winner aside and
+     * moves the session to the first non-demoted slot in list order. Returns the
+     * demoted slot INDEX, or -1 when nothing was demoted (one address, the winner
+     * answered in this Tor HS state, or it inherited the session from a demotion and
+     * has not had a Tor HS state of its own yet).
+     */
+    fun demoteUnansweredWinner(): Int {
+        if (!isRacing) return -1
+        var from = -1
+        var to = -1
+        lock.withLock {
+            if (answeredThisState || untriedSinceDemotion) return@withLock
+            from = winnerSlot
+            // Never all N: demoting the last eligible slot starts the rotation over.
+            if (urls.indices.all { it == from || demoted[it] }) demoted.fill(false)
+            demoted[from] = true
+            heldReceived[from] = false
+            to = urls.indices.first { !demoted[it] }
+            winnerSlot = to
+            untriedSinceDemotion = true
+            // The new address's descriptor is not known to be in Tor's cache.
+            winnerDescriptorAtMs = null
+        }
+        if (from < 0) return -1
+        line(demotedPhrase(from + 1, to + 1, urls.size))
+        settled.update { it + 1 }
+        // Same hook as a race switch: abort the probe stuck on the demoted address.
+        try {
+            switchListener?.invoke()
+        } catch (e: Exception) {
+            platformLogWarn("RelayAddressRace", "switch hook threw: ${e::class.simpleName}")
+        }
+        return from
+    }
+
+    /** Is [slot] currently set aside? (Tests and the hedge target.) */
+    fun isDemoted(slot: Int): Boolean = lock.withLock { demoted.getOrElse(slot) { false } }
+
+    /** Caller holds [lock]. A non-demoted address still in the open race. */
+    private fun eligibleAlternativeLocked(): Boolean =
+        urls.indices.any { !demoted[it] && !failedThisRace[it] }
+
+    /** Caller holds [lock]. [slot] wins the open race; true = the winner changed. */
+    private fun decideLocked(slot: Int, receivedAtMs: Long): Boolean {
+        raceOpen = false
+        resolvedThisState = true
+        val changed = slot != winnerSlot
+        winnerSlot = slot
+        winnerDescriptorAtMs = receivedAtMs
+        return changed
     }
 
     /**
@@ -328,7 +451,10 @@ class RelayAddressRace(candidateUrls: List<String>) {
      */
     fun hedgeTargetSlot(): Int = lock.withLock {
         if (!isRacing || !raceOpen) return@withLock winnerSlot
-        val live = urls.indices.filter { !failedThisRace[it] }.ifEmpty { urls.indices.toList() }
+        // A demoted address cannot win while another is in the race: hedge the others.
+        val live = urls.indices.filter { !failedThisRace[it] && !demoted[it] }
+            .ifEmpty { urls.indices.filter { !failedThisRace[it] } }
+            .ifEmpty { urls.indices.toList() }
         live[hedgeRotation++ % live.size]
     }
 
@@ -407,6 +533,11 @@ class RelayAddressRace(candidateUrls: List<String>) {
         fun wonPhrase(slotNumber: Int, addresses: Int): String =
             "descriptor race won by address $slotNumber of $addresses"
 
+        /** `address 2 of 3 set aside after no answer - using address 1` — fixed
+         *  text + slot NUMBERS + the count; uncoded, never an address. */
+        fun demotedPhrase(slotNumber: Int, nowSlotNumber: Int, addresses: Int): String =
+            "address $slotNumber of $addresses set aside after no answer - using address $nowSlotNumber"
+
         private fun line(text: String) {
             platformLog("TorManager", text)
             ConnectionLog.append(ConnectionLog.Kind.TOR, text)
@@ -438,6 +569,25 @@ object RelayEndpoints {
      *  race exists from the first `RelayConfig.BASE_URL` read. */
     fun racingOrNull(): RelayAddressRace? =
         if (lazyRace.isInitialized()) lazyRace.value.takeIf { it.isRacing } else null
+
+    /**
+     * A real relay answer on [url] ([RelayAddressRace.noteRelayAnswered]) — only
+     * when [url] is one of the race's addresses, so a test or a client holding some
+     * other URL never touches the process-wide race. Never initialises [RelayConfig].
+     */
+    fun noteRelayAnswered(url: String) {
+        val race = racingOrNull() ?: return
+        if (url in race.urls) race.noteRelayAnswered()
+    }
+
+    /**
+     * The stall ladder gave up on the current attempt:
+     * [RelayAddressRace.demoteUnansweredWinner], or -1 when there is no race.
+     * Platform call sites: Android `RunViewModel.restartTor`; iOS
+     * `AppState.maybeLatchStalled` / `reconnectRelay`. Never in external SOCKS
+     * proxy mode (the callers gate it) and never pre-unlock.
+     */
+    fun demoteUnansweredWinner(): Int = racingOrNull()?.demoteUnansweredWinner() ?: -1
 
     /**
      * The rendezvous hedge's descriptor reference time

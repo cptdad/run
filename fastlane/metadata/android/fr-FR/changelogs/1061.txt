@@ -1,6 +1,7 @@
-• Maximum : les contacts qui utilisent aussi Maximum ont un bouclier à côté de leur nom.
-• Un message envoyé passe du gris à sa pleine couleur dès que le relais l'a reçu.
-• Vous pouvez répondre plus tard aux invitations de groupe et aux présentations, depuis la liste des discussions.
-• « Nommer admin » demande confirmation avant de céder le rôle d'admin.
-• Groupes : le point non lu n'apparaît que sur le groupe qui a reçu le message.
+• Maximum : un bouclier signale les contacts utilisant aussi Maximum.
+• Un message envoyé passe en pleine couleur dès que le relais l'a reçu.
+• Répondez plus tard aux invitations de groupe et présentations depuis vos discussions.
+• « Nommer admin » demande confirmation avant de céder le rôle.
+• Groupes : le point non lu ne s'affiche que sur le groupe destinataire.
+• Si le relais ne répond pas, Rún essaie une autre voie au lieu de se bloquer.
 • Correctifs de sécurité issus d'un audit externe.

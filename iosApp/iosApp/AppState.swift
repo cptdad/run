@@ -4124,6 +4124,15 @@ final class AppState: ObservableObject {
                 text: "relay stalled after \(relayUnreachableStreak) misses - offering manual reconnect",
                 code: ConnectionLog.Code.relayStalled
             )
+            // Several onion addresses: the auto ladder gave up (Android's sibling is
+            // the stall watch's Tor restart, RunViewModel.restartTor), so the address
+            // it was stuck on is set aside for the next race — the sustained rung's
+            // next NEWNYM re-races without it. Shared rule in commonMain
+            // (RelayAddressRace "DEMOTION"); no-op with one address. Never in
+            // external proxy mode (no race there).
+            if !ExternalProxyMode.shared.isExternalThisProcess {
+                _ = RelayEndpoints.shared.demoteUnansweredWinner()
+            }
         }
     }
 
@@ -4572,6 +4581,11 @@ final class AppState: ObservableObject {
             // re-wire if the transport is absent — the self-heal below).
             refreshExternalProxyReachability(force: true)
         } else {
+            // Set the stuck address aside BEFORE the NEWNYM, so the re-race it
+            // triggers runs without it (RelayAddressRace "DEMOTION"; Android does
+            // the same inside restartTor). The shared rule refuses when the auto
+            // ladder already demoted and no fresh Tor HS state has run since.
+            _ = RelayEndpoints.shared.demoteUnansweredWinner()
             TorManager.shared.requestNewCircuit()
         }
         Task { await checkRelayReachability(selfHeal: true) }
