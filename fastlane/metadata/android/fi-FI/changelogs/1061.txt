@@ -1,0 +1,6 @@
+• Maksimi: yhteystiedot, jotka käyttävät myös Maksimia, saavat kilven nimensä viereen.
+• Lähetetty viesti muuttuu harmaasta täysiin väreihin, kun välityspalvelin on vastaanottanut sen.
+• Ryhmäkutsuihin ja esittelyihin voi vastata myöhemmin keskustelulistasta.
+• Tee ylläpitäjäksi kysyy nyt ennen kuin luovutat ylläpitäjän roolin.
+• Ryhmät: lukemattoman viestin piste näkyy vain ryhmässä, joka sai viestin.
+• Tietoturvakorjauksia ulkoisen tarkastuksen pohjalta.

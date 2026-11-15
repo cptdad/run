@@ -1,0 +1,6 @@
+• Maximum: Kontakte, die ebenfalls Maximum nutzen, bekommen ein Schild neben ihrem Namen.
+• Eine gesendete Nachricht wechselt von Grau zur vollen Farbe, sobald das Relay sie hat.
+• Gruppeneinladungen und Vorstellungen lassen sich später in der Chatliste beantworten.
+• „Zum Admin machen“ fragt jetzt nach, bevor du die Admin-Rolle abgibst.
+• Gruppen: Der Ungelesen-Punkt erscheint nur bei der Gruppe, die die Nachricht erhalten hat.
+• Sicherheitskorrekturen nach einer externen Prüfung.

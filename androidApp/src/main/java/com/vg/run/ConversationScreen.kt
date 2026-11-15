@@ -1152,7 +1152,11 @@ private fun MessageBubble(message: DisplayMessage, delivered: Boolean = false, o
                                     text = formatTime(context, message.timestamp),
                                     fontSize = 9.sp,
                                     color = RunGrey.copy(alpha = 0.6f),
-                                    modifier = Modifier.sentBubbleContent(look),
+                                    // The tag carries the delivery state for UI tests (the fade is
+                                    // colour only): pending until the relay accepts the message.
+                                    modifier = Modifier
+                                        .sentBubbleContent(look)
+                                        .testTag(if (delivered) "message_sent_delivered" else "message_sent_pending"),
                                 )
                             }
                         }

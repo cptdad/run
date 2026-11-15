@@ -935,6 +935,9 @@ private struct MessageBubble: View {
                         .font(.system(size: 9))
                         .foregroundColor(Color(hex: 0x666666))
                         .opacity(alpha)
+                        // The identifier carries the delivery state for UI tests (the fade is
+                        // colour only): pending until the relay accepts the message.
+                        .accessibilityIdentifier(!message.isSent ? "" : (message.delivered ? "message_sent_delivered" : "message_sent_pending"))
                 }
                 if message.isSent && message.failed {
                     Text("✗")

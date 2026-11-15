@@ -184,6 +184,9 @@ export const Ids = {
     messageInput: 'message_input',
     sendButton: 'send_button',
     messageBubbleSent: 'message_bubble_sent',
+    /** On the time under a sent 1:1 bubble: pending until the relay has accepted the message. */
+    messageSentPending: 'message_sent_pending',
+    messageSentDelivered: 'message_sent_delivered',
     messageBubbleReceived: 'message_bubble_received',
     /**
      * "X may have taken a screenshot" notice row in a 1:1 conversation —

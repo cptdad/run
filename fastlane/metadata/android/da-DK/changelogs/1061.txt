@@ -1,0 +1,6 @@
+• Maksimal: kontakter, der også bruger Maksimal, får et skjold ved deres navn.
+• En sendt besked går fra grå til fuld farve, når relæet har modtaget den.
+• Gruppeinvitationer og introduktioner kan besvares senere fra chatlisten.
+• Gør til admin spørger nu, før du overdrager admin-rollen.
+• Grupper: prikken for ulæste vises kun på den gruppe, der fik beskeden.
+• Sikkerhedsrettelser efter en ekstern gennemgang.

@@ -1,0 +1,6 @@
+• Maximum : les contacts qui utilisent aussi Maximum ont un bouclier à côté de leur nom.
+• Un message envoyé passe du gris à sa pleine couleur dès que le relais l'a reçu.
+• Vous pouvez répondre plus tard aux invitations de groupe et aux présentations, depuis la liste des discussions.
+• « Nommer admin » demande confirmation avant de céder le rôle d'admin.
+• Groupes : le point non lu n'apparaît que sur le groupe qui a reçu le message.
+• Correctifs de sécurité issus d'un audit externe.

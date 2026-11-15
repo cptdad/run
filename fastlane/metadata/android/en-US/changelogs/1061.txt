@@ -1,0 +1,6 @@
+• Maximum: contacts who also use Maximum get a shield by their name.
+• A sent message turns from grey to full colour once the relay has it.
+• Group invitations and introductions can be answered later from the chat list.
+• Make admin now asks before you hand over the admin role.
+• Groups: the unread dot shows only on the group that got the message.
+• Security fixes from an external review.
