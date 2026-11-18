@@ -60,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -209,6 +210,8 @@ fun AddContactScreen(
 ) {
     val vault = viewModel.vault ?: return
     val context = LocalContext.current
+    // Configuration-aware (a locale change re-reads it); LocalContext is not.
+    val resources = LocalResources.current
 
     // --- Pairing session (G2) ---
     // Our secret half, the mint and the wizard progress live in a ViewModel scoped
@@ -535,12 +538,12 @@ fun AddContactScreen(
             // say so, instead of leaving the wizard on a wait that cannot end.
             PairingSaveOutcome.INVALID_CODE -> {
                 scannedData = null
-                addError = context.getString(R.string.add_contact_invalid_code)
+                addError = resources.getString(R.string.add_contact_invalid_code)
             }
             // Nothing was saved and this session cannot complete (its one-time key is
             // spent, or the write failed): a NEW session, with the reason shown.
             PairingSaveOutcome.START_AGAIN ->
-                session.restartPairing(context.getString(R.string.add_contact_start_again_error))
+                session.restartPairing(resources.getString(R.string.add_contact_start_again_error))
         }
     }
 
@@ -1825,6 +1828,8 @@ private fun CodeExchangeTab(
     // contact" button only enables once both halves (our mint + their parsed
     // paste) are available.
     val context = LocalContext.current
+    // Configuration-aware (a locale change re-reads it); LocalContext is not.
+    val resources = LocalResources.current
     val myCode = remember(myQrPayload) {
         myQrPayload?.let { Base64.encodeToString(it.toByteArray(Charsets.UTF_8), Base64.NO_WRAP) }
     }
@@ -2019,9 +2024,9 @@ private fun CodeExchangeTab(
                         // still works.
                         PairingSaveOutcome.INBOX_IN_USE -> addError = inboxInUseMessage(context)
                         PairingSaveOutcome.INVALID_CODE ->
-                            addError = context.getString(R.string.add_contact_invalid_code)
+                            addError = resources.getString(R.string.add_contact_invalid_code)
                         PairingSaveOutcome.START_AGAIN ->
-                            onStartAgain(context.getString(R.string.add_contact_start_again_error))
+                            onStartAgain(resources.getString(R.string.add_contact_start_again_error))
                     }
                 }
                 .padding(horizontal = 24.dp, vertical = 10.dp),

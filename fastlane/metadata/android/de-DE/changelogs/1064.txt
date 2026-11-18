@@ -1,0 +1,5 @@
+• Per Scan oder Vorstellung hinzugefügte Kontakte starten jetzt mit einem einmaligen Schlüsselaustausch: Eine spätere Kopie des Telefons kann ihre ersten Schlüssel nicht nachbilden. Beide Telefone brauchen diese Version; bestehende Kontakte bleiben unverändert.
+• Die Kopplung übersteht Drehen des Telefons und Verbindungsabbrüche.
+• Schärfere QR-Codes.
+• Gruppennachrichten, die vor deinem Beitritt ankommen, werden angezeigt statt verloren.
+• Stabilere Verbindung nach einem Netzwechsel.

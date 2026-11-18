@@ -73,7 +73,7 @@ class PairingSessionGlueSourceTest {
             assertTrue("iOS must handle $o", ios.contains("PairingSaveOutcome.$o"))
         }
         assertTrue(ios.contains("restartPairing(error: L10n.addContactStartAgainError)"))
-        assertTrue(android.contains("session.restartPairing(context.getString(R.string.add_contact_start_again_error))"))
+        assertTrue(android.contains("session.restartPairing(resources.getString(R.string.add_contact_start_again_error))"))
     }
 
     @Test

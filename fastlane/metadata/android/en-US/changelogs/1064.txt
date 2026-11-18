@@ -1,0 +1,5 @@
+• Contacts added by scanning or introduction now start with a one-time key exchange: a later copy of the phone cannot recreate their first keys. Both phones need this version; existing contacts are unchanged.
+• Pairing survives turning the phone or a dropped connection.
+• Sharper QR codes.
+• Group messages that arrive before you join are shown, not lost.
+• Steadier connecting after a network change.
