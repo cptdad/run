@@ -31,13 +31,13 @@ class GroupInboxAndroidWiringTest {
      *  signature with the group pair, not the pre-group-inbox positional call. */
     @Test
     fun theFullPayloadCarriesTheGroupPair() {
-        val call = screen.functionCall("PairingPayload.buildFull(")
+        val call = screen.functionCall("pairing.fullCode(")
         assertTrue(
-            "buildFull must pass grpInboxId from the third mint",
+            "fullCode must pass grpInboxId from the third mint",
             call.contains("grpInboxId = ready.grpMinted?.inboxId"),
         )
         assertTrue(
-            "buildFull must pass grpWriteCap from the third mint",
+            "fullCode must pass grpWriteCap from the third mint",
             call.contains("grpWriteCap = ready.grpMinted?.writeCapability"),
         )
     }
@@ -49,35 +49,24 @@ class GroupInboxAndroidWiringTest {
     fun bothSavePathsWireTheGroupRows() {
         // Distinguishes the two CALL sites from the function DEFINITION, which
         // also contains the bare substring "saveScannedContact(".
-        val saveScannedContactCalls = screen.functionBodyOccurrences("val newContactId = saveScannedContact(")
+        val saveCalls = screen.functionBodyOccurrences("pairing.save(")
         assertTrue(
-            "expected the camera-scan save and the paste-exchange save (2 call sites), found ${saveScannedContactCalls.size}",
-            saveScannedContactCalls.size >= 2,
+            "expected the camera-scan save and the paste-exchange save (2 call sites), found ${saveCalls.size}",
+            saveCalls.size >= 2,
         )
-        for (call in saveScannedContactCalls) {
+        for (call in saveCalls) {
+            // The peer's group pair rides inside the parsed scan (`peer`), which the
+            // shared session hands to PairingVault.savePairedContact.
+            assertTrue("pairing.save call must pass the peer's parsed code:\n$call", call.contains("peer ="))
             assertTrue(
-                "saveScannedContact call must forward the peer's group inbox id:\n$call",
-                call.contains("peerGrpInboxId"),
+                "pairing.save call must forward our minted group inbox id:\n$call",
+                call.contains("myGrpInboxId = r.grpMinted?.inboxId"),
             )
             assertTrue(
-                "saveScannedContact call must forward the peer's group write cap:\n$call",
-                call.contains("peerGrpWriteCap"),
-            )
-            assertTrue(
-                "saveScannedContact call must forward our minted group inbox id:\n$call",
-                call.contains("myGrpInboxId"),
-            )
-            assertTrue(
-                "saveScannedContact call must forward our minted group read cap:\n$call",
-                call.contains("myGrpReadCap"),
+                "pairing.save call must forward our minted group read cap:\n$call",
+                call.contains("myGrpReadCap = r.grpMinted?.readCapability"),
             )
         }
-        // And saveScannedContact itself must relay all four into PairingVault.
-        val def = screen.functionBody("private fun saveScannedContact(")
-        assertTrue(def.contains("peerGrpInboxId = peerGrpInboxId"))
-        assertTrue(def.contains("peerGrpWriteCap = peerGrpWriteCap"))
-        assertTrue(def.contains("myGrpInboxId = myGrpInboxId"))
-        assertTrue(def.contains("myGrpReadCap = myGrpReadCap"))
     }
 
     /** The in-band announce fired after a full-code scan must carry the group

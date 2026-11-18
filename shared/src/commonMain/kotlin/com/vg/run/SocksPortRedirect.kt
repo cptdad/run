@@ -78,6 +78,14 @@ object SocksPortRedirect {
         lock.withLock {
             blocked -= newPort
             moved.remove(newPort)
+            // Re-point every older port straight at the newest one. Without this each
+            // move adds a hop for a client wired before it, and [resolve] gives up
+            // (fails closed) after 8 hops: a session that saw nine listener moves —
+            // nine network changes with the same transport — would lose its relay
+            // connection for good, although Tor is listening. (iOS republishes the
+            // moved port, so its next move starts from the previous move's target.)
+            val olderPorts = moved.keys.filter { moved[it] == oldPort }
+            for (k in olderPorts) moved[k] = newPort
             moved[oldPort] = newPort
             blocked -= oldPort
         }

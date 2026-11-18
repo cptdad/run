@@ -9,6 +9,7 @@
     <string name="conversation_fs_stalled_title">Forward secrecy ei ole vielä aktivoitunut</string>
     <string name="conversation_fs_stalled_body">Viestit tälle kontaktille ovat yhä salattuja, mutta ne eivät vielä saa lisäsuojaa, joka pitää aiemmat viestit turvassa, jos avain paljastuu myöhemmin. Tämä yleensä korjaantuu, kun kontakti vastaa. Jos ongelma jatkuu, poista kontakti ja lisää se uudelleen.</string>
     <string name="conversation_ratchet_refused_body">Suojattua kanavaa ei voitu muodostaa tämän kontaktin kanssa. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen.</string>
+    <string name="conversation_secure_channel_lost_body">Suojattu kanava tämän kontaktin kanssa katkesi. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Ilmoita kontaktista</string>

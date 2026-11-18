@@ -976,6 +976,13 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
     // See [startUnreadPrime].
     private var unreadPrimeJob: Job? by sessionJobs.slot()
 
+    // Once-per-unlock sweep of expired skipped ratchet keys (plan G1). Armed by
+    // [onVaultOpened], consumed by the session's FIRST [wireRelayTransport], so a
+    // transport restart (a new MessageManager, same unlock) does not re-run it.
+    // See [startSkippedKeySweep]. Main-thread only.
+    private var skippedKeySweepPending = false
+    private var skippedKeySweepJob: Job? by sessionJobs.slot()
+
     // Relay-connect self-heal + stall UX. While the relay stays
     // unreachable, escalate Connecting → (auto-restart Tor once) → Stalled, at which
     // point the contact list offers a manual Reconnect. Only meaningful while the relay
@@ -1371,6 +1378,22 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         _ratchetRefused.value = _ratchetRefused.value + (contactId to refused)
     }
 
+    // contactId -> true once MessageManager.secureChannelLost reports the one-time-key
+    // secure channel with this contact is gone ("pair again"). Backs the
+    // `secure_channel_lost_notice` conversation row, which outranks the two notices
+    // above, and short-circuits sends. A pure display signal re-derived from the vault
+    // on open, after a send and on every poll tick; cleared on lock / wipe. iOS
+    // sibling: AppState.secureChannelLost.
+    private val _secureChannelLost = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val secureChannelLost: StateFlow<Map<String, Boolean>> = _secureChannelLost.asStateFlow()
+
+    fun refreshSecureChannelLost(contactId: String) {
+        val epoch = TransportFailedSends.shared.sessionEpoch
+        val lost = try { messageManager?.secureChannelLost(contactId) ?: false } catch (_: Exception) { false }
+        if (!sessionStillCurrent(epoch)) return
+        _secureChannelLost.value = _secureChannelLost.value + (contactId to lost)
+    }
+
     /** Clears [groupId]'s unread dot immediately when its conversation opens
      *  (pollGroup also clears it shared-side; this removes the poll-cycle lag). */
     fun markGroupRead(groupId: String) {
@@ -1449,7 +1472,9 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                     val snap = withContext(Dispatchers.IO) {
                         val v = vault ?: return@withContext null
                         try {
-                            loadContactListSnapshot(v, maximumShield)
+                            loadContactListSnapshot(v, maximumShield) { id ->
+                                try { messageManager?.secureChannelLost(id) ?: false } catch (_: Exception) { false }
+                            }
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Exception) {
@@ -1701,8 +1726,12 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
             // A durable ratchet-role-collision refusal short-circuits
             // the retry loop entirely — zero HTTP, matching MessageManager's own
             // no-throw refusal contract. Counts only, never an identifier.
+            // A lost secure channel (one-time-key pairing) is refused the same way:
+            // the shared layer fails the send, so looping three times would only burn
+            // backoff; the conversation shows why.
             val refused = try { messageManager?.ratchetRefused(contactId) ?: false } catch (_: Exception) { false }
-            if (!refused) {
+            val lost = try { messageManager?.secureChannelLost(contactId) ?: false } catch (_: Exception) { false }
+            if (!refused && !lost) {
                 for (attempt in 1..3) {
                     val mm = messageManager
                     if (mm == null) {
@@ -1747,6 +1776,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                 // Re-check the refusal signal too — cleared by an inbound
                 // ratchet blob, independent of anything this send did.
                 refreshRatchetRefused(contactId)
+                refreshSecureChannelLost(contactId)
             }
         }
         inFlightSendJobs.add(job)
@@ -2000,6 +2030,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // this session (see [sessionStillCurrent]).
         TransportFailedSends.shared.beginSession()
         vault = openedVault
+        skippedKeySweepPending = true
         // An unlock is an interaction (a Lever-B BiometricPrompt does not dispatch
         // Activity.onUserInteraction), so the idle clock starts fresh with the
         // session and a stale pre-unlock stamp can never fire Lever C at once.
@@ -2978,6 +3009,10 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun wireRelayTransport(openedVault: VaultDatabase, client: PlatformHttpClient) {
         messageManager = MessageManager(openedVault, httpClient = client, localAppVersion = BuildConfig.VERSION_NAME, maximumShield = maximumShield)
+        if (skippedKeySweepPending) {
+            skippedKeySweepPending = false
+            startSkippedKeySweep(openedVault)
+        }
         startRelayCheck()
         startDebugLogPeriodicUpload()
         startControlPoll()
@@ -2992,6 +3027,31 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // text is attributed to the group instead of the sender's
         // 1:1 row — the two are indistinguishable in a /peek count.
         startUnreadPrime()
+    }
+
+    /**
+     * Once per unlock (plan G1): drop expired skipped ratchet keys from every
+     * contact's stored text-ratchet state ([MessageManager.sweepExpiredSkippedKeys]).
+     * Runs here, not in [onVaultOpened], because it must share the session
+     * MessageManager's ratchet lock with the drains and sends; armed once per vault
+     * open so a transport restart does not repeat it. Off Main, never awaited, so it
+     * delays neither the unlock nor the connect path. Stops (between contacts and
+     * right before any write) once the session ends or this manager is replaced —
+     * the teardowns cancel the slot before the vault closes. iOS sibling:
+     * `IosAppController.startSkippedKeySweepOnce`.
+     */
+    private fun startSkippedKeySweep(openedVault: VaultDatabase) {
+        val mm = messageManager ?: return
+        skippedKeySweepJob = viewModelScope.launch(Dispatchers.IO) {
+            val job = coroutineContext[Job]
+            try {
+                mm.sweepExpiredSkippedKeys {
+                    job?.isActive == true && vault === openedVault && messageManager === mm
+                }
+            } catch (e: Exception) {
+                LogBuffer.append("W", "ViewModel", "skipped-key sweep ended: ${e::class.simpleName}")
+            }
+        }
     }
 
     /**
@@ -4613,6 +4673,7 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // iOS sibling: AppState.lock()/emergencyWipe() clear the same two.
         _forwardSecrecyStalled.value = emptyMap()
         _ratchetRefused.value = emptyMap()
+        _secureChannelLost.value = emptyMap()
     }
 
     /**

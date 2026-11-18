@@ -129,6 +129,7 @@
     <!-- Kontaktrad / grupprad -->
     <string name="contact_list_repair_required">Måste parkopplas om</string>
     <string name="contact_list_waiting_for_inbox">Väntar på deras inkorg…</string>
+    <string name="contact_list_secure_channel_lost">Säker kanal förlorad: parkoppla på nytt</string>
     <string name="contact_list_introduced_by">Introducerad av %1$s</string>
     <string name="contact_list_introduced">Introducerad</string>
     <string name="contact_list_repair_chip">Parkoppla om</string>

@@ -165,6 +165,8 @@ private data class GroupDisplayMessage(
     // GROUP_ECHO only: the group the text belongs to (not this screen's).
     val echoGroupId: String = "",
     val echoGroupName: String = "",
+    // False for an echo of a group we are only INVITED to: nothing to open yet.
+    val echoGroupJoined: Boolean = true,
 )
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -361,6 +363,7 @@ fun GroupConversationScreen(
                                 },
                                 echoGroupId = if (gm.isGroupEcho) gm.groupId else "",
                                 echoGroupName = if (gm.isGroupEcho) gm.groupName else "",
+                                echoGroupJoined = gm.groupJoined,
                             )
                         )
                     }
@@ -580,9 +583,9 @@ fun GroupConversationScreen(
                             senderAlias = message.senderAlias,
                             text = message.text,
                             timeText = if (message.timestamp > 0) formatTime(context, message.timestamp) else null,
-                            onOpenGroup = {
-                                onOpenGroup(message.echoGroupId)
-                            },
+                            onOpenGroup = if (message.echoGroupJoined) {
+                                { onOpenGroup(message.echoGroupId) }
+                            } else null,
                             bubbleTag = "group_echo_bubble",
                             labelTag = "group_echo_label",
                             openTag = "group_echo_open",

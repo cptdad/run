@@ -159,6 +159,7 @@ fun ContactListScreen(
     val groups = snapshot?.groups ?: emptyList()
     val staleContactIds = snapshot?.staleIds ?: emptySet()
     val pendingContactIds = snapshot?.pendingIds ?: emptySet()
+    val lostContactIds = snapshot?.lostIds ?: emptySet()
     // Contacts that reported Maximum while this device is at MAXIMUM (empty otherwise).
     val maximumContactIds = snapshot?.maximumIds ?: emptySet()
 
@@ -746,6 +747,7 @@ fun ContactListScreen(
                                 contact = contact,
                                 stale = stale,
                                 pending = pendingContactIds.contains(contact.contactId),
+                                channelLost = lostContactIds.contains(contact.contactId),
                                 maximumShield = maximumContactIds.contains(contact.contactId),
                                 // Resolve the voucher's alias so the row can say who
                                 // introduced this contact — the one trust signal that
@@ -1372,6 +1374,12 @@ fun ContactListScreen(
                             viewModel.runGroupOpInBackground(op = { viewModel.groupManager?.acceptInvite(id) }) {
                                 groupInviteBusy = false
                                 viewModel.refreshContactList()
+                                // Joining replays the activity notices parked while this
+                                // was only an invitation (GroupManager.acceptInvite), i.e.
+                                // the new row may already have a message waiting. The
+                                // published counts otherwise refresh on the control loop's
+                                // next cycle (60–90 s idle).
+                                viewModel.refreshGroupUnreadCounts()
                             }
                         },
                     ),
@@ -2174,6 +2182,7 @@ private fun ContactRow(
     contact: ContactListItem,
     stale: Boolean,
     pending: Boolean = false,
+    channelLost: Boolean = false,
     maximumShield: Boolean = false,
     introducerAlias: String? = null,
     unreadCountsFlow: StateFlow<Map<String, Int>>,
@@ -2245,6 +2254,15 @@ private fun ContactRow(
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                     color = RunGrey,
                     modifier = Modifier.testTag("contact_repair_${contact.contactId}"),
+                )
+            } else if (channelLost) {
+                // One-time-key secure channel gone: the contact must be paired again.
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.contact_list_secure_channel_lost),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = RunGrey,
+                    modifier = Modifier.testTag("contact_secure_lost_${contact.contactId}"),
                 )
             } else if (pending) {
                 Spacer(Modifier.height(2.dp))

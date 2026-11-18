@@ -177,6 +177,8 @@ private data class DisplayMessage(
     // this screen's poll fetched. Shown marked, never counted as a 1:1 message.
     val echoGroupId: String? = null,
     val echoGroupName: String = "",
+    // False for an echo of a group we are only INVITED to: nothing to open yet.
+    val echoGroupJoined: Boolean = true,
 )
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -346,6 +348,7 @@ fun ConversationScreen(
         // poll tick below (unlike forwardSecrecyStalled, this signal is cleared by
         // an INBOUND ratchet blob, not only by this device's own send landing).
         withContext(Dispatchers.IO) { viewModel.refreshRatchetRefused(contactId) }
+        withContext(Dispatchers.IO) { viewModel.refreshSecureChannelLost(contactId) }
         // Load-on-open: every UNEXPIRED persisted notice for this conversation,
         // oldest first — this is the persistence fix for the production bug
         // where a notice drained by the background sweep while this screen
@@ -438,6 +441,7 @@ fun ConversationScreen(
                                 id, rm.text, isSent = false, timestamp = rm.timestamp,
                                 echoGroupId = if (rm.isGroupEcho) rm.groupId else null,
                                 echoGroupName = rm.groupName,
+                                echoGroupJoined = rm.groupJoined,
                             )
                         )
                     }
@@ -478,6 +482,7 @@ fun ConversationScreen(
                 // carries no visible text, e.g. a control-channel announce) is what
                 // clears the refusal, and this is where those land.
                 withContext(Dispatchers.IO) { viewModel.refreshRatchetRefused(contactId) }
+                withContext(Dispatchers.IO) { viewModel.refreshSecureChannelLost(contactId) }
                 // The poll may have applied an in-band inbox announce —
                 // unlock the send button without re-entering the screen.
                 // Do the SQLCipher read on IO, not the main
@@ -718,7 +723,12 @@ fun ConversationScreen(
         // both would be redundant and confusing about which one to act on.
         val fsStalledContacts by viewModel.forwardSecrecyStalled.collectAsState()
         val ratchetRefusedContacts by viewModel.ratchetRefused.collectAsState()
-        if (ratchetRefusedContacts[contactId] == true) {
+        val channelLostContacts by viewModel.secureChannelLost.collectAsState()
+        // A lost one-time-key channel outranks both: sends to this contact fail until
+        // it is removed and paired again, and the user is told why.
+        if (channelLostContacts[contactId] == true) {
+            SecureChannelLostNotice()
+        } else if (ratchetRefusedContacts[contactId] == true) {
             RatchetRefusedNotice()
         } else if (fsStalledContacts[contactId] == true) {
             ForwardSecrecyStalledNotice()
@@ -752,9 +762,9 @@ fun ConversationScreen(
                         senderAlias = null,
                         text = message.text,
                         timeText = if (message.timestamp > 0) formatTime(context, message.timestamp) else null,
-                        onOpenGroup = {
-                            onOpenGroup(echoGroupId)
-                        },
+                        onOpenGroup = if (message.echoGroupJoined) {
+                            { onOpenGroup(echoGroupId) }
+                        } else null,
                         bubbleTag = "conversation_group_echo_bubble",
                         labelTag = "conversation_group_echo_label",
                         openTag = "conversation_group_echo_open",
@@ -1052,6 +1062,25 @@ private fun ForwardSecrecyStalledNotice() {
 // than stacking with it. Clears on its own once an inbound ratchet blob decrypts
 // (MessageManager clears the underlying latch) — no reset here.
 // ---------------------------------------------------------------------------
+
+@Composable
+private fun SecureChannelLostNotice() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(RunSurface)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .testTag("secure_channel_lost_notice"),
+    ) {
+        Text(
+            text = stringResource(R.string.conversation_secure_channel_lost_body),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+            color = RunGrey,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
 
 @Composable
 private fun RatchetRefusedNotice() {

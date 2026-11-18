@@ -117,6 +117,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">Paritus uusittava</string>
     <string name="contact_list_waiting_for_inbox">Odotetaan hänen postilaatikkoaan…</string>
+    <string name="contact_list_secure_channel_lost">Suojattu kanava katkesi: tee paritus uudelleen</string>
     <string name="contact_list_introduced_by">%1$s esitteli</string>
     <string name="contact_list_introduced">Esitelty</string>
     <string name="contact_list_repair_chip">Parita</string>

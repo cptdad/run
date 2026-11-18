@@ -120,6 +120,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">Skal parres igen</string>
     <string name="contact_list_waiting_for_inbox">Venter på deres indbakke…</string>
+    <string name="contact_list_secure_channel_lost">Sikker kanal mistet: par jer igen</string>
     <string name="contact_list_introduced_by">Introduceret af %1$s</string>
     <string name="contact_list_introduced">Introduceret</string>
     <string name="contact_list_repair_chip">Par igen</string>

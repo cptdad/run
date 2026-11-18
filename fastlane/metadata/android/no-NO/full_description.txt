@@ -1,4 +1,4 @@
-Rún er en sikker meldingsapp laget for folk som ikke går på akkord med personvernet. Hver melding krypteres ende-til-ende før den forlater enheten din, og nøklene skrus videre mens dere prater – så selv om én nøkkel skulle bli avslørt, forblir resten av samtalen forseglet.
+Rún er en sikker meldingsapp laget for folk som ikke går på akkord med personvernet. Hver melding krypteres ende-til-ende før den forlater enheten din. Når en samtale går fram og tilbake, skrus nøklene videre mens dere prater – så selv om én nøkkel skulle bli avslørt, forblir resten av samtalen forseglet.
 
 Rún krever ingen konto, ikke noe telefonnummer og ingen e-postadresse. Ingenting kan knyttes tilbake til identiteten din. Kontakter legges til ansikt til ansikt ved å skanne QR-koder, eller via en betrodd introduksjon fra noen du allerede stoler på – ingen sentral katalog, ingen kontaktsøk, ingen sosial graf.
 
@@ -23,7 +23,7 @@ Klientens kildekode er offentlig under GPL på github.com/cptdad/run: les den, b
 Rún er laget for journalister, aktivister, varslere og alle som mener at private samtaler er en grunnleggende rettighet.
 
 Viktige funksjoner:
-- Ende-til-ende-kryptering med forward secrecy (AES-256-GCM + Double Ratchet)
+- Ende-til-ende-kryptering, med forward secrecy når en samtale går begge veier (AES-256-GCM + Double Ratchet)
 - All trafikk over Tor – IP-adressen og posisjonen din forblir skjult
 - Ingen konto, ikke noe telefonnummer og ingen e-postadresse
 - Kontaktutveksling med QR ansikt til ansikt, og betrodde introduksjoner

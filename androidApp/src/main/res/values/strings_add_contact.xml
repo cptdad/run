@@ -75,4 +75,9 @@
          AddContactScreen.kt and AddContactView.swift. -->
     <string name="add_contact_inbox_in_use">Couldn\'t add this contact — one of the inboxes in their code is already in use here. If you\'re re-adding someone you already have, delete the old contact first, then try again.</string>
 
+    <!-- One-time-key pairing outcomes (AddContactScreen.kt / AddContactView.swift) -->
+    <string name="add_contact_pairing_failed">Pairing didn\'t work: the secure channel with this contact could not be set up. Start again to pair with a new code.</string>
+    <string name="add_contact_pairing_failed_action">Start again</string>
+    <string name="add_contact_start_again_error">Couldn\'t finish adding this contact, and nothing was saved. Start again to get a new code.</string>
+
 </resources>

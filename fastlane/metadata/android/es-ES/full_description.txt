@@ -1,4 +1,4 @@
-Rún es una app de mensajería segura para quien no cede en privacidad. Cada mensaje se cifra de extremo a extremo antes de salir de tu dispositivo, y las claves avanzan sin volver atrás mientras hablas: aunque una clave quedara expuesta, el resto sigue sellado.
+Rún es una app de mensajería segura para quien no cede en privacidad. Cada mensaje se cifra de extremo a extremo antes de salir de tu dispositivo. Cuando una conversación va y viene, las claves avanzan sin volver atrás mientras hablas: aunque una clave quedara expuesta, el resto sigue sellado.
 
 Rún no necesita cuenta, número de teléfono ni correo. No hay nada que enlace con tu identidad. Los contactos se añaden en persona escaneando códigos QR, o mediante una presentación avalada por alguien de confianza: sin directorio central, sin descubrimiento de contactos, sin grafo social.
 
@@ -23,7 +23,7 @@ El código fuente del cliente es público bajo la GPL en github.com/cptdad/run: 
 Rún está hecho para periodistas, activistas, denunciantes y cualquiera que crea que la conversación privada es un derecho fundamental.
 
 Funciones principales:
-- Cifrado de extremo a extremo con forward secrecy (AES-256-GCM + Double Ratchet)
+- Cifrado de extremo a extremo, con forward secrecy cuando una conversación va en ambos sentidos (AES-256-GCM + Double Ratchet)
 - Todo el tráfico por Tor: tu IP y tu ubicación quedan ocultas
 - Sin cuenta, número de teléfono ni correo
 - Intercambio de contactos por QR en persona y presentaciones avaladas

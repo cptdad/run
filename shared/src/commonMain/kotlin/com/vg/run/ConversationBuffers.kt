@@ -84,6 +84,29 @@ internal class ConversationBuffers(
     private data class PendingActivity(val onGroupInbox: Boolean, val noticeAtMs: Long, val bufferedAt: Long)
     private val pendingActivityNotices = mutableMapOf<String, MutableList<PendingActivity>>()
 
+    // Texts of a not-yet-joined group that were SHOWN (as an echo) before the notice
+    // announcing them was drained — per "groupId<NUL>senderContactId", how many
+    // notices are still owed. The next notice for that key is spent against it
+    // instead of being parked, so the join does not light a dot on an empty group.
+    // Counts only, capped per key; guarded by [lock]; emptied by [scrub].
+    private val shownAheadOfNotice = mutableMapOf<String, Int>()
+
+    // Awaiting-invite buffer: a decryptable group text for a group this device does
+    // not know AT ALL — no group row and no invite awaiting an answer. Usually that
+    // is a group we left or declined, and the text is rightly never shown. But it is
+    // also what the FIRST text of a brand-new group looks like when the screen's
+    // drain (the sender's text inbox) beats the control sweep that carries the
+    // invite: the push for that text is what makes the user open the app and tap
+    // the sender. The drain acks what it fetched, so dropping the text there loses
+    // it for good. It is held here instead — same key, caps, eviction and TTL as
+    // [pendingUnresolvedGroupText] — together with the screen that fetched it
+    // (null = the sender's 1:1 screen), and handed to that screen the moment an
+    // invite for exactly this group arrives FROM THAT SENDER
+    // ([takeTextsAwaitingInvite]). Anything else expires unseen. Guarded by [lock];
+    // emptied by [scrub].
+    private data class PendingUninvited(val rm: ReceivedMessage, val screenGroupId: String?, val bufferedAt: Long)
+    private val pendingUninvitedGroupText = mutableMapOf<String, MutableList<PendingUninvited>>()
+
     private fun unresolvedKey(groupId: String, contactId: String) = groupId + "\u0000" + contactId
 
     // (groupId, contactId) of a key built by [unresolvedKey].
@@ -214,6 +237,8 @@ internal class ConversationBuffers(
     fun scrub() = lock.withLock {
         groupScreenItems.clear(); directScreenItems.clear(); pendingUnresolvedGroupText.clear()
         pendingActivityNotices.clear()
+        pendingUninvitedGroupText.clear()
+        shownAheadOfNotice.clear()
         // A fresh session should be able to warn again if it happens again.
         screenItemsOverflowWarned = false
         pendingUnresolvedOverflowWarned = false
@@ -340,6 +365,63 @@ internal class ConversationBuffers(
     }
 
     /**
+     * Awaiting-invite buffer: hold a group text for a group this device does not
+     * know, fetched by [screenGroupId]'s poll (null = [contactId]'s 1:1 screen).
+     * Expired entries of every key are pruned on the way in, so a sender whose
+     * invite never comes cannot keep plaintext here past the TTL by sending more.
+     * Never rejects the arrival (same eviction as [bufferUnresolvedGroupText]).
+     */
+    fun bufferTextAwaitingInvite(groupId: String, contactId: String, rm: ReceivedMessage, screenGroupId: String?) = lock.withLock {
+        val now = clock()
+        val entries = pendingUninvitedGroupText.entries.iterator()
+        while (entries.hasNext()) {
+            val e = entries.next()
+            e.value.removeAll { p -> now - p.bufferedAt > PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS }
+            if (e.value.isEmpty()) entries.remove()
+        }
+        val key = unresolvedKey(groupId, contactId)
+        evictForCapacityLocked(
+            pendingUninvitedGroupText, key,
+            perKeyMax = MAX_PENDING_UNRESOLVED_PER_SENDER,
+            totalMax = MAX_PENDING_UNRESOLVED_GROUP_TEXTS,
+        )
+        pendingUninvitedGroupText.getValue(key).add(PendingUninvited(rm, screenGroupId, now))
+    }
+
+    /**
+     * Awaiting-invite buffer: an invite for [groupId] from [inviterContactId] was
+     * just parked — TAKE (remove) every unexpired text that contact sent for that
+     * group, oldest first, each with the screen that fetched it. Texts the same
+     * group got from any OTHER contact stay held and expire: before we join, only
+     * the inviter can be told apart from a stranger.
+     */
+    fun takeTextsAwaitingInvite(groupId: String, inviterContactId: String): List<Pair<ReceivedMessage, String?>> = lock.withLock {
+        val now = clock()
+        val list = pendingUninvitedGroupText.remove(unresolvedKey(groupId, inviterContactId)) ?: return@withLock emptyList()
+        list.filter { now - it.bufferedAt <= PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS }.map { it.rm to it.screenGroupId }
+    }
+
+    /**
+     * Parked activity-notice buffer: a text of the not-yet-joined [groupId] from
+     * [senderContactId] was just SHOWN in another screen, so the notice that
+     * announced it has nothing left to point at — forget the oldest one, or the
+     * join would light a dot on an empty group. When none is parked the notice has
+     * simply not been drained yet (text inbox before control inbox): remember that
+     * one is owed, and [bufferActivityNotice] spends the next arrival against it.
+     */
+    fun spendActivityNoticeForShownText(groupId: String, senderContactId: String) = lock.withLock {
+        val key = unresolvedKey(groupId, senderContactId)
+        val list = pendingActivityNotices[key]
+        if (list != null && list.isNotEmpty()) {
+            list.removeAt(0)
+            if (list.isEmpty()) pendingActivityNotices.remove(key)
+        } else {
+            val owed = shownAheadOfNotice[key] ?: 0
+            if (owed < MAX_PENDING_UNRESOLVED_PER_SENDER) shownAheadOfNotice[key] = owed + 1
+        }
+    }
+
+    /**
      * Parked activity-notice buffer: park a KIND_ACTIVITY notice whose group we have
      * not joined yet, or whose sender is not yet a resolved member. Bounded per
      * (group, sender) AND globally with the SAME caps and the SAME oldest-of-the-
@@ -348,6 +430,12 @@ internal class ConversationBuffers(
      */
     fun bufferActivityNotice(groupId: String, senderContactId: String, onGroupInbox: Boolean, noticeAtMs: Long) = lock.withLock {
         val key = unresolvedKey(groupId, senderContactId)
+        // The text this notice announces was already shown ([spendActivityNoticeForShownText]).
+        val owed = shownAheadOfNotice[key] ?: 0
+        if (owed > 0) {
+            if (owed == 1) shownAheadOfNotice.remove(key) else shownAheadOfNotice[key] = owed - 1
+            return@withLock
+        }
         val evicted = evictForCapacityLocked(
             pendingActivityNotices, key,
             perKeyMax = MAX_PENDING_UNRESOLVED_PER_SENDER,

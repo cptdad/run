@@ -259,6 +259,8 @@ struct GroupConversationView: View {
         var kind: RowKind = .group
         var echoGroupId: String = ""
         var echoGroupName: String = ""
+        // False for an echo of a group we are only INVITED to: nothing to open yet.
+        var echoGroupJoined: Bool = true
     }
 
     enum RowKind { case group, privateReceived, privateSent, groupEcho }
@@ -465,7 +467,7 @@ struct GroupConversationView: View {
                                 senderAlias: msg.senderAlias,
                                 text: msg.text,
                                 timestamp: msg.timestamp,
-                                onOpenGroup: { onOpenGroup(msg.echoGroupId) },
+                                onOpenGroup: msg.echoGroupJoined ? { onOpenGroup(msg.echoGroupId) } : nil,
                                 bubbleId: "group_echo_bubble",
                                 labelId: "group_echo_label",
                                 openId: "group_echo_open"
@@ -779,7 +781,8 @@ struct GroupConversationView: View {
                         isSystem: gm.isSystem,
                         kind: kind,
                         echoGroupId: gm.isGroupEcho ? gm.groupId : "",
-                        echoGroupName: gm.isGroupEcho ? gm.groupName : ""
+                        echoGroupName: gm.isGroupEcho ? gm.groupName : "",
+                        echoGroupJoined: gm.groupJoined
                     ))
                 }
                 // "Screenshot taken" notices: collected automatically inside the

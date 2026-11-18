@@ -117,6 +117,7 @@
     <!-- Kontaktrad / grupperad -->
     <string name="contact_list_repair_required">Må parkobles på nytt</string>
     <string name="contact_list_waiting_for_inbox">Venter på innboksen deres…</string>
+    <string name="contact_list_secure_channel_lost">Sikker kanal mistet: parkoble på nytt</string>
     <string name="contact_list_introduced_by">Introdusert av %1$s</string>
     <string name="contact_list_introduced">Introdusert</string>
     <string name="contact_list_repair_chip">Parkoble på nytt</string>

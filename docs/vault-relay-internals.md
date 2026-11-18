@@ -283,7 +283,7 @@ Custom **capability-based** HTTP API on the relay (not REST-conventional):
 
 - Inboxes are PoW-minted (`mintInboxPair`, bounded grind budget). Each holds an opaque `inboxId` plus a read and a write **capability** (bearer tokens), not a guessable id+secret.
 - `POST /inbox/{id}` — send (requires `X-Write-Capability`). `GET /inbox/{id}?lease=1` — poll (requires `X-Read-Capability`); since 2026-11-03 it LEASES and deletes nothing — `POST /ack` deletes (see "Retrieve-ack" below). The bare `GET /inbox/{id}` still deletes at fetch on the relay (every released client) and is never used by the app any more. `PUT /inbox/{id}/read-capability` / `.../write-capability` — rotation (both require the **read** cap). Caps are validated for control chars + length before they enter any header (CRLF/header-injection guard).
-- Wire format (legacy/fallback path): AES-256-GCM with `key = sha256(sharedSecret)` and AEAD context `sha256(key + "message-aead")` as AAD. Layout `IV(12) ‖ ct ‖ tag(16)`. NOTE: this static-key path has NO forward secrecy (compromise of `sharedSecret` decrypts all past + future static-key blobs); the "epoch" (`messageEpoch`) is an anti-replay tag, not a rekey. **BUT the Double Ratchet IS wired for the text channel** (`RatchetManager`, `MessageManager` send/receive) — once engaged (self-describing wire + first-inbound-gated enablement) the text channel has forward secrecy; the static envelope above is the legacy/pre-ratchet fallback, not the whole story. Precisely: a pairing's texts ride the static envelope **until the first inbound text from the peer** — unbounded for a peer that never sends (a one-directional conversation stays on the static envelope for as long as it stays one-directional); the shared secret stays at rest for every pairing regardless, so this adds no forensic exposure beyond what the pairing already carries.
+- Wire format (legacy/fallback path): AES-256-GCM with `key = sha256(sharedSecret)` and AEAD context `sha256(key + "message-aead")` as AAD. Layout `IV(12) ‖ ct ‖ tag(16)`. NOTE: this static-key path has NO forward secrecy (compromise of `sharedSecret` decrypts all past + future static-key blobs); the "epoch" (`messageEpoch`) is an anti-replay tag, not a rekey. **BUT the Double Ratchet IS wired for the text channel** (`RatchetManager`, `MessageManager` send/receive) — once engaged (self-describing wire + first-inbound-gated enablement) the text channel has forward secrecy; the static envelope above is the legacy/pre-ratchet fallback, not the whole story. Precisely, for a **legacy contact** (every contact made before the one-time bootstrap, every pairing with an older build, every introduction where either side lacks `bv`): its texts ride the static envelope **until the first inbound text from the peer** — unbounded for a peer that never sends (a one-directional conversation stays on the static envelope for as long as it stays one-directional); the shared secret stays at rest for every pairing regardless, so this adds no forensic exposure beyond what the pairing already carries. **A v3 contact (`ContactRecord.ratchetBootstrapV3`) never uses the static envelope for text (1:1 or group), the inbox announce or the sealed control kinds** — its ratchet exists from birth on both sides and `dr-on` is written by the pairing transaction; only the chatty control kinds (`act`, `screenshot`, `plvl`, `chlost`) stay static, keyed by `sha256` of the row's stored secret (`ss'` / `ss_ref`). See "The one-time ratchet bootstrap ("v3") for NEW pairings" below.
 - Anti-replay: a per-contact **monotonic counter + epoch** are sealed inside the AEAD; receive enforces strict-monotonic after an in-drain sort, top-level JSON is parsed depth-1 to block poisoning, and legacy no-counter envelopes are hard-dropped.
 - **Two more AEAD-bound fields beyond counter+epoch** (both enforced on receive, not merely parsed — `AntiSpliceReplayTest` covers each end-to-end):
   - `"ch"` — **channel tag** (`"m"` main / `"c"` control / `"g"` group text — see the third-inbox-pair section below). Each of the pairing's inboxes keeps an INDEPENDENT counter space, so without this a relay could move an authentic blob between them and it would pass the replay check. Once a peer has been seen tagging, an untagged blob from it is dropped as a downgrade; a genuinely legacy peer never sets that marker and stays accepted.
@@ -376,8 +376,10 @@ torn down with a GET in flight — which is why the conversation screens used to
   tried. Pinned in `RatchetPendingAdvanceTest`.
 - **Known limitations (stated plainly).** (a) A retained copy during the ack window (≤ the lease, ≤ 24 h TTL if every ack is lost)
   is decryptable only where the envelope is static-key: the responder's first text before its first ratchet receive / the
-  legacy fallback, and the CONTROL inbox as the normal case — `act` activity notices and screenshot notices are never
-  ratcheted. Low-sensitivity, accepted. (b) Burn on read: a message that reached the screen a moment before the home press
+  legacy fallback (legacy contacts only — a v3 contact has neither), and the CONTROL inbox as the normal case — `act`
+  activity notices and screenshot notices are never ratcheted, for any contact. Low-sensitivity, accepted. (A
+  re-delivered RATCHET blob whose advance an earlier session persisted fails to decrypt and is acked as REJECTED; see
+  the v3 section, "Retrieve-ack interaction", for the log line it produces.) (b) Burn on read: a message that reached the screen a moment before the home press
   counts as read (committed) — same as before. (c) A pending drain applies what it cannot defer at decrypt time: a legacy
   peer's control on its text inbox, a 1:1 screenshot notice on a pre-v7 text inbox, ratchet UI ids (RAM-only), the `ch` / `di` / `cr`
   latches; a teardown before commit re-applies them on the re-delivery (idempotent upserts; a screenshot notice may show
@@ -522,13 +524,19 @@ Two consequences to know:
 - **What it does NOT change.** The chatty control kinds (group activity notices, screenshot notices) stay on the static
   envelope — a chatty kind over the text ratchet would burn `MAX_SKIP` across two inboxes drained at different
   cadences; announces are rare. **The referral handshake and group membership control used to be listed here too;
-  since the next section's change they ride the ratchet as well, advert-gated.** The bootstrap window is unchanged: the very first announce (pairing
+  since the next section's change they ride the ratchet as well, advert-gated.** For a LEGACY contact the bootstrap window is unchanged: the very first announce (pairing
   completion) and a responder's announce before its first ratchet receive are still legacy and still accepted while the
   peer is un-armed — the known `dr-rxlock` arming limitations apply verbatim. The residual under a vault
-  image is therefore the same as for text: usable until the next DH round-trip, not forever.
+  image is therefore the same as for text: usable until the next DH round-trip, not forever. **A v3 contact has no such
+  window:** `dr-on` and the lock are set at birth, so its very first announce is ratchet-sealed (the pending side of a
+  secret-only scan decrypts it through the receive-side id relaxation, v3 section below) and a legacy announce from
+  that peer is dropped from the first drain.
 - **Version skew.** A pre-fix peer receiving a ratchet-sealed announce on its control inbox fails AEAD and drops it.
-  The only production announce callers are the pairing-time `announceInbox` on both platforms (dr-on is never set
-  yet, so they stay legacy); rotation re-announces to a stale peer are the one path that needs both sides updated.
+  The only production announce callers are the pairing-time `announceInbox` on both platforms. For a legacy contact
+  `dr-on` is never set yet at that point, so it stays legacy; for a v3 contact it is set by the pairing transaction, so
+  it is ratchet-sealed — and the peer showed a code with `ek`, i.e. runs a build with v3 (if OUR code's `ek` was
+  stripped on the way, that peer saved legacy and cannot read it — the stripped-code case in the v3 section).
+  Rotation re-announces to a stale peer are the one path that needs both sides updated.
 
 ### The integrity-critical control kinds ride the ratchet too — advert-gated both ways (2026-10-21)
 
@@ -677,8 +685,13 @@ Two consequences to know:
   `dr/<id>/ctl-deferred` (deferred sealed-control wires). Stored deferred wires have the same vault-image exposure as
   cached skipped keys — the ratchet state in the same vault opens them — bounded by their force age (≤ 24 h, ≤ 10 min
   for the short case), 32 entries and 64 KiB per contact.
+- **v3 contacts bypass this whole advert machinery** (v3 section below): the sender takes the ratchet branch for a sealed
+  kind without consulting `dr-on` or the peer's `cr` (a v3 peer seals control by construction; `dr-rxseen-ctlcap` is
+  written "1" at birth anyway), and the receiver uses a watermark of −1 on the control inbox, so EVERY legacy copy of a
+  sealed kind from a v3 peer is dropped without advancing. The arming trace and the limitations below are about legacy
+  contacts.
 - **Known limitations (also in `docs/SECURITY_OVERVIEW.md` §8).** Before `dr-rxlock` arms, or against a peer that never advertised,
-  legacy sealed kinds are accepted exactly as before (the `dr-rxlock` bootstrap-window limitation applies verbatim). A relay that
+  legacy sealed kinds are accepted exactly as before (the `dr-rxlock` bootstrap-window limitation applies verbatim; legacy contacts only). A relay that
   withheld k genuine pre-commit legacy control blobs can substitute ≤ k forgeries in `(baseline, W]`. A vault image also
   holds the current ratchet state, so — as for text — a forger is good until the next DH round trip, not forever. A
   forged legacy CHATTY kind still lands: a fake `act` lights a dot, a fake `screenshot` notice shows, and a forged
@@ -1053,7 +1066,20 @@ vault/relay code.
   text found by a group poll is shown in that group screen as a PRIVATE item (reply goes over the normal 1:1 send),
   a group text found by a 1:1 poll (or another group's poll) is shown there as a GROUP_ECHO item, and showing an echo
   gives its group's `groupUnread` unit back. The old `pendingGroup`/`pendingDirect` cross-conversation buffers lost
-  every parked message on lock/relaunch, the relay having burned it at fetch. `presenceBump(g)` is the
+  every parked message on lock/relaunch, the relay having burned it at fetch.
+  **A group we are only INVITED to (2026-11-16)** follows the same rule: a text for a group whose invite is still
+  parked, sent by its INVITER, is shown as a GROUP_ECHO (named after the invite, `groupJoined = false`, so the UI offers
+  no "Open group") in whichever screen fetched it — the inviter's 1:1, or another group shared with the inviter. (A
+  text on the inviter's GROUP inbox is fetched only by a screen that drains that inbox: another shared group's screen,
+  or the 1:1 once the two share a group. With no shared group it waits on the relay and is in the group after the join.) Before
+  this it was dropped ("text for unknown group") although the drain had already acked it, so an invitee who answered
+  "Later" and then opened either screen lost the group's first messages, and the sender saw no "not delivered" mark.
+  Only the inviter qualifies (no other member can address us before our join discloses our tags). A group text for a
+  group with NO parked invite is held in RAM (`ConversationBuffers.bufferTextAwaitingInvite`, the unresolved-sender
+  buffer's caps and 10 min TTL) with the screen that fetched it, and handed to that screen if an invite for exactly that
+  group arrives from that sender (`deliverTextsHeldForInvite`) — the case where the text inbox is drained before the
+  control sweep brings the invite. A left or declined group never parks an invite again, so its texts expire unseen.
+  `presenceBump(g)` is the
   no-notice fallback: `+1` (never `n`, because the true per-group split off an unattributed group-inbox peek is not
   knowable and a bigger number would be a lie) on every group a sender-with-unattributed-group-pending is a resolved
   member of — exact when the sender shares exactly one group (the common case), a bounded over-light across several
@@ -1281,9 +1307,33 @@ injecting tags; never loosen it.
   `MAX_SKIPPED_STORE` is 128 (legacy blobs up to 1024 are still READ, then trimmed and re-persisted — rejecting them
   would have re-bootstrapped the pairing). v1/v2 blobs deserialize with `loadedAt` as the stamp; migrate-on-write.
   Every evicted/expired/consumed key is `secureWipe`d. A load that dropped entries is persisted immediately by
-  `RatchetManager` so dead keys leave the VAULT, not just RAM. **Downgrade skew:** an older build reading a v3 blob
-  hits `onCorruptReinit` and re-bootstraps over legacy — self-healing, same shape as the v1→v2 bump.
-- **The legacy fallback is counted.** A responder with no sending chain falls through to the static envelope silently and without bound, so a
+  `RatchetManager` so dead keys leave the VAULT, not just RAM. **…and a quiet conversation is swept at unlock
+  (2026-11-15, plan G1).** That persist only ran on a `loadOrInit` — the read-only probes prune in RAM only — so a
+  pairing that went silent kept its expired keys at rest until its next message. `RatchetManager.sweepExpiredSkippedKeys`
+  (via `MessageManager.sweepExpiredSkippedKeys`, every contact's `dr/<id>/text`) now runs once per unlock, off Main,
+  started by the session's FIRST `MessageManager` (Android `RunViewModel.startSkippedKeySweep` from `wireRelayTransport`,
+  armed in `onVaultOpened`; iOS `IosAppController.startSkippedKeySweepOnce` from `connectTor`/`connectDirect`, armed in
+  `adoptOpenedVault`) — not on a transport restart, and not before a manager exists, because it must share that
+  manager's ratchet lock with the drains and sends. Per contact, under the lock: a live uncommitted advance ⇒ skipped
+  (a write would move the store fingerprint and `commitPending`'s compare-and-swap would discard the screen's ticket;
+  stale tickets are not expired here); absent blob ⇒ skipped (NEVER `loadOrInit`, which would fresh-init from the pairing
+  secret); undecodable blob ⇒ skipped (no write, NEVER `onCorruptReinit`, which clears `dr-rxlock`/`dr-on`); otherwise a
+  direct `store.load → deserialize → persist`, written ONLY if the load dropped keys, or if a pre-v3 blob still holds
+  unstamped skipped keys (stamped "now" on every load, they would otherwise never age out — migrate-on-write). The write
+  is a compare-and-swap against the loaded bytes and re-checks the session first; the transient ratchet and blob are
+  wiped in a `finally`; one contact's failure never stops the others; the log line is counts only. Refused on the old
+  phone of a move (freeze gate). Teardown: Android cancels the session slot before the vault closes; iOS `lock()` cancels
+  the scope first and `emergencyWipe()` cancels the sweep right after the key deletion, before the table wipe and unlink.
+  No periodic re-run: a session ends at every background/lock (Android tears the whole session down on `onStop`; both
+  platforms auto-lock), so a key that expires mid-session leaves at the next unlock or the next use of that ratchet.
+  Known residual: a session that stays unlocked and in the foreground for more than a day keeps a quiet pairing's
+  expired keys until it locks. **Downgrade skew:** an older build reading a v3 blob
+  hits `onCorruptReinit` and re-bootstraps over legacy — self-healing, same shape as the v1→v2 bump. ("v3 blob" here
+  is `DoubleRatchet.SER_VERSION` 3, the serialization format — unrelated to the one-time "v3" bootstrap below, whose
+  states serialize in that same format unchanged. For a v3-BOOTSTRAP contact the sweep's "absent/undecodable ⇒
+  skipped, never `loadOrInit`, never `onCorruptReinit`" is exactly the no-fresh-init rule.)
+- **The legacy fallback is counted (legacy contacts only).** A v3 contact never falls through: a send that cannot use
+  the ratchet fails, and `dr-legacyfb` is never written for it. For a legacy contact: a responder with no sending chain falls through to the static envelope silently and without bound, so a
   relay dropping every ratchet blob to it could pin one direction on no-forward-secrecy (cost: a total, permanent
   blackout of the initiator's messages — conspicuous). The fallthrough is now COUNTED:
   `dr-legacyfb/<contactId>` (in `ratchetMetaKeysForContact`) increments per consecutive legacy fallback, clears on the
@@ -1411,6 +1461,11 @@ injecting tags; never loosen it.
   id-order rule for life, deliberately (re-roling an established pairing IS the collision).
   `RatchetRoleBindingTest` (12 hermetic tests) pins all of it, including a control half that proves the id-order
   rule really does flip across an announce + re-init, so the stability assertion is not vacuous.
+- **v3 contacts.** The v3 bootstrap applies this same rule at birth, but over the secret the ROW stores (`ss'` for a
+  QR pairing, `ss_ref` for an introduction) with the order bit from the two halves / the two referral public keys, and
+  builds the initial state for that role itself (`RatchetBootstrapV3.derive`). The birth transaction writes
+  `dr-roleord` and `dr-rolerv2` = "1", so `ratchetSelfIsBobOverride` agrees with the stored state; it is never used to
+  INIT a v3 contact (no fresh init exists for one).
 
 ### The ratchet ROLE COLLISION is detected on both sides and the downgrade is refused (2026-09-18)
 
@@ -1428,20 +1483,231 @@ injecting tags; never loosen it.
   is the UI reader beside `forwardSecrecyStalled`.
 - **Four rules that are load-bearing.** The latch is read ONCE *before* the ratchet attempt and applied *after* it, so
   a successful ratchet send is never blocked and the send that crosses a threshold still goes out (it is the evidence,
-  not the verdict). CONTROL traffic is never gated — its static envelope is the designed fallback for every contact
+  not the verdict). CONTROL traffic is never gated by this latch — for a LEGACY contact its static envelope is the designed fallback
   (the ratchet-sealed integrity kinds included), so there is no downgrade to refuse, and gating it would break group convergence, the referral handshake and the inbox announce a
-  recovery needs. A refusal NEVER touches `dr/<id>/text`: it blocks sends, it does not wipe or re-init a ratchet.
+  recovery needs. (A v3 contact is different on both counts: its announce and sealed kinds never take the static
+  envelope, and they ARE gated — by `dr-lost`, not by this latch, which a v3 contact never arms; v3 section below.) A refusal NEVER touches `dr/<id>/text`: it blocks sends, it does not wipe or re-init a ratchet.
   Absence fails toward NOT refused everywhere (fresh/legacy/unreadable vault, empty drain, no ratchet sends
   outstanding) — the same brick-safety direction as every other marker here.
 - **Recovery.** One inbound ratchet blob that DECRYPTS — on either channel, since a ratchet-sealed announce on the control inbox
   advances the same text ratchet — clears both counters and the latch immediately; a re-pair clears them with the
   contact; `onCorruptReinit` clears them too, because that path returns the pairing to the legacy bootstrap the latch
   would otherwise refuse forever (the verdict is re-earned in ≤ 8 sends if the roles really did collide).
+  `onCorruptReinit` never runs for a v3 contact, and neither counter is fed for one (`afterRatchetHalf(v3 = true)` skips
+  the both-Alice count; the both-Bob count needs a fallthrough v3 never takes): a v3 role mismatch is a key mismatch,
+  which key confirmation (`dr-kc`) reports instead.
 - **What it does NOT do.** The ≤ 8 sends before the refusal arms still ship at the pairing's bootstrap security
   level. A hostile relay can force a refusal by serving junk blobs — accepted, strictly weaker than blackholing the
   inbox, and inert while the device still holds a working sending chain. (The secret-derived role rule, above, is what stopped the peer
   from choosing the victim's role on an honest pairing; a modified client acting as the wrong role is still this
   latch's case, by construction.)
+
+### The one-time ratchet bootstrap ("v3") for NEW pairings (2026-11-16)
+
+Design and review record: `docs/ratchet-bootstrap-plan.md`, kept with the project's working notes and not part of the public tree (read it as intent; this section states what the code does).
+Code: `RatchetBootstrapV3.kt`, `DoubleRatchet.initV3AsAlice` / `initV3AsBob`, `PairingSession.kt` + `PairingPayload.kt`
+(`ek`), `PairingVault.savePairedContactV3` + `writeV3RatchetStateInTxn`, `ReferralManager` / `ReferralStore` (`bv`), the
+`ratchetBootstrapV3` branches in `MessageManager`, `RatchetManager.loadExistingOrThrow`, `MigrationBundle` /
+`VaultSnapshotIo`. **Naming trap:** "v3" here is the bootstrap. It is NOT `DoubleRatchet.SER_VERSION` 3 (the state
+serialization, unchanged — it already serializes both v3 initial states) and NOT `KDF_VERSION_3`.
+
+- **The gap (still true of every LEGACY contact).** The legacy bootstrap (`DoubleRatchet.initAsAlice` / `initAsBob`)
+  derives `rk0` and Bob's first ratchet private key from the stored `contact.sharedSecret`; the static envelope key is
+  `sha256(sharedSecret)`; and `sharedSecret = sha256(sort(halfA, halfB))` with both halves shown in clear in the two QR
+  codes. So from an opened vault of either phone, a move bundle, or a camera that saw both codes, plus recorded relay
+  traffic, an attacker opens: every text sent before `dr-on`; the responder's static texts before its first ratchet
+  receive; and the initiator's first ratchet chain until it decrypts the responder's first ratchet blob (the
+  responder's first chain too, from its own vault, until its next receiving DH step). `RatchetBootstrapRecoverabilityTest`
+  + `support/LegacyBootstrapAttacker` keep this as a must-SUCCEED control, so the v3 tests below are not vacuous.
+- **What a v3 contact is and where the flag lives.** `ContactRecord.ratchetBootstrapV3`, a contact-ROW column since DB
+  v11, read in the same decode as `sharedSecret`. Android: `DATABASE_VERSION` 11, column `ratchetV3`, one additive
+  `ALTER TABLE … DEFAULT 0` in `onUpgrade`, strict `getColumnIndexOrThrow` read. iOS: column `ratchet_v3`, the same
+  idempotent `ALTER` loop as the earlier columns; the INSERT names the column only for a v3 row; the row reader treats
+  a missing column as legacy, `0`/`1` as such, and any other value as an unreadable row (dropped — never "legacy").
+  Deliberately NOT a `_meta` marker: iOS `getMeta` answers null on a read error, which would fail toward legacy, i.e.
+  toward the static envelope. Every row written before v11 reads false: **existing contacts keep the legacy rules for
+  life** — nothing migrates, no existing ratchet blob changes, re-pairing is the only way to move a contact to v3. No
+  screen shows the flag (owner decision D3); `MessageManager.isRatchetBootstrapV3` is the reader.
+- **The derivation** (one private function, `RatchetBootstrapV3.derive`, used by both entry points):
+
+  ```
+  T        = "run-dr-boot-v3" ‖ min(pubA, pubB) ‖ max(pubA, pubB)       (unsigned byte order)
+  rk0      = HKDF(ikm = S, salt, info = T ‖ "root")
+  rB_seed  = HKDF(ikm = S, salt, info = T ‖ "bob-key")      Bob's first ratchet private key
+  CK_pre   = HKDF(ikm = S, salt, info = T ‖ "pre-chain")    Bob's first sending chain
+  stored   = HKDF(ikm = S, salt, info = T ‖ "pairing-secret")   QR only (ss'); an introduction stores salt (= ss_ref)
+  ```
+
+  Independent HKDF expansions: the stored secret reveals none of the others. **Role** = role rule v2
+  (`ratchetSelfIsBobFromRoleOrder`) over the STORED secret with the order bit — a parity bit of a value neither side
+  chooses alone, complementary on the two phones; it is NOT "who scanned first". **Alice**: fresh `a1`,
+  `(rk1, CKs) = KDF_RK(rk0, X25519(a1, rB_pub))`, state `{root rk1, self a1, remote rB_pub, send CKs, recv CK_pre}`;
+  `rk0` and `rB_seed` wiped. **Bob**: state `{root rk0, self rB_seed/rB_pub, remote null, send CK_pre, recv null}` —
+  the **pre-chain**: Bob sends at once (headers `(rB_pub, pn = 0, n)`), Alice receives on `CK_pre` with no DH step, and
+  Bob's first receive is an ordinary `dhRatchet` that overwrites `rk0`, `rB_seed` and the pre-chain key. Refusals are
+  VALUES (`RatchetBootstrapV3.Refusal`, never thrown — an uncaught exception SIGABRTs iOS): malformed input, an
+  all-zero ("spent") own key, a reflected peer key (bit 255 masked), a low-order peer key (the 7-point table in
+  `isLowOrderPublicKey`, plus the all-zero DH output), a platform key-agreement failure. A refusal writes nothing and
+  never falls back to the legacy bootstrap.
+- **QR / paste: who does what.** `PairingSession` (commonMain; Android owns it in `AddContactSessionViewModel`, iOS in
+  the add-contact view) holds the secret half and a `PairingKeyHolder` — one fresh X25519 keypair per session. Both
+  code shapes carry `"ek"` (43-char canonical base64url, 32 bytes), appended after `rv` (`buildSecretOnlyV3` /
+  `buildFullV3`); presence IS the capability, there is no version field. `PairingPayload.parse` rejects the whole code
+  (the existing "invalid code") for an `ek` that is present but malformed, low-order, or equal to our own; absence is
+  never a rejection. `PairingSession.save` calls `savePairedContactV3` iff the PEER's parsed code carries `ek`, else the
+  untouched `savePairedContact` — so each side decides from the other side's code, at its own save, and computes
+  `S = X25519(e_mine, e_peer)` there. `ss_halves` (what a legacy row stores) is here only the HKDF salt and the
+  order-bit input; the row stores `ss'`. **Ephemeral material:** the private key exists only in Kotlin memory, never on
+  disk; `takePrivateKeyForSave` hands it to `bootstrap` once, which wipes it on every path; a v3 save consumes it on
+  every outcome (also `InboxInUse` / `WriteFailed`), so a second save in the session answers `START_AGAIN`, never a
+  zero scalar; `end()` / `wipe()` zero it and leave the holder answering null. `S` is wiped in `bootstrap`'s `finally`;
+  the `Ready` (state + `ss'`) is wiped after the transaction. On iOS the X25519 runs in CryptoKit through
+  `X25519BridgeHolder` (`SwiftX25519.swift`); copies inside CryptoKit are outside these wipes. The in-RAM wipes are
+  reasoned from the code, not measured.
+- **Introductions: who does what.** Each introducee stages `bv = "3"` in its `ref_p` record at `stageAccept`
+  (`StoredAccept.bootstrapV3`, written only when set); every send of its accept — the first, a Retry, a sweep redrive —
+  is built from that stored record (`acceptBodyOf`), so the bytes never change across restarts or app updates. **v3
+  iff our stored `bv` AND the peer's accept carries `"bv":"3"`**; a `ref_p` an older build staged has no `bv` and stays
+  legacy. An older introducee ignores the extra field (by-name parser); an introducer of any version relays the body
+  verbatim. At finalize: `ecdh = x25519EcdhChecked(our ephemeral priv, peer pk)`, `ss_ref = HKDF(ecdh,
+  "run-referral-v1|" + introId)` (unchanged, stored on the row), `S_ref = HKDF(ecdh, "run-referral-drboot-v3|" +
+  introId)` (never stored), then `derive(ikm = S_ref, salt = ss_ref, T over the two accept pks)`; no `ss'` — the row
+  keeps `ss_ref`; the order bit is `ratchetRoleOrderBit(ourPub, peerPub)` (identical keys ⇒ refused).
+  `commitReferredContactLocked` writes the row (flag set), the inbox rows, the birth markers and DELETES `ref_p` in ONE
+  transaction; an abort leaves `ref_p` for a retry and nothing half-born. **Window, unlike QR:** the introduction's
+  one-time private key IS stored, in `ref_p`, until that side finalizes (bounded by `REFERRAL_RECORD_MAX_LIFETIME_MS`,
+  28 days). An image of a side's vault taken before it committed opens Bob's pre-chain and Alice's first sending chain
+  and stops helping at Bob's first receiving DH step; after both commits nothing stored on either phone or on the
+  introducer opens anything (oracle controls in `ReferralBootstrapV3Test` / `ReferralBootstrapV3CoverageTest`).
+- **Birth markers (`PairingVault.writeV3RatchetStateInTxn`, shared by the QR save and the introduction commit).** In
+  the SAME transaction as the row: `dr/<id>/text` (the initial state), `dr-roleord`, `dr-rolerv2` = "1", `dr-intent`,
+  `dr-on`, `dr-rxlock`, `dr-rxseen-ctlcap` = "1". FAIL-CLOSED: every `putMeta` throws on failure and rolls the whole
+  birth back (unlike `markRatchetCapable`, which swallows). `savePairedContactV3` returns `V3SaveResult` (`Saved`,
+  `Refused`, `IdenticalSecretHalves`, `InboxInUse`, `WriteFailed`) and never throws.
+- **Send rules** (`sendEnvelopeSerialized`; keyed off the ROW flag and the REQUESTED channel):
+
+  | | legacy contact | v3 contact |
+  |---|---|---|
+  | text, 1:1 and group | static until `dr-on` (first inbound + both inboxes); then ratchet; a responder with no sending chain falls through to static, counted (`dr-legacyfb`), refused at 8 (`dr-refused`) | ratchet only, from birth, both roles; any failure returns `false`; never static, never counted |
+  | inbox announce | static before `dr-on`, ratchet after | ratchet only |
+  | sealed control (`ref-offer`, `ref-accept`; group `invite`/`join`/`roster`/`leave`) | ratchet iff `dr-on` + peer `cr` + a sending chain, else static | ratchet only, no advert consulted |
+  | chatty control (`act`, `screenshot`, `plvl`, `chlost`) | static | static, key = `sha256(ss')` / `sha256(ss_ref)` |
+  | `dr-lost` set | — | text, announce and sealed control refused (`false`); chatty kinds still go |
+
+  `channelLostBlocksSend` fails closed on Android (a throwing read refuses the send); on iOS a failed `_meta` read
+  answers null, so the send proceeds — if the channel really is lost that is one ratchet message the peer cannot read
+  (lost, not exposed); a tri-state read would be needed to close it.
+- **Receive rules.** `lockArmed = v3 || dr-rxlock == "1"` — from the row, so a `_meta` read error can never let legacy
+  text through: legacy blobs on the text and group inboxes are dropped from the first drain, with NO grace
+  (`textGrace` requires `!v3`); a legacy announce is dropped; on the control inbox the sealed-control watermark is −1,
+  so every legacy copy of a sealed kind is dropped without advancing; chatty legacy kinds (including `chlost`) are
+  accepted as for any contact. `maybeArmRecvLock` and the both-Alice counter are skipped. **Receive-side id
+  relaxation:** for v3 only, `receiveOverTextRatchet` proceeds with empty role ids when the text inbox pair is
+  incomplete (the pending side of a secret-only scan has no outbound row yet), so it can open the ratchet-sealed first
+  announce — safe only because the decrypt runs with `noFreshInit`, which refuses when no stored state exists. The
+  send side has the same relaxation (a missing outbound row is `false`, not the legacy "not ready" `null`).
+- **No fresh init, ever** (`MessageManager` passes `noFreshInit = v3` to `tryEncrypt` and `decryptBatch`; the
+  parameter also exists on `decrypt` and `isBootstrapped` → `RatchetManager.loadExistingOrThrow`). A re-init from the stored secret would put text back on keys an opened vault
+  derives, and `onCorruptReinit` would delete `dr-rxlock` / `dr-on`; neither ever runs for a v3 contact.
+  - Absent, or the read threw (an iOS read error looks like absent) ⇒ `RatchetStateUnavailableException`: nothing
+    written, the send fails, a drain marks every wire `NOT_PROCESSED` (never acked — the relay keeps them; log
+    "ratchet drain: state unavailable — N blob(s) left for the next drain"), the next operation retries. Never latched.
+  - Present but undecodable (not base64 ⇒ `RatchetStoreUndecodableException`, or `deserialize` fails) ⇒ re-read; only
+    `CORRUPT_PROOF_READS` = 3 byte-identical reads failing the same way in ONE operation prove it corrupt ⇒ the
+    `onStateLost` hook latches `dr-lost` (notice owed) and `RatchetStateLostException` is thrown. A read that differs,
+    fails or comes back absent in between ⇒ unavailable, not proof. Nothing is reset, re-initialised or deleted.
+  - `isBootstrapped(noFreshInit = true)` (a probe; no production caller at the time of writing) answers false
+    instead of throwing.
+- **`dr-lost/<id>` — "secure channel lost, pair again".** Values: `1` our state proven corrupt, notice owed; `2` same,
+  notice sent; `p` the peer told us. First cause wins (never overwritten); never written for a legacy contact;
+  never written for a deleted one (`latchChannelLost` re-checks); cleared ONLY by deleting the contact. Not
+  `dr-refused` (text-only, self-clearing, "role collision"). The notice is `CONTROL_KIND_CHANNEL_LOST` = `"chlost"`,
+  body `{}`, a static chatty kind by necessity (the state that would seal it is what is gone), sent by
+  `redriveChannelLostNotices` from the control sweep (`SessionManagers`) and retried every sweep until an append
+  lands. A receiver applies it only to a v3 contact (a legacy contact logs and drops it; an older build drops it as an
+  unknown direct kind). Forgery bound: whoever holds the stored secret (an opened vault image); the effect is "pair
+  again" on that one contact. Group effect: a lost pair's group fan-out is refused too (existing per-group
+  undelivered state). UI: `secureChannelLost(contactId)` — a display hint, false on a read failure; Android reads it
+  through the live `MessageManager`, so it is not shown while the transport is down.
+- **Key confirmation, `dr-kc/<id>`.** `"ok"` (sticky) once any ratchet wire from the peer decrypts; otherwise the first
+  ratchet wire that was refused (not deferred, not left unprocessed) stamps the time. `contactPairingFailed` /
+  `pairingKeyConfirmationFailed` = v3 AND a stamp at least `KEY_CONFIRM_GRACE_MS` (2 min) old; the add-contact wait
+  shows "pairing didn't work — start again" without deleting anything, and a later decrypt flips it back. A relay, or
+  anyone who photographed the full code (it carries the write cap), can provoke the stamp with junk — a nuisance that
+  the genuine message clears. A static wire counts in one case only: a static blob on the
+  CONTROL inbox that the v3 row’s key cannot open, while the side is still pending (no outbound text row) and the
+  marker is absent (`noteUnopenedStaticWhilePending`); authentic static chatty kinds open and never count, and a side
+  holding the peer’s rows or an "ok" is never stamped. This covers `ek` stripped from ONE code with the v3 side
+  pending: the legacy announcer seals its announce under the halves secret, which a v3 row does not hold, so it fails
+  to decrypt (it never reaches the announce lock); the v3 side shows "pairing didn’t work" after the grace. The
+  legacy side is never told (the pending v3 side has no route to it) and its texts are dropped. If the legacy side is
+  the pending one it cannot open the v3 side’s ratchet announce and keeps waiting (no verdict exists for a legacy
+  contact). Introductions have no screen that reads `dr-kc`.
+- **A relay 404 on a v3 send.** `sendOverTextRatchet` encrypts and PERSISTS the chain advance before the POST, so a
+  404 leaves the chain advanced (the peer will see one skipped key); it sets `SendStatus.inboxGone` and returns
+  `false`, and the v3 branch returns `false` (the send fails visibly) and logs that the ratchet send did not land (relay refused it
+  or transport failed); the "no ratchet send for a v3 contact" line is kept for a missing sending chain only
+  (`v3RatchetSendFailureLine`). A group
+  text that 404s on the peer's group inbox gets the existing one retry on the text inbox (`sendGroupTextRouted`),
+  still over the ratchet. A 404 on a send does NOT: fall back to the static envelope, latch `dr-lost`, re-init, touch
+  `dr-kc`, or feed the relay-lost 404 streak (`noteRelay404` is called only from the drain path). Older than v3 and
+  unchanged: a sender is never told that the contact is gone, so an introduction offer to a contact who deleted you is
+  retried without end. A retry is a fresh encrypt.
+- **Retrieve-ack interaction: "ratchet drop … failed to decrypt" is not necessarily a key-exchange failure.** A
+  session that persisted a ratchet advance (a background drain, or a screen's `commit()`) and ended before its
+  `POST /ack` landed (teardown sets `acksClosed`; the ack is fire-and-forget) leaves the blob leased, not deleted; the
+  relay hands it out again after the lease, its message key is already consumed and wiped, and the decrypt fails ⇒
+  `REJECTED` ⇒ acked. The "likely re-delivery after a lost ack" label needs the RAM-only `ackUnconfirmed` entry, which
+  a new session does not have, so the line reads "ratchet drop: N of M blob(s) on the … inbox failed to decrypt
+  (tamper / replay / chain desync)". The proof is in the relay journal: the earlier hand-out with no receipt. It does
+  not move `dr-kc` (already `"ok"` from the first decrypt). Contrast the v3 state-unavailable case above: those wires
+  are left unacked, with their own log line.
+- **Purge coupling.** `ratchetMetaKeysForContact` (`ContactMetaPurge.kt`) gains `drLostKey` and `drKeyConfirmKey`;
+  `DatabaseManager.deleteContact` and `IosVaultDatabase.deleteContact` both iterate it. `dr-lost` MUST die with the
+  contact (re-pair is the only exit, and a contact re-using the id must not inherit it). Every other birth key was
+  already listed. `MoveMetaPolicy` gains `dr-lost/` and `dr-kc/` (a moved contact must not lose its "lost" verdict or
+  restart a pending confirmation). The `bv` decision lives inside the referral mirror (`ref_p`) and dies with it.
+- **Device move.** There is no bootstrap secret to export; `dr/<id>/text` IS the v3 contact's channel. The flag
+  travels as `"ratchetV3":1` (emitted only when true; absent = legacy; any other value = malformed bundle).
+  `MigrationBundleCodec.CURRENT_SCHEMA` = 11; `exportSchemaFor` writes 11 iff `needsCurrentSchema` (a v3 contact, or a
+  `ref_p` with `bv` — its accept may already have left with `bv`, and an older importer would finalize it legacy
+  against a v3 peer), else `LEGACY_EXPORT_SCHEMA` 10, byte-identical. An older importer answers `SCHEMA_TOO_NEW` to 11;
+  `encode` refuses a schema below 11 carrying v3. A v3 contact without its state is refused at export
+  (`IncompleteSnapshotException` — e.g. an iOS null read), at encode, at decode and at import, so no bundle can create
+  a v3 contact that is dead on arrival. The new phone continues the same chain; the old phone is frozen exactly as for
+  a legacy contact (two live copies remain the fork hazard; the static counter jump does not touch the ratchet).
+- **Compatibility matrix.**
+
+  | | new ↔ new | new ↔ older build | older ↔ older |
+  |---|---|---|---|
+  | QR pairing | v3 on both | legacy on both (the older parser ignores `ek`; the older code has none) | legacy |
+  | Introduction | v3 iff both stored `bv` and both accepts carry it | legacy on both | legacy |
+  | Contact made before the update | legacy for life | legacy for life | legacy for life |
+  | Move to an older build | `SCHEMA_TOO_NEW` once a v3 contact (or a `bv` `ref_p`) exists; else works | — | unchanged |
+  | Lost / corrupt ratchet state | `dr-lost` → pair again, peer told via `chlost` | legacy `onCorruptReinit` (unchanged) | unchanged |
+
+  Groups mix v3 and legacy pairs freely: group text rides each pair's own channel.
+- **Residuals, stated plainly.** (a) An opened vault exposes a v3 contact's CURRENT ratchet state: in-flight messages
+  (sent, not yet committed by the recipient), and impersonation in both directions until the next DH round trip;
+  Bob's stored `rk0` + `rB_seed` (until his first receive) open only Alice's messages he has not committed, never his
+  own pre-chain. (b) A one-directional v3 conversation gets hash-chain forward secrecy and no post-compromise
+  recovery. (c) Chatty control kinds stay static under the stored secret: readable from recorded traffic plus an
+  opened vault, forgeable with it — but not derivable from a photo of the codes. (d) iOS only: an OLDER build installed
+  in place over this one (development/TestFlight, not an App Store path) rewrites contact rows with its 15-column
+  `INSERT OR REPLACE`, resetting the flag to the column default; Android's open helper has no `onDowngrade` override.
+  (e) The relay can tell a new↔new pairing (the first control-inbox blob is a ratchet blob) and may see the referral
+  accept's extra bytes cross a padding bucket; the introducer sees `bv`. (f) Introductions: a stripped `bv` on ONE
+  side shows nothing until the legacy side sends a text; then the v3 side, if it is introduction-born
+  (`vouchedByContactId`), checks the static text blobs its lock dropped on the message inbox
+  (`referralPeerProvablyLegacy`: authenticates under `ss_ref` and passes every legacy-drain check) and latches
+  `dr-lost` — positive evidence; the plaintext is never surfaced, stored or notified. The legacy side is never told.
+  Stripped on both sides ⇒ two legacy contacts, no warning. (g) Not established: chip-level remanence of superseded
+  states, the iOS SQLCipher binary (manifest only), an on-device iOS residue run for a vault upgraded from WAL.
+- **Tests.** `RatchetBootstrapV3Test`, `RatchetBootstrapForwardSecrecyTest` (derivation oracle,
+  `support/V3BootstrapOracle`), `RatchetV3MessageRulesTest`, `RatchetV3NoInitTest`, `PairingPayloadV3Test`,
+  `PairingSessionTest`, `ReferralBootstrapV3Test`, `ReferralBootstrapV3CoverageTest`, `RatchetMetaCleanupTest`,
+  `MoveManagerTest`, `MigrationSchemaPinTest`, `IosContactV3FlagTest` (iosTest), and the legacy control
+  `RatchetBootstrapRecoverabilityTest`.
 
 ### The Android crypto-erase is verified and double-killed; the Tink keyset is classified by its bytes (2026-09-08)
 
@@ -1518,6 +1784,11 @@ Design: `docs/device-move.md`. Contract: `MoveContracts.kt`. What every future r
 - **Residue:** every `mig_*` key lives in `_meta`, survives `deleteContact`/`deleteGroup`
   (a contact delete must never unfreeze a mid-move phone) and dies with `wipeAllTables`.
   `mig_handle` holds `inboxId|readCap|bundleId|chunkCount`; the code is RAM-only.
+- **Bundle schema 11 and v3 contacts (2026-11-16).** `CURRENT_SCHEMA` is 11 (what this build READS); what it WRITES is
+  `exportSchemaFor`: 11 only when the vault holds a v3 contact or a `ref_p` staged with `bv`, else 10, byte-identical to
+  before (owner decision D4 — a move to an older build keeps working until the first v3 pairing). A v3 contact can only
+  move together with its `dr/<id>/text`: export, encode, decode and import all refuse a snapshot that lacks it. Details
+  in the v3 section, "Device move".
 
 ### The connection log is a release-visible surface: fixed phrases only, RAM-only, cleared on lock/wipe (2026-09-11)
 
@@ -1869,6 +2140,24 @@ has seen the restore epoch move keeps retrying past its normal passes (15 s back
 until 240 s after the restore, at most 12 passes in all (`PushRegistration.continueDeregLadder`,
 `DEREG_RESTORE_GRACE_MS`, both platforms); those retries log "push dereg retry N (after network
 restore)".
+**SOCKS listener move vs the iOS unlock-time check (2026-11-15):** a Connected toggle (guard-channel
+or network-restore kick) re-binds `SocksPort auto` at once; `SocksPortRedirect` blocks the old port,
+then re-points it after the readback (~1–3 s). iOS ALSO re-publishes `TorManager.socksPort` and
+`.connected` when Tor reports the circuit established again (the circuit-established observer runs
+`readBackSocksPort` again — observed 0.5–0.8 s after the toggle, longer on a slow network); Android
+never re-publishes `Connected` (the redirect alone carries the move). Before the fix, an unlock
+inside that window compared control (new port) with published (old) and called `markThreadDead()`:
+a false, one-way relaunch-required on a live Tor (reproduced on an iPhone with the DEBUG
+`--test-network-kick-at-unlock` hook, `tests/adhoc/network-kick-before-unlock.spec.ts`). Now
+`AppState.authenticateCachedSocksPort` asks `TorManager.querySocksListenerViaControl` (tri-state:
+listener / answered-no-listener / silent) and decides with the shared `UnlockPortCheck.decide(published,
+resolve(published), answer)`: only a SILENT control channel is DEAD (relaunch). CONFIRMED (control =
+the port the published one resolves to) → SOCKS5-probe that resolved port and wire. MOVING (redirect
+blocked), NO_LISTENER, UNTRACKED_PORT → re-check every 500 ms, at most 20 times, with the cached-port
+flag held (token-owned; a lock ends the wait); still unconfirmed → never the latch: the published
+port is left blocked (fail fast → stalled / Reconnect) or redirected to the port Tor reported on the
+authenticated channel, then wired. The stale port is never probed or trusted. The DEBUG suspend probe
+uses the same table.
 300-line RAM ring, `clear()` on lock and wipe on both platforms, never written to LogBuffer,
 logcat, os_log or the bug report. Since 2026-09-14 one narrow egress exists: the connect-telemetry `log` field ships
 the `Line.code` of the lines in the connect window — the CODES only, never `Line.text`, and only

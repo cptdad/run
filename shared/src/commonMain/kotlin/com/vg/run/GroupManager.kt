@@ -2233,7 +2233,7 @@ class GroupManager(
         direct: MutableList<DirectItem>, group: MutableList<GroupMessage>,
     ) {
         noteMembershipView(contactId, gid, rm.membershipHash, kind = null)
-        val gm = acceptGroupText(contactId, gid, rm) ?: return
+        val gm = acceptGroupText(contactId, gid, rm, screenGroupId = if (background) null else wantGroupId) ?: return
         // This group text just left the relay (returned or buffered) — drop it
         // from whichever pending tally described it.
         tally.consumed(contactId, fromGroupInbox)
@@ -2249,11 +2249,11 @@ class GroupManager(
                 // GROUP_ECHO: shown at once in the screen that fetched it, so the
                 // group's own dot has nothing left to point at.
                 tally.shownElsewhere(gid, contactId)
+                // …and for a group we have only been INVITED to, neither has the
+                // notice parked for the join (see [invitedGroupMessage]).
+                if (!gm.groupJoined) buffers.spendActivityNoticeForShownText(gid, contactId)
                 if (wantGroupId == null) {
-                    val echo = DirectItem(
-                        contactId, gm.text, gm.timestamp, gm.dedupeId,
-                        kind = ReceivedItemKind.GROUP_ECHO, groupId = gid, groupName = gm.groupName,
-                    )
+                    val echo = directEcho(contactId, gm)
                     if (!bufferAll) direct.add(echo) else buffers.toDirectScreen(contactId, echo)
                 } else {
                     val echo = gm.copy(kind = ReceivedItemKind.GROUP_ECHO)
@@ -2261,6 +2261,72 @@ class GroupManager(
                 }
             }
         }
+    }
+
+    /** The 1:1-screen form of a GROUP_ECHO of [gm], fetched from [contactId]. */
+    private fun directEcho(contactId: String, gm: GroupMessage): DirectItem =
+        DirectItem(
+            contactId, gm.text, gm.timestamp, gm.dedupeId,
+            kind = ReceivedItemKind.GROUP_ECHO, groupId = gm.groupId, groupName = gm.groupName,
+            groupJoined = gm.groupJoined,
+        )
+
+    /**
+     * A text of a group this device has been INVITED to but has not joined, from
+     * the INVITER. The screen whose poll fetched it has already taken it off the
+     * relay (the drain acks what it returns), and an invite can stay unanswered
+     * for days ("Later"), so this text can be neither left where it was nor kept
+     * for the group's own screen: it would be gone by the time the user joins.
+     * NO-PARK therefore applies to it like to any other group text — it is shown
+     * in the screen that fetched it, as a GROUP_ECHO named after the invite.
+     *
+     * Showing it discloses nothing and joins nothing (the consent gate is about
+     * OUR tags and OUR join, both still untouched): it is a message from a paired
+     * contact, on that contact's own pairwise channel, labelled with the group name
+     * that same contact put in the invite. Only the INVITER qualifies — before we
+     * join, no other member can address us (they resolve us from the tags our join
+     * discloses), so a text for this group from anyone else is not from a member we
+     * can tell apart from a stranger, and stays dropped.
+     *
+     * [GroupMessage.groupJoined] is false, so the UI offers no "Open group".
+     */
+    private fun invitedGroupMessage(contactId: String, invite: GroupInvite, rm: ReceivedMessage): GroupMessage =
+        GroupMessage(
+            groupId = invite.groupId,
+            senderContactId = contactId,
+            senderAlias = vault.getContact(contactId)?.alias ?: platformString(NOTICE_MEMBER_FALLBACK_KEY),
+            text = rm.text,
+            timestamp = rm.timestamp,
+            counter = rm.counter,
+            sequenceGap = rm.sequenceGap,
+            membershipOk = rm.membershipHash == membershipHash(invite.groupId, invite.epoch, invite.memberIds),
+            dedupeId = rm.dedupeId,
+            groupName = invite.groupName,
+            groupJoined = false,
+        )
+
+    /** The invite for [groupId] awaiting the user's answer, IF [contactId] sent it. */
+    private fun parkedInviteFrom(groupId: String, contactId: String): GroupInvite? =
+        pendingInviteLock.withLock { pendingInvites[groupId] }?.takeIf { it.inviterContactId == contactId }
+
+    /**
+     * An invite was just parked: hand over the texts its inviter sent for this
+     * group BEFORE the invite reached us (see [ConversationBuffers.bufferTextAwaitingInvite])
+     * to the screens that fetched them. Called with no lock held.
+     */
+    private fun deliverTextsHeldForInvite(invite: GroupInvite) {
+        val held = buffers.takeTextsAwaitingInvite(invite.groupId, invite.inviterContactId)
+        for ((rm, screenGroupId) in held) {
+            val gm = invitedGroupMessage(invite.inviterContactId, invite, rm)
+            // Shown now, so its notice must not light a dot when we join.
+            buffers.spendActivityNoticeForShownText(invite.groupId, invite.inviterContactId)
+            if (screenGroupId == null) {
+                buffers.toDirectScreen(invite.inviterContactId, directEcho(invite.inviterContactId, gm))
+            } else {
+                buffers.toGroupScreen(screenGroupId, gm.copy(kind = ReceivedItemKind.GROUP_ECHO))
+            }
+        }
+        if (held.isNotEmpty()) platformLog(TAG, "texts fetched ahead of their group invite handed to their screens: ${held.size}")
     }
 
     /** NO-PARK: the group-screen item for a 1:1 text from [contactId] that the poll
@@ -2280,12 +2346,34 @@ class GroupManager(
             kind = ReceivedItemKind.PRIVATE,
         )
 
-    /** Validates and converts a group text message. Null = dropped OR buffered. */
-    private fun acceptGroupText(contactId: String, groupId: String, rm: ReceivedMessage): GroupMessage? {
+    /** Validates and converts a group text message. Null = dropped OR buffered.
+     *  [screenGroupId] is the screen whose poll fetched it (null = the sender's 1:1
+     *  screen, or no screen at all). */
+    private fun acceptGroupText(contactId: String, groupId: String, rm: ReceivedMessage, screenGroupId: String?): GroupMessage? {
         val g = vault.getGroup(groupId)
         if (g == null) {
-            // Group text for a group we don't know — invite lost or we left.
-            platformLogWarn(TAG, "drop: text for unknown group")
+            // Not a group we are in. Three cases, told apart by the invite:
+            //  1. its invite is awaiting our answer and this is the inviter → the
+            //     text is shown where it was fetched ([invitedGroupMessage]);
+            //  2. no invite is known → it may still be on its way (the text inbox
+            //     was drained before the control inbox). Held, bounded and
+            //     TTL-pruned, and shown if the invite arrives from this sender;
+            //  3. …which also covers a group we left or declined and a stranger's
+            //     group id: nothing ever claims those, and they expire unseen —
+            //     so "a group we are not in shows nothing" still holds.
+            // An invite from SOMEONE ELSE for this group is case 3 for this sender.
+            parkedInviteFrom(groupId, contactId)?.let { return invitedGroupMessage(contactId, it, rm) }
+            if (hasPendingInviteForGroup(groupId)) {
+                platformLogWarn(TAG, "drop: text for an invited group from a contact that is not its inviter")
+            } else {
+                buffers.bufferTextAwaitingInvite(groupId, contactId, rm, screenGroupId)
+                platformLogWarn(TAG, "text for unknown group held in case its invite is on the way")
+                // The control sweep runs on another thread: it may have parked the
+                // invite between the look above and the hold, and its own hand-over
+                // would then have run before this text was there. Look once more;
+                // the take is atomic, so whichever side gets there shows it once.
+                parkedInviteFrom(groupId, contactId)?.let { deliverTextsHeldForInvite(it) }
+            }
             return null
         }
         val members = vault.getGroupMembers(groupId)
@@ -3328,6 +3416,9 @@ class GroupManager(
             // resurrected prompt.
             inviteStore.record(candidate)
             platformLog(TAG, "group invite parked for consent (${mem.size} members)")
+            // A text this inviter sent for the group may have been fetched before
+            // the invite itself (text inbox drained first): show it now.
+            deliverTextsHeldForInvite(candidate)
         }
     }
 

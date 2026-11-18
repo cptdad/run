@@ -1,7 +1,5 @@
-• Maksimal: et skjold markerer kontakter, der også bruger Maksimal.
-• Sendte beskeder får fuld farve, når relæet har modtaget dem.
-• Besvar gruppeinvitationer og introduktioner senere fra chatlisten.
-• Gør til admin spørger, før du overdrager rollen.
-• Grupper: prikken for ulæste vises kun på den gruppe, der fik beskeden.
-• Hvis relæet ikke svarer, prøver appen en anden vej i stedet for at sidde fast.
-• Sikkerhedsrettelser efter en ekstern gennemgang.
+• Kontakter, der tilføjes ved scanning eller introduktion, starter nu med en engangsnøgleudveksling: en senere kopi af telefonen kan ikke genskabe deres første nøgler. Begge telefoner skal have denne version; eksisterende kontakter er uændrede.
+• Parringen klarer, at telefonen drejes, eller at forbindelsen afbrydes.
+• Skarpere QR-koder.
+• Gruppebeskeder, der kommer, før du er med, vises i stedet for at gå tabt.
+• Mere stabil forbindelse efter netværksskift.

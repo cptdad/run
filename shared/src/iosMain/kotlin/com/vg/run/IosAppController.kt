@@ -4,6 +4,7 @@ package com.vg.run
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
@@ -930,6 +931,7 @@ class IosAppController {
         // carries the old epoch and is refused (TransportFailedSends).
         TransportFailedSends.shared.beginSession()
         vault = opened
+        skippedKeySweepPending = true
         // Build + cross-wire both session managers in one shared
         // place so the referral-control bridge can't be forgotten.
         val managers = createSessionManagers(
@@ -1064,6 +1066,41 @@ class IosAppController {
         }
         // Never the port: in external mode it is the user's proxy port (LogBuffer -> Debug-mode upload).
         platformLog("IosAppController", "MessageManager created (transport=${if (externalProxyMode) "external" else "tor"})")
+        startSkippedKeySweepOnce()
+    }
+
+    // Once-per-unlock sweep of expired skipped ratchet keys (plan G1). Armed by
+    // [adoptOpenedVault], consumed by the session's FIRST MessageManager, so a Tor
+    // reconnect (a new MessageManager, same unlock) does not re-run it. Main only.
+    private var skippedKeySweepPending = false
+    private var skippedKeySweepJob: Job? = null
+
+    /**
+     * Drops expired skipped ratchet keys from every contact's stored text-ratchet
+     * state ([MessageManager.sweepExpiredSkippedKeys]) once per unlock. Here rather
+     * than in [adoptOpenedVault] because it must share the session MessageManager's
+     * ratchet lock with the drains and sends. Off the main thread on
+     * [sessionWorkScope], never awaited, so it delays neither the unlock nor the
+     * connect path. Stops (between contacts and right before any write) once the
+     * session ends or this manager is replaced; [lock] cancels the scope's children
+     * first, and [emergencyWipe] cancels this job right after the key deletion.
+     * Android sibling: `RunViewModel.startSkippedKeySweep`.
+     */
+    private fun startSkippedKeySweepOnce() {
+        if (!skippedKeySweepPending) return
+        val mm = messageManager ?: return
+        val v = vault ?: return
+        skippedKeySweepPending = false
+        skippedKeySweepJob = sessionWorkScope.launch(ioDispatcher) {
+            val job = coroutineContext[Job]
+            try {
+                mm.sweepExpiredSkippedKeys {
+                    job?.isActive == true && vault === v && messageManager === mm
+                }
+            } catch (e: Throwable) {
+                platformLogWarn("IosAppController", "skipped-key sweep ended: ${e::class.simpleName}")
+            }
+        }
     }
 
     /**
@@ -1089,6 +1126,7 @@ class IosAppController {
             )
         }
         platformLog("IosAppController", "MessageManager created with direct HTTP")
+        startSkippedKeySweepOnce()
     }
 
     // -----------------------------------------------------------------------
@@ -2229,6 +2267,12 @@ class IosAppController {
         // Lever B: also destroy the Secure-Enclave auth-bound key so no key
         // survives that could unwrap a leftover auth-bound DB-key blob.
         SecureEnclaveBridgeHolder.bridge?.deleteKey()
+        // Stop the skipped-key sweep before the table wipe and the file unlink below:
+        // it is the one session job that WRITES the vault. RAM only (an O(1) cancel,
+        // no I/O), so it cannot delay the erase above. The rest of the session scope
+        // is cancelled further down, as before.
+        skippedKeySweepJob?.cancel()
+        skippedKeySweepPending = false
 
         // Delete all sensitive UserDefaults entries. IosUserDefaultsKeys.all
         // includes the wrapped DB-key blob (and any leftover decoy blobs from

@@ -374,7 +374,9 @@ class MoveManager(
             plaintext = try {
                 MigrationBundleCodec.encode(
                     MigrationBundle(
-                        schema = MigrationBundleCodec.CURRENT_SCHEMA,
+                        // D4: the new schema only when a v3 contact is in the vault, so a
+                        // move to an older build keeps working until the first v3 pairing.
+                        schema = MigrationBundleCodec.exportSchemaFor(snapshot),
                         from = platformTag,
                         createdMs = nowMs(),
                         bundleId = bundleId,

@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreImage.CIFilterBuiltins
 import AVFoundation
+import Vision
 import Foundation
 import shared
 
@@ -42,7 +43,8 @@ final class MintCancelToken: PowAbort {
 enum MintState {
     case waitingForRelay
     case solving
-    // (text inbox, CONTROL inbox, GROUP-text inbox, our 32-byte secret half).
+    // (text inbox, CONTROL inbox, GROUP-text inbox). The secret half and the one-time
+    // key live in the shared PairingSession (`AddContactView.pairing`), never here.
     // The control inbox (v7) is drained by the background poller so group
     // invites and announces reach this device without a conversation being
     // open; the group inbox (§1.6) is where a peer's group texts land, kept
@@ -56,20 +58,57 @@ enum MintState {
     // strictly worse), the QR then carries no `gib`/`gwcap`, group texts ride
     // the text inbox, and the §1.6 backfill converges it on a later control
     // sweep. Keep this in lockstep with Android's AddContactScreen.kt.
-    case ready(MintedInbox, MintedInbox, MintedInbox?, Data)
+    case ready(MintedInbox, MintedInbox, MintedInbox?)
     case failed(String)
+}
+
+/// Lifetime of one add-contact pairing session's secret half (G3). See
+/// `AddContactView.pairingSession`; Android sibling: AddContactSessionViewModel.
+enum PairingSessionPhase {
+    /// No half yet (the view has not appeared).
+    case notStarted
+    /// The half is live: the Show QR, the mint snapshot and the save use it.
+    case active
+    /// A real leave wiped the half. Unusable; the next appear starts a new session.
+    case ended
+}
+
+/// What `.onAppear` does with the current pairing session.
+enum PairingSessionAppearAction: Equatable {
+    /// First appear — generate the session's half.
+    case startFirstSession
+    /// Session still live (a duplicate appear) — keep the half the peer may have scanned.
+    case keepSession
+    /// The previous session ended (its half is wiped) — reset and start a new one.
+    case startNewSession
 }
 
 struct AddContactView: View {
     @EnvironmentObject private var appState: AppState
+    @Environment(\.displayScale) private var displayScale
     let onDismiss: () -> Void
 
     @State private var step: AddStep = .choice
     @State private var errorMessage: String? = nil
 
-    // Mint pipeline. mySecret is regenerated once per screen open; the
-    // (inboxId, writeCap) come back from the relay via mintInbox().
-    @State private var mySecret: Data = Data()
+    // Mint pipeline. The pairing session (secret half + one-time key) is created once
+    // per PAIRING SESSION (see `pairingSession`); the (inboxId, writeCap) come back
+    // from the relay via mintInbox().
+    //
+    // `pairing` is the shared commonMain PairingSession: it OWNS the secret half and
+    // the one-time keypair (Kotlin memory, wiped in place by `end()`), builds both
+    // code shapes, parses the peer's code and runs the save. No half is held in Swift
+    // any more, so there is no Data copy-on-write alias to chase.
+    @State private var pairing: PairingSession? = nil
+    // One pairing session = one secret half + one one-time key (ratchet-bootstrap plan,
+    // phase 0 G3 + phase 2). The phase makes an ended session unusable:
+    // .onDisappear (a real leave) ends the session, and an .onAppear on an ENDED
+    // session starts a NEW one (fresh half, wizard back at .choice) — never reused
+    // key material, and never a new half spliced into the old session's progress.
+    // An .onAppear while .active (a duplicate appear, no disappear in between)
+    // keeps the half the peer may already have scanned. Android sibling:
+    // AddContactSessionViewModel (AddContactSessionViewModel.kt).
+    @State private var pairingSession: PairingSessionPhase = .notStarted
     @State private var mintState: MintState = .waitingForRelay
     // @State so the token SURVIVES a parent re-render. A plain
     // `let` was recreated when ContactListView re-rendered mid-mint (Tor state / unread
@@ -86,17 +125,14 @@ struct AddContactView: View {
     @State private var shown = false
     @State private var scannedCode: String? = nil
     @State private var peerInbox: String? = nil
-    @State private var peerWriteCap: String? = nil
-    @State private var peerCtlInbox: String? = nil
-    @State private var peerCtlWriteCap: String? = nil
-    @State private var peerGrpInbox: String? = nil
-    @State private var peerGrpWriteCap: String? = nil
-    @State private var peerSecret: Data? = nil
-    // The scanned/pasted code carried `"rv":"2"`, i.e. the peer runs
-    // the secret-order ratchet-role rule. Recorded here so saveContact can persist
-    // the role inputs in the pairing transaction; false (a pre-A peer, or a scan
-    // that never set it) keeps BOTH devices on the legacy id-order rule.
-    @State private var peerRoleRuleV2 = false
+    // The peer's parsed code, exactly as the shared parse returned it (inbox + caps,
+    // control and group pairs, secret half, `rv`, one-time key `ek`). Handed to
+    // PairingSession.save unchanged. nil = nothing scanned yet.
+    @State private var peerScan: PairingScan? = nil
+    // Key confirmation failed on the scan-first side ("pairing failed — start again").
+    // NOT terminal: the 1 Hz poll keeps running and clears it again if the pairing
+    // completes after all; only the user's "Start again" tap deletes anything.
+    @State private var pairingFailed = false
 
     // Hidden 5-taps-within-3s gesture that reveals the no-camera paste exchange.
     @State private var pasteTapCount = 0
@@ -122,7 +158,7 @@ struct AddContactView: View {
 
     // Helpers to read the mint pipeline.
     private var myInboxId: String? {
-        if case .ready(let m, _, _, _) = mintState { return m.inboxId }
+        if case .ready(let m, _, _) = mintState { return m.inboxId }
         return nil
     }
     /// SECRET-ONLY payload for the Show step — renders INSTANTLY, before the
@@ -130,23 +166,24 @@ struct AddContactView: View {
     /// in-band afterwards (sendInboxAnnounce). This removes the "Setting up
     /// inbox…" wait while two people stand next to each other.
     private var myShowPayload: String? {
-        guard !mySecret.isEmpty else { return nil }
-        // Shared codec (PairingPayload) — both platforms build the identical wire format.
-        return PairingPayload.shared.buildSecretOnly(secretB64: mySecret.base64EncodedString())
+        guard pairingSession == .active else { return nil }
+        // The session builds it (shared codec, identical wire format on both platforms;
+        // the one-time key `ek` rides along). nil once the session has ended.
+        return pairing?.secretOnlyCode()
     }
     /// FULL payload (inbox + writeCap + secret) for the Done step and the
     /// paste exchange — mint-gated: the Done-step code is the one the peer
     /// scans back, so it must carry the inbox.
     private var myPayload: String? {
-        guard case .ready(let m, let ctl, let grp, let secret) = mintState else { return nil }
+        guard pairingSession == .active, let pairing = pairing,
+              case .ready(let m, let ctl, let grp) = mintState else { return nil }
         // gib/gwcap appended LAST — Kotlin default args don't bridge, so every
         // parameter is explicit (§1.4). BOTH-OR-NEITHER: with no group inbox the
         // code is byte-identical to a pre-§1.4 one, which is exactly what an old
         // build emits and what `PairingPayload.parse` reads back as `grp = null`.
-        return PairingPayload.shared.buildFull(
+        return pairing.fullCode(
             inboxId: m.inboxId, writeCap: m.writeCapability,
             ctlInboxId: ctl.inboxId, ctlWriteCap: ctl.writeCapability,
-            secretB64: secret.base64EncodedString(),
             grpInboxId: grp?.inboxId, grpWriteCap: grp?.writeCapability)
     }
 
@@ -269,7 +306,8 @@ struct AddContactView: View {
                     case .show:      showStep
                     case .scan:      scanCodeTab
                     case .finishing: finishingStep
-                    case .done:      doneStep
+                    case .done:
+                        if pairingFailed { pairingFailedStep } else { doneStep }
                     case .paste:     codeExchangeForm
                     }
 
@@ -281,34 +319,39 @@ struct AddContactView: View {
             .runNavigationBarChrome()
             .toolbar { addContactToolbar }
             .onAppear {
-                // One stable secret per screen session — the instant Show QR
-                // carries it, so it must NOT rotate while the peer may already
-                // have scanned it (the old per-mint-retry rotation predates the
-                // secret-only QR).
-                if mySecret.isEmpty { mySecret = generateRandomBytes(count: 32) }
+                // One stable session (secret half + one-time key) per PAIRING
+                // SESSION — the instant Show QR carries it, so it must NOT rotate
+                // while the peer may already have scanned it. Keyed on the session
+                // phase (see `pairingSession`). Every transient event this sheet sees today
+                // (the system camera-permission alert, Face ID, Control Center,
+                // rotation, the keyboard, the paste/debug step — a `step` switch
+                // inside this same ZStack) fires NO .onDisappear, so the half
+                // stays as is across them.
+                if AddContactView.pairingSessionOnAppear(pairingSession) == .startNewSession {
+                    resetForNewPairingSession()
+                }
+                if pairingSession == .notStarted {
+                    pairing = PairingSession.companion.start()
+                    pairingSession = .active
+                }
                 startMint()
             }
             .onDisappear {
                 // Flip the abort flag so the background solve exits promptly
                 // when the user backs out mid-pairing.
                 mintAbort.cancelled = true
-                // Zero the pairing secret
-                // originals on EVERY exit from this screen, not only a completed
-                // save — this is the backstop for Back/Cancel mid-flow (a
-                // successful save already zeroes them itself, see saveContact()).
-                // Safe unconditionally here: the screen is going away, so there is
-                // no retry left that could still need the original bytes.
-                secureZero(&mySecret)
-                peerSecret?.withUnsafeMutableBytes { buf in
-                    _ = memset_s(buf.baseAddress, buf.count, 0, buf.count)
-                }
-                peerSecret = nil
-                // mySecret's zero above only forks
-                // OUR alias; mintState.ready still owns the original buffer (kept
-                // live for the scan-first role's Done QR). The screen is leaving,
-                // so that snapshot is done — zero it now. MUST run AFTER
-                // secureZero(&mySecret) so wipeMintSecret's local is sole owner.
-                wipeMintSecret()
+                // End the pairing session on EVERY exit from this screen, not only a
+                // completed save — the backstop for Back/Cancel mid-flow. Safe
+                // unconditionally: the screen is going away, so no retry is left.
+                // `end()` zeroes the secret half and the one-time private key in
+                // Kotlin memory, in place; the session is unusable afterwards. Ending
+                // it here also makes a later .onAppear on this instance start a NEW
+                // one (see `pairingSession`).
+                pairing?.end()
+                pairing = nil
+                pairingSession = .ended
+                peerScan = nil
+                dropMintSnapshot()
             }
             // Tor on a physical device can take 60–180s to bootstrap from a
             // cold launch. If the user opens AddContact before then,
@@ -411,11 +454,9 @@ struct AddContactView: View {
                         step = .choice
                         shown = false
                         peerInbox = nil
-                        peerSecret = nil
-                        // The peer's role-rule marker belongs to
-                        // the scan being discarded — a later scan of an OLD
-                        // build's code must not inherit this one's `rv:2`.
-                        peerRoleRuleV2 = false
+                        // The discarded scan (and its `rv` / `ek` markers) must not
+                        // leak into a later scan.
+                        peerScan = nil
                         errorMessage = nil
                     }
                 }
@@ -439,9 +480,19 @@ struct AddContactView: View {
                     .foregroundColor(Color.runTextSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
+                if let err = errorMessage {
+                    // A "start again" reason (the save could not complete) lands here,
+                    // on the fresh wizard. Same id as the other surfaces.
+                    Text(err)
+                        .font(.runeFootnote)
+                        .foregroundColor(Color.runError)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                        .accessibilityIdentifier("add_contact_error")
+                }
                 Spacer().frame(height: 24)
-                choiceButton(title: L10n.addContactChoiceShow, id: "add_choice_show") { step = .show }
-                choiceButton(title: L10n.addContactChoiceScan, id: "add_choice_scan") { step = .scan }
+                choiceButton(title: L10n.addContactChoiceShow, id: "add_choice_show") { errorMessage = nil; step = .show }
+                choiceButton(title: L10n.addContactChoiceScan, id: "add_choice_scan") { errorMessage = nil; step = .scan }
                 Spacer()
             }
             .padding()
@@ -501,15 +552,15 @@ struct AddContactView: View {
                 .font(.runeFootnote)
                 .foregroundColor(Color.runTextSecondary)
 
-            if let payload = myShowPayload, let qrImage = generateQRCode(from: payload) {
-                Image(uiImage: qrImage)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 220, height: 220)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(12)
+            if let payload = myShowPayload, let qr = CrispQR.make(from: payload, tilePoints: 252, displayScale: displayScale) {
+                CrispQRView(qr: qr)
+                    // The identifier sits on the WHITE padded tile (quiet zone
+                    // included), so an element screenshot is directly scannable
+                    // (e2e camera specs). A decorative Image is not an accessibility
+                    // element by default, so make it a leaf first. Android sibling:
+                    // add_show_qr in ShowStep (AddContactScreen.kt).
+                    .accessibilityElement()
+                    .accessibilityIdentifier("add_show_qr")
             }
 
             // #if DEBUG: the instant secret-only payload as text, so the e2e
@@ -539,9 +590,9 @@ struct AddContactView: View {
                 LogBuffer.shared.append(level: "D", tag: "AddContact",
                     message: "[show] Next tapped: prevShown=\(shown) peerInboxSet=\(peerInbox != nil)")
                 shown = true
-                if peerSecret != nil { completeSaveOrWait() } else { step = .scan }
+                if peerScan != nil { completeSaveOrWait() } else { step = .scan }
             } label: {
-                Text(peerSecret != nil ? L10n.addContactNext : L10n.addContactShowFirstIos)
+                Text(peerScan != nil ? L10n.addContactNext : L10n.addContactShowFirstIos)
                     .font(.runeBody)
                     .foregroundColor(.black)
                     .padding(.horizontal, 32)
@@ -686,15 +737,8 @@ struct AddContactView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                         .accessibilityIdentifier("add_contact_scan_back_hint")
-                    if let payload = myPayload, let qrImage = generateQRCode(from: payload) {
-                        Image(uiImage: qrImage)
-                            .interpolation(.none)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .padding(8)
-                            .background(Color.white)
-                            .cornerRadius(12)
+                    if let payload = myPayload, let qr = CrispQR.make(from: payload, tilePoints: 216, displayScale: displayScale) {
+                        CrispQRView(qr: qr)
                             // A decorative Image is not an accessibility element by
                             // default, so make it a leaf before naming it — otherwise
                             // the identifier never reaches the XCUITest tree.
@@ -798,6 +842,35 @@ struct AddContactView: View {
         }
     }
 
+    // MARK: - Step: pairing failed (key confirmation)
+
+    /// The scan-first side's key confirmation failed: the two phones did not end up
+    /// with the same secure channel. A plain notice and ONE action. Not terminal — the
+    /// 1 Hz poll keeps running and removes this if the pairing completes after all.
+    /// Android sibling: PairingFailedStep in AddContactScreen.kt, same ids.
+    private var pairingFailedStep: some View {
+        VStack(spacing: 24) {
+            Spacer().frame(height: 32)
+            Text(L10n.addContactPairingFailed)
+                .font(.runeFootnote)
+                .foregroundColor(Color.runError)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .accessibilityIdentifier("pairing_failed_notice")
+            Button { startAgainAfterFailure() } label: {
+                Text(L10n.addContactPairingFailedAction)
+                    .font(.runeBody)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 12)
+                    .background(Color.runTextPrimary)
+                    .cornerRadius(8)
+            }
+            .accessibilityIdentifier("pairing_failed_start_again")
+            Spacer()
+        }
+    }
+
     // MARK: - Scan Code tab
 
     private var scanCodeTab: some View {
@@ -808,6 +881,7 @@ struct AddContactView: View {
                 .padding(.top, 4)
 
             scanInjectRow
+            scanInjectImageRow
 
             QRScannerView(scannedCode: $scannedCode)
                 .frame(height: 300)
@@ -881,6 +955,88 @@ struct AddContactView: View {
                     .cornerRadius(8)
             }
             .accessibilityIdentifier("scan_inject_submit")
+        }
+        .padding(.horizontal)
+        #endif
+    }
+
+    // MARK: - Scanner IMAGE seam (#if DEBUG, SIMULATOR only)
+    //
+    // The simulator has no camera, so the cross-platform e2e camera spec feeds
+    // this scan step an IMAGE of the peer's QR instead: the harness copies a PNG
+    // to NSTemporaryDirectory()/scan-inject.png inside this app's own container,
+    // the button decodes it with Vision (QR only) and hands the decoded string to
+    // `scannedCode` — the binding QRScannerView's coordinator writes on a camera
+    // detection, so the same .onChange -> handleScannedCode runs (not the paste
+    // path). If nothing decodes, the existing invalid-QR error surface shows and
+    // the step stays put.
+    //
+    // HONEST SCOPE: this exercises Apple's QR decoder on a RENDERED image and our
+    // handling of the result. It does NOT exercise the camera, optics, focus, or
+    // AVCaptureMetadataOutput. Compiled out of release builds AND off devices by
+    // the double gate below. Result readout for the harness: `scan_inject_image_result`
+    // reads "decoded" or "no code: <reason>" ("idle" before the first press).
+    #if DEBUG && targetEnvironment(simulator)
+    @State private var injectImageResult = "idle"
+
+    private func decodeInjectedImage() {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("scan-inject.png")
+        func fail(_ why: String) {
+            // "no code" + a reason, so a harness failure says WHERE it stopped.
+            injectImageResult = "no code: " + why
+            errorMessage = L10n.addContactInvalidQr
+        }
+        guard let data = try? Data(contentsOf: url) else { return fail("file unreadable") }
+        guard let cg = UIImage(data: data)?.cgImage else { return fail("not an image") }
+        // The newest barcode revision (3) is ML-backed and fails on the simulator
+        // with com.apple.Vision error 9; revision 1 (deprecated, still present) is the classic detector. Try
+        // revision 3 first, then revision 1, so the seam keeps working on a device-like
+        // runtime too.
+        var results: [VNBarcodeObservation] = []
+        var lastError: NSError? = nil
+        for revision in [VNDetectBarcodesRequestRevision3, VNDetectBarcodesRequestRevision1] {
+            let request = VNDetectBarcodesRequest()
+            request.revision = revision
+            request.symbologies = [.qr]
+            do {
+                try VNImageRequestHandler(cgImage: cg, options: [:]).perform([request])
+                results = request.results ?? []
+                lastError = nil
+            } catch {
+                lastError = error as NSError
+                continue
+            }
+            if !results.isEmpty { break }
+        }
+        if let e = lastError, results.isEmpty { return fail("vision error \(e.domain) \(e.code)") }
+        guard let payload = results.compactMap({ $0.payloadStringValue }).first else {
+            return fail("vision found \(results.count) barcode(s), no payload")
+        }
+        injectImageResult = "decoded"
+        // The camera's own write target — one code path from here on.
+        scannedCode = payload
+    }
+    #endif
+
+    @ViewBuilder
+    private var scanInjectImageRow: some View {
+        #if DEBUG && targetEnvironment(simulator)
+        HStack(spacing: 8) {
+            Button { decodeInjectedImage() } label: {
+                Text("inject image")
+                    .font(.runeCaption)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.runTextPrimary)
+                    .cornerRadius(8)
+            }
+            .accessibilityIdentifier("scan_inject_image")
+
+            Text(injectImageResult)
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundColor(Color.runTextSecondary)
+                .accessibilityIdentifier("scan_inject_image_result")
         }
         .padding(.horizontal)
         #endif
@@ -1022,8 +1178,25 @@ struct AddContactView: View {
            MessageManagerKt.contactFullyPaired(vault: vault, contactId: cid) {
             LogBuffer.shared.append(level: "D", tag: "AddContact",
                 message: "[done] peer inbox arrived — pairing complete")
+            // Success always wins over a failure notice shown earlier.
+            pairingFailed = false
             peerInboxArrived = true
         } else if scanBackNeeded {
+            // Key confirmation (one-time-bootstrap pairings): if the announce never
+            // decrypts, say so and offer a fresh start. NOT terminal and deletes
+            // nothing: this poll keeps running, so a later real message that decrypts
+            // clears the notice and the success path above runs; the contact is
+            // deleted only by the user's "Start again" tap. Positive evidence only;
+            // false for a legacy contact. Android sibling: the waiting loop in
+            // AddContactScreen.kt.
+            if let cid = pendingContactId, let vault = appState.vault {
+                let failedNow = MessageManagerKt.contactPairingFailed(vault: vault, contactId: cid)
+                if failedNow != pairingFailed {
+                    LogBuffer.shared.append(level: "D", tag: "AddContact",
+                        message: "[done] pairing key confirmation failed=\(failedNow)")
+                    pairingFailed = failedNow
+                }
+            }
             if !scanBackWaitLogged {
                 scanBackWaitLogged = true
                 LogBuffer.shared.append(level: "D", tag: "AddContact",
@@ -1076,13 +1249,13 @@ struct AddContactView: View {
     /// The scan finished before the mint did (the finishing step is showing) and
     /// the contact has not been saved yet.
     private var readyToSaveContact: Bool {
-        peerSecret != nil && pendingContactId == nil && step == .finishing
+        peerScan != nil && pendingContactId == nil && step == .finishing
     }
 
     /// Kicks off the background mint. Safe to call repeatedly (the previous
-    /// solve, if any, is signalled via [mintAbort]). Generates a fresh
-    /// 32-byte secret per attempt — the mySecret half is intentionally
-    /// epoch-bound to this pairing session and is replaced on retry.
+    /// solve, if any, is signalled via [mintAbort]). Never touches the
+    /// secret half: it belongs to the pairing session and is NOT
+    /// replaced on retry (see the note inside).
     private func startMint() {
         // Guard against re-entry. .onAppear and .onReceive(appState.transport.$torState)
         // can both fire in quick succession when AppState's torState happens
@@ -1091,9 +1264,11 @@ struct AddContactView: View {
         // detached Tasks race and double-mint.
         if case .solving = mintState { return }
         if case .ready = mintState { return }
+        // A mint belongs to a live session — never an ended (wiped) one (G3).
+        guard pairingSession == .active, pairing != nil else { return }
 
         mintAbort.cancelled = false
-        // mySecret is NOT rotated here: it is generated once per screen
+        // The session's half is NOT rotated here: it is created once per pairing
         // session (onAppear) because the instant secret-only Show QR carries
         // it — a mint retry must not invalidate a code the peer already
         // scanned. (The old per-attempt rotation predates the instant QR.)
@@ -1130,7 +1305,7 @@ struct AddContactView: View {
                 // good inboxes, two completed grinds and the user's IRL moment.
                 // Android does the same (AddContactScreen.kt) — keep them in step.
                 if let pair = pair {
-                    mintState = .ready(pair.main, pair.ctl, pair.grp, mySecret)
+                    mintState = .ready(pair.main, pair.ctl, pair.grp)
                     // Scan finished before the mint did (the finishing step is
                     // showing) — complete the save now.
                     if readyToSaveContact {
@@ -1144,14 +1319,12 @@ struct AddContactView: View {
     }
 
     private func handleScannedCode(_ code: String) {
-        // The shared codec (PairingPayload, commonMain) runs the IDENTICAL
-        // parse + validation as Android (32-byte secret, echo checks, inbox/wcap +
-        // ctl pair shape, cap/inbox-id validity). This handler keeps only the
-        // iOS-specific UI bits: the secret-only deadlock guard + peer-field wiring.
-        guard let scan = PairingPayload.shared.parse(
-                  raw: code, myInboxId: myInboxId,
-                  mySecretB64: mySecret.base64EncodedString(), requireFull: false),
-              let secret = Data(base64Encoded: scan.secretB64) else {
+        // The session (shared commonMain code) runs the IDENTICAL parse + validation as
+        // Android: 32-byte secret, echo checks (our half, our inbox, our one-time key),
+        // inbox/wcap + ctl pair shape, cap/inbox-id validity, a low-order `ek`. This
+        // handler keeps only the iOS-specific UI bits: the secret-only deadlock guard.
+        guard pairingSession == .active, let pairing = pairing,
+              let scan = pairing.parsePeerCode(raw: code, myInboxId: myInboxId, requireFull: false) else {
             errorMessage = L10n.addContactInvalidQr
             return
         }
@@ -1165,25 +1338,16 @@ struct AddContactView: View {
         LogBuffer.shared.append(level: "D", tag: "AddContact",
             message: "[scan] handleScannedCode received scan (full=\(scan.inboxId != nil))")
         peerInbox = scan.inboxId
-        peerWriteCap = scan.writeCap
-        peerCtlInbox = scan.ctlInboxId
-        peerCtlWriteCap = scan.ctlWriteCap
-        peerGrpInbox = scan.grpInboxId
-        peerGrpWriteCap = scan.grpWriteCap
-        peerSecret = secret
-        peerRoleRuleV2 = scan.roleRuleV2
+        peerScan = scan
         completeSaveOrWait()
     }
 
     /// Saves if our mint is ready; otherwise parks on the finishing step —
     /// startMint's completion calls back here the moment .ready lands.
     private func completeSaveOrWait() {
-        guard let secret = peerSecret else { return }
-        if case .ready(_, _, _, _) = mintState {
-            saveContact(peerInboxId: peerInbox, peerWriteCap: peerWriteCap,
-                        peerCtlInboxId: peerCtlInbox, peerCtlWriteCap: peerCtlWriteCap,
-                        peerGrpInboxId: peerGrpInbox, peerGrpWriteCap: peerGrpWriteCap,
-                        peerSecret: secret, alias: "")
+        guard let scan = peerScan else { return }
+        if case .ready(_, _, _) = mintState {
+            saveContact(scan: scan, alias: "")
         } else {
             step = .finishing
         }
@@ -1194,148 +1358,95 @@ struct AddContactView: View {
         let trimmed = pastedCode.trimmingCharacters(in: .whitespaces)
 
         // The pasted code is base64-of-JSON (double-encoded); decode the outer
-        // layer, then B3's shared codec does the parse + validation. requireFull
+        // layer, then the session's parse does the validation. requireFull
         // rejects a secret-only code — the paste path always needs the inbox.
-        guard let jsonData = Data(base64Encoded: trimmed),
+        guard pairingSession == .active, let pairing = pairing,
+              let jsonData = Data(base64Encoded: trimmed),
               let jsonStr = String(data: jsonData, encoding: .utf8),
-              let scan = PairingPayload.shared.parse(
-                  raw: jsonStr, myInboxId: myInboxId,
-                  mySecretB64: mySecret.base64EncodedString(), requireFull: true),
-              let scannedInbox = scan.inboxId,
-              let scannedWriteCap = scan.writeCap,
-              let scannedSecret = Data(base64Encoded: scan.secretB64) else {
+              let scan = pairing.parsePeerCode(raw: jsonStr, myInboxId: myInboxId, requireFull: true),
+              scan.inboxId != nil, scan.writeCap != nil else {
             errorMessage = L10n.addContactInvalidCode
             return
         }
-        guard case .ready(_, _, _, _) = mintState else {
+        guard case .ready(_, _, _) = mintState else {
             errorMessage = L10n.addContactPasteNotReady
             return
         }
-        // Record the peer halves in @State exactly as handleScannedCode does —
+        // Record the peer's parse in @State exactly as handleScannedCode does —
         // Android keeps ONE `scannedData` for both entry points and reads it back
         // for the Done step's role (`scanBackNeeded = scannedData?.inboxId == null`).
-        // These used to be shadowed by the guard's locals, so the paste path left
-        // @State peerInbox nil and the Done step rendered the SCAN-BACK role ("Have
-        // your contact scan this…") for a code exchange that had already announced
-        // in-band — and, because that role's QR reads mintState, which saveContact
-        // wipes on this very path, it rendered that instruction over a BLANK space.
-        peerInbox = scannedInbox
-        peerWriteCap = scannedWriteCap
-        peerCtlInbox = scan.ctlInboxId
-        peerCtlWriteCap = scan.ctlWriteCap
-        peerGrpInbox = scan.grpInboxId
-        peerGrpWriteCap = scan.grpWriteCap
-        peerSecret = scannedSecret
-        peerRoleRuleV2 = scan.roleRuleV2
-        saveContact(peerInboxId: scannedInbox, peerWriteCap: scannedWriteCap,
-                    peerCtlInboxId: scan.ctlInboxId, peerCtlWriteCap: scan.ctlWriteCap,
-                    peerGrpInboxId: scan.grpInboxId, peerGrpWriteCap: scan.grpWriteCap,
-                    peerSecret: scannedSecret, alias: "")
+        // Without peerInbox set here the Done step would render the SCAN-BACK role
+        // for a code exchange that had already announced in-band.
+        peerInbox = scan.inboxId
+        peerScan = scan
+        saveContact(scan: scan, alias: "")
     }
 
-    private func saveContact(peerInboxId: String?, peerWriteCap: String?,
-                             peerCtlInboxId: String?, peerCtlWriteCap: String?,
-                             peerGrpInboxId: String?, peerGrpWriteCap: String?,
-                             peerSecret: Data, alias: String) {
+    private func saveContact(scan: PairingScan, alias: String) {
         LogBuffer.shared.append(level: "D", tag: "AddContact",
             message: "[save] saveContact called: step=\(step)")
         guard let vault = appState.vault else { return }
-        guard case .ready(let minted, let ctlMinted, let grpMinted, _) = mintState else { return }
+        guard case .ready(let minted, let ctlMinted, let grpMinted) = mintState else { return }
         guard pendingContactId == nil else { return }  // idempotency latch (parity with Android)
+        // Never pair from an ended session.
+        guard pairingSession == .active, let pairing = pairing else { return }
 
         let contactId = UUID().uuidString
         let finalAlias = alias.isEmpty ? ContactNameGenerator.generate() : alias
         pendingAlias = finalAlias
 
-        // Derive shared secret from both parties' secrets (lexicographic sort + SHA-256)
-        let mySecretArray = kotlinByteArray(from: mySecret)
-        let peerSecretArray = kotlinByteArray(from: peerSecret)
-        let sharedSecret = PlatformCryptoKt.deriveSharedSecret(
-            secretA: mySecretArray,
-            secretB: peerSecretArray
-        )
-        // These three are pure derived
-        // work buffers rebuilt fresh from mySecret/peerSecret on every call, so
-        // it's safe to wipe them unconditionally on exit — success OR a failed
-        // vault write (defer runs either way). secureWipe() is the same
-        // commonMain fill(0) used at every other key-teardown site (RatchetManager,
-        // VaultSelector, DoubleRatchet, ...).
-        //
-        // The peer pairing secret itself is NOT wiped in this defer: the
-        // failure path must keep it live for a retry, and the earlier
-        // secureZero(&peerSecret) was in any case a COW no-op (it forked a throwaway
-        // copy — see the success-path wipe below). It is zeroed only on the
-        // committed-write success path, at its shared backing store.
-        defer {
-            mySecretArray.secureWipe()
-            peerSecretArray.secureWipe()
-            sharedSecret.secureWipe()
-        }
+        // ONE shared save: the session derives the pairing secret from both halves and
+        // runs the one-time-bootstrap transaction iff the peer's code carried `ek`,
+        // else the legacy one. It never throws and wipes its own derived copies; our
+        // half and `scan` stay ours (a retry after INBOX_IN_USE reuses them). Kotlin
+        // default arguments are not bridged, so every parameter is explicit; the group
+        // pair is absent when the optional third mint failed (the supported legacy
+        // shape the later backfill converges).
+        let outcome = pairing.save(
+            vault: vault,
+            contactId: contactId,
+            peer: scan,
+            myInboxId: minted.inboxId,
+            myReadCap: minted.readCapability,
+            myCtlInboxId: ctlMinted.inboxId,
+            myCtlReadCap: ctlMinted.readCapability,
+            alias: finalAlias,
+            mnemonic: "",
+            myGrpInboxId: grpMinted?.inboxId,
+            myGrpReadCap: grpMinted?.readCapability)
 
-        // The whole vault transaction (contact + 4 inbox rows + ratchet
-        // marker, reading VaultSeedDefaults for trustLevel/lifetime — no more
-        // hardcoded 0 / 86_400_000*365) runs in commonMain. @Throws bridges to a
-        // Swift `try`; a write failure aborts the add fail-closed.
-        do {
-            try PairingVault.shared.savePairedContact(
-                vault: vault,
-                contactId: contactId,
-                sharedSecret: sharedSecret,
-                peerInboxId: peerInboxId,
-                peerWriteCap: peerWriteCap,
-                peerCtlInboxId: peerCtlInboxId,
-                peerCtlWriteCap: peerCtlWriteCap,
-                myInboxId: minted.inboxId,
-                myReadCap: minted.readCapability,
-                myCtlInboxId: ctlMinted.inboxId,
-                myCtlReadCap: ctlMinted.readCapability,
-                alias: finalAlias,
-                mnemonic: "",
-                // The two pairing-secret halves + the peer's `rv:2`
-                // marker. savePairedContact uses them ONCE, inside the same
-                // transaction, to persist a single ordering bit that fixes the
-                // ratchet role immutably — neither half is stored, and the defer
-                // above still owns the wipe of these Kotlin-side copies. Kotlin
-                // default arguments are not bridged, so every parameter is explicit.
-                mySecretHalf: mySecretArray,
-                peerSecretHalf: peerSecretArray,
-                peerRoleRuleV2: peerRoleRuleV2,
-                // The GROUP-text inbox pair (§2.1) — appended LAST, same
-                // both-or-neither rule as the ctl pair above. Kotlin default
-                // arguments are not bridged, so every parameter is explicit.
-                peerGrpInboxId: peerGrpInboxId,
-                peerGrpWriteCap: peerGrpWriteCap,
-                // Absent when the optional third mint failed: `savePairedContact`
-                // then writes no inbound-grp row, which is the supported legacy
-                // shape the §1.6 backfill converges later.
-                myGrpInboxId: grpMinted?.inboxId,
-                myGrpReadCap: grpMinted?.readCapability)
-        } catch {
-            // A Kotlin @Throws bridges as an NSError carrying the original
-            // KotlinThrowable under "KotlinException". InboxInUseException means the
-            // vault REFUSED the add because one of the peer's inbox ids is already
-            // owned by a contact we hold (`inbox_ids` is keyed by inboxId with
-            // replace-on-conflict, so accepting would have destroyed that route).
-            // Nothing was written. Surface it instead of dead-ending silently; every
-            // other write failure keeps the previous log-and-return behaviour.
-            //
-            // The peer secret is deliberately NOT wiped on this path — same rule as
-            // the comment below: a failed write keeps it live for a retry.
-            if (error as NSError).userInfo["KotlinException"] is InboxInUseException {
-                LogBuffer.shared.append(level: "W", tag: "Contacts",
-                    message: "add refused — an inbox id in the peer's code is already owned here")
-                errorMessage = L10n.addContactInboxInUse
-            } else {
-                LogBuffer.shared.append(level: "E", tag: "Contacts", message: "failed to persist new contact — add aborted")
-            }
+        if outcome == PairingSaveOutcome.inboxInUse {
+            // The vault REFUSED the add: one of the peer's inbox ids is already owned
+            // by a contact we hold. Nothing was written; the scan is kept for a retry.
+            LogBuffer.shared.append(level: "W", tag: "Contacts",
+                message: "add refused — an inbox id in the peer's code is already owned here")
+            errorMessage = L10n.addContactInboxInUse
             return
         }
+        if outcome == PairingSaveOutcome.invalidCode {
+            // The peer's code is unusable: drop the scan and say so, instead of
+            // leaving the wizard on a wait that cannot end.
+            LogBuffer.shared.append(level: "W", tag: "Contacts", message: "add refused — the peer's code is unusable")
+            peerScan = nil
+            peerInbox = nil
+            errorMessage = L10n.addContactInvalidCode
+            if step == .finishing { step = .scan }
+            return
+        }
+        if outcome == PairingSaveOutcome.startAgain {
+            // Nothing was saved and this session cannot complete (its one-time key is
+            // spent, or the write failed): a NEW session, with the reason shown.
+            LogBuffer.shared.append(level: "E", tag: "Contacts", message: "failed to persist new contact — starting again")
+            restartPairing(error: L10n.addContactStartAgainError)
+            return
+        }
+        // savedV3 / savedLegacy: the success path.
         LogBuffer.shared.append(level: "D", tag: "Contacts", message: "contact added")
 
         // We scanned their FULL code, so we have a send channel — deliver our
         // own inbox in-band (they only saw our secret-only QR). Idempotent on
         // the receiving side; runs on AppState so it survives this sheet.
-        if peerInboxId != nil {
+        if scan.inboxId != nil {
             appState.announceInbox(
                 contactId: contactId,
                 myInboxId: minted.inboxId,
@@ -1343,9 +1454,7 @@ struct AddContactView: View {
                 myCtlInboxId: ctlMinted.inboxId,
                 peerCtlWriteCap: ctlMinted.writeCapability,
                 // Both nil when the optional third mint failed — `sendInboxAnnounce`
-                // is both-or-neither per pair and simply omits `gib`/`gwc`, which is
-                // the announce an old build sends and the one the §1.6 backfill
-                // replaces later.
+                // is both-or-neither per pair and simply omits `gib`/`gwc`.
                 myGrpInboxId: grpMinted?.inboxId,
                 peerGrpWriteCap: grpMinted?.writeCapability
             )
@@ -1356,60 +1465,40 @@ struct AddContactView: View {
         // The contact list only re-queries the vault on .contactsChanged, and the
         // only post used to be the Done BUTTON (ContentView) — so a second pairing
         // saved while the sheet is still up left the list behind it showing the OLD
-        // row count, which reads exactly like "the add was dropped" (it was not: a
-        // re-pair is a second, independent ContactRecord by design — see
-        // PairingVault.savePairedContact + RepairWhileAlreadyPairedTest). Post it at
-        // the moment the vault write commits instead; the Done button still posts it
-        // too (that one also carries the mnemonic write).
+        // row count. Post it at the moment the vault write commits instead; the Done
+        // button still posts it too (that one also carries the mnemonic write).
         NotificationCenter.default.post(name: .contactsChanged, object: nil)
-        // The vault write landed, so
-        // mySecret/peerSecret have done their job for this screen — once
-        // step == .done the toolbar swaps to "Done" (no Back), and none of
-        // showStep/scanCodeTab/codeExchangeForm (the only readers of these two)
-        // render again. Zero them now rather than waiting for dismissal.
-        //
-        // mintState's own COW snapshot of mySecret (captured in startMint) is a
-        // SEPARATE alias of the same buffer: because Data is copy-on-write,
-        // secureZero(&mySecret) below forks OUR @State reference and leaves
-        // mintState's original buffer holding the live secret. Round 3's comment
-        // wrongly claimed .onDisappear closed that; it now actually does, via
-        // wipeMintSecret() (COW-safe: it drops mintState's reference so its own
-        // local is the sole owner before zeroing).
-        //
-        // Whether we can also wipe it HERE depends on the role:
-        //   - show-first (peerInboxId != nil): the Done screen delivers our inbox
-        //     in-band and never renders myPayload, so mintState's secret is dead
-        //     already — wipe it now to shrink the live window (done below).
-        //   - scan-first (peerInboxId == nil): the Done screen renders OUR full
-        //     code (myPayload, which reads mintState's secret) for the peer to
-        //     scan back, so the snapshot MUST stay live until the screen leaves;
-        //     .onDisappear's wipeMintSecret() zeros it then.
-        //
-        // A fully alias-proof wipe of every transient Swift `Data` copy along this
-        // call chain (handleScannedCode's/completeSaveOrWait's short-lived locals)
-        // isn't achievable without a single-owner mutable buffer type — out of
-        // scope, same accepted limitation as TorManager's "best-effort wipe". (The
-        // `first + second` concat inside commonMain's deriveSharedSecret is a plain
-        // Kotlin ByteArray and IS wiped there.) Deliberately NOT done on the catch-and-return failure path above:
-        // a failed write leaves these intact so a retry can regenerate them.
-        secureZero(&mySecret)
-        // Zero the peer pairing secret's REAL backing store.
-        // `peerSecret` (the parameter) is a copy-on-write ALIAS of the caller's buffer —
-        // @State self.peerSecret plus the completeSaveOrWait/handleScannedCode stack
-        // locals on the scan path, or addContactFromPastedCode's freshly-decoded local on
-        // the debug paste path (where self.peerSecret is nil, so the earlier self.peerSecret
-        // wipe was a total no-op). withUnsafeMutableBytes / secureZero(&) FORK a throwaway
-        // copy whenever the storage is non-unique — which it always is here, with live
-        // aliases up the call stack — and zero that fork, leaving the real secret resident.
-        // secureZeroSharedStorage takes a READ-ONLY withUnsafeBytes view (no COW fork) and
-        // memsets the ONE shared buffer every alias points at, so the secret leaves RAM for
-        // all of them. Success path only (the failure path returned earlier, preserving the
-        // secret for retry); none of these aliases is read again on success.
-        secureZeroSharedStorage(peerSecret)
-        self.peerSecret = nil
-        // show-first only — see role note above. MUST run AFTER secureZero(&mySecret)
-        // so wipeMintSecret's local is the sole owner of the shared buffer.
-        if peerInboxId != nil { wipeMintSecret() }
+        // The session stays alive until the screen leaves: the scan-first Done step
+        // still builds OUR full code from it for the peer to scan back, and its half
+        // and one-time key are wiped in place by `end()` in .onDisappear. The parsed
+        // scan is only text now; drop our reference. show-first: the mint snapshot
+        // (read caps) is dead already — drop it to shrink the live window.
+        peerScan = nil
+        if scan.inboxId != nil { dropMintSnapshot() }
+    }
+
+    /// "Start again" after a failed key confirmation: delete the half-made contact
+    /// through the shared purge path (local delete first, then a best-effort relay
+    /// DELETE of both inbound inboxes), then begin a NEW pairing session in this same
+    /// screen. Runs ONLY from the user's tap. Android sibling: startAgainAfterFailure.
+    private func startAgainAfterFailure() {
+        if let cid = pendingContactId {
+            Task { @MainActor in
+                _ = await appState.deleteContactPurgingRelay(contactId: cid)
+                NotificationCenter.default.post(name: .contactsChanged, object: nil)
+            }
+        }
+        restartPairing(error: nil)
+    }
+
+    /// A real end of this session and a NEW one in the same screen (fresh half, fresh
+    /// one-time key, wizard back at .choice); [error] is shown afterwards.
+    private func restartPairing(error: String?) {
+        resetForNewPairingSession()
+        pairing = PairingSession.companion.start()
+        pairingSession = .active
+        startMint()
+        errorMessage = error
     }
 
     /// The deliberate way out of the scan-back state (App Store 2.1(a), 1.6.13):
@@ -1450,87 +1539,63 @@ struct AddContactView: View {
         step = .done
     }
 
-    // MARK: - QR Code generation
-
-    private func generateQRCode(from string: String) -> UIImage? {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
-        filter.correctionLevel = "M"
-
-        guard let outputImage = filter.outputImage else { return nil }
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 10, y: 10))
-        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
-        return UIImage(cgImage: cgImage)
-    }
-
     // MARK: - Helpers
 
     // (the write-cap validity check moved to the shared PairingPayload.isValidCap
     // in commonMain — one validator for both platforms; the local copy is gone.)
 
-    private func generateRandomBytes(count: Int) -> Data {
-        var bytes = [UInt8](repeating: 0, count: count)
-        let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
-        // Fail CLOSED: never return the zero buffer as a pairing secret — a
-        // SecRandomCopyBytes failure would yield a predictable shared secret.
-        // Abort instead (parity with the Kotlin generateSecureRandom fix).
-        precondition(status == errSecSuccess, "SecRandomCopyBytes failed (status=\(status))")
-        return Data(bytes)
+    /// Drops the mint snapshot (our inbox read caps) once it is no longer needed.
+    /// `.failed("")` is chosen over `.waitingForRelay` so it can never re-trigger
+    /// startMint() via the torState .onReceive.
+    private func dropMintSnapshot() {
+        guard case .ready = mintState else { return }
+        mintState = .failed("")
     }
 
-    /// Zeroizes [data]'s bytes IN PLACE via memset_s — not a plain loop, since a
-    /// store to a buffer that's never read again is a dead store the optimizer
-    /// can strip under -O, leaving the plaintext resident. Same idiom as
-    /// SwiftDatabaseBridge's PRAGMA-key wipe.
-    /// Only erases the actual original bytes when [data] is the SOLE live
-    /// reference to its storage — Swift's Data is copy-on-write, so a still-live
-    /// alias elsewhere forks a fresh buffer to zero instead; see callers for
-    /// where that is a known limitation and why.
-    private func secureZero(_ data: inout Data) {
-        data.withUnsafeMutableBytes { buf in
-            _ = memset_s(buf.baseAddress, buf.count, 0, buf.count)
+    /// G3's appear rule, as a pure function of the phase. Never "regenerate when
+    /// empty": a wiped half is 32 zero bytes, and a half regenerated into a live
+    /// session would differ from the one the peer may already have scanned.
+    static func pairingSessionOnAppear(_ phase: PairingSessionPhase) -> PairingSessionAppearAction {
+        switch phase {
+        case .notStarted: return .startFirstSession
+        case .active:     return .keepSession
+        case .ended:      return .startNewSession
         }
     }
 
-    /// Zeroes a Data's ACTUAL backing store even when it is shared with other live
-    /// copy-on-write aliases. `secureZero(inout Data)` mutates through
-    /// `withUnsafeMutableBytes`, which forks a fresh buffer whenever the storage is
-    /// NOT uniquely referenced — zeroing a throwaway copy and leaving the real
-    /// secret resident. `withUnsafeBytes` gives a
-    /// READ-ONLY view that never triggers copy-on-write, so its base pointer is the
-    /// single buffer every alias references; memset_s through it (not a plain loop —
-    /// that would be a strippable dead store) erases the secret for all of them at
-    /// once. Only call when no alias will be READ again — every read after this
-    /// would observe zeros.
-    private func secureZeroSharedStorage(_ data: Data) {
-        data.withUnsafeBytes { raw in
-            guard let base = raw.baseAddress, raw.count > 0 else { return }
-            _ = memset_s(UnsafeMutableRawPointer(mutating: base), raw.count, 0, raw.count)
-        }
-    }
-
-    /// COW-safe wipe of the 32-byte pairing secret snapshotted inside
-    /// `mintState.ready` (the incomplete-fix
-    /// follow-up to the earlier mySecret wipe). The `.ready` case captured `mySecret` at mint
-    /// time (startMint); because Swift `Data` is copy-on-write that
-    /// snapshot SHARES @State `mySecret`'s buffer. Zeroing `mySecret` later
-    /// therefore forks a fresh buffer and leaves THIS snapshot's ORIGINAL buffer
-    /// holding the live secret — the residue an earlier comment wrongly believed
-    /// `.onDisappear` closed.
-    ///
-    /// To actually zero that buffer we must make our local the SOLE owner before
-    /// mutating: bind the payload as `var`, drop `mintState`'s reference by
-    /// reassigning to a non-secret-bearing case, then `secureZero`. This works
-    /// ONLY once every OTHER live alias (the @State `mySecret`) has already been
-    /// forked away — so callers MUST have run `secureZero(&mySecret)` first;
-    /// otherwise `s` is not uniquely referenced and secureZero forks instead of
-    /// zeroing the real buffer. `.failed("")` is chosen over `.waitingForRelay`
-    /// so it can never re-trigger startMint() via the torState .onReceive.
-    private func wipeMintSecret() {
-        guard case .ready(_, _, _, var s) = mintState else { return }
-        mintState = .failed("")   // drop the enum's reference → `s` becomes sole owner
-        secureZero(&s)
+    /// An .onAppear on this instance AFTER a real leave ended its session: the old
+    /// half is gone, so nothing of that session may carry over into the new one —
+    /// not its wizard step, its scanned peer half, its saved-contact latch, nor its
+    /// mint (a fresh token, so the old detached Task's result is dropped by its
+    /// `guard !token.cancelled`; .solving/.failed("") from the leave are cleared so
+    /// startMint runs again). The wizard visibly restarts at .choice. Leaves
+    /// `pairingSession == .notStarted`; .onAppear then generates the new half.
+    private func resetForNewPairingSession() {
+        mintAbort.cancelled = true
+        mintAbort = MintCancelToken()
+        // Ends the old session (zeroes its half and one-time key in place).
+        pairing?.end()
+        pairing = nil
+        peerScan = nil
+        pairingFailed = false
+        mintState = .waitingForRelay
+        mintProgress = 0.06
+        step = .choice
+        errorMessage = nil
+        copied = false
+        shown = false
+        scannedCode = nil
+        peerInbox = nil
+        pasteTapCount = 0
+        pendingContactId = nil
+        mnemonic = ""
+        pendingAlias = ""
+        peerInboxArrived = false
+        scanBackWaitLogged = false
+        showCancelPairing = false
+        injectedScanCode = ""
+        pastedCode = ""
+        pairingSession = .notStarted
     }
 }
 
@@ -1658,5 +1723,73 @@ class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsD
         if captureSession?.isRunning == true {
             captureSession?.stopRunning()
         }
+    }
+}
+
+
+// MARK: - Crisp QR tiles
+//
+// CoreImage makes the code at ONE pixel per module. The old tiles scaled it 10x and let
+// SwiftUI draw that at 220/200 pt, i.e. a non-integer number of device pixels per module:
+// hard edges (interpolation .none) but uneven module widths, which a camera has to undo.
+// Here every module is a whole number of DEVICE pixels: the image keeps 1 px per module and
+// is drawn at exactly `modules x pxPerModule` device pixels. The white quiet zone is brought
+// up to 4 modules on every side (CoreImage's own margin counts), also in whole pixels.
+// Android sibling: QrBitmap.kt (renderQrPixels / CrispQrImage).
+struct CrispQR {
+    let image: UIImage
+    /// Drawn side of the code image, in points (a whole number of device pixels).
+    let imagePoints: CGFloat
+    /// White padding on every side, in points (a whole number of device pixels).
+    let padPoints: CGFloat
+
+    /// The largest crisp tile (code + quiet zone) that fits `tilePoints`.
+    static func make(from string: String, tilePoints: CGFloat, displayScale: CGFloat, quietModules: Int = 4) -> CrispQR? {
+        guard !string.isEmpty else { return nil }
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage,
+              let cg = CIContext().createCGImage(output, from: output.extent) else { return nil }
+        let modules = cg.width
+        let extra = max(0, quietModules - firstDarkOffset(cg))
+        let totalModules = modules + 2 * extra
+        let scale = max(displayScale, 1)
+        let pxPerModule = max(1, Int((tilePoints * scale / CGFloat(totalModules)).rounded(.down)))
+        return CrispQR(
+            image: UIImage(cgImage: cg, scale: 1, orientation: .up),
+            imagePoints: CGFloat(modules * pxPerModule) / scale,
+            padPoints: CGFloat(extra * pxPerModule) / scale)
+    }
+
+    /// Light margin the generator itself leaves around the code, in modules.
+    private static func firstDarkOffset(_ cg: CGImage) -> Int {
+        let w = cg.width, h = cg.height
+        var data = [UInt8](repeating: 255, count: w * h)
+        guard let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
+                                  space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else { return 0 }
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+        var offset = min(w, h)
+        for y in 0..<h {
+            for x in 0..<w where data[y * w + x] < 128 {
+                offset = min(offset, min(x, y))
+                break
+            }
+        }
+        return offset
+    }
+}
+
+/// White rounded tile with the code drawn unfiltered at whole pixels per module.
+struct CrispQRView: View {
+    let qr: CrispQR
+    var body: some View {
+        Image(uiImage: qr.image)
+            .interpolation(.none)
+            .resizable()
+            .frame(width: qr.imagePoints, height: qr.imagePoints)
+            .padding(qr.padPoints)
+            .background(Color.white)
+            .cornerRadius(12)
     }
 }

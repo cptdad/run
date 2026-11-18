@@ -96,8 +96,47 @@ object MigrationBundleCodec {
      * counters at 0, which is the same establish-on-read baseline the v9 → v10 DB
      * migration gives an existing row. The reverse (a v10 bundle into a v9
      * importer) still answers the conservative SCHEMA_TOO_NEW.
+     *
+     * v11 (2026-11-16) adds the contact-row ratchet bootstrap flag
+     * (`ContactRecord.ratchetBootstrapV3`). This is the newest schema this build
+     * READS; what it WRITES is [exportSchemaFor] (owner decision D4): a vault with
+     * no v3 contact is exported exactly as before, as schema
+     * [LEGACY_EXPORT_SCHEMA] and byte-identical, so a move to an older build keeps
+     * working until the first v3 pairing. A v10 (or older) bundle still imports —
+     * the flag is optional and absent means "not v3".
      */
-    const val CURRENT_SCHEMA = 10
+    const val CURRENT_SCHEMA = 11
+
+    /** The schema a bundle with no v3 contact claims — what every build before
+     *  v11 wrote, so an older importer accepts it. */
+    const val LEGACY_EXPORT_SCHEMA = 10
+
+    /**
+     * The schema an export of [snapshot] must carry: [CURRENT_SCHEMA] iff at least
+     * one contact uses the v3 bootstrap or a pending introduction was staged v3-capable
+     * ([needsCurrentSchema]), else [LEGACY_EXPORT_SCHEMA]. A v3 contact
+     * in a schema-10 bundle would reach an older importer, which ignores the flag
+     * and would run the pairing on the legacy rules — [encode] refuses that shape.
+     */
+    fun exportSchemaFor(snapshot: VaultSnapshot): Int =
+        if (needsCurrentSchema(snapshot)) CURRENT_SCHEMA else LEGACY_EXPORT_SCHEMA
+
+    /**
+     * A v3 contact, OR a pending introduction this build staged as v3-capable (a
+     * `ref_p` record carrying `bv`, docs/ratchet-bootstrap-plan.md §4.2). The second
+     * case matters because that introduction's accept may already have left with `bv`:
+     * an older importer would drop the field and finalize the contact legacy while the
+     * peer — which saw our `bv` — finalizes it v3, and the two could never talk. So it
+     * is kept off an older importer exactly like a v3 contact (D4's rule, one step
+     * earlier). A `ref_p` without `bv` changes nothing.
+     */
+    internal fun needsCurrentSchema(snapshot: VaultSnapshot): Boolean =
+        snapshot.contacts.any { it.ratchetBootstrapV3 } ||
+            snapshot.meta.any { (k, v) -> k.startsWith(ReferralMetaKeys.ACCEPT_PREFIX) && storedAcceptCarriesBootstrapV3(v) }
+
+    // The v3 flag's key in a contact record; emitted only when true, so a bundle
+    // with no v3 contact is byte-identical to a pre-v11 one.
+    private const val K_CONTACT_V3 = "ratchetV3"
 
     /** Malformed / unsupported bundle bytes. Never carries any decoded content in its message. */
     class FormatException(message: String) : Exception(message)
@@ -153,6 +192,12 @@ object MigrationBundleCodec {
             s.groups.size > MAX_RECORDS || s.members.size > MAX_RECORDS
         ) throw FormatException("too many records to encode")
         if (s.meta.size > MAX_META_ROWS) throw FormatException("too many meta rows to encode")
+        if (b.schema < CURRENT_SCHEMA && needsCurrentSchema(s)) {
+            throw FormatException("a v3 contact or a v3 introduction needs bundle schema $CURRENT_SCHEMA")
+        }
+        if (VaultSnapshotIo.v3ContactsMissingRatchetState(s)) {
+            throw FormatException("a v3 contact without its ratchet state")
+        }
 
         val sb = StringBuilder(4096)
         sb.append('{')
@@ -185,6 +230,8 @@ object MigrationBundleCodec {
             // null is encoded by ABSENCE, so "" and null stay distinguishable.
             if (c.vouchedByContactId != null) str(sb, "vouchedByContactId", c.vouchedByContactId)
             num(sb, "vouchedAt", c.vouchedAt)
+            // v11 — present only for a v3 contact (absence = legacy), see K_CONTACT_V3.
+            if (c.ratchetBootstrapV3) num(sb, K_CONTACT_V3, 1L)
             sb.append('}')
         }
         sb.append(']')
@@ -298,6 +345,13 @@ object MigrationBundleCodec {
                 inboundGrpCounter = o.optLong("inboundGrpCounter") ?: 0L,
                 vouchedByContactId = o.optString("vouchedByContactId"),
                 vouchedAt = o.optLong("vouchedAt") ?: 0L,
+                // v11, OPTIONAL: absent (every pre-v11 bundle) = legacy. A present
+                // value other than 0/1 is a malformed bundle, never "legacy".
+                ratchetBootstrapV3 = when (o.optLong(K_CONTACT_V3)) {
+                    null, 0L -> false
+                    1L -> true
+                    else -> throw FormatException("malformed contact flag")
+                },
             )
         }
 
@@ -338,13 +392,20 @@ object MigrationBundleCodec {
             if (MoveMetaPolicy.isAllowedKey(k)) meta[k] = v
         }
 
+        val snapshot = VaultSnapshot(contacts, inboxes, groups, members, meta)
+        // A v3 contact IS its ratchet state (it is never re-initialised): a bundle that
+        // carries the contact without it — e.g. from a build that exported through a
+        // failed read — is malformed and refused here, before the importer writes anything.
+        if (VaultSnapshotIo.v3ContactsMissingRatchetState(snapshot)) {
+            throw FormatException("a v3 contact without its ratchet state")
+        }
         return MigrationBundle(
             version = version,
             schema = schema,
             from = from,
             createdMs = created,
             bundleId = bid,
-            snapshot = VaultSnapshot(contacts, inboxes, groups, members, meta),
+            snapshot = snapshot,
         )
     }
 

@@ -122,6 +122,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">نیاز به جفت‌سازی دوباره</string>
     <string name="contact_list_waiting_for_inbox">در انتظار صندوق ورودی او…</string>
+    <string name="contact_list_secure_channel_lost">کانال امن از دست رفت: دوباره جفت‌سازی کنید</string>
     <string name="contact_list_introduced_by">معرفی‌شده توسط %1$s</string>
     <string name="contact_list_introduced">معرفی‌شده</string>
     <string name="contact_list_repair_chip">جفت‌سازی دوباره</string>

@@ -6,8 +6,8 @@ enum L10n {
     static var aboutContactsBody: String { NSLocalizedString("about_contacts_body", value: "No emails, no sign-ups — and no stranger can add you. You meet in person and scan each other's QR. Each contact gets a random codename; add a private note only you can see, so only you know who they really are.", comment: "") }
     /// en: "Contacts you choose"
     static var aboutContactsTitle: String { NSLocalizedString("about_contacts_title", value: "Contacts you choose", comment: "") }
-    /// en: "Every message is sealed with a key only you and your contact hold, and as you keep chatting that key ratchets forward — so exposing a single key still leaves the rest sealed."
-    static var aboutE2eBody: String { NSLocalizedString("about_e2e_body", value: "Every message is sealed with a key only you and your contact hold, and as you keep chatting that key ratchets forward — so exposing a single key still leaves the rest sealed.", comment: "") }
+    /// en: "Every message is sealed with a key only you and your contact hold. Once you have written back and forth, that key ratchets forward as you keep chatting — so exposing a single key then leaves the rest sealed. A contact you add with both phones on this version or newer also starts with a one-time key exchange, so a later copy of either phone cannot recreate its first keys; existing contacts get this only if you add each other again."
+    static var aboutE2eBody: String { NSLocalizedString("about_e2e_body", value: "Every message is sealed with a key only you and your contact hold. Once you have written back and forth, that key ratchets forward as you keep chatting — so exposing a single key then leaves the rest sealed. A contact you add with both phones on this version or newer also starts with a one-time key exchange, so a later copy of either phone cannot recreate its first keys; existing contacts get this only if you add each other again.", comment: "") }
     /// en: "End-to-end encrypted"
     static var aboutE2eTitle: String { NSLocalizedString("about_e2e_title", value: "End-to-end encrypted", comment: "") }
     /// en: "A seized phone gives up nothing useful. Everything at rest is sealed with SQLCipher, and a wipe erases the keys themselves — leaving only noise, no caches or fragments. How hard it is to open is your choice: Decent leans on your PIN; Secure binds the key to this phone's security chip, behind your fingerprint or face; Maximum swaps the PIN for a passphrase only you know — so even a fully imaged phone stays shut."
@@ -128,6 +128,10 @@ enum L10n {
     static var addContactNavTitle: String { NSLocalizedString("add_contact_nav_title", value: "Add Contact", comment: "") }
     /// en: "Next"
     static var addContactNext: String { NSLocalizedString("add_contact_next", value: "Next", comment: "") }
+    /// en: "Pairing didn't work: the secure channel with this contact could not be set up. Start again to pair with a new code."
+    static var addContactPairingFailed: String { NSLocalizedString("add_contact_pairing_failed", value: "Pairing didn't work: the secure channel with this contact could not be set up. Start again to pair with a new code.", comment: "") }
+    /// en: "Start again"
+    static var addContactPairingFailedAction: String { NSLocalizedString("add_contact_pairing_failed_action", value: "Start again", comment: "") }
     /// en: "Still setting up inbox — try again in a moment"
     static var addContactPasteNotReady: String { NSLocalizedString("add_contact_paste_not_ready", value: "Still setting up inbox — try again in a moment", comment: "") }
     /// en: "Paste contact code here"
@@ -158,6 +162,8 @@ enum L10n {
     static var addContactShowHintScanned: String { NSLocalizedString("add_contact_show_hint_scanned", value: "Have them scan this, then finish.", comment: "") }
     /// en: "Solving proof-of-work…"
     static var addContactSolvingPow: String { NSLocalizedString("add_contact_solving_pow", value: "Solving proof-of-work…", comment: "") }
+    /// en: "Couldn't finish adding this contact, and nothing was saved. Start again to get a new code."
+    static var addContactStartAgainError: String { NSLocalizedString("add_contact_start_again_error", value: "Couldn't finish adding this contact, and nothing was saved. Start again to get a new code.", comment: "") }
     /// en: "Their code"
     static var addContactTheirCode: String { NSLocalizedString("add_contact_their_code", value: "Their code", comment: "") }
     /// en: "Add contact"
@@ -358,6 +364,8 @@ enum L10n {
     static var contactListResetRelaySuccess: String { NSLocalizedString("contact_list_reset_relay_success", value: "Relay access reset.", comment: "") }
     /// en: "Reset relay access?"
     static var contactListResetRelayTitle: String { NSLocalizedString("contact_list_reset_relay_title", value: "Reset relay access?", comment: "") }
+    /// en: "Secure channel lost: pair again"
+    static var contactListSecureChannelLost: String { NSLocalizedString("contact_list_secure_channel_lost", value: "Secure channel lost: pair again", comment: "") }
     /// en: "Unread messages"
     static var contactListUnreadMessagesDescription: String { NSLocalizedString("contact_list_unread_messages_description", value: "Unread messages", comment: "") }
     /// en: "Waiting for their inbox…"
@@ -392,6 +400,8 @@ enum L10n {
     static var conversationReportConfirmTitle: String { NSLocalizedString("conversation_report_confirm_title", value: "Report Contact", comment: "") }
     /// en: "⚠ Screenshot saved to Photos — that image is NOT encrypted and can sync to iCloud."
     static var conversationScreenshotWarningBanner: String { NSLocalizedString("conversation_screenshot_warning_banner", value: "⚠ Screenshot saved to Photos — that image is NOT encrypted and can sync to iCloud.", comment: "") }
+    /// en: "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again."
+    static var conversationSecureChannelLostBody: String { NSLocalizedString("conversation_secure_channel_lost_body", value: "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again.", comment: "") }
     /// en: "Create group (%1$d)"
     static func createGroupButtonLabel(_ p1: Int) -> String { String.localizedStringWithFormat(NSLocalizedString("create_group_button_label", value: "Create group (%1$lld)", comment: ""), p1) }
     /// en: "Creating…"

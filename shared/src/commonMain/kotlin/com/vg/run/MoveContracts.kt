@@ -44,6 +44,12 @@ object MoveMetaPolicy {
         // a fresh 8-send window of no-forward-secrecy traffic (and hide a refusal the
         // user was already told to re-pair out of).
         "dr-rat-unacked/", "dr-refused/",
+        // The v3 "secure channel lost" latch (docs/ratchet-bootstrap-plan.md §3.5,
+        // §4.3). It describes the pairing the bundle carries: a new phone that
+        // dropped it would show a working contact whose state is known to be gone.
+        "dr-lost/",
+        // v3 key confirmation: a moved pending pairing must not restart its verdict.
+        "dr-kc/",
         // The role INPUTS must travel with the ratchet state, or the new
         // phone would fall back to the id-order rule the moment it has to re-init
         // (onCorruptReinit) and could land the OPPOSITE role from the peer — the

@@ -75,7 +75,12 @@ class DatabaseManager(
         // statements, no table rewrite, no drop: every existing contact survives
         // and reads 0, which is the establish-on-read baseline the v4 and v7
         // counters already use.
-        const val DATABASE_VERSION = 10
+        //
+        // v11 (2026-11-16): the one-time ratchet bootstrap flag
+        // (`ContactRecord.ratchetBootstrapV3`, docs/ratchet-bootstrap-plan.md §3.4).
+        // One additive `ALTER TABLE … DEFAULT 0`: every existing contact reads
+        // "not v3" and keeps its legacy rules for life.
+        const val DATABASE_VERSION = 11
 
         /**
          * True when the vault database file exists — the provision guard's probe
@@ -327,6 +332,8 @@ class DatabaseManager(
         // and last counter pair; still scoped by the single COL_INBOUND_EPOCH.
         const val COL_OUTBOUND_GRP_COUNTER = "outboundGrpCounter"
         const val COL_INBOUND_GRP_COUNTER  = "inboundGrpCounter"
+        // v11 — the pairing used the one-time ratchet bootstrap (0/1).
+        const val COL_RATCHET_V3 = "ratchetV3"
         // v8 — referral/vouching provenance (referral.md). NULL/0 for QR pairs.
         const val COL_VOUCHED_BY          = "vouchedByContactId"
         const val COL_VOUCHED_AT          = "vouchedAt"
@@ -615,7 +622,8 @@ class DatabaseManager(
                     $COL_VOUCHED_BY         TEXT,
                     $COL_VOUCHED_AT         INTEGER NOT NULL DEFAULT 0,
                     $COL_OUTBOUND_GRP_COUNTER INTEGER NOT NULL DEFAULT 0,
-                    $COL_INBOUND_GRP_COUNTER  INTEGER NOT NULL DEFAULT 0
+                    $COL_INBOUND_GRP_COUNTER  INTEGER NOT NULL DEFAULT 0,
+                    $COL_RATCHET_V3         INTEGER NOT NULL DEFAULT 0
                 )
             """.trimIndent())
 
@@ -737,6 +745,12 @@ class DatabaseManager(
                 db.execSQL("ALTER TABLE $TABLE_CONTACTS ADD COLUMN $COL_OUTBOUND_GRP_COUNTER INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE $TABLE_CONTACTS ADD COLUMN $COL_INBOUND_GRP_COUNTER INTEGER NOT NULL DEFAULT 0")
             }
+            // v10 → v11: the one-time ratchet bootstrap flag. Additive, DEFAULT 0 —
+            // every existing contact is "not v3" (legacy rules for life, plan §6).
+            // Nothing is dropped or rewritten. Appended last, like onCreate's DDL.
+            if (oldVersion < 11) {
+                db.execSQL("ALTER TABLE $TABLE_CONTACTS ADD COLUMN $COL_RATCHET_V3 INTEGER NOT NULL DEFAULT 0")
+            }
         }
     }
 
@@ -781,6 +795,7 @@ class DatabaseManager(
             put(COL_INBOUND_GRP_COUNTER,  contact.inboundGrpCounter)
             put(COL_VOUCHED_BY,           contact.vouchedByContactId)
             put(COL_VOUCHED_AT,           contact.vouchedAt)
+            put(COL_RATCHET_V3,           if (contact.ratchetBootstrapV3) 1 else 0)
         }
         // CONFLICT_REPLACE: updating an existing contact overwrites the old row.
         return replaceOrThrow(TABLE_CONTACTS, values, "contact write failed")
@@ -1224,6 +1239,8 @@ class DatabaseManager(
         inboundGrpCounter  = getLong(getColumnIndexOrThrow(COL_INBOUND_GRP_COUNTER)),
         vouchedByContactId = getColumnIndexOrThrow(COL_VOUCHED_BY).let { if (isNull(it)) null else getString(it) },
         vouchedAt          = getLong(getColumnIndexOrThrow(COL_VOUCHED_AT)),
+        // Strict like every column here (a missing column throws, never "legacy").
+        ratchetBootstrapV3 = getInt(getColumnIndexOrThrow(COL_RATCHET_V3)) != 0,
     )
 
     private fun Cursor.toInboxIdRecord(): InboxIdRecord {

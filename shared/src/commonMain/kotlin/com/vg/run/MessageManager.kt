@@ -431,6 +431,12 @@ class MessageManager(
             // The keys, in order, with the WHY of each: [ratchetReinitResetKeys].
             if (channel == RATCHET_TEXT_CHANNEL) ratchetReinitResetKeys(contactId).forEach { deleteMetaBestEffort(it) }
         },
+        // A v3 contact's stored state is PROVEN corrupt (never on a single miss — see
+        // RatchetManager.loadExistingOrThrow). Latch "secure channel lost, pair
+        // again" and owe the peer the notice; nothing is reset, deleted or re-inited.
+        onStateLost = { contactId, channel ->
+            if (channel == RATCHET_TEXT_CHANNEL) latchChannelLost(contactId, DR_LOST_NOTICE_OWED)
+        },
     )
     private fun ratchetSendOn(contactId: String) = databaseManager.getMeta(drOnKey(contactId)) == "1"
 
@@ -687,6 +693,40 @@ class MessageManager(
         // / performEmergencyWipe and IosAppController.lock() / emergencyWipe() call
         // `TransportFailedSends.shared.clear()` unconditionally for that case.
         transportFailedSends.clear()
+    }
+
+    /**
+     * Once per unlocked session (plan G1): takes expired skipped message keys
+     * out of every contact's stored text-ratchet state, so a conversation that went
+     * quiet does not keep them in the vault until its next message. The rule lives
+     * in [RatchetManager.sweepExpiredSkippedKeys] (pending advance / absent /
+     * undecodable ⇒ untouched; never an init, never [RatchetManager]'s corrupt-state
+     * callback). Runs through THIS instance's ratchet manager so it shares the lock
+     * with every drain and send of the session.
+     *
+     * The platforms call it off the main thread right after the session's first
+     * [MessageManager] exists (Android `RunViewModel.wireRelayTransport`, iOS
+     * `IosAppController.connectTor` / `connectDirect`), once per vault open — not
+     * on a transport restart. [shouldContinue] ends the pass early (session gone,
+     * manager replaced). Refused on the old phone of a move, like every other
+     * vault-touching background pass. Blocking; never throws. Returns the number
+     * of states rewritten.
+     */
+    fun sweepExpiredSkippedKeys(shouldContinue: () -> Boolean = { true }): Int {
+        if (moveFrozen("skipped-key sweep")) return 0
+        val ids = try {
+            // Only the ids are used: wipe every decoded secret at once.
+            databaseManager.getAllContacts().map { it.sharedSecret.secureWipe(); it.contactId }
+        } catch (e: Exception) {
+            platformLogWarn(LOG_TAG, "skipped-key sweep: contact list unreadable: ${e::class.simpleName}")
+            return 0
+        }
+        return try {
+            ratchetManager.sweepExpiredSkippedKeys(ids, RATCHET_TEXT_CHANNEL, shouldContinue).rewritten
+        } catch (e: Exception) {
+            platformLogWarn(LOG_TAG, "skipped-key sweep failed: ${e::class.simpleName}")
+            0
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -2734,6 +2774,42 @@ class MessageManager(
                 return false
             }
 
+            // v3 pairing (docs/ratchet-bootstrap-plan.md §3.5 "Never legacy"), keyed off
+            // the CONTACT ROW, never a `_meta` read: text (1:1 and group), the announce
+            // and the sealed control kinds ride the ratchet or fail — visibly (`false`),
+            // never the static envelope, never a fallback count. The ratchet exists from
+            // pairing on BOTH sides (Bob sends on the pre-chain), so `dr-on` and the
+            // peer's capability marker are not consulted: a v3 peer seals control by
+            // construction. A lost channel ("pair again") blocks all of them. The chatty
+            // control kinds (activity / screenshot / level / channel-lost notices) are not
+            // in this set and take the static path below, as for every contact.
+            if (contact.ratchetBootstrapV3 && (chan.isText || announce || sealedControl)) {
+                if (channelLostBlocksSend(contactId)) {
+                    platformLogWarn(LOG_TAG, "send refused: the secure channel with this contact is lost — pair again")
+                    return false
+                }
+                val postTo = if (chan == Chan.MAIN) null else inboxRecord
+                val v3Advert = if (!simulatePreSealedControlBuildForTest) {
+                    val fresh = try {
+                        databaseManager.getContact(contactId)?.let { r -> r.sharedSecret.secureWipe(); r.outboundCtlCounter }
+                    } catch (_: Exception) { null }
+                    val committedFrom = maxOf(contact.outboundCtlCounter, fresh ?: 0L).coerceAtLeast(0L)
+                    capAdvert + ""","$CTL_RATCHET_WATERMARK_FIELD":"$committedFrom""""
+                } else capAdvert
+                return when (val sent = sendOverTextRatchet(contactId, contact, ratchetEnvelopeJson(plaintext, v3Advert + extraFieldsJson), noPush, postTo, ttlSeconds, status)) {
+                    true -> {
+                        if (chan == Chan.CTL) armControlConvergence(progress = true)
+                        true
+                    }
+                    // `false` (refused / transport) and `null` (no sending chain) fail
+                    // alike; only the log line tells them apart.
+                    else -> {
+                        platformLogWarn(LOG_TAG, v3RatchetSendFailureLine(sent))
+                        false
+                    }
+                }
+            }
+
             // Double Ratchet text path (forward secrecy). Control traffic stays on
             // the static envelope below — see [ratchetManager] note — with TWO
             // exceptions: the integrity-critical control kinds (below, advert-gated)
@@ -4520,8 +4596,12 @@ class MessageManager(
         // without it the fallback would only ever fire on legacy pairings).
         status: SendStatus? = null,
     ): Boolean? {
-        val (myInbound, myOutbound) = textInboxIds(contactId) ?: return null
-        val target = postTo ?: databaseManager.getInboxIdForContact(contactId, "outbound") ?: return null
+        // The two text inbox ids are ROLE inputs for a fresh legacy init only. A v3
+        // contact never inits (its state was written at pairing), so it does not need
+        // them; the role it took is in the stored state.
+        val v3 = contact.ratchetBootstrapV3
+        val (myInbound, myOutbound) = textInboxIds(contactId) ?: (if (v3) "" to "" else return null)
+        val target = postTo ?: databaseManager.getInboxIdForContact(contactId, "outbound") ?: return (if (v3) false else null)
         val writeCap = target.cap
         if (writeCap.isNullOrEmpty() || !capValidForHeader(writeCap)) {
             platformLogWarn(LOG_TAG, "ratchet send: outbound writeCap invalid")
@@ -4533,6 +4613,9 @@ class MessageManager(
                 myInbound, myOutbound, padMessage(envelopeJson.encodeToByteArray()),
                 // null ⇒ the id-order rule, byte-identical to before.
                 selfIsBobOverride = ratchetSelfIsBobOverride(contactId, contact),
+                // v3: never initialise; a missing / unreadable / corrupt state throws
+                // (caught right below ⇒ the send fails, nothing written).
+                noFreshInit = v3,
             )
         } catch (e: Exception) {
             platformLogError(LOG_TAG, "ratchet encrypt failed: ${e::class.simpleName}")
@@ -4668,6 +4751,182 @@ class MessageManager(
             ratchetFallbackCount(contactId) >= RATCHET_FALLBACK_STALL_THRESHOLD ||
             ratchetUnackedCount(contactId) >= RATCHET_UNACKED_REFUSE_THRESHOLD
     } catch (_: Exception) { false }
+
+    // --- v3: "secure channel lost — pair again" (docs/ratchet-bootstrap-plan.md §3.5) ---
+
+    /**
+     * True when the one-time-bootstrap ("v3") secure channel with [contactId] is gone
+     * and the contact must be paired again — on THIS phone (its stored ratchet state
+     * was proven corrupt) or on the PEER's (it told us). While true, text (1:1 and
+     * group fan-out through this pair), the inbox announce and the sealed control kinds
+     * to this contact FAIL instead of being sent; nothing falls back to the static
+     * envelope. Distinct from [ratchetRefused] (a legacy role collision that clears
+     * itself): this one is cleared only by deleting the contact (a re-pair).
+     *
+     * The platform surface for step B of the plan: render it beside
+     * [ratchetRefused], worded "secure channel lost — pair again". Never throws;
+     * an unreadable vault answers false (it is a display hint — the send gate does
+     * its own read).
+     */
+    fun secureChannelLost(contactId: String): Boolean = try {
+        databaseManager.getMeta(drLostKey(contactId)) != null
+    } catch (_: Exception) { false }
+
+    /** True when [contactId] was paired with the one-time ratchet bootstrap (the
+     *  contact-row flag). Never throws; an unreadable row answers false. */
+    fun isRatchetBootstrapV3(contactId: String): Boolean = try {
+        databaseManager.getContact(contactId)?.let { c -> c.sharedSecret.secureWipe(); c.ratchetBootstrapV3 } ?: false
+    } catch (_: Exception) { false }
+
+    /**
+     * The v3 send gate: true = do NOT send ratchet traffic to this contact.
+     *
+     * What an unreadable marker does depends on the platform, because `getMeta` has no
+     * "could not read" answer:
+     *  - Android: a failed read THROWS, so the send is refused (fail closed) — one
+     *    transient read costs a visible retry;
+     *  - iOS: a failed read returns null, indistinguishable from "not lost", so the
+     *    send PROCEEDS. If the channel really is lost, each send made during the read
+     *    failure is one ratchet-sealed message the peer cannot read (lost, not exposed),
+     *    and if OUR state is the corrupt one the send fails anyway at the state load.
+     * Making iOS fail closed here would need a tri-state `_meta` read in VaultDatabase.
+     */
+    private fun channelLostBlocksSend(contactId: String): Boolean = try {
+        databaseManager.getMeta(drLostKey(contactId)) != null
+    } catch (_: Exception) { true }
+
+    /**
+     * Latches [drLostKey] with [value] if it is not set yet. Never overwrites: the
+     * first cause wins (ours, or the peer's notice). Best effort — the corrupt state
+     * that caused it is still there, so the next operation latches again.
+     */
+    private fun latchChannelLost(contactId: String, value: String) {
+        try {
+            if (databaseManager.getMeta(drLostKey(contactId)) != null) return
+            if (!contactExists(contactId)) return   // never resurrect a deleted contact's state
+            databaseManager.putMeta(drLostKey(contactId), value)
+            // Counts only — never an identifier.
+            platformLogWarn(LOG_TAG, "secure channel lost for one contact (${if (value == DR_LOST_BY_PEER) "peer" else "local"}) — pair again")
+        } catch (_: Exception) { /* best effort — re-latched by the next operation */ }
+    }
+
+    /**
+     * Applies a received [CONTROL_KIND_CHANNEL_LOST] notice: the peer's v3 state is
+     * gone, so nothing we send it on the ratchet can be read — show the same "pair
+     * again" state here. Only for a v3 contact (a legacy pairing re-initialises on
+     * its own and has no such state). Never throws.
+     */
+    private fun applyChannelLostNotice(contactId: String) {
+        try {
+            val c = databaseManager.getContact(contactId) ?: return
+            val v3 = c.ratchetBootstrapV3
+            c.sharedSecret.secureWipe()
+            if (!v3) {
+                platformLogWarn(LOG_TAG, "drop: channel-lost notice for a non-v3 pairing")
+                return
+            }
+            latchChannelLost(contactId, DR_LOST_BY_PEER)
+        } catch (_: Exception) { /* best effort */ }
+    }
+
+    /**
+     * Sends every owed "channel lost" notice ([DR_LOST_NOTICE_OWED] → [DR_LOST_NOTICE_SENT]
+     * on a landed append). Rides the control sweep (SessionManagers), so it needs no
+     * timer of its own and never runs under a ratchet or send lock. The notice is a
+     * static-envelope chatty control kind with an empty body — it carries no secret
+     * and rides no ratchet (the state it reports is gone). Returns how many were sent.
+     * Never throws.
+     */
+    fun redriveChannelLostNotices(): Int {
+        var sent = 0
+        try {
+            // Only v3 contacts can owe a notice; a vault without one reads no `_meta`.
+            val v3Ids = databaseManager.getAllContacts().mapNotNull { c ->
+                c.sharedSecret.secureWipe()
+                if (c.ratchetBootstrapV3) c.contactId else null
+            }
+            for (contactId in v3Ids) {
+                val key = drLostKey(contactId)
+                if (databaseManager.getMeta(key) != DR_LOST_NOTICE_OWED) continue
+                val ok = try {
+                    sendDirectControl(contactId, CONTROL_KIND_CHANNEL_LOST, "{}", noPush = true, ttlSeconds = CONTROL_APPEND_TTL_SECONDS)
+                } catch (_: Exception) { false }
+                if (ok) {
+                    // Re-checked: the contact may have been deleted (re-pair) meanwhile.
+                    if (contactExists(contactId)) putMetaBestEffort(key, DR_LOST_NOTICE_SENT)
+                    sent++
+                }
+            }
+        } catch (e: Exception) {
+            platformLogWarn(LOG_TAG, "channel-lost notice redrive failed: ${e::class.simpleName}")
+        }
+        if (sent > 0) platformLog(LOG_TAG, "channel-lost notice sent to $sent contact(s)")
+        return sent
+    }
+
+    // --- v3 key confirmation (docs/ratchet-bootstrap-plan.md §4.1 last bullet) ---------
+
+    /**
+     * Records what one v3 ratchet drain proved about the bootstrap: any wire that
+     * DECRYPTED ⇒ confirmed (sticky, never reverts); otherwise, wires that were looked
+     * at and refused (not deferred, not left for the next drain) ⇒ the first such moment
+     * is stamped. Best effort; never throws.
+     */
+    private fun noteKeyConfirmation(contactId: String, decrypted: List<ByteArray?>, report: RatchetManager.DecryptBatchReport) {
+        try {
+            val key = drKeyConfirmKey(contactId)
+            val cur = databaseManager.getMeta(key)
+            if (cur == KEY_CONFIRMED) return
+            if (decrypted.any { it != null }) {
+                databaseManager.putMeta(key, KEY_CONFIRMED)
+                return
+            }
+            val refused = decrypted.indices.any { decrypted[it] == null && it !in report.deferred && it !in report.notProcessed }
+            if (refused && cur == null && contactExists(contactId)) {
+                databaseManager.putMeta(key, currentTimeMillis().toString())
+            }
+        } catch (_: Exception) { /* best effort — the next drain records it */ }
+    }
+
+    /**
+     * The stripped-`ek` half of key confirmation (docs/ratchet-bootstrap-plan.md §5.4):
+     * a static blob on a v3 contact's CONTROL inbox that the row's static key did not
+     * open, while this side is still PENDING (no outbound text row — it waits for the
+     * announce). A peer that saved this pairing LEGACY (our full code reached it
+     * without `ek`) announces on the static envelope under the halves secret, which a
+     * v3 row does not hold, so its announce can never open here and would otherwise
+     * leave this side waiting forever. Stamps the first such moment exactly like a
+     * refused ratchet wire, so [pairingKeyConfirmationFailed] answers after the same
+     * grace and a later decrypting ratchet wire still flips it to confirmed.
+     *
+     * Records only: the blob stays rejected, nothing is applied, reset or deleted.
+     * Gated to the wait: never once the marker is present (confirmed is sticky, the
+     * first stamp wins), never for a side that already holds the peer's rows. Who can
+     * provoke it: the same senders as the ratchet-junk stamp (the relay, or anyone
+     * holding this side's control write cap from the full code it shows). An
+     * authentic static chatty kind from a v3 peer opens under the row key and never
+     * reaches here. Best effort; never throws; no identifier logged.
+     */
+    private fun noteUnopenedStaticWhilePending(contactId: String) {
+        try {
+            val key = drKeyConfirmKey(contactId)
+            if (databaseManager.getMeta(key) != null) return
+            if (databaseManager.getInboxIdForContact(contactId, "outbound") != null) return
+            if (!contactExists(contactId)) return
+            databaseManager.putMeta(key, currentTimeMillis().toString())
+            platformLogWarn(LOG_TAG, "v3 pairing: a static control blob this pairing cannot open arrived while waiting for the announce")
+        } catch (_: Exception) { /* best effort — the next drain records it */ }
+    }
+
+    /**
+     * True when a v3 pairing has provably FAILED: ratchet traffic from the peer has
+     * been arriving for at least [KEY_CONFIRM_GRACE_MS] and none of it has ever
+     * decrypted — the two phones derived different keys. The UI shows "pairing failed
+     * — start again" (the pending side would otherwise wait forever for an announce it
+     * cannot read). See [pairingKeyConfirmationFailed] (companion) for the rule.
+     */
+    fun pairingKeyConfirmationFailed(contactId: String): Boolean =
+        pairingKeyConfirmationFailed(databaseManager, contactId)
 
     /** The durable latch alone — the cheap read the send gate uses. Absent ⇒ false. */
     private fun refusalLatched(contactId: String): Boolean = try {
@@ -5002,7 +5261,13 @@ class MessageManager(
         drainGroup: Any? = null,
     ): List<ReceivedMessage> {
         val batchReport = report ?: RatchetManager.DecryptBatchReport()
-        val (myInbound, myOutbound) = textInboxIds(contactId) ?: run {
+        // Receive-side id relaxation, v3 only (docs/ratchet-bootstrap-plan.md §3.5
+        // "First announce"): the ids are role inputs for a fresh LEGACY init. A v3
+        // contact never inits, so the pending side of a secret-only scan (no outbound
+        // text row yet) can still decrypt the peer's ratchet-sealed announce — but only
+        // when a stored state exists: decryptBatch(noFreshInit) refuses otherwise.
+        val v3 = contact.ratchetBootstrapV3
+        val (myInbound, myOutbound) = textInboxIds(contactId) ?: (if (v3) "" to "" else null) ?: run {
             // No role inputs, so nothing is decrypted. Under the retrieve lease what
             // happens to these wires is decided here:
             //  - the contact row is GONE (deleted while this drain was in flight): the
@@ -5038,18 +5303,38 @@ class MessageManager(
         // SQLCipher reload + deserialize per blob), so a relay can't amplify per-poll
         // DB/CPU/battery by stuffing thousands of forged ratchet blobs. Drops
         // (tamper / replay / malformed / too short) come back as null, in order.
-        val decrypted = ratchetManager.decryptBatch(
-            contactId, RATCHET_TEXT_CHANNEL, contact.sharedSecret, myInbound, myOutbound, wires,
-            // Same resolved role as the send path — a receive that
-            // happens to be the first ratchet op for this contact must init into the
-            // role the pairing fixed, not the one the current outbound row implies.
-            selfIsBobOverride = ratchetSelfIsBobOverride(contactId, contact),
-            deferDamaging = deferDamaging,
-            report = batchReport,
-            maxDeferrableWireBytes = MAX_DEFERRABLE_CTL_WIRE_BYTES,
-            persist = drainGroup == null,
-            drainGroup = drainGroup,
-        )
+        val decrypted = try {
+            ratchetManager.decryptBatch(
+                contactId, RATCHET_TEXT_CHANNEL, contact.sharedSecret, myInbound, myOutbound, wires,
+                // Same resolved role as the send path — a receive that
+                // happens to be the first ratchet op for this contact must init into the
+                // role the pairing fixed, not the one the current outbound row implies.
+                selfIsBobOverride = ratchetSelfIsBobOverride(contactId, contact),
+                deferDamaging = deferDamaging,
+                report = batchReport,
+                maxDeferrableWireBytes = MAX_DEFERRABLE_CTL_WIRE_BYTES,
+                persist = drainGroup == null,
+                drainGroup = drainGroup,
+                noFreshInit = v3,
+            )
+        } catch (e: RatchetStateUnavailableException) {
+            // v3 only: the state is absent / unreadable (retry next drain) or proven
+            // corrupt (`dr-lost` latched by the RatchetManager hook). Nothing was
+            // decrypted and nothing written; every wire is left NOT_PROCESSED so the
+            // relay keeps it — no message is acked away on a state we could not read.
+            batchReport.notProcessed.addAll(wires.indices)
+            if (wires.isNotEmpty()) {
+                platformLogWarn(
+                    LOG_TAG,
+                    "ratchet drain: state ${if (e is RatchetStateLostException) "lost" else "unavailable"} — ${wires.size} blob(s) left for the next drain",
+                )
+            }
+            return emptyList()
+        }
+        // v3 key confirmation (docs/ratchet-bootstrap-plan.md §4.1): the first ratchet
+        // wire that decrypts proves both sides derived the same bootstrap; until then,
+        // the first one that does NOT is stamped. See [pairingKeyConfirmationFailed].
+        if (v3) noteKeyConfirmation(contactId, decrypted, batchReport)
         // (2026-09-11) A ratchet blob that fails to decrypt used to vanish
         // with NO log line anywhere — the only COMPLETELY silent drop left on the
         // receive path, and the reason `cross:move-i2i`'s "the relay delivered it,
@@ -5145,6 +5430,11 @@ class MessageManager(
             // 1:1 Maximum-shield announcement: applied to the vault, never surfaced.
             if (env.controlKind == CONTROL_KIND_PLEVEL && env.groupId == null) {
                 applyMaximumAnnouncement(contactId, env.controlBody); continue
+            }
+            // v3 "channel lost" notice: applied (latch), never surfaced. Normally static
+            // (the sender's state is gone), accepted here too for symmetry.
+            if (env.controlKind == CONTROL_KIND_CHANNEL_LOST && env.groupId == null) {
+                applyChannelLostNotice(contactId); continue
             }
             if (env.groupId == null && env.controlKind != null &&
                 !isKnownDirectControlKind(env.controlKind)
@@ -5847,7 +6137,12 @@ class MessageManager(
         // ratcheted EXCEPT for the inbox announce: a ratchet-magic blob on
         // the control inbox is decoded through the text ratchet, and a LEGACY
         // announce is dropped once the lock is armed (announceLocked, below).
-        val lockArmed = databaseManager.getMeta(drRecvLockKey(contactId)) == "1"
+        // v3 (docs/ratchet-bootstrap-plan.md §3.5 "Lock at birth"): armed from the
+        // pairing, read off the CONTACT ROW — so a `_meta` read error (null on iOS) can
+        // never let legacy text from a v3 peer through. Sound because the v3 bootstrap
+        // is not forgeable from the stored secret.
+        val v3 = contact.ratchetBootstrapV3
+        val lockArmed = v3 || databaseManager.getMeta(drRecvLockKey(contactId)) == "1"
         // Both TEXT channels are covered: a legacy static-key blob on the GROUP
         // inbox after the lock is armed is the same downgrade/forgery as one on the
         // text inbox (a stolen sharedSecret mints either), and by then the peer's
@@ -5856,10 +6151,17 @@ class MessageManager(
         // never got the one-poll grace (the arming drain is what normally provides
         // it: the lock is read at its start). [drRecvLockGraceKey] lists the text
         // channels still owed that one drain; this drain consumes its own tag below.
-        val textGrace = chan.isText && lockArmed && graceOwed(contactId, chan)
+        // A v3 lock never owes a grace: the grace is only written when a CONTROL drain
+        // arms the lock, which never happens for v3 (armed at birth).
+        val textGrace = chan.isText && lockArmed && !v3 && graceOwed(contactId, chan)
         val recvLocked = chan.isText && lockArmed && !textGrace
         val announceLocked = lockArmed
-        val split = splitDrainBlobs(cappedBlobs, recvLocked, ledger)
+        // The referral downgrade probe (docs/ratchet-bootstrap-plan.md §4.2): for a v3
+        // contact born through the REFERRAL commit, the static TEXT blobs the birth lock
+        // drops on the MESSAGE inbox are kept aside (still REJECTED, never surfaced) so
+        // [referralPeerProvablyLegacy] can check them below.
+        val probeReferralDowngrade = v3 && chan == Chan.MAIN && isReferralBorn(contact)
+        val split = splitDrainBlobs(cappedBlobs, recvLocked, ledger, keepLockDropped = probeReferralDowngrade)
         // Retrieve-ack, legacy half of the pending rule ([legacyPendingBlocks]):
         // decided BEFORE any legacy work. Held ⇒ every legacy blob of this drain is
         // NOT_PROCESSED and comes back on the next drain together with the held ones.
@@ -5881,7 +6183,7 @@ class MessageManager(
         // Retrieve-ack: a drain whose every blob was left for the next drain (held
         // behind an uncommitted advance) looked at nothing — not evidence either.
         val lookedAtAny = ledger.outcome.any { it != BlobOutcome.NOT_PROCESSED } || (split.legacyBlobs.isNotEmpty() && !legacyHeld)
-        afterRatchetHalf(contactId, chan, half, adverts, lockArmed, lookedAtAny, cappedNonEmpty = cappedBlobs.isNotEmpty())
+        afterRatchetHalf(contactId, chan, half, adverts, lockArmed, lookedAtAny, cappedNonEmpty = cappedBlobs.isNotEmpty(), v3 = v3)
         // Retrieve-ack: a PENDING drain consumes the grace at commit (with the legacy
         // baseline it protects) — consuming it now and losing the drain would drop
         // the re-delivered legacy blobs under the lock.
@@ -5908,8 +6210,12 @@ class MessageManager(
         // is mature (`lockArmed`) AND it has proven over that ratchet that it seals
         // those kinds, from the control counter it reported on. Null = no lock, which
         // is the un-upgraded-peer / fresh / unreadable default and NEVER a drop.
+        // v3: a v3 peer seals every integrity-critical kind from birth, so a LEGACY copy
+        // of one can only be a forgery from the stored secret — the watermark is -1, i.e.
+        // every such copy (counters start at 1) is dropped without advancing.
         val ctlSealWatermark: Long? =
-            if (chan == Chan.CTL && lockArmed) peerCtlWatermark(contactId) else null
+            if (chan == Chan.CTL && v3) -1L
+            else if (chan == Chan.CTL && lockArmed) peerCtlWatermark(contactId) else null
 
         // First pass: decode/decrypt/unpad/parse every (legacy) blob and collect
         // the valid, same-epoch envelopes. Legacy/no-counter and wrong-epoch
@@ -5930,12 +6236,26 @@ class MessageManager(
         // hostile relay can't reorder a peer's first bound blob ahead of genuinely-legacy
         // ones and get those legit older messages dropped during the upgrade drain.
         val peerBindsInboxAtStart = databaseManager.getMeta(inboxBoundSeenKey(contactId)) == "1"
+        if (split.lockDroppedLegacy.isNotEmpty() && referralPeerProvablyLegacy(
+                contact, split.lockDroppedLegacy, startCounter,
+                LegacyDrainContext(chan, inboxId, expectedEpoch, peerTagsChannelsAtStart, peerBindsInboxAtStart),
+            )
+        ) {
+            // Counts only — never an identifier.
+            platformLogWarn(LOG_TAG, "v3 referral contact: authenticated static text from the peer — it finalized the old way")
+            latchChannelLost(contactId, DR_LOST_NOTICE_OWED)
+        }
         val firstPass = openLegacyBlobs(
             contact, if (legacyHeld) emptyList() else split.legacyBlobs, split.legacyBlobIdx,
             LegacyDrainContext(chan, inboxId, expectedEpoch, peerTagsChannelsAtStart, peerBindsInboxAtStart),
             ledger,
         )
         if (firstPass.seen.ctlCapAdvert) recordPeerCtlAdverts(contactId, cap = true, watermark = null)
+        // v3 key confirmation, the stripped-`ek` case (docs/ratchet-bootstrap-plan.md
+        // §5.4): a static blob on the CONTROL inbox that this v3 row's keys cannot open,
+        // while the pending side still waits for the announce. Records only — the blob
+        // stays REJECTED, nothing static is ever applied. See [noteUnopenedStaticWhilePending].
+        if (v3 && chan == Chan.CTL && firstPass.seen.unopenedStatic) noteUnopenedStaticWhilePending(contactId)
         // The whole drain is decided — now persist the upgrade flag for FUTURE
         // drains if we saw any channel tag this round (deferred from mid-drain above).
         if (firstPass.seen.channelTag && !peerTagsChannelsAtStart) {
@@ -6037,13 +6357,17 @@ class MessageManager(
         val ratchetWireBlob: List<Int>,   // ratchetWires[i] came from blob ratchetWireBlob[i]
         val legacyBlobs: List<String>,
         val legacyBlobIdx: List<Int>,     // same, for legacyBlobs
+        // Static blobs the receive lock dropped (REJECTED), kept ONLY when the caller
+        // asked ([keepLockDropped]) — the referral downgrade probe's input. Empty otherwise.
+        val lockDroppedLegacy: List<String> = emptyList(),
     )
 
-    private fun splitDrainBlobs(cappedBlobs: List<String>, recvLocked: Boolean, ledger: BlobLedger): DrainSplit {
+    private fun splitDrainBlobs(cappedBlobs: List<String>, recvLocked: Boolean, ledger: BlobLedger, keepLockDropped: Boolean = false): DrainSplit {
         val ratchetWires = mutableListOf<ByteArray>()
         val ratchetWireBlob = mutableListOf<Int>()   // ratchetWires[i] came from blob ratchetWireBlob[i]
         val legacyBlobs = mutableListOf<String>()
         val legacyBlobIdx = mutableListOf<Int>()     // same, for legacyBlobs
+        val lockDropped = mutableListOf<String>()
         for ((blobIdx, b64) in cappedBlobs.withIndex()) {
             val raw = try { decodeBase64(b64) } catch (_: Exception) {
                 // One malformed blob must not abort the whole poll.
@@ -6056,13 +6380,61 @@ class MessageManager(
             } else if (recvLocked) {
                 ledger.outcome[blobIdx] = BlobOutcome.REJECTED
                 platformLogWarn(LOG_TAG, "poll: dropping legacy text blob after ratchet lock (receive-lock downgrade guard)")
+                if (keepLockDropped) lockDropped.add(b64)
             } else {
                 legacyBlobs.add(b64)
                 legacyBlobIdx.add(blobIdx)
             }
         }
-        return DrainSplit(ratchetWires, ratchetWireBlob, legacyBlobs, legacyBlobIdx)
+        return DrainSplit(ratchetWires, ratchetWireBlob, legacyBlobs, legacyBlobIdx, lockDropped)
     }
+
+    /**
+     * True when [contact] was born through the REFERRAL commit: `vouchedByContactId` is
+     * written by that commit only (`ReferralManager.referredContactRecord`; the QR save
+     * never sets it), is never cleared, and travels with a device move. Read off the
+     * same contact row as the v3 flag — no `_meta` marker.
+     */
+    private fun isReferralBorn(contact: ContactRecord): Boolean = !contact.vouchedByContactId.isNullOrEmpty()
+
+    /**
+     * The referral downgrade proof (docs/ratchet-bootstrap-plan.md §4.2): one of
+     * [blobs] — static blobs the birth lock dropped on the MESSAGE inbox of a v3
+     * referral contact — is a TEXT envelope (no control kind) that authenticates under
+     * the row's stored secret (`ss_ref`) and passes every check the legacy drain applies:
+     * counter + epoch present, epoch current, `ch` / `di` per [legacyDropReason], and a
+     * counter above the persisted baseline [startCounter]. Both introducees store the
+     * same `ss_ref`, so this is positive evidence that the peer finalized this
+     * introduction LEGACY (its `bv` was stripped) — or that someone holds `ss_ref` (an
+     * opened vault of one of the two phones), the bound already accepted for a forged
+     * `chlost`. A QR-born v3 row stores `ss'`, which no honest legacy peer holds; the
+     * caller never asks for one anyway.
+     *
+     * Pure check: the plaintext is never surfaced, stored or notified; nothing is
+     * written here (the drain-upgrade marks go to a throwaway [LegacySeen]); the blobs
+     * stay REJECTED exactly as the lock decided. Never throws.
+     */
+    private fun referralPeerProvablyLegacy(
+        contact: ContactRecord, blobs: List<String>, startCounter: Long, ctx: LegacyDrainContext,
+    ): Boolean = try {
+        withStaticEnvelopeKey(contact.sharedSecret) { key, aad ->
+            blobs.any { b64 ->
+                val enc = try { decodeBase64(b64) } catch (_: Exception) { null }
+                if (enc == null || enc.size < AES_GCM_MIN_BLOB_BYTES) return@any false
+                val padded = try { aesGcmDecrypt(ciphertext = enc, key = key, associatedData = aad) } catch (_: Exception) { null }
+                    ?: return@any false
+                val env = try {
+                    val plain = unpadMessage(padded)
+                    try { parseEnvelope(plain.decodeToString()) } finally { plain.secureWipe() }
+                } catch (_: Exception) { null } finally { padded.secureWipe() }
+                val counter = env?.counter
+                env != null && env.epoch != null && counter != null &&
+                    env.controlKind == null &&
+                    legacyDropReason(env, ctx, LegacySeen()) == null &&
+                    counter > startCounter
+            }
+        }
+    } catch (_: Exception) { false }
 
     // The peer's adverts, as seen inside RATCHET envelopes this drain ([onEnvelope]
     // is handed to every ratchet decrypt of the drain).
@@ -6222,9 +6594,16 @@ class MessageManager(
     private fun afterRatchetHalf(
         contactId: String, chan: Chan, half: RatchetHalf, adverts: PeerAdvertsSeen,
         lockArmed: Boolean, lookedAtAny: Boolean, cappedNonEmpty: Boolean,
+        v3: Boolean = false,
     ) {
         if (half.decrypted) noteInboundRatchetProven(contactId)
-        else if (chan.isText && cappedNonEmpty && lookedAtAny) noteRatchetUnackedReceive(contactId)
+        // The both-Alice detector assumes the legacy bootstrap, where only the initiator
+        // can send at first. A v3 pairing's two roles come from one shared derivation
+        // and both send from birth, so "unanswered ratchet blobs" there means the two
+        // sides derived different keys (key confirmation, step B of the plan) or a
+        // relay serving junk — not a role collision, and its refusal would gate only a
+        // legacy fallthrough v3 never takes. Not counted for v3.
+        else if (!v3 && chan.isText && cappedNonEmpty && lookedAtAny) noteRatchetUnackedReceive(contactId)
 
         // Arm the sticky receive-lock only once the ratchet is
         // PAST the sharedSecret-forgeable bootstrap window, and re-evaluate on EVERY
@@ -6232,7 +6611,9 @@ class MessageManager(
         // maybeArmRecvLock. Also re-evaluated on the control poll: an
         // announce decrypted there advances the same text ratchet — and an arm from
         // there owes the text channels the lock's grace drain.
-        maybeArmRecvLock(contactId, armedFrom = chan)
+        // v3: the lock is armed at birth (contact row), never by this — a failed
+        // `_meta` read must not make it write a grace and re-arm.
+        if (!v3) maybeArmRecvLock(contactId, armedFrom = chan)
 
         // What the peer advertised INSIDE ratchet blobs. The capability is
         // honoured from any authenticated envelope (below too, for legacy ones). The
@@ -6296,6 +6677,8 @@ class MessageManager(
         var channelTag = false
         var inboxBind = false
         var ctlCapAdvert = false
+        // A static blob of plausible size that this row's static key did not open.
+        var unopenedStatic = false
     }
 
     private class LegacyFirstPass(val candidates: MutableList<Pair<Envelope, Int>>, val seen: LegacySeen)
@@ -6353,6 +6736,7 @@ class MessageManager(
                     )
                 } catch (e: Exception) {
                     platformLogError(LOG_TAG, "decrypt failed: ${e::class.simpleName}")
+                    seen.unopenedStatic = true
                     continue
                 }
 
@@ -6588,6 +6972,16 @@ class MessageManager(
             // re-served blob applies once); applied to the vault, never surfaced.
             if (env.controlKind == CONTROL_KIND_PLEVEL && env.groupId == null) {
                 applyMaximumAnnouncement(contact.contactId, env.controlBody)
+                lastCounter = counter
+                advanced = true
+                ledger.acceptLegacy(blobIdx)
+                continue
+            }
+            // v3 "channel lost" notice (the peer's state is gone — pair again): same
+            // placement and counter/ack treatment as the notices above; applied to the
+            // vault, never surfaced. Ignored for a non-v3 pairing.
+            if (env.controlKind == CONTROL_KIND_CHANNEL_LOST && env.groupId == null) {
+                applyChannelLostNotice(contact.contactId)
                 lastCounter = counter
                 advanced = true
                 ledger.acceptLegacy(blobIdx)
@@ -8367,6 +8761,58 @@ class MessageManager(
          */
         internal fun drRefusedKey(contactId: String) = "dr-refused/$contactId"
 
+        /**
+         * The v3 "secure channel lost — pair again" latch (docs/ratchet-bootstrap-plan.md
+         * §3.5). Present ⇒ lost; the value says why and whether the peer was told:
+         * [DR_LOST_NOTICE_OWED] / [DR_LOST_NOTICE_SENT] (OUR state proven corrupt) or
+         * [DR_LOST_BY_PEER] (the peer's notice). Never written for a legacy pairing,
+         * never cleared except by deleting the contact; in [ratchetMetaKeysForContact]
+         * and `MoveMetaPolicy`. NOT [drRefusedKey]: that one is text-only, clears on a
+         * decrypting blob and means "role collision".
+         */
+        internal fun drLostKey(contactId: String) = "$DR_LOST_PREFIX$contactId"
+
+        /**
+         * v3 key confirmation (docs/ratchet-bootstrap-plan.md §4.1): [KEY_CONFIRMED] once
+         * any ratchet wire from the peer has decrypted (sticky), else the decimal ms of
+         * the first wire that did not, else absent (nothing seen yet). Never written for a
+         * legacy pairing. In [ratchetMetaKeysForContact] and `MoveMetaPolicy`.
+         */
+        internal fun drKeyConfirmKey(contactId: String) = "dr-kc/$contactId"
+        internal const val KEY_CONFIRMED = "ok"
+
+        /**
+         * How long refused ratchet traffic must have been arriving, with nothing ever
+         * decrypting, before a v3 pairing is declared failed. Not zero on purpose: a
+         * relay can put junk in front of the genuine announce, and the genuine one,
+         * arriving within this window, confirms the pairing and cancels the verdict.
+         */
+        const val KEY_CONFIRM_GRACE_MS = 2L * 60L * 1000L
+
+        /**
+         * The key-confirmation verdict from the vault alone (the add-contact screen's
+         * "waiting for the peer" loop has a vault but may have no MessageManager). True
+         * only for a v3 contact whose marker is a failure stamp at least
+         * [KEY_CONFIRM_GRACE_MS] old (a stamp in the future also counts once the clock
+         * passes it — never earlier). Absent, confirmed, unreadable or a legacy contact
+         * ⇒ false: this verdict sends the user back to the start, so it needs positive
+         * evidence. Never throws.
+         */
+        fun pairingKeyConfirmationFailed(vault: VaultDatabase, contactId: String, nowMs: Long = currentTimeMillis()): Boolean = try {
+            val c = vault.getContact(contactId)
+            val v3 = c?.ratchetBootstrapV3 == true
+            c?.sharedSecret?.secureWipe()
+            if (!v3) false
+            else {
+                val stamp = vault.getMeta(drKeyConfirmKey(contactId))?.let { if (it == KEY_CONFIRMED) null else it.toLongOrNull() }
+                stamp != null && nowMs - stamp >= KEY_CONFIRM_GRACE_MS
+            }
+        } catch (_: Exception) { false }
+        internal const val DR_LOST_PREFIX = "dr-lost/"
+        internal const val DR_LOST_NOTICE_OWED = "1"
+        internal const val DR_LOST_NOTICE_SENT = "2"
+        internal const val DR_LOST_BY_PEER = "p"
+
         // The `_meta` latches a corrupt-state text-ratchet re-init clears, in this
         // order (the `onCorruptReinit` hook of [ratchetManager]). NEVER [drIntentKey]:
         // it is set only at pairing, so deleting it would revert the contact to the
@@ -8793,6 +9239,18 @@ class MessageManager(
          */
         internal val OWNED_READ_DIRECTIONS = listOf("inbound", DIR_INBOUND_CTL, DIR_INBOUND_GRP)
 
+        /**
+         * The warning a v3 contact's failed ratchet send logs, per [sendOverTextRatchet]
+         * result: `false` = the send did not land (the relay refused the POST — e.g. a
+         * 404 from a peer who deleted us — the transport failed, or a local ratchet step
+         * failed and logged its own line); `null` = no sending chain. Neither is ever
+         * re-sent on the static envelope. Fixed phrases, never an identifier.
+         */
+        internal fun v3RatchetSendFailureLine(result: Boolean?): String = when (result) {
+            false -> "send failed: the ratchet send for a v3 contact did not land (relay refused it or transport failed) — not sent on the static envelope either"
+            else -> "send failed: no ratchet send for a v3 contact (never sent on the static envelope)"
+        }
+
         /** True iff [blob] is a ratchet wire blob (carries [RATCHET_WIRE_MAGIC]). */
         internal fun isRatchetWire(blob: ByteArray): Boolean =
             blob.size >= RATCHET_WIRE_MAGIC.size &&
@@ -9092,6 +9550,17 @@ class MessageManager(
         const val CONTROL_KIND_PLEVEL = "plvl"
 
         /**
+         * Direct (non-group) "my secure channel with you is lost — pair again" notice
+         * for a v3 pairing (docs/ratchet-bootstrap-plan.md §3.5). Body `{}`, ignored.
+         * A CHATTY kind on the static envelope by necessity — the state that would seal
+         * it is exactly what is gone — so a holder of an opened vault image can forge it;
+         * the worst it buys is a "pair again" on this contact (a denial of service the
+         * same image already allows by other means). Applied only to a v3 contact.
+         * An older build does not know it and drops it (see [isKnownDirectControlKind]).
+         */
+        const val CONTROL_KIND_CHANNEL_LOST = "chlost"
+
+        /**
          * The DIRECT (group-less) control kinds a receiver SURFACES or applies past
          * the "unknown direct control" guard. Single allowlist for BOTH receive
          * paths (the legacy static envelope and the ratchet), so the two can never
@@ -9104,7 +9573,8 @@ class MessageManager(
          * exactly what an old build does with [CONTROL_KIND_SCREENSHOT].
          */
         internal fun isKnownDirectControlKind(kind: String): Boolean =
-            kind in DIRECT_REFERRAL_KINDS || kind == CONTROL_KIND_SCREENSHOT || kind == CONTROL_KIND_PLEVEL
+            kind in DIRECT_REFERRAL_KINDS || kind == CONTROL_KIND_SCREENSHOT || kind == CONTROL_KIND_PLEVEL ||
+                kind == CONTROL_KIND_CHANNEL_LOST
 
         /**
          * Ceiling on UNDRAINED direct screenshot notices held in RAM. A paired peer
@@ -9265,6 +9735,16 @@ fun contactAwaitingPeerInbox(vault: VaultDatabase, contactId: String): Boolean =
 fun contactFullyPaired(vault: VaultDatabase, contactId: String): Boolean =
     !contactNeedsRepair(vault, contactId) &&
         vault.getInboxIdForContact(contactId, "outbound") != null
+
+/**
+ * True iff the one-time-bootstrap pairing with [contactId] has provably FAILED
+ * (the two phones derived different keys — key confirmation, see
+ * [MessageManager.pairingKeyConfirmationFailed]). The add-contact "waiting for the
+ * peer" loops check it beside [contactFullyPaired] and show "pairing failed — start
+ * again" instead of waiting forever. Never throws; false for a legacy contact.
+ */
+fun contactPairingFailed(vault: VaultDatabase, contactId: String): Boolean =
+    MessageManager.pairingKeyConfirmationFailed(vault, contactId)
 
 /**
  * Delete [contactId] locally AND destroy its two inbound inboxes on the

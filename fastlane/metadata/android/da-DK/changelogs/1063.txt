@@ -1,0 +1,5 @@
+• Kontakter, der tilføjes ved scanning eller introduktion, starter nu med en engangsnøgleudveksling: en senere kopi af telefonen kan ikke genskabe deres første nøgler. Begge telefoner skal have denne version; eksisterende kontakter er uændrede.
+• Parringen klarer, at telefonen drejes, eller at forbindelsen afbrydes.
+• Skarpere QR-koder.
+• Gruppebeskeder, der kommer, før du er med, vises i stedet for at gå tabt.
+• Mere stabil forbindelse efter netværksskift.

@@ -65,6 +65,23 @@ class SocksPortRedirectTest {
     }
 
     @Test
+    fun manyMovesInARow_keepTheOldestClientConnected() {
+        // A transport wired on the first port must follow any number of moves, each
+        // starting from the previous move's target (what iOS does after a republish).
+        val first = 50_000
+        var current = first
+        repeat(40) {
+            val next = current + 1
+            SocksPortRedirect.beginMove(current)
+            assertEquals(SocksPortRedirect.BLOCKED_PORT, SocksPortRedirect.resolve(first), "blocked while move ${it + 1} is in flight")
+            assertTrue(SocksPortRedirect.completeMove(current, next))
+            assertEquals(next, SocksPortRedirect.resolve(first), "the first client follows move ${it + 1}")
+            assertEquals(next, SocksPortRedirect.resolve(current), "the previous port follows move ${it + 1}")
+            current = next
+        }
+    }
+
+    @Test
     fun aNewTorProcessResetsEverything() {
         SocksPortRedirect.beginMove(41234)
         SocksPortRedirect.reset()

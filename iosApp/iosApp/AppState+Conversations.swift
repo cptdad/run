@@ -96,7 +96,8 @@ extension AppState {
     func runDirectSendLoop(contactId: String, text: String, redriveToken: String,
                            sessionEpoch: Int64, logTag: String, what: String) async -> DirectSendLoopResult {
         let maxRetries = AppState.directSendMaxAttempts
-        if controller.ratchetRefused(contactId: contactId) {
+        if controller.ratchetRefused(contactId: contactId)
+            || (controller.messageManager?.secureChannelLost(contactId: contactId) ?? false) {
             LogBuffer.shared.append(level: "W", tag: logTag,
                 message: "\(what) refused — secure channel not established, 0 attempts made")
             return .failed
@@ -140,6 +141,7 @@ extension AppState {
         guard result != .sessionEnded, isSendSessionCurrent(sessionEpoch) else { return false }
         refreshForwardSecrecyStalled(contactId: contactId)
         refreshRatchetRefused(contactId: contactId)
+        refreshSecureChannelLost(contactId: contactId)
         return result == .delivered
     }
 
@@ -398,6 +400,11 @@ extension AppState {
             gm?.acceptInvite(groupId: groupId) ?? false
         }.value
         NotificationCenter.default.post(name: .contactsChanged, object: nil)
+        // Joining replays the activity notices parked while this was only an
+        // invitation (GroupManager.acceptInvite), i.e. the new row may already have a
+        // message waiting. The published counts otherwise refresh on the control
+        // loop's next cycle (60–90 s idle), so the row would sit dark that long.
+        refreshGroupUnreadCounts()
         return ok
     }
 

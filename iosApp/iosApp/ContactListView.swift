@@ -693,6 +693,8 @@ struct ContactListView: View {
         let mnemonic: String
         let stale:    Bool     // pre-capability-protocol — surface re-pair UX
         let pending:  Bool     // awaiting the peer's in-band inbox announce
+        // One-time-key secure channel lost — the contact must be paired again.
+        var channelLost: Bool = false
         // Referral (referral.md): added via an introducer. Usable immediately
         // (transitive trust); this flag only drives the "Introduced" provenance
         // badge.
@@ -2483,6 +2485,7 @@ struct ContactListView: View {
                 stale: MessageManagerKt.contactNeedsRepair(vault: vault, contactId: contact.contactId)
                     || appState.relayLostContacts.contains(contact.contactId),
                 pending: MessageManagerKt.contactAwaitingPeerInbox(vault: vault, contactId: contact.contactId),
+                channelLost: appState.controller.messageManager?.secureChannelLost(contactId: contact.contactId) ?? false,
                 referred: contact.vouchedByContactId != nil,
                 introducerAlias: introducerAlias,
                 maximumShield: maximumIds.contains(contact.contactId)
@@ -2805,6 +2808,11 @@ private struct ContactRow: View {
                         .font(.runeCaption2)
                         .foregroundColor(Color.runTextSecondary)
                         .accessibilityIdentifier("contact_repair_\(contact.id)")
+                } else if contact.channelLost {
+                    Text(L10n.contactListSecureChannelLost)
+                        .font(.runeCaption2)
+                        .foregroundColor(Color.runTextSecondary)
+                        .accessibilityIdentifier("contact_secure_lost_\(contact.id)")
                 } else if contact.pending {
                     Text(L10n.contactListWaitingForInbox)
                         .font(.runeCaption2)

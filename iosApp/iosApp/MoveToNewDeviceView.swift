@@ -37,6 +37,7 @@ import shared
 struct MoveToNewDeviceView: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.displayScale) private var displayScale
 
     /// nil ⇒ this is the unlock-time frozen screen: there is nowhere to go back to.
     let onClose: (() -> Void)?
@@ -356,15 +357,8 @@ struct MoveToNewDeviceView: View {
                 .font(.runeFootnote).foregroundColor(.runTextSecondary)
                 .multilineTextAlignment(.center)
 
-            if let qr = generateQRCode(from: handleText) {
-                Image(uiImage: qr)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 240, height: 240)
-                    .padding(10)
-                    .background(Color.white)
-                    .cornerRadius(12)
+            if let qr = CrispQR.make(from: handleText, tilePoints: 260, displayScale: displayScale) {
+                CrispQRView(qr: qr)
                     // A SwiftUI Image with no label is decorative and never enters the
                     // a11y tree, so the identifier alone would not surface: make it an
                     // element explicitly. (The e2e's waitForAny also accepts
@@ -743,17 +737,4 @@ struct MoveToNewDeviceView: View {
         .accessibilityIdentifier(id)
     }
 
-    /// Local copy of AddContactView's generator (that one is a private method on
-    /// that view). Same filter, same correction level, same 10× scale.
-    private func generateQRCode(from string: String) -> UIImage? {
-        guard !string.isEmpty else { return nil }
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
-        filter.correctionLevel = "M"
-        guard let outputImage = filter.outputImage else { return nil }
-        let scaled = outputImage.transformed(by: CGAffineTransform(scaleX: 10, y: 10))
-        guard let cgImage = context.createCGImage(scaled, from: scaled.extent) else { return nil }
-        return UIImage(cgImage: cgImage)
-    }
 }

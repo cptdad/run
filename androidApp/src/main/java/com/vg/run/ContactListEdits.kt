@@ -9,6 +9,8 @@ package com.vg.run
  * helpers (the vault work), and ContactListScreen ([consentToShow], pure).
  */
 
+private fun noChannelLost(@Suppress("UNUSED_PARAMETER") contactId: String): Boolean = false
+
 /**
  * The whole contact-list load, run by the ViewModel on IO.
  *
@@ -26,7 +28,12 @@ package com.vg.run
  * their peer's inbox announce → "Waiting…") read the vault per contact, which
  * is why the whole load is off the main thread.
  */
-internal fun loadContactListSnapshot(vault: VaultDatabase, maximumShield: MaximumShield? = null): ContactListSnapshot {
+internal fun loadContactListSnapshot(
+    vault: VaultDatabase,
+    maximumShield: MaximumShield? = null,
+    /** "Secure channel lost" per contact (MessageManager.secureChannelLost); false when there is no transport yet. */
+    secureChannelLost: (String) -> Boolean = ::noChannelLost,
+): ContactListSnapshot {
     val records = vault.getAllContacts()
     val contacts = records.map { it.toListItem() }
     records.forEach { it.sharedSecret.secureWipe() }
@@ -37,7 +44,8 @@ internal fun loadContactListSnapshot(vault: VaultDatabase, maximumShield: Maximu
     // still resolved 1:1 contacts (a stale claim row for a gone contact is never shown).
     val known = contacts.map { it.contactId }.toSet()
     val maximumIds = (maximumShield?.claimedContactIds() ?: emptySet()).filter { it in known }.toSet()
-    return ContactListSnapshot(contacts, groups, staleIds, pendingIds, maximumIds)
+    val lostIds = contacts.filter { secureChannelLost(it.contactId) }.map { it.contactId }.toSet()
+    return ContactListSnapshot(contacts, groups, staleIds, pendingIds, maximumIds, lostIds)
 }
 
 /**

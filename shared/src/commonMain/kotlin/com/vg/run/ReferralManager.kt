@@ -38,6 +38,12 @@ package com.vg.run
 //                   immediately usable. Trust is TRANSITIVE: we already trust
 //                   the introducer, so there is no out-of-band verification
 //                   step — vouchedByContactId just records who introduced us.
+//                   ONE-TIME RATCHET BOOTSTRAP (docs/ratchet-bootstrap-plan.md
+//                   §4.2): when our stored `bv` AND the peer's accept carry it, the
+//                   same transaction also writes the contact's initial ratchet
+//                   state from S_ref = HKDF(ECDH, "run-referral-drboot-v3|"+introId)
+//                   and the v3 contact-row flag, so the contact obeys §3.5 from
+//                   birth (no static envelope for text, never a fresh init).
 //
 // PERSISTENCE MODEL. The in-flight handshake is MIRRORED into the ENCRYPTED
 // VAULT's `_meta` table (see [ReferralMetaKeys] / ReferralStore.kt), because a
@@ -120,6 +126,10 @@ class ReferralManager(
         private const val TAG = "ReferralManager"
         private const val MAX_ALIAS_CHARS = 64
         private const val HKDF_INFO = "run-referral-v1"
+        // The one-time ratchet bootstrap's ikm label (docs/ratchet-bootstrap-plan.md
+        // §4.2). Wire contract: both introducees must derive the same S_ref, so this is
+        // never renamed (the forward-secrecy oracle spells it as a literal).
+        private const val HKDF_INFO_BOOTSTRAP_V3 = "run-referral-drboot-v3"
 
         // Wall-clock cap on the accept-time inbox mint (covers BOTH inboxes
         // mintInboxPair creates). mintInbox already retries transient Tor drops
@@ -497,6 +507,9 @@ class ReferralManager(
         // against us; bounded by [firstSeenAt], which never moves.
         var createdAt: Long = currentTimeMillis(),
         val firstSeenAt: Long = createdAt,
+        // `bv` (docs/ratchet-bootstrap-plan.md §4.2): set ONCE at [stageAccept] and
+        // mirrored into `ref_p`; the accept body emits it from here only.
+        var bootstrapV3: Boolean = false,
     )
     private val pending = mutableMapOf<String, Pending>()
     private val offers = mutableMapOf<String, ReferralOffer>()
@@ -638,6 +651,7 @@ class ReferralManager(
                     attempts = p.sendAttempts,
                     createdAt = p.createdAt,
                     firstSeenAt = p.firstSeenAt,
+                    bootstrapV3 = p.bootstrapV3,
                 )
             ),
         )
@@ -969,6 +983,9 @@ class ReferralManager(
                 sendAttempts = 0,
                 createdAt = rec.createdAt,
                 firstSeenAt = rec.firstSeenAt,
+                // The stored decision, never re-derived: a record from an older
+                // build (no `bv`) stays legacy for this introduction.
+                bootstrapV3 = rec.bootstrapV3,
             )
         }
         for ((introId, rec) in scanned.storedOffers) {
@@ -1233,9 +1250,8 @@ class ReferralManager(
             pending.values
                 .filter { !it.sent && !it.finalized && it.sendAttempts < MAX_ACCEPT_SEND_ATTEMPTS }
                 .mapNotNull { p ->
-                    val kp = p.keypair ?: return@mapNotNull null
-                    val minted = p.minted ?: return@mapNotNull null
-                    Triple(p.introId, p.introducerContactId, acceptBody(p.introId, kp.publicKey, minted))
+                    val body = acceptBodyOf(p) ?: return@mapNotNull null
+                    Triple(p.introId, p.introducerContactId, body)
                 }
         }
         for ((introId, introducer, body) in work) {
@@ -1449,17 +1465,15 @@ class ReferralManager(
         // never reached the relay, so a new keypair would derive a secret the peer
         // — who may already hold the first public key — can never match. Reuse
         // also skips a second PoW mint on an already-degraded circuit.
-        val staged = lock.withLock {
-            pending[introId]?.takeIf { !it.finalized && it.keypair != null && it.minted != null }
+        val stagedBody = lock.withLock {
+            pending[introId]?.takeIf { !it.finalized }?.let { acceptBodyOf(it) }
         }
-        if (staged != null) {
-            val kp = staged.keypair!!
-            val minted = staged.minted!!
+        if (stagedBody != null) {
             val sent = sendReferralControl(
                 mgr,
                 offer.introducerContactId,
                 MessageManager.CONTROL_KIND_REFERRAL_ACCEPT,
-                acceptBody(introId, kp.publicKey, minted),
+                stagedBody,
             )
             if (!sent) { noteAcceptSendFailed(introId); return false }
             confirmAcceptSent(introId)
@@ -1495,13 +1509,13 @@ class ReferralManager(
             // confirmAcceptSent, i.e. only once the accept actually left, so a
             // sustained Tor send-drop still leaves the offer in `offers` for the
             // UI's Retry (which now reuses the staged material, above).
-            stageAccept(introId, offer, keypair, minted)
+            val body = stageAccept(introId, offer, keypair, minted)
             handedOff = true
             val sent = sendReferralControl(
                 mgr,
                 offer.introducerContactId,
                 MessageManager.CONTROL_KIND_REFERRAL_ACCEPT,
-                acceptBody(introId, keypair.publicKey, minted),
+                body,
             )
             if (!sent) { noteAcceptSendFailed(introId); return false }
             // confirmAcceptSent consumes the offer + applies any peer-accept that arrived
@@ -1517,23 +1531,55 @@ class ReferralManager(
      *  arrived before we accepted (finalizing immediately). Split out from
      *  [acceptOffer] so tests can drive finalize with injected key material
      *  (no PoW mint) — it is exactly [stageAccept] + [confirmAcceptSent], i.e.
-     *  the send is assumed to have succeeded. */
+     *  the send is assumed to have succeeded. Returns the accept body that send
+     *  would have carried (what the introducer relays to the peer). */
     internal fun registerAccepted(
         introId: String, offer: ReferralOffer, keypair: X25519Keypair, minted: MintedInboxPair,
-    ) {
-        stageAccept(introId, offer, keypair, minted)
+    ): String {
+        val body = stageAccept(introId, offer, keypair, minted)
         confirmAcceptSent(introId)
+        return body
     }
+
+    /**
+     * Test seam ONLY (production never sets it): stage introductions the way a build
+     * WITHOUT the one-time ratchet bootstrap does — no `bv` in `ref_p`, none in the
+     * accept body — so a mixed-version introduction can be driven in one process.
+     * Same shape as `MessageManager.simulatePreSealedControlBuildForTest`.
+     */
+    internal var simulatePreBootstrapV3BuildForTest = false
+
+    /**
+     * The accept body for [p], built from its STORED material only — the public key,
+     * the minted inboxes and the `bv` decision [stageAccept] recorded. Every send of an
+     * accept (the first, a user Retry, the sweep's redrive) goes through here, so all
+     * of them carry the same bytes. Null while the material is incomplete. Caller holds
+     * `lock`.
+     */
+    private fun acceptBodyOf(p: Pending): String? {
+        val kp = p.keypair ?: return null
+        val minted = p.minted ?: return null
+        return acceptBody(p.introId, kp.publicKey, minted, p.bootstrapV3)
+    }
+
+    /** What a send of our accept for [introId] would carry right now (tests: redrive
+     *  stability), or null when nothing is staged. */
+    internal fun stagedAcceptBody(introId: String): String? =
+        lock.withLock { pending[introId]?.let { acceptBodyOf(it) } }
 
     /**
      * Parks our freshly-minted handshake material in [pending] and mirrors it to
      * the vault as `st=0` — accepted locally, delivery NOT yet confirmed. The
      * offer is deliberately NOT consumed here (see [acceptOffer]'s Retry note) and a
      * peer accept arriving against an unsent entry is stashed, not finalized.
+     *
+     * The `bv` decision (docs/ratchet-bootstrap-plan.md §4.2) is taken HERE, once:
+     * this build stages every new introduction as v3-capable. Returns the accept body
+     * built from what was just staged.
      */
     private fun stageAccept(
         introId: String, offer: ReferralOffer, keypair: X25519Keypair, minted: MintedInboxPair,
-    ) = lock.withLock {
+    ): String = lock.withLock {
         // Before capInsert drops ANY existing Pending,
         // overwrite that handshake's ephemeral X25519 private key FIRST — capInsert
         // otherwise just drops the map reference (this[key] = value) and leaves the
@@ -1558,7 +1604,9 @@ class ReferralManager(
         val p = pending[introId]!!
         p.keypair = keypair
         p.minted = minted
+        p.bootstrapV3 = !simulatePreBootstrapV3BuildForTest
         persistAccept(p)
+        acceptBody(introId, keypair.publicKey, minted, p.bootstrapV3)
     }
 
     /**
@@ -2047,14 +2095,27 @@ class ReferralManager(
         return PeerAccept(peerPub, peerInbox, peerWc, peerCtlInbox, peerCtlWc, peerGrpInbox, peerGrpWc)
     }
 
-    /** ECDH(our ephemeral private key, [peerPub]) → HKDF bound to [introId]; null (after
-     *  the warn) on a rejected peer key. The raw ECDH output is wiped here; the caller
-     *  owns — and must wipe — the returned key. */
-    private fun deriveReferralKey(kp: X25519Keypair, peerPub: ByteArray, introId: String): ByteArray? {
+    /**
+     * The two secrets one referral ECDH yields. [shared] is `ss_ref`, the contact-row
+     * secret (unchanged: `HKDF(ecdh, "run-referral-v1|" + introId)`). [bootstrap] is
+     * `S_ref = HKDF(ecdh, "run-referral-drboot-v3|" + introId)` — present only for a v3
+     * introduction, never stored, the ikm of the one-time ratchet bootstrap
+     * (docs/ratchet-bootstrap-plan.md §4.2). The caller owns and wipes both.
+     */
+    private class ReferralKeys(val shared: ByteArray, val bootstrap: ByteArray?) {
+        fun wipe() { shared.secureWipe(); bootstrap?.secureWipe() }
+    }
+
+    /** ECDH(our ephemeral private key, [peerPub]) → `ss_ref` (and `S_ref` when
+     *  [withBootstrap]), both bound to [introId]; null (after the warn) on a rejected
+     *  peer key. The raw ECDH output is wiped here; the caller owns — and must wipe —
+     *  the returned keys. */
+    private fun deriveReferralKeys(kp: X25519Keypair, peerPub: ByteArray, introId: String, withBootstrap: Boolean): ReferralKeys? {
         // Derive the contact key from ECDH(myPriv, peerPub). x25519EcdhChecked
         // rejects a low-order peer key (all-zero shared secret) so a malicious
         // introducer can't force an introducer-known key — drop the handshake
         // on any failure rather than establishing a degenerate channel.
+        var shared: ByteArray? = null
         return try {
             // Bind the derivation to THIS referral's introId
             // (a fresh per-referral identifier both parties share) so the derived
@@ -2065,9 +2126,18 @@ class ReferralManager(
             // Wipe the raw ECDH output once HKDF has consumed it,
             // matching DoubleRatchet/MessageManager key hygiene.
             val ecdh = x25519EcdhChecked(kp.privateKey, peerPub)
-            try { hkdfSha256(ecdh, ByteArray(0), (HKDF_INFO + "|" + introId).encodeToByteArray(), 32) }
-            finally { ecdh.secureWipe() }
+            try {
+                val ss = hkdfSha256(ecdh, ByteArray(0), (HKDF_INFO + "|" + introId).encodeToByteArray(), 32)
+                shared = ss
+                // A second, independent expansion of the same ECDH under its own label:
+                // knowing `ss_ref` (stored) reveals nothing about `S_ref` (never stored).
+                val sRef = if (withBootstrap) {
+                    hkdfSha256(ecdh, ByteArray(0), (HKDF_INFO_BOOTSTRAP_V3 + "|" + introId).encodeToByteArray(), 32)
+                } else null
+                ReferralKeys(ss, sRef)
+            } finally { ecdh.secureWipe() }
         } catch (_: Exception) {
+            shared?.secureWipe()
             platformLogWarn(TAG, "referral ECDH rejected (low-order/invalid peer key)")
             null
         }
@@ -2093,15 +2163,49 @@ class ReferralManager(
             val minted = state.minted ?: return false
 
             val peer = parsePeerAccept(body, minted) ?: return false
-            val shared = deriveReferralKey(kp, peer.pub, state.introId) ?: return false
+            // The one-time ratchet bootstrap (docs/ratchet-bootstrap-plan.md §4.2): v3 iff
+            // OUR stored `bv` decision AND the peer's accept carries it. An older peer
+            // (or a `ref_p` an older build staged) leaves the introduction legacy on BOTH
+            // sides: the peer's own decision needs our accept's `bv`, which we emit only
+            // from the same stored field.
+            val v3 = state.bootstrapV3 &&
+                firstStringFieldAnywhere(body, STORED_ACCEPT_BOOTSTRAP_FIELD) == REFERRAL_BOOTSTRAP_V3
+            val keys = deriveReferralKeys(kp, peer.pub, state.introId, withBootstrap = v3) ?: return false
+            val shared = keys.shared
+            var birth: ReferralV3Birth? = null
 
             // `shared` IS the new contact's message-encryption
             // key (ContactRecord.sharedSecret). SQLCipher copies the blob at insert time, so
             // once the persist below has run `shared` is pure RAM residue — and on the
             // already-exists and persist-failure exits it is never persisted at all. The
             // finally below wipes it on every exit from this block (the kp.privateKey
-            // wipe already covers the ephemeral key).
+            // wipe already covers the ephemeral key), together with `S_ref` and the
+            // bootstrap's in-RAM state.
             try {
+                if (v3) {
+                    // The role-order bit from the two referral PUBLIC keys — the same bit
+                    // [MessageManager.recordRatchetRoleInputs] records for a legacy
+                    // referral, so the stored `dr-roleord` and the state agree. Identical
+                    // keys have no order: refused, exactly like the bootstrap's own
+                    // reflected-key check.
+                    val mineSortsFirst = ratchetRoleOrderBit(kp.publicKey, peer.pub) ?: run {
+                        platformLogWarn(TAG, "referral one-time bootstrap refused: the peer key equals ours")
+                        return false
+                    }
+                    when (val r = RatchetBootstrapV3.bootstrapReferral(
+                        bootstrapSecret = keys.bootstrap!!, referralSecret = shared,
+                        myPub = kp.publicKey, peerPub = peer.pub, mineSortsFirst = mineSortsFirst,
+                    )) {
+                        // NEVER a fallback to the legacy bootstrap: both sides decided v3,
+                        // so a legacy contact here could never talk to the peer's. Same
+                        // outcome as a rejected ECDH above — nothing written, retryable.
+                        is RatchetBootstrapV3.Result.Refused -> {
+                            platformLogWarn(TAG, "referral one-time bootstrap refused: ${r.reason}")
+                            return false
+                        }
+                        is RatchetBootstrapV3.Result.Ready -> birth = ReferralV3Birth(r, mineSortsFirst)
+                    }
+                }
                 // Deterministic id (idempotent retry) — see [referredContactIdFor].
                 val contactId = referredContactIdFor(state.introId)
                 // NEVER let a referral finalize OVERWRITE an existing contact.
@@ -2117,7 +2221,7 @@ class ReferralManager(
                     settleIntroLocked(state, kp, dropVaultRecords = true)
                     return false
                 }
-                when (commitReferredContactLocked(state, kp, peer, minted, shared, contactId, body)) {
+                when (commitReferredContactLocked(state, kp, peer, minted, shared, contactId, body, birth)) {
                     // TERMINAL, not retryable: settle exactly like the already-exists
                     // branch above — nothing was written, so no stranded contact/inbox
                     // rows are left behind. (`shared` is wiped by the enclosing finally.)
@@ -2141,12 +2245,18 @@ class ReferralManager(
             } finally {
                 // Zero the derived contact key on the success, already-exists, AND
                 // persist-failure exits — the SQLCipher copy is the only one that survives.
-                shared.secureWipe()
+                // `S_ref` and the bootstrap's state go with it on every exit.
+                keys.wipe()
+                birth?.ready?.wipe()
             }
         }
     }
 
     private enum class CommitOutcome { COMMITTED, INBOX_IN_USE, FAILED }
+
+    /** A v3 referral's bootstrap result plus the role-order bit it was derived with —
+     *  what [commitReferredContactLocked] persists. Owned (and wiped) by the finalize. */
+    private class ReferralV3Birth(val ready: RatchetBootstrapV3.Result.Ready, val mineSortsFirst: Boolean)
 
     // The finalize's ONE atomic batch: the claim check (FIRST statement), the
     // contact row, its 4-6 inbox rows, the ratchet marker, the role inputs and the
@@ -2162,10 +2272,16 @@ class ReferralManager(
         shared: ByteArray,
         contactId: String,
         body: String,
+        // Non-null ⇒ a v3 introduction (docs/ratchet-bootstrap-plan.md §4.2): the
+        // contact row carries the v3 flag and the initial ratchet state + the §3.5
+        // birth markers are written in THIS transaction, fail-closed.
+        birth: ReferralV3Birth?,
     ): CommitOutcome {
         val now = currentTimeMillis()
         val life = VaultSeedDefaults.INBOX_LIFETIME_MS
+        var stateBlob: ByteArray? = null
         try {
+            stateBlob = birth?.ready?.ratchet?.serialize()
             // The contact row + its 4-6 inbox rows + the ratchet
             // marker are ONE atomic batch. A torn write (backgrounding / lock
             // contention) would leave an orphan contact with a live sharedSecret
@@ -2181,27 +2297,37 @@ class ReferralManager(
                 // announce. A rejection writes NOTHING (first statement + rollback).
                 firstUnavailableInboxClaim(vault, inboxClaimsFor(contactId, minted, peer))
                     ?.let { throw InboxInUseException() }
-                vault.insertContact(referredContactRecord(contactId, state, shared, now))
+                vault.insertContact(referredContactRecord(contactId, state, shared, now, ratchetBootstrapV3 = birth != null))
                 insertReferredInboxRowsInTxn(contactId, minted, peer, now, life)
-                // Mark ratchet-capable so the text channel gets
-                // FORWARD SECRECY, exactly like the QR/paste path (PairingVault.
-                // savePairedContact). Without this a referred contact stayed on the
-                // static AES-GCM envelope forever (key = sha256(sharedSecret)), so a
-                // later seizure would decrypt all its past + future traffic.
-                MessageManager.markRatchetCapable(vault, contactId)
-                // The referral path has no symmetric secret halves, so
-                // the role order is tied to the two ephemeral X25519 PUBLIC keys —
-                // the same construction, over the only pair of values that (a) both
-                // devices hold, (b) are opposite on the two devices and (c) can
-                // never change after this transaction. `kp.publicKey` is OURS,
-                // `peer.pub` is the accept's `pk` we just derived against, so the two
-                // devices see the same unordered pair and get complementary bits.
-                // Written INSIDE this transaction so the role input cannot outlive a
-                // rolled-back contact (or vice versa). Absent `rv` ⇒ id-order rule.
-                MessageManager.recordRatchetRoleInputs(
-                    vault, contactId, kp.publicKey, peer.pub,
-                    peerRunsRoleRuleV2 = firstStringFieldAnywhere(body, ROLE_RULE_FIELD) == ROLE_RULE_V2,
-                )
+                val blob = stateBlob
+                if (birth != null && blob != null) {
+                    // A v3 contact is born exactly like a scanned one: the state, the
+                    // role bit, `dr-rolerv2`, `dr-intent`, `dr-on`, `dr-rxlock` and
+                    // `dr-rxseen-ctlcap` — every write THROWS on failure, which rolls
+                    // the contact, its inbox rows and the flag back and leaves `ref_p`
+                    // (deleted below, in the same transaction) for a retry.
+                    PairingVault.writeV3RatchetStateInTxn(vault, contactId, blob, birth.mineSortsFirst)
+                } else {
+                    // Mark ratchet-capable so the text channel gets
+                    // FORWARD SECRECY, exactly like the QR/paste path (PairingVault.
+                    // savePairedContact). Without this a referred contact stayed on the
+                    // static AES-GCM envelope forever (key = sha256(sharedSecret)), so a
+                    // later seizure would decrypt all its past + future traffic.
+                    MessageManager.markRatchetCapable(vault, contactId)
+                    // The referral path has no symmetric secret halves, so
+                    // the role order is tied to the two ephemeral X25519 PUBLIC keys —
+                    // the same construction, over the only pair of values that (a) both
+                    // devices hold, (b) are opposite on the two devices and (c) can
+                    // never change after this transaction. `kp.publicKey` is OURS,
+                    // `peer.pub` is the accept's `pk` we just derived against, so the two
+                    // devices see the same unordered pair and get complementary bits.
+                    // Written INSIDE this transaction so the role input cannot outlive a
+                    // rolled-back contact (or vice versa). Absent `rv` ⇒ id-order rule.
+                    MessageManager.recordRatchetRoleInputs(
+                        vault, contactId, kp.publicKey, peer.pub,
+                        peerRunsRoleRuleV2 = firstStringFieldAnywhere(body, ROLE_RULE_FIELD) == ROLE_RULE_V2,
+                    )
+                }
                 // The handshake mirror dies INSIDE the same transaction that
                 // commits the contact: either the contact exists and the
                 // ephemeral private key is gone, or neither happened. A delete
@@ -2219,6 +2345,9 @@ class ReferralManager(
         } catch (e: Exception) {
             platformLogError(TAG, "referral finalize persist failed: ${e::class.simpleName}")
             return CommitOutcome.FAILED
+        } finally {
+            // The vault keeps its own (encoded) copy; this plaintext one is RAM residue.
+            stateBlob?.secureWipe()
         }
         return CommitOutcome.COMMITTED
     }
@@ -2267,10 +2396,15 @@ class ReferralManager(
     // The referred contact's row. Writes nothing; it reads the vault only through
     // [sanitizedPeerAlias]'s collision check, so it is called inside the finalize
     // transaction, before the inserts.
-    private fun referredContactRecord(contactId: String, state: Pending, shared: ByteArray, now: Long): ContactRecord =
+    private fun referredContactRecord(
+        contactId: String, state: Pending, shared: ByteArray, now: Long, ratchetBootstrapV3: Boolean,
+    ): ContactRecord =
         ContactRecord(
             contactId = contactId,
             sharedSecret = shared,
+            // The v3 flag lives on the ROW (plan §3.4), written in the same insert as
+            // the secret, so no read error can ever make this contact look legacy.
+            ratchetBootstrapV3 = ratchetBootstrapV3,
             // Transitive trust: the introducer is someone we already
             // trust, so a referred contact is usable immediately (no
             // verification step). vouchedByContactId records the
@@ -2318,7 +2452,14 @@ class ReferralManager(
     // bytes have no round-trip in a test — the QR is pinned through
     // `PairingPayload.parse` and the announce through `applyInboxAnnounce`. Pure
     // string building, no state, and `internal` keeps it off the Swift surface.
-    internal fun acceptBody(introId: String, pub: ByteArray, minted: MintedInboxPair): String {
+    //
+    // [bootstrapV3] appends `"bv":"3"` LAST, after `rv` (docs/ratchet-bootstrap-plan.md
+    // §4.2). It is a parameter with NO default on purpose: every production caller
+    // passes the STORED decision (`Pending.bootstrapV3`, via `acceptBodyOf`), never a
+    // constant, so a redrive repeats the first send's bytes. An older build reads the
+    // accept fields by name ([firstStringFieldAnywhere]) and ignores `bv`; an older
+    // introducer relays the body verbatim.
+    internal fun acceptBody(introId: String, pub: ByteArray, minted: MintedInboxPair, bootstrapV3: Boolean): String {
         // The GROUP pair is OPTIONAL on the wire for exactly one reason: a
         // [StoredAccept] rehydrated from before the group inbox existed carries no
         // `grp`, and that record is a LIVE handshake — refusing it (or fabricating
@@ -2331,6 +2472,7 @@ class ReferralManager(
             """"ib":${jsonEscapeString(minted.main.inboxId)},"wc":${jsonEscapeString(minted.main.writeCapability)},""" +
             """"cib":${jsonEscapeString(minted.ctl.inboxId)},"cwc":${jsonEscapeString(minted.ctl.writeCapability)},""" +
             grpPart +
-            """${jsonEscapeString(ROLE_RULE_FIELD)}:${jsonEscapeString(ROLE_RULE_V2)}}"""
+            """${jsonEscapeString(ROLE_RULE_FIELD)}:${jsonEscapeString(ROLE_RULE_V2)}""" +
+            (if (bootstrapV3) ""","$STORED_ACCEPT_BOOTSTRAP_FIELD":"$REFERRAL_BOOTSTRAP_V3"""" else "") + "}"
     }
 }

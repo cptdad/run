@@ -88,6 +88,7 @@
     <string name="contact_list_memory_dialog_title">Xusuus gaar ah</string>
     <string name="contact_list_repair_required">Waxaa loo baahan yahay in dib loo isku xidho</string>
     <string name="contact_list_waiting_for_inbox">Waxaa la sugayaa sanduuqooda…</string>
+    <string name="contact_list_secure_channel_lost">Kanaalka ammaanka ah waa la waayay: lammaanaanta mar kale samee</string>
     <string name="contact_list_introduced_by">Waxaa ku soo baray %1$s</string>
     <string name="contact_list_introduced">La soo baray</string>
     <string name="contact_list_repair_chip">Dib isku xidh</string>

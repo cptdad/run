@@ -109,6 +109,12 @@ fun createSessionManagers(
         // timer of its own. Cheap-gated on one `_meta` read, so a vault that never
         // moved pays a single lookup; never throws (the sweep catches too).
         retryPendingMoveRotations(vault, gatedProvider())
+        // v3 "secure channel lost": tell each peer whose pairing this device can no
+        // longer serve, so its phone shows the same "pair again" state instead of a
+        // silent dead end (docs/ratchet-bootstrap-plan.md §3.5). A steady-state pass
+        // reads the contact rows (no `_meta` at all without a v3 contact) and sends
+        // nothing; a notice that did not land is retried next sweep. Never throws.
+        gatedProvider()?.redriveChannelLostNotices()
         // Maximum shield: announce a tier change / a new pairing / the session's first
         // pass, and retry what a previous pass could not send. A steady-state pass
         // reads one level + one marker per contact and sends NOTHING. The sends are

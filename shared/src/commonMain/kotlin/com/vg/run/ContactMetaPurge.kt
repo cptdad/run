@@ -48,6 +48,9 @@ internal fun ratchetMetaKeysForContact(contactId: String): List<String> = listOf
     MessageManager.drRatUnackedKey(contactId), // consecutive-unacked-receive count
     MessageManager.drRefusedKey(contactId), // role-collision refusal latch — a
     // re-pair is the documented way out of a refusal, so it MUST NOT outlive the contact
+    MessageManager.drLostKey(contactId),    // v3 "secure channel lost — pair again" latch;
+    // a re-pair is the ONLY way out of it, so it must die with the contact
+    MessageManager.drKeyConfirmKey(contactId), // v3 key confirmation (confirmed / first failure)
     MessageManager.drRoleOrderKey(contactId),     // immutable role-order bit — a
     // re-pair mints NEW pairing secrets, so the old ordering must not be inherited by the
     // new contact that reuses the id (and a stale one over a fresh secret would flip the role)

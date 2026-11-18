@@ -332,8 +332,11 @@ final class AppState: ObservableObject {
     // port over Tor's control socket — the guard against a loopback-port squatter.
     // The current-value wiring paths (the CombineLatest sink and the health loop's
     // self-heal) must not wire that unauthenticated port behind the confirmation's
-    // back; both branches of the confirmation clear this before they act.
+    // back; every exit of authenticateCachedSocksPort clears it (a bounded wait).
     private var cachedPortAuthenticationInFlight = false
+    /// Owner of [cachedPortAuthenticationInFlight]: bumped by every unlock-time
+    /// check, so a superseded check's late callback never clears a newer one's flag.
+    private var cachedPortAuthToken: UInt64 = 0
 
     // MARK: - Bounded Tor keep-alive after backgrounding (2026-10-23)
     //
@@ -406,6 +409,30 @@ final class AppState: ObservableObject {
     @Published var torSuspendProbeSummary: String?
     private var torSuspendProbe: TorSuspendProbe?
     private var torSuspendProbeSeq = 0
+    /// e2e-only REPRODUCTION switch (`--test-network-kick-before-unlock`, set by
+    /// RunApp.init inside its `#if DEBUG` block): one network-restore kick on the
+    /// first pre-unlock `.connected` of the process (fireTestNetworkKickIfArmed).
+    /// Compiled out of release.
+    static var testNetworkKickBeforeUnlock = false
+    /// Second reproduction mode (`--test-network-kick-at-unlock[-lead-ms=N]`): the
+    /// same single kick fired when the unlock is SUBMITTED, the KDF starting N ms
+    /// later (default 0) — mirrors the field timeline (move still in flight when
+    /// startTorOrDirect runs). nil = not armed. Compiled out of release.
+    static var testNetworkKickAtUnlockLeadMs: Int?
+    static var testNetworkKickArmed: Bool {
+        testNetworkKickBeforeUnlock || testNetworkKickAtUnlockLeadMs != nil
+    }
+    /// Fixed keys, closed words only (never a port), exposed by ContentView's
+    /// DEBUG-only `test_network_kick_probe` element. nil when not armed.
+    @Published var testNetworkKickSummary: String?
+    private var testNetworkKickFired = false
+    private var testNetworkKickState = "armed"
+    private var testNetworkKickMove = "-"
+    /// What startTorOrDirect saw (observation only): none | port0 | blocked | moved | unmoved.
+    private var testNetworkKickCheck = "none"
+    private var testNetworkKickTorCancellable: AnyCancellable?
+    /// The unlock-time check's latest verdict (UnlockPortCheck.Verdict, lower case), or -.
+    private var testNetworkKickConfirm = "-"
     #endif
 
     /// True only in the DEBUG `--test-tor-keepalive-unbounded` measurement mode.
@@ -588,8 +615,20 @@ final class AppState: ObservableObject {
                     // Pre-unlock rendezvous warm-up (lever 1). No-op once the vault
                     // is open — the health probe owns the relay from there.
                     self.warmRendezvousIfPreUnlock()
+                    #if DEBUG
+                    self.fireTestNetworkKickIfArmed()
+                    #endif
                 }
             }
+        #if DEBUG
+        if AppState.testNetworkKickArmed {
+            publishTestNetworkKick()
+            // Republish the probe's `tor=` field on every Tor state change.
+            testNetworkKickTorCancellable = TorManager.shared.$state
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.publishTestNetworkKick() }
+        }
+        #endif
     }
 
     /// init() step: the load-bearing CombineLatest(`$socksPort`, `$isUnlocked`)
@@ -688,6 +727,7 @@ final class AppState: ObservableObject {
                 #if DEBUG
                 // Suspend-survival probe (measurement mode): reflect the latch.
                 self.publishTorSuspendProbe()
+                if AppState.testNetworkKickArmed { self.publishTestNetworkKick() }
                 #endif
                 // The one POSITIVE Tor-death signal iOS has (Android: the Failed/Idle
                 // branches before `messageManager = null`): a send in flight on this
@@ -1762,6 +1802,18 @@ final class AppState: ObservableObject {
         ratchetRefused[contactId] = controller.ratchetRefused(contactId: contactId)
     }
 
+    // contactId -> true once MessageManager.secureChannelLost reports the one-time-key
+    // secure channel with this contact is gone ("pair again"). Backs the
+    // `secure_channel_lost_notice` conversation row (outranks the two notices above)
+    // and gates sends. A display signal re-derived from the vault on open, after a
+    // send and on every poll tick; cleared on lock / wipe. Android sibling:
+    // RunViewModel.secureChannelLost.
+    @Published var secureChannelLost: [String: Bool] = [:]
+
+    func refreshSecureChannelLost(contactId: String) {
+        secureChannelLost[contactId] = controller.messageManager?.secureChannelLost(contactId: contactId) ?? false
+    }
+
     // "Move to new device" (docs/device-move.md). Both are RAM-only by design.
     //
     // [isMoveFrozen] mirrors the vault's `mig_frozen` row and is recomputed on
@@ -1858,6 +1910,15 @@ final class AppState: ObservableObject {
     // all @Published state changes are delivered on the main queue.
     func unlock(pin: String, completion: @escaping @MainActor (UnlockOutcome) -> Void) {
         LogBuffer.shared.append(level: "D", tag: "AppState", message: "unlock attempt")
+        #if DEBUG
+        // `--test-network-kick-at-unlock[-lead-ms=N]` (e2e reproduction): the kick
+        // fires now, at submit; the KDF starts N ms later through a re-entry, by
+        // which time the once-per-process hook is spent and returns nil.
+        if let lead = fireTestNetworkKickAtUnlockIfArmed(), lead > 0 {
+            hopToMain(after: lead) { [weak self] in self?.unlock(pin: pin, completion: completion) }
+            return
+        }
+        #endif
         DispatchQueue.global(qos: .userInitiated).async { [self] in
             // Tri-state from IosAppController.unlock (Kotlin Int → Swift Int32):
             // .opened / .denied (wrong PIN — counts) / .error (transient — retry).
@@ -2331,6 +2392,7 @@ final class AppState: ObservableObject {
         // suppress a notice nor lose state.
         forwardSecrecyStalled = [:]
         ratchetRefused = [:]
+        secureChannelLost = [:]
         pushPromptOfferedThisSession = true
         reviewSheetRequestedThisSession = false
     }
@@ -5639,12 +5701,20 @@ final class AppState: ObservableObject {
         publishTorSuspendProbe()
         torSuspendProbeLine("tor suspend probe: backgrounded for \(bgSec) s")
         torSuspendProbeLine(threadAlive ? "tor suspend probe: tor thread alive" : "tor suspend probe: tor thread not running")
-        let port = tor.socksPort
         let ctlStart = ProcessInfo.processInfo.systemUptime
-        tor.confirmSocksPortViaControl { [weak self] confirmedPort in
+        tor.querySocksListenerViaControl { [weak self] answer in
             guard let self, var probe = self.torSuspendProbe, probe.seq == seq else { return }
             let ms = Int(((ProcessInfo.processInfo.systemUptime - ctlStart) * 1000).rounded())
-            let ok = port > 0 && confirmedPort == port
+            // The same table as the unlock-time check: ok = CONFIRMED, and the SOCKS
+            // greeting goes to the port the published one resolves to.
+            let published = tor.socksPort
+            let resolved = published > 0 ? SocksPortRedirect.shared.resolve(port: Int32(published)) : 0
+            let verdict = UnlockPortCheck.shared.decide(
+                published: Int32(published), resolved: resolved,
+                answered: answer.answered, answeredPort: answer.port
+            )
+            let ok = verdict == UnlockPortCheck.Verdict.confirmed
+            let port: UInt16 = ok ? UInt16(resolved) : 0
             probe.controlOk = ok
             probe.controlMs = ms
             self.torSuspendProbe = probe
@@ -5690,6 +5760,132 @@ final class AppState: ObservableObject {
 
     private func torSuspendProbeLine(_ text: String) {
         LogBuffer.shared.append(level: "I", tag: "TorKeepAlive", message: text)
+        ConnectionLog.shared.append(kind: ConnectionLog.Kind.tor, text: text)
+    }
+
+    /// e2e-only REPRODUCTION (`--test-network-kick-before-unlock`,
+    /// tests/adhoc/network-kick-before-unlock.spec.ts). Once per process, on the
+    /// first `.connected` while the vault is still LOCKED: after a short settle (so
+    /// the pre-unlock warm-up has started, as in the field), ONE
+    /// `TorManager.kickForNetworkRestore()` — the production toggle path, nothing
+    /// reimplemented — so the SOCKS listener moves before the user unlocks. Then
+    /// watches the shared SocksPortRedirect (read-only) until the move concludes,
+    /// for the spec to know when to unlock. Panel / LogBuffer lines are fixed
+    /// phrases, uncoded (never on the wire); no port or identifier anywhere.
+    private func fireTestNetworkKickIfArmed() {
+        guard AppState.testNetworkKickBeforeUnlock, !testNetworkKickFired, !isUnlocked else { return }
+        testNetworkKickFired = true
+        testNetworkKickState = "waiting"
+        publishTestNetworkKick()
+        hopToMain(after: 2.0) { [weak self] in
+            guard let self else { return }
+            guard !self.isUnlocked else {
+                self.testNetworkKickState = "skipped"
+                self.publishTestNetworkKick()
+                self.testNetworkKickLine("test hook: network kick not sent - unlocked first")
+                return
+            }
+            self.sendTestNetworkKick(firedPhrase: "test hook: network kick fired before unlock")
+        }
+    }
+
+    /// The `--test-network-kick-at-unlock` mode, called at the top of unlock():
+    /// fires the single kick when the credential is SUBMITTED (before the KDF and
+    /// the vault open). Returns the lead (seconds) the caller must wait before
+    /// starting the KDF, or nil when this call did not fire (not armed, already
+    /// spent this process, or unlocked) — the caller then proceeds unchanged.
+    private func fireTestNetworkKickAtUnlockIfArmed() -> TimeInterval? {
+        guard let leadMs = AppState.testNetworkKickAtUnlockLeadMs, !testNetworkKickFired, !isUnlocked else { return nil }
+        testNetworkKickFired = true
+        guard case .connected = TorManager.shared.state else {
+            testNetworkKickState = "skipped"
+            publishTestNetworkKick()
+            testNetworkKickLine("test hook: network kick not sent - tor not connected")
+            return nil
+        }
+        sendTestNetworkKick(firedPhrase: "test hook: network kick fired at unlock submit")
+        return Double(max(0, leadMs)) / 1000.0
+    }
+
+    private func sendTestNetworkKick(firedPhrase: String) {
+        let oldPort = Int32(TorManager.shared.socksPort)
+        if let skip = TorManager.shared.kickForNetworkRestore() {
+            NetworkRestoreKick.companion.logSkip(reason: skip)
+            testNetworkKickState = "skipped"
+            publishTestNetworkKick()
+            testNetworkKickLine("test hook: network kick not sent")
+            return
+        }
+        testNetworkKickState = "fired"
+        testNetworkKickMove = "pending"
+        publishTestNetworkKick()
+        testNetworkKickLine(firedPhrase)
+        watchTestNetworkKickMove(oldPort: oldPort, polls: 0)
+    }
+
+    /// Polls `SocksPortRedirect.resolve(oldPort)` every 250 ms for ≤ 20 s: BLOCKED
+    /// while the move is open, the old port again = same port, another port = moved.
+    /// Still blocked at the end = the readback failed (the move stays fail-closed).
+    private func watchTestNetworkKickMove(oldPort: Int32, polls: Int) {
+        let resolved = SocksPortRedirect.shared.resolve(port: oldPort)
+        let blocked = resolved == SocksPortRedirect.shared.BLOCKED_PORT
+        if blocked && polls < 80 {
+            hopToMain(after: 0.25) { [weak self] in
+                self?.watchTestNetworkKickMove(oldPort: oldPort, polls: polls + 1)
+            }
+            return
+        }
+        testNetworkKickMove = blocked ? "lost" : (resolved == oldPort ? "same" : "moved")
+        publishTestNetworkKick()
+        testNetworkKickLine(blocked ? "test hook: network kick move not concluded"
+                                    : "test hook: network kick move concluded")
+    }
+
+    /// OBSERVATION ONLY (changes nothing): what startTorOrDirect's cached-port
+    /// branch saw — no published port (branch not taken), or the redirect state of
+    /// the published port at that instant (move in flight / moved / not moved).
+    private func noteTestNetworkKickUnlockCheck(publishedPort: UInt16) {
+        guard AppState.testNetworkKickArmed else { return }
+        if publishedPort == 0 {
+            testNetworkKickCheck = "port0"
+        } else {
+            let resolved = SocksPortRedirect.shared.resolve(port: Int32(publishedPort))
+            testNetworkKickCheck = resolved == SocksPortRedirect.shared.BLOCKED_PORT ? "blocked"
+                : (resolved == Int32(publishedPort) ? "unmoved" : "moved")
+        }
+        publishTestNetworkKick()
+        testNetworkKickLine("test hook: unlock check saw \(testNetworkKickCheck)")
+    }
+
+    /// OBSERVATION ONLY: the unlock-time check's verdict (UnlockPortCheck), each change.
+    private func noteTestNetworkKickConfirm(verdict: UnlockPortCheck.Verdict) {
+        guard AppState.testNetworkKickArmed else { return }
+        let word = verdict.name.lowercased()
+        guard word != testNetworkKickConfirm else { return }
+        testNetworkKickConfirm = word
+        publishTestNetworkKick()
+        testNetworkKickLine("test hook: unlock control confirm \(word)")
+    }
+
+    /// `v=1;mode=pre|unlock;kick=armed|waiting|fired|skipped;move=-|pending|moved|same|lost;`
+    /// `tor=connected|bootstrapping|disconnected;check=none|port0|blocked|moved|unmoved;`
+    /// `confirm=-|confirmed|moving|no_listener|untracked_port|dead|no_cached_port;relaunch=0|1` — fixed keys, fixed order, closed
+    /// words only; parsed by tests/adhoc/network-kick-before-unlock.spec.ts.
+    private func publishTestNetworkKick() {
+        let tor: String
+        switch TorManager.shared.state {
+        case .connected: tor = "connected"
+        case .bootstrapping: tor = "bootstrapping"
+        case .disconnected: tor = "disconnected"
+        }
+        let mode = AppState.testNetworkKickAtUnlockLeadMs != nil ? "unlock" : "pre"
+        testNetworkKickSummary = "v=1;mode=\(mode);kick=\(testNetworkKickState);move=\(testNetworkKickMove)"
+            + ";tor=\(tor);check=\(testNetworkKickCheck);confirm=\(testNetworkKickConfirm)"
+            + ";relaunch=\(TorManager.shared.relaunchRequired ? 1 : 0)"
+    }
+
+    private func testNetworkKickLine(_ text: String) {
+        LogBuffer.shared.append(level: "W", tag: "TestHook", message: text)
         ConnectionLog.shared.append(kind: ConnectionLog.Kind.tor, text: text)
     }
     #endif
@@ -5815,6 +6011,125 @@ final class AppState: ObservableObject {
     }
     #endif
 
+    /// One unlock-time authentication of the cached SOCKS port, re-run every
+    /// `UnlockPortCheck.RECHECK_DELAY_MS` while Tor is alive but the port is not yet
+    /// confirmed (a listener move after a network toggle is in flight, no listener
+    /// listed, or a port the redirect does not know), until `waitExhausted` (≤ 20
+    /// polls, ≤ 15 s wall clock). Outcomes (UnlockPortCheck.decide):
+    ///  - CONFIRMED: SOCKS5-probe the port the published one resolves to (never
+    ///    the stale one) and wire the published port — every client resolves it
+    ///    through SocksPortRedirect per connection.
+    ///  - DEAD (control silent / down), or a wait in which EVERY poll listed no SOCKS
+    ///    listener (Settle.LATCH_DEAD): latchTorDeadAtUnlock — the only two paths to
+    ///    markThreadDead().
+    ///  - NO_CACHED_PORT (Tor stopped meanwhile): nothing; the sink wires a new port.
+    ///  - wait spent otherwise: TorManager.settleUnconfirmedSocksPort, then wire — the
+    ///    published port resolves to the blocked port (fail fast → the health
+    ///    loop's stalled / Reconnect ladder) or to a listener Tor reported on its
+    ///    authenticated channel. Never the relaunch latch: Tor answered.
+    /// A newer unlock's check (token) owns the flag; a lock (generation /
+    /// isUnlocked) ends this one and clears the flag if it still owns it.
+    private func authenticateCachedSocksPort(token: UInt64, generation: UInt64, attempt: Int,
+                                             startedAt: TimeInterval, everyPollNoListener: Bool) {
+        guard token == cachedPortAuthToken else { return }
+        let tor = TorManager.shared
+        guard isUnlocked, generation == sessionGeneration, !tor.relaunchRequired else {
+            cachedPortAuthenticationInFlight = false
+            return
+        }
+        tor.querySocksListenerViaControl { [weak self] answer in
+            guard let self, token == self.cachedPortAuthToken else { return }
+            guard self.isUnlocked, generation == self.sessionGeneration, !tor.relaunchRequired else {
+                self.cachedPortAuthenticationInFlight = false
+                return
+            }
+            // Read at answer time: iOS re-publishes the port about a circuit after
+            // a network toggle, and the redirect may have concluded meanwhile.
+            let published = tor.socksPort
+            let resolved = published > 0 ? SocksPortRedirect.shared.resolve(port: Int32(published)) : 0
+            let verdict = UnlockPortCheck.shared.decide(
+                published: Int32(published), resolved: resolved,
+                answered: answer.answered, answeredPort: answer.port
+            )
+            #if DEBUG
+            self.noteTestNetworkKickConfirm(verdict: verdict)
+            #endif
+            let noListenerSoFar = everyPollNoListener && verdict == UnlockPortCheck.Verdict.noListener
+            if verdict == UnlockPortCheck.Verdict.confirmed {
+                self.cachedPortAuthenticationInFlight = false
+                self.wireAuthenticatedSocksPort(published: published, probePort: UInt16(resolved), generation: generation)
+            } else if verdict == UnlockPortCheck.Verdict.dead {
+                self.cachedPortAuthenticationInFlight = false
+                self.latchTorDeadAtUnlock(reason: "control socket did not answer — Tor thread died; relaunch required")
+            } else if UnlockPortCheck.shared.shouldWait(verdict: verdict) {
+                let elapsedMs = Int64((ProcessInfo.processInfo.systemUptime - startedAt) * 1000)
+                if !UnlockPortCheck.shared.waitExhausted(attempt: Int32(attempt), elapsedMs: elapsedMs) {
+                    if attempt == 1 {
+                        LogBuffer.shared.append(level: "D", tag: "AppState",
+                            message: "control socket answered for socksPort=\(published) with \(answer.port) (\(verdict.name)) — Tor alive, waiting for the listener move")
+                    }
+                    let delay = Double(UnlockPortCheck.shared.RECHECK_DELAY_MS) / 1000.0
+                    hopToMain(after: delay) { [weak self] in
+                        self?.authenticateCachedSocksPort(token: token, generation: generation, attempt: attempt + 1,
+                                                          startedAt: startedAt, everyPollNoListener: noListenerSoFar)
+                    }
+                    return
+                }
+                self.cachedPortAuthenticationInFlight = false
+                guard let settle = UnlockPortCheck.shared.settleAfterWait(verdict: verdict, everyPollNoListener: noListenerSoFar) else { return }
+                if settle == UnlockPortCheck.Settle.latchDead {
+                    self.latchTorDeadAtUnlock(reason: "control socket answered but listed no SOCKS listener for the whole wait — relaunch required")
+                    return
+                }
+                LogBuffer.shared.append(level: "W", tag: "AppState",
+                    message: "socksPort=\(published) still unconfirmed after the wait (\(verdict.name)) — \(settle.name), health loop will judge")
+                tor.settleUnconfirmedSocksPort(settle, published: published, reported: answer)
+                self.wireRelayTransport(socksPort: published, reason: "resume re-wire, alive but unconfirmed")
+            } else {
+                // NO_CACHED_PORT: Tor zeroed its port meanwhile — the sink wires the
+                // next one it publishes.
+                self.cachedPortAuthenticationInFlight = false
+            }
+        }
+    }
+
+    /// The unlock-time check proved this process's Tor unusable (a silent control
+    /// channel, or no SOCKS listener for the whole wait). Tor's tor_main runs ONCE
+    /// per process and CANNOT be re-initialized in-process (a second TORThread
+    /// aborts with an NSAssertion — the `Tor 0x… + 77052` production crash), so
+    /// latch the process-dead state: the honest close-and-reopen hint + the
+    /// on-background process recycle; the $state sink mirrors .disconnected into
+    /// torState. [reason] is a fixed phrase — no port, no identifier.
+    private func latchTorDeadAtUnlock(reason: String) {
+        LogBuffer.shared.append(level: "W", tag: "AppState", message: reason)
+        TorManager.shared.markThreadDead()
+    }
+
+    /// The control channel confirmed the listener [published] resolves to
+    /// ([probePort]). SOCKS5-probe THAT port (belt and braces for liveness — the
+    /// squatter case is already covered by the control socket) and wire [published].
+    private func wireAuthenticatedSocksPort(published: UInt16, probePort: UInt16, generation: UInt64) {
+        probeSocksPort(probePort) { alive in
+            Task { @MainActor [weak self] in
+                guard let self, self.isUnlocked, generation == self.sessionGeneration else { return }
+                if alive {
+                    LogBuffer.shared.append(level: "D", tag: "AppState",
+                        message: "Tor already up (port=\(published), live=\(probePort), control-confirmed) — re-wiring MessageManager")
+                } else {
+                    // The raw SOCKS5 greeting is only the liveness half and can miss
+                    // on a momentarily busy listener. Wire the control-confirmed port
+                    // and let the reachability loop's hysteresis judge it: if the
+                    // listener really is gone every probe misses, NEWNYM fires at 8
+                    // and the manual-reconnect UI surfaces at 24 (this branch used to
+                    // be a silent dead end with no transport and no health loop).
+                    LogBuffer.shared.append(level: "W", tag: "AppState",
+                        message: "socksPort=\(published) control-confirmed but SOCKS5 probe failed — wiring anyway, health loop will judge")
+                }
+                self.wireRelayTransport(socksPort: published, reason: "resume re-wire, control-confirmed")
+            }
+        }
+    }
+
     /// The UNLOCK-time connect path. Called from `unlock()` and
     /// `recoverWithCode()` only.
     ///
@@ -5880,70 +6195,24 @@ final class AppState: ObservableObject {
             // it wires nothing because the manager creation raced a lock, the
             // health loop's current-value self-heal picks it up on the next tick.
             let port = TorManager.shared.socksPort
+            #if DEBUG
+            noteTestNetworkKickUnlockCheck(publishedPort: port)
+            #endif
             if port > 0 {
-                // Don't trust the cached port blindly: iOS can kill the embedded
-                // Tor thread silently (e.g. after a long background suspend), in
-                // which case `socksPort` stays > 0 from a stale @Published value
-                // and every relay-transport connect to 127.0.0.1:<port> gets POSIX 61
-                // (Connection refused). Probe before re-wiring; on refused,
-                // force a clean stop()/start() cycle and let the port-sink in
-                // init() rewire the MessageManager when the new bootstrap
-                // publishes the fresh port.
-                // Authenticate liveness over Tor's control socket
-                // FIRST. A local squatter can answer a SOCKS5 greeting on a freed
-                // `auto` port, but cannot impersonate the cookie-authenticated
-                // control socket — so if the control socket doesn't confirm THIS
-                // exact port, treat Tor as gone (also covers a dead Tor thread
-                // drops the control connection). Only on a control-confirmed port do
-                // we additionally SOCKS5-probe (belt-and-suspenders) and re-wire.
-                // The flag holds the current-value wiring paths off until this
-                // confirmation resolves, so they can never wire an unauthenticated
-                // cached port ahead of it. confirmSocksPortViaControl always calls
-                // back (its own timeout completes with nil), so it always clears.
+                // Don't trust the cached port blindly: iOS can kill the embedded Tor
+                // thread silently (e.g. after a long background suspend), and a
+                // freed `auto` port can be re-bound by a local squatter that answers
+                // a SOCKS5 greeting. So the cached port is authenticated over Tor's
+                // cookie-authenticated control socket FIRST (authenticateCachedSocksPort,
+                // the shared UnlockPortCheck table); only a SILENT control channel
+                // means a dead tor_main. The flag holds the current-value wiring
+                // paths (the CombineLatest sink, the health loop's self-heal) off
+                // until the check settles, so they never wire an unauthenticated
+                // port ahead of it; every exit of the check clears it.
+                cachedPortAuthToken &+= 1
                 cachedPortAuthenticationInFlight = true
-                TorManager.shared.confirmSocksPortViaControl { [weak self] confirmedPort in
-                    guard let self = self else { return }
-                    self.cachedPortAuthenticationInFlight = false
-                    guard confirmedPort == UInt16(port) else {
-                        // Control socket says Tor is gone or on a different port.
-                        // Tor's tor_main runs ONCE per process and CANNOT be
-                        // re-initialized in-process (a second TORThread aborts with
-                        // an NSAssertion — the `Tor 0x… + 77052` production crash),
-                        // so surface disconnected and let the user relaunch.
-                        LogBuffer.shared.append(level: "W", tag: "AppState",
-                            message: "control socket did not confirm socksPort=\(port) (got \(confirmedPort.map(String.init) ?? "nil")) — Tor thread died; relaunch required")
-                        // Latch the process-dead state (drives the honest UI hint
-                        // + the on-background process recycle); the $state sink
-                        // mirrors .disconnected into torState.
-                        TorManager.shared.markThreadDead()
-                        return
-                    }
-                    self.probeSocksPort(port) { alive in
-                        Task { @MainActor [weak self] in
-                            guard let self = self else { return }
-                            if alive {
-                                LogBuffer.shared.append(level: "D", tag: "AppState",
-                                    message: "Tor already up (port=\(port), control-confirmed) — re-wiring MessageManager")
-                            } else {
-                                // The AUTHENTICATED control socket already confirmed this
-                                // exact port is Tor's own listener, so the loopback-port
-                                // squatter case is covered; the raw SOCKS5 greeting is only
-                                // the belt-and-braces LIVENESS half, and it can miss on a
-                                // momentarily busy listener. This branch used to be a
-                                // silent terminal dead end — no transport, no health loop,
-                                // no relaunch latch — so the app sat "Connecting…" forever
-                                // and the relay saw zero requests with nothing left to
-                                // change its mind. Wire the control-confirmed port and let
-                                // the reachability loop's existing hysteresis judge it: if
-                                // the listener really is gone every probe misses, NEWNYM
-                                // fires at 8 and the manual-reconnect UI surfaces at 24.
-                                LogBuffer.shared.append(level: "W", tag: "AppState",
-                                    message: "socksPort=\(port) control-confirmed but SOCKS5 probe failed — wiring anyway, health loop will judge")
-                            }
-                            self.wireRelayTransport(socksPort: port, reason: "resume re-wire, control-confirmed")
-                        }
-                    }
-                }
+                authenticateCachedSocksPort(token: cachedPortAuthToken, generation: sessionGeneration, attempt: 1,
+                                            startedAt: ProcessInfo.processInfo.systemUptime, everyPollNoListener: true)
             }
         } else {
             // Clearnet relay = NO Tor (IP/metadata exposed). Intended only for

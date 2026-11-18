@@ -1,7 +1,5 @@
-• Maximum: a shield marks contacts who also use Maximum.
-• Sent messages turn full colour once the relay has them.
-• Answer group invitations and introductions later from the chat list.
-• Make admin asks before handing over the role.
-• Groups: the unread dot shows only on the group that got the message.
-• If the relay does not answer, the app tries another route instead of staying stuck.
-• Security fixes from an external review.
+• Contacts added by scanning or introduction now start with a one-time key exchange: a later copy of the phone cannot recreate their first keys. Both phones need this version; existing contacts are unchanged.
+• Pairing survives turning the phone or a dropped connection.
+• Sharper QR codes.
+• Group messages that arrive before you join are shown, not lost.
+• Steadier connecting after a network change.

@@ -1,7 +1,5 @@
-• Maximal: en sköld markerar kontakter som också använder Maximal.
-• Skickade meddelanden får full färg när reläet har tagit emot dem.
-• Svara på gruppinbjudningar och introduktioner senare från chattlistan.
-• Gör till admin frågar innan rollen lämnas över.
-• Grupper: pricken för olästa visas bara på gruppen som fick meddelandet.
-• Om reläet inte svarar provar appen en annan väg i stället för att fastna.
-• Säkerhetsrättningar efter en extern granskning.
+• Kontakter som läggs till genom skanning eller introduktion startar nu med ett engångsnyckelutbyte: en senare kopia av telefonen kan inte återskapa deras första nycklar. Båda telefonerna behöver den här versionen; befintliga kontakter är oförändrade.
+• Parkopplingen klarar att telefonen vrids eller att anslutningen bryts.
+• Skarpare QR-koder.
+• Gruppmeddelanden som kommer innan du gått med visas i stället för att gå förlorade.
+• Stabilare anslutning efter ett nätverksbyte.

@@ -155,6 +155,12 @@ struct ContentView: View {
         // up, which a fast warm reveal skips). Absent until the first probe, and
         // in RELEASE an EmptyView overlay — no test surface.
         .overlay(alignment: .topLeading) { torSuspendProbeOverlay }
+        // E2E network-kick reproduction (DEBUG only — `--test-network-kick-before-unlock`,
+        // AppState.fireTestNetworkKickIfArmed): the pre-unlock kick's state as a
+        // fixed-key accessibility VALUE, readable on the unlock screen (where the
+        // connection-log panel does not exist). Absent unless armed; in RELEASE an
+        // EmptyView overlay — no test surface.
+        .overlay(alignment: .bottomLeading) { testNetworkKickOverlay }
         .onChange(of: scenePhase) { phase in
             // Only `.active` and `.background` — NEVER the transient `.inactive`
             // (Face ID / Control Center; the Lever-B re-lock lesson).
@@ -468,6 +474,21 @@ struct ContentView: View {
                 .accessibilityIdentifier("tor_suspend_probe")
                 .accessibilityLabel(Text(probe))
                 .accessibilityValue(Text(probe))
+        }
+        #endif
+    }
+
+    @ViewBuilder
+    private var testNetworkKickOverlay: some View {
+        #if DEBUG
+        if let summary = appState.testNetworkKickSummary {
+            Color.clear
+                .frame(width: 6, height: 6)
+                .contentShape(Rectangle())
+                .accessibilityElement()
+                .accessibilityIdentifier("test_network_kick_probe")
+                .accessibilityLabel(Text(summary))
+                .accessibilityValue(Text(summary))
         }
         #endif
     }

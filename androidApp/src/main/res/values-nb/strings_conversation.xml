@@ -9,6 +9,7 @@
     <string name="conversation_fs_stalled_title">Forward secrecy er ikke aktivert ennå</string>
     <string name="conversation_fs_stalled_body">Meldinger til denne kontakten er fremdeles kryptert, men de får ennå ikke den ekstra beskyttelsen som holder tidligere meldinger trygge hvis en nøkkel skulle bli eksponert senere. Dette ordner seg som regel når kontakten svarer. Hvis det vedvarer, fjern kontakten og legg den til på nytt.</string>
     <string name="conversation_ratchet_refused_body">Kunne ikke opprette en sikker kanal med denne kontakten. Meldinger blir ikke sendt. Fjern kontakten og parkoble på nytt.</string>
+    <string name="conversation_secure_channel_lost_body">Den sikre kanalen med denne kontakten gikk tapt. Meldinger sendes ikke. Fjern kontakten og parkoble på nytt.</string>
 
     <!-- Rapporter/blokker (kun iOS) -->
     <string name="conversation_report_confirm_title">Rapporter kontakt</string>

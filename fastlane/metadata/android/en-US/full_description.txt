@@ -1,4 +1,4 @@
-Rún is a secure messenger built for people who refuse to compromise on privacy. Every message is end-to-end encrypted before it leaves your device, and the keys ratchet forward as you chat — so even if one key were ever exposed, the rest of the conversation stays sealed.
+Rún is a secure messenger built for people who refuse to compromise on privacy. Every message is end-to-end encrypted before it leaves your device. Once a conversation goes back and forth, the keys ratchet forward as you chat — so even if one key were ever exposed, the rest of the conversation stays sealed.
 
 Rún requires no account, no phone number, and no email address. There is nothing to link back to your identity. Contacts are added in person by scanning QR codes, or through a vouched introduction from someone you already trust — no central directory, no contact discovery, no social graph.
 
@@ -23,7 +23,7 @@ The client's source code is public under the GPL at github.com/cptdad/run: read 
 Rún is built for journalists, activists, whistleblowers, and anyone who believes private conversation is a fundamental right.
 
 Key features:
-- End-to-end encryption with forward secrecy (AES-256-GCM + Double Ratchet)
+- End-to-end encryption, with forward secrecy once a conversation goes both ways (AES-256-GCM + Double Ratchet)
 - All traffic over Tor — your IP and location stay hidden
 - No account, phone number, or email required
 - In-person QR contact exchange and vouched introductions

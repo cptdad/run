@@ -63,7 +63,47 @@ data class ContactRecord(
     // carried in [trustLevel] (see VaultSeedDefaults.TRUST_REFERRED_*).
     val vouchedByContactId: String? = null,
     val vouchedAt: Long = 0,
+
+    // PERSISTED since DB v11 (`ratchet_v3` on both actuals): this pairing was
+    // made with the one-time ratchet bootstrap (docs/ratchet-bootstrap-plan.md
+    // §3.4). Then [sharedSecret] holds ss' (§3.3) and the message rules of §3.5
+    // apply: text, the announce and sealed control are ratchet-only, a missing
+    // ratchet state is never re-initialised, legacy text is dropped from birth.
+    //
+    // It lives IN THE ROW, read together with [sharedSecret], and not in a `_meta`
+    // marker, because a failed `_meta` read answers null on iOS and would turn a
+    // v3 contact into a legacy one. An existing row (any vault before v11) reads
+    // false: additive column, DEFAULT 0. Every writer of an EXISTING contact goes
+    // through `copy(...)`, so the flag is never dropped by a counter update.
+    val ratchetBootstrapV3: Boolean = false,
 ) {
+    /**
+     * The pre-v11 shape, kept for the Swift bridge: Kotlin default arguments do
+     * not cross it, so a Swift caller passes every field positionally (the iOS
+     * test seed in AppState). Builds a legacy (non-v3) record.
+     */
+    constructor(
+        contactId: String,
+        sharedSecret: ByteArray,
+        trustLevel: Int,
+        alias: String,
+        aliasLastRotated: Long,
+        mnemonic: String,
+        outboundCounter: Long,
+        inboundCounter: Long,
+        inboundEpoch: String,
+        outboundCtlCounter: Long,
+        inboundCtlCounter: Long,
+        outboundGrpCounter: Long,
+        inboundGrpCounter: Long,
+        vouchedByContactId: String?,
+        vouchedAt: Long,
+    ) : this(
+        contactId, sharedSecret, trustLevel, alias, aliasLastRotated, mnemonic,
+        outboundCounter, inboundCounter, inboundEpoch, outboundCtlCounter, inboundCtlCounter,
+        outboundGrpCounter, inboundGrpCounter, vouchedByContactId, vouchedAt, false,
+    )
+
     // Truncate the id (like the take(8) used at every log site) so an accidental
     // log/interpolation of a ContactRecord doesn't emit the full contact id.
     override fun toString() = "ContactRecord(contactId=${contactId.take(8)}…, trustLevel=$trustLevel)"

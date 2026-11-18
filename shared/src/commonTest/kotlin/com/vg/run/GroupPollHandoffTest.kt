@@ -55,7 +55,11 @@ private class PhRelay : InboxQueueRelay(
  * step below is the production protocol (invite → consent → join → roster), not a
  * seeded row.
  */
-private class PhPair {
+private class PhPair(
+    /** False = the pairing has no group inbox yet (the state before its first
+     *  shared group), so a group text travels on the TEXT inbox. */
+    private val groupInbox: Boolean = true,
+) {
     val shared = generateSecureRandom(32)
     // Inboxes OWNED by B (A posts into them) …
     val txtToB = phInbox("btxt"); val ctlToB = phInbox("bctl"); val grpToB = phInbox("bgrp")
@@ -85,10 +89,10 @@ private class PhPair {
         v.insertContact(ContactRecord(peer, shared, 1, alias, 0L))
         v.insertInboxId(InboxIdRecord(outTxt, peer, 1L, Long.MAX_VALUE, "outbound", PH_CAP))
         v.insertInboxId(InboxIdRecord(outCtl, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_OUTBOUND_CTL, PH_CAP))
-        v.insertInboxId(InboxIdRecord(outGrp, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_OUTBOUND_GRP, PH_CAP))
+        if (groupInbox) v.insertInboxId(InboxIdRecord(outGrp, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_OUTBOUND_GRP, PH_CAP))
         v.insertInboxId(InboxIdRecord(inTxt, peer, 1L, Long.MAX_VALUE, "inbound", PH_CAP))
         v.insertInboxId(InboxIdRecord(inCtl, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_INBOUND_CTL, PH_CAP))
-        v.insertInboxId(InboxIdRecord(inGrp, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_INBOUND_GRP, PH_CAP))
+        if (groupInbox) v.insertInboxId(InboxIdRecord(inGrp, peer, 1L, Long.MAX_VALUE, MessageManager.DIR_INBOUND_GRP, PH_CAP))
     }
 
     /** B receives A's invite over its control sweep and CONSENTS (GROUP-1). */
@@ -371,5 +375,202 @@ class GroupUnreadTallyEchoPinTest {
         )
         p.bGm.pollAllControls()
         assertEquals(1, p.bGm.groupUnreadCounts()[gid], "the floor left no negative residue")
+    }
+}
+
+// ---------------------------------------------------------------------------
+// A text for a group the recipient has been INVITED to but has not joined.
+//
+// Found by the dynamic real-life run of 2026-11-16 (seed 03b0f4b5): the creator of
+// a new group wrote a first line; one invitee answered the invitation with "Later"
+// three days running, then opened ANOTHER group it shared with the creator. That
+// screen's poll drains the creator's text inbox, so it fetched the waiting text
+// (dev relay journal: three blobs returned and acked on that one inbox in the same
+// second), found no group row for it, and dropped it ("text for unknown group").
+// When the invitee finally joined, the group was empty, and the sender had been
+// shown no "not delivered" mark. The sender's 1:1 chat does the same.
+//
+// The rule that already governs every other group text applies: a fetched text is
+// shown in the screen whose poll fetched it.
+// ---------------------------------------------------------------------------
+class InvitedGroupTextTest {
+
+    /** A creates "crew" with B and writes a first line; B has NOT answered. */
+    private fun invitedWithOneText(p: PhPair, text: String = "welcome"): String {
+        val gid = assertNotNull(p.aGm.createGroup("crew", listOf("b")))
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(gid, text), "the invitee is addressable from the creator")
+        return gid
+    }
+
+    @Test
+    fun aTextForAnInvitedGroup_fetchedByTheInviters1to1Poll_isShownThereAsAnEcho() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        val gid = invitedWithOneText(p)
+        p.bGm.pollAllControls()                              // the invite is parked; nothing is joined
+        assertNull(p.bVault.getGroup(gid), "precondition: B has not joined")
+        assertEquals(1, p.relay.depth(p.txtToB), "precondition: the text waits on the TEXT inbox")
+
+        val echo = p.bGm.pollDirect("a").single()
+        assertEquals(0, p.relay.depth(p.txtToB), "the poll took it off the relay")
+        assertEquals(ReceivedItemKind.GROUP_ECHO, echo.kind)
+        assertEquals("welcome", echo.text)
+        assertEquals(gid, echo.groupId)
+        assertEquals("crew", echo.groupName, "named after the invitation")
+        assertEquals(false, echo.groupJoined, "there is no group conversation to open yet")
+        assertNull(p.bVault.getGroup(gid), "showing the text joined nothing")
+
+        // Joining afterwards: nothing left to show, and no dot pointing at nothing.
+        assertTrue(p.bGm.acceptInvite(gid))
+        assertNull(p.bGm.groupUnreadCounts()[gid], "the notice parked for the join was spent with the echo")
+        assertTrue(p.bGm.pollGroup(gid).isEmpty())
+    }
+
+    @Test
+    fun theInvitationSurvivesARelaunch_andTheTextIsStillShown() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        val gid = invitedWithOneText(p)
+        p.bGm.pollAllControls()
+        // "Later", app closed, opened again another day: a fresh manager on the same vault.
+        val bMgr2 = MessageManager(p.bVault, "http://relay.test", p.relay)
+        val bGm2 = GroupManager(p.bVault) { bMgr2 }
+        assertEquals(listOf(gid), bGm2.pendingInvites().map { it.groupId }, "precondition: the invitation was restored")
+
+        val echo = bGm2.pollDirect("a").single()
+        assertEquals(ReceivedItemKind.GROUP_ECHO, echo.kind)
+        assertEquals("welcome", echo.text)
+        assertEquals(false, echo.groupJoined)
+    }
+
+    @Test
+    fun aTextForAnInvitedGroup_fetchedByAnotherGroupsPoll_isShownThereAsAnEcho() {
+        if (!aeadUp()) return
+        val p = PhPair()                                     // group inbox established
+        val g1 = p.groupWithB()
+        val g2 = assertNotNull(p.aGm.createGroup("second", listOf("b")))
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(g2, "in the second"))
+        p.bGm.pollAllControls()
+        assertNull(p.bVault.getGroup(g2), "precondition: B has not joined the second group")
+
+        val echo = p.bGm.pollGroup(g1).single()
+        assertEquals(ReceivedItemKind.GROUP_ECHO, echo.kind)
+        assertEquals(g2, echo.groupId)
+        assertEquals("second", echo.groupName)
+        assertEquals("in the second", echo.text)
+        assertEquals("a", echo.senderContactId)
+        assertEquals(false, echo.groupJoined)
+        assertNull(p.bGm.groupUnreadCounts()[g1], "an echo never counts for the screen's own group")
+    }
+
+    @Test
+    fun aTextFetchedBeforeItsInvitation_isShownOnceTheInvitationArrives() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        val gid = invitedWithOneText(p)
+
+        // The user taps the sender before the control sweep has brought the invite.
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "nothing can be shown yet: the group is unknown")
+        assertEquals(0, p.relay.depth(p.txtToB), "…but the poll already took the text off the relay")
+
+        p.bGm.pollAllControls()                              // now the invite is parked
+        val echo = p.bGm.pollDirect("a").single()
+        assertEquals(ReceivedItemKind.GROUP_ECHO, echo.kind)
+        assertEquals("welcome", echo.text)
+        assertEquals("crew", echo.groupName)
+        assertEquals(false, echo.groupJoined)
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "shown once")
+    }
+
+    @Test
+    fun aTextShownBeforeItsNoticeWasDrained_leavesNoDotOnTheJoinedGroup() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        // The invitation is already waiting from an earlier session…
+        val gid = assertNotNull(p.aGm.createGroup("crew", listOf("b")))
+        p.bGm.pollAllControls()
+        // …then the creator writes, and B opens the 1:1 chat before its control
+        // sweep has drained the notice that announces the text.
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(gid, "welcome"))
+        assertEquals("welcome", p.bGm.pollDirect("a").single().text)
+        p.bGm.pollAllControls()                              // the notice arrives after the text was shown
+
+        assertTrue(p.bGm.acceptInvite(gid))
+        assertNull(p.bGm.groupUnreadCounts()[gid], "the text was shown already: no dot on an empty group")
+    }
+
+    @Test
+    fun aTextHeldForItsInvitation_leavesNoDotOnTheJoinedGroup() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        val gid = invitedWithOneText(p)
+        assertTrue(p.bGm.pollDirect("a").isEmpty())           // held: the invite is not here yet
+        p.bGm.pollAllControls()                              // invite + notice arrive together
+        assertEquals("welcome", p.bGm.pollDirect("a").single().text)
+
+        assertTrue(p.bGm.acceptInvite(gid))
+        assertNull(p.bGm.groupUnreadCounts()[gid], "the held text was shown: no dot on an empty group")
+    }
+
+    @Test
+    fun aTextFetchedByAGroupScreenBeforeItsInvitation_isShownInThatGroupScreen() {
+        if (!aeadUp()) return
+        val p = PhPair()
+        val g1 = p.groupWithB()
+        val g2 = assertNotNull(p.aGm.createGroup("second", listOf("b")))
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(g2, "in the second"))
+
+        assertTrue(p.bGm.pollGroup(g1).isEmpty(), "the second group is unknown: nothing to show yet")
+        p.bGm.pollAllControls()
+        val echo = p.bGm.pollGroup(g1).single()
+        assertEquals(ReceivedItemKind.GROUP_ECHO, echo.kind)
+        assertEquals(g2, echo.groupId)
+        assertEquals("in the second", echo.text)
+        assertEquals(false, echo.groupJoined)
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "…and nowhere else")
+    }
+
+    @Test
+    fun aTextForADeclinedGroup_isNeverShown() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        val gid = invitedWithOneText(p)
+        p.bGm.pollAllControls()
+        p.bGm.declineInvite(gid)
+
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "declined: the group shows nothing")
+        // The creator does not know about the decline and keeps writing; a
+        // re-delivery of the same invitation is suppressed and claims nothing.
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(gid, "still there?"))
+        p.bGm.pollAllControls()
+        assertTrue(p.bGm.pollDirect("a").isEmpty())
+        assertTrue(p.bGm.pendingInvites().isEmpty())
+    }
+
+    @Test
+    fun aTextForAGroupThatWasLeft_isNeverShown() {
+        if (!aeadUp()) return
+        val p = PhPair()
+        val gid = p.groupWithB()
+        p.bGm.leaveGroup(gid)
+        // The admin has not applied the leave yet and writes to the group.
+        assertEquals(GroupSendResult(1, 1), p.aGm.sendGroupMessage(gid, "anyone?"))
+        p.bGm.pollAllControls()
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "left: the group shows nothing")
+        assertTrue(p.bGm.takeGroupScreenItems(gid).isEmpty())
+    }
+
+    @Test
+    fun aHeldText_expiresWhenNoInvitationComes() {
+        if (!aeadUp()) return
+        val p = PhPair(groupInbox = false)
+        var now = 1_000_000L
+        p.bGm.clockMs = { now }
+        val gid = invitedWithOneText(p)
+        assertTrue(p.bGm.pollDirect("a").isEmpty())           // held
+        now += GroupManager.PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS + 1
+        p.bGm.pollAllControls()                              // the invite arrives too late
+        assertEquals(listOf(gid), p.bGm.pendingInvites().map { it.groupId })
+        assertTrue(p.bGm.pollDirect("a").isEmpty(), "past the hold time the text is gone")
     }
 }

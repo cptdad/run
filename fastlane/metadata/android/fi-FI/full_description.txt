@@ -1,4 +1,4 @@
-Rún on turvallinen viestisovellus ihmisille, jotka eivät suostu tinkimään yksityisyydestä. Jokainen viesti salataan päästä päähän, ennen kuin se lähtee laitteeltasi, ja avaimet kiertyvät eteenpäin keskustellessa — joten vaikka yksi avain joskus paljastuisi, loput keskustelusta pysyvät sinetöityinä.
+Rún on turvallinen viestisovellus ihmisille, jotka eivät suostu tinkimään yksityisyydestä. Jokainen viesti salataan päästä päähän, ennen kuin se lähtee laitteeltasi. Kun keskustelu kulkee molempiin suuntiin, avaimet kiertyvät eteenpäin — joten vaikka yksi avain paljastuisi, loput pysyvät sinetöityinä.
 
 Rún ei vaadi tiliä, puhelinnumeroa eikä sähköpostiosoitetta. Mikään ei linkity henkilöllisyyteesi. Kontaktit lisätään kasvokkain QR-koodeja lukemalla tai taatun esittelyn kautta — ei keskitettyä hakemistoa, ei kontaktien etsintää, ei sosiaalista verkostoa.
 
@@ -23,7 +23,7 @@ Asiakasohjelman lähdekoodi on julkinen GPL-lisenssillä osoitteessa github.com/
 Rún on rakennettu toimittajille, aktivisteille, väärinkäytösten paljastajille ja kaikille, joiden mielestä yksityinen keskustelu on perusoikeus.
 
 Tärkeimmät ominaisuudet:
-- Päästä päähän -salaus ja forward secrecy (AES-256-GCM + Double Ratchet)
+- Päästä päähän -salaus ja forward secrecy, kun keskustelu kulkee molempiin suuntiin (AES-256-GCM + Double Ratchet)
 - Kaikki liikenne Tor-verkon kautta — IP-osoitteesi ja sijaintisi pysyvät piilossa
 - Ei tiliä, puhelinnumeroa tai sähköpostia
 - Kontaktien vaihto QR-koodilla kasvokkain sekä taatut esittelyt

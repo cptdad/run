@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -303,7 +302,8 @@ private fun AddressBody(method: DonateMethod, context: Context) {
     // the dismiss-time clear below knows whether to fire — without needing to read
     // the clipboard back (see the onDispose comment for why that read isn't usable).
     var copiedAddress by remember { mutableStateOf<String?>(null) }
-    val qrBitmap = remember(method.address) { generateQrBitmap(method.address, sizePx = 600) }
+    val qrBudgetPx = qrBudgetPx(200.dp)
+    val qrBitmap = remember(method.address, qrBudgetPx) { generateQrBitmap(method.address, qrBudgetPx) }
 
     // Reset the "Copied ✓" flash after a moment.
     LaunchedEffect(copied) {
@@ -350,10 +350,9 @@ private fun AddressBody(method: DonateMethod, context: Context) {
                 .background(RunWhite)
                 .padding(12.dp)
         ) {
-            Image(
-                bitmap = qrBitmap.asImageBitmap(),
+            CrispQrImage(
+                bitmap = qrBitmap,
                 contentDescription = stringResource(R.string.donate_qr_content_description, method.label),
-                modifier = Modifier.size(200.dp)
             )
         }
 

@@ -139,9 +139,11 @@ final class TorManager: ObservableObject {
     /// "latch" = [relaunchRequired] (noteRelaunchRequired, one-way per process). There is no
     /// `failed` case: terminal failure is `.disconnected` + the latch (see TorConnectionState).
     /// [socksPort] is published only by readBackSocksPort (before `.connected`) and zeroed
-    /// with every `.disconnected` that ends a run; a later guard-channel / network-restore
-    /// kick moves the listener without republishing (consumers resolve the live port)
-    /// (to be confirmed by the Tor specialist).
+    /// with every `.disconnected` that ends a run. A later guard-channel / network-restore
+    /// kick moves the listener at once (SocksPortRedirect: blocked, then re-pointed) and
+    /// readBackSocksPort RE-publishes the new port + `.connected` when Tor reports the
+    /// circuit established again, a moment later — see the guard-channel kick section.
+    /// Until then published != the control channel's port; see UnlockPortCheck.
     @Published private(set) var state: TorConnectionState = .disconnected
     @Published private(set) var socksPort: UInt16 = 0
     // Latched true the moment this PROCESS can never again produce a working
@@ -1094,54 +1096,91 @@ final class TorManager: ObservableObject {
         #endif
     }
 
-    /// Confirm the live SOCKS listener over Tor's AUTHENTICATED
-    /// control socket (cookie-auth over a UNIX-domain socket at a Tor-owned path),
-    /// rather than trusting a loopback SOCKS5 greeting a local app could spoof.
-    /// A squatter can `accept()` a freed `auto` port and answer `05 00`, but it
-    /// cannot impersonate the control socket — so this authenticates that
-    /// 127.0.0.1:<port> is genuinely THIS process's Tor. Calls back (on main) with
-    /// the port Tor currently reports, or nil if the control connection is down
-    /// (Tor dead), the reply is unparseable, or it doesn't answer within the
-    /// timeout. Fail-closed: nil ⇒ caller treats Tor as gone.
-    ///
-    /// An EMPTY answer is retried (up to [socksReadbackAttempts], inside the same
-    /// overall timeout) rather than reported as nil: it is far more often the
-    /// vendored controller pairing this GETINFO with a stray async event than a
-    /// dead daemon — see socksReadbackAttempts. The caller's reaction here is
-    /// markThreadDead() (relaunch-required, a forced app restart for the user),
-    /// so a false negative is expensive; a genuinely dead control socket still
-    /// answers nothing at all and times out exactly as before.
-    func confirmSocksPortViaControl(timeoutMs: Int = 3000,
-                                    completion: @escaping (UInt16?) -> Void) {
-        guard let controller, controller.isConnected else { completion(nil); return }
-        var settled = false
-        let finish: (UInt16?) -> Void = { port in
-            DispatchQueue.main.async {
-                guard !settled else { return }
-                settled = true
-                completion(port)
-            }
-        }
-        attemptSocksPortConfirm(attempt: 1, finish: finish)
-        // A dead control socket may never deliver a reply — bound the wait.
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(timeoutMs)) {
-            finish(nil)
+    /// What Tor's AUTHENTICATED control channel says about its SOCKS listener —
+    /// the input to the shared `UnlockPortCheck.decide`. Only `.silent` means the
+    /// control channel did not answer (tor_main gone); `.noListener` is an ANSWER.
+    enum SocksControlAnswer: Equatable {
+        /// The 127.0.0.1 SOCKS listener Tor reports.
+        case listener(UInt16)
+        /// Tor answered, but listed no SOCKS listener (closed between
+        /// `DisableNetwork=1` and `=0`, or every attempt lost to the controller's
+        /// observer race) — alive either way.
+        case noListener
+        /// No reply within the bounded wait, or the control connection is down.
+        case silent
+
+        var answered: Bool { self != .silent }
+        var port: Int32 {
+            if case .listener(let p) = self { return Int32(p) }
+            return 0
         }
     }
 
-    private func attemptSocksPortConfirm(attempt: Int, finish: @escaping (UInt16?) -> Void) {
-        guard let controller, controller.isConnected else { finish(nil); return }
+    /// Ask Tor's AUTHENTICATED control socket (cookie-auth over a UNIX-domain
+    /// socket at a Tor-owned path) for its live SOCKS listener, rather than trusting
+    /// a loopback SOCKS5 greeting a local app could spoof: a squatter can `accept()`
+    /// a freed `auto` port and answer `05 00`, but it cannot impersonate the control
+    /// socket. Calls back once, on main.
+    ///
+    /// An EMPTY answer is retried (up to [socksReadbackAttempts], inside the same
+    /// overall timeout): it is far more often the vendored controller pairing this
+    /// GETINFO with a stray async event than a listener-less daemon — see
+    /// socksReadbackAttempts. Every attempt empty ⇒ `.noListener`; the timeout
+    /// firing after at least one reply ⇒ `.noListener` too (the channel is alive).
+    /// Only a channel that is down, or never replies within [timeoutMs], is
+    /// `.silent` — the one answer that may be read as a dead tor_main.
+    func querySocksListenerViaControl(timeoutMs: Int = 3000,
+                                      completion: @escaping (SocksControlAnswer) -> Void) {
+        guard let controller, controller.isConnected else { completion(.silent); return }
+        var settled = false
+        var sawReply = false
+        let finish: (SocksControlAnswer) -> Void = { answer in
+            DispatchQueue.main.async {
+                guard !settled else { return }
+                settled = true
+                completion(answer)
+            }
+        }
+        let noteReply: () -> Void = { DispatchQueue.main.async { sawReply = true } }
+        attemptSocksPortQuery(attempt: 1, noteReply: noteReply, finish: finish)
+        // A dead control socket may never deliver a reply — bound the wait.
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(timeoutMs)) {
+            finish(sawReply ? .noListener : .silent)
+        }
+    }
+
+    private func attemptSocksPortQuery(attempt: Int, noteReply: @escaping () -> Void,
+                                       finish: @escaping (SocksControlAnswer) -> Void) {
+        guard let controller, controller.isConnected else { finish(.silent); return }
         controller.getInfoForKeys(["net/listeners/socks"]) { values in
+            noteReply()
             if let port = values.first.flatMap({ TorManager.parseSocksListenerPort($0) }) {
-                finish(port)
+                finish(.listener(port))
                 return
             }
             guard attempt < TorManager.socksReadbackAttempts else {
-                finish(nil)
+                finish(.noListener)
                 return
             }
             hopToMain(after: TorManager.socksReadbackRetryDelaySec) { [weak self] in
-                self?.attemptSocksPortConfirm(attempt: attempt + 1, finish: finish)
+                self?.attemptSocksPortQuery(attempt: attempt + 1, noteReply: noteReply, finish: finish)
+            }
+        }
+    }
+
+    /// The unlock-time check's wait ran out with Tor ALIVE but the published port
+    /// unconfirmed (`UnlockPortCheck.settleAfterWait`). Both actions keep the
+    /// squatter rule: the published port then either resolves to the blocked port
+    /// (requests fail fast; the health loop's stalled / Reconnect ladder owns it)
+    /// or to a listener Tor itself reported on this authenticated channel.
+    func settleUnconfirmedSocksPort(_ settle: UnlockPortCheck.Settle, published: UInt16, reported: SocksControlAnswer) {
+        // `.wireFailClosed`: nothing to do — the unconcluded move already blocks it.
+        if settle == UnlockPortCheck.Settle.blockThenWire {
+            SocksPortRedirect.shared.beginMove(oldPort: Int32(published))
+        } else if settle == UnlockPortCheck.Settle.adoptReportedPort {
+            if reported.port <= 0
+                || !SocksPortRedirect.shared.completeMove(oldPort: Int32(published), newPort: reported.port) {
+                SocksPortRedirect.shared.beginMove(oldPort: Int32(published))
             }
         }
     }
@@ -1603,10 +1642,20 @@ final class TorManager: ObservableObject {
     // kept; tor_main keeps running) — then `GETINFO net/listeners/socks`, because
     // the re-enable re-binds `SocksPort auto` on a NEW port. Every Tor client
     // follows the move through the shared `SocksPortRedirect` (resolved per
-    // request in PlatformHttpClient.ios.kt), so `socksPort` is deliberately NOT
-    // re-published: the transport sink must not re-wire anything. Fixed phrases
-    // only; no port is ever logged. Android sibling: TorManager.kt
-    // kickGuardChannels.
+    // request in PlatformHttpClient.ios.kt); this kick itself never touches
+    // `socksPort`. BUT `socksPort` IS re-published afterwards (observed on device
+    // 2026-11-15, ~0.5–0.8 s after the toggle, longer on a slow network): the
+    // re-enable makes Tor emit STATUS_CLIENT CIRCUIT_ESTABLISHED again, the
+    // circuit-established observer (registerBootstrapObservers) fires again, and
+    // readBackSocksPort publishes the new port and `.connected` a second time. So
+    // between the toggle and that re-publication the published port is the OLD
+    // one while the control channel already reports the new one — consumers must
+    // compare through SocksPortRedirect (UnlockPortCheck), never published vs
+    // control directly. Why the observer is still registered although its
+    // callback removes it is not yet root-caused (the DEBUG "circuit callback:
+    // established=" lines show every firing). Fixed phrases only; no port is ever
+    // logged. Android sibling: TorManager.kt kickGuardChannels (Android never
+    // re-publishes Connected).
 
     private nonisolated static let channelKickSettleSec: TimeInterval = 1.0
     private nonisolated static let channelKickReadbackAttempts = 3

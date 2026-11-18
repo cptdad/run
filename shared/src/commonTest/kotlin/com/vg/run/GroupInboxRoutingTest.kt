@@ -651,7 +651,7 @@ class GroupInboxReferralCarrierTest {
     /** The PRODUCTION builder, so the emitted bytes are what is pinned. */
     private fun body(withGrp: Boolean): String =
         ReferralManager(InMemoryVault()) { null }
-            .acceptBody("intro-1", ByteArray(32) { 2 }, minted(withGrp))
+            .acceptBody("intro-1", ByteArray(32) { 2 }, minted(withGrp), bootstrapV3 = false)
 
     @Test
     fun acceptBody_carriesTheGroupPair_whenOneWasMinted() {
@@ -659,6 +659,17 @@ class GroupInboxReferralCarrierTest {
         assertEquals(GI_GRP, firstStringFieldAnywhere(b, "gib"))
         assertEquals(GI_CAP2, firstStringFieldAnywhere(b, "gwc"))
         assertTrue(b.endsWith(""""$ROLE_RULE_FIELD":"$ROLE_RULE_V2"}"""), "rv stays LAST")
+    }
+
+    /** With the one-time-bootstrap flag the group pair is unchanged and `bv` follows `rv`
+     *  (both appended last, in that order — the legacy shape above is byte-identical). */
+    @Test
+    fun acceptBody_withTheBootstrapFlag_appendsBvAfterRv_groupPairUnchanged() {
+        val legacy = body(withGrp = true)
+        val v3 = ReferralManager(InMemoryVault()) { null }
+            .acceptBody("intro-1", ByteArray(32) { 2 }, minted(withGrp = true), bootstrapV3 = true)
+        assertEquals(legacy.dropLast(1) + ""","bv":"3"}""", v3)
+        assertEquals(GI_GRP, firstStringFieldAnywhere(v3, "gib"))
     }
 
     @Test

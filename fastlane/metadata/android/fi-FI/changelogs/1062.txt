@@ -1,7 +1,5 @@
-• Maksimi: kilpi merkitsee yhteystiedot, jotka käyttävät myös Maksimia.
-• Lähetetty viesti saa täydet värit, kun välityspalvelin on vastaanottanut sen.
-• Vastaa ryhmäkutsuihin ja esittelyihin myöhemmin keskustelulistasta.
-• Tee ylläpitäjäksi kysyy ennen roolin luovuttamista.
-• Ryhmät: lukemattoman viestin piste näkyy vain ryhmässä, joka sai viestin.
-• Jos välityspalvelin ei vastaa, sovellus kokeilee toista reittiä eikä jää jumiin.
-• Tietoturvakorjauksia ulkoisen tarkastuksen pohjalta.
+• Skannaamalla tai esittelyn kautta lisätyt kontaktit alkavat nyt kertakäyttöisellä avaintenvaihdolla: puhelimen myöhempi kopio ei pysty luomaan uudelleen niiden ensimmäisiä avaimia. Molemmissa puhelimissa on oltava tämä versio; nykyiset kontaktit eivät muutu.
+• Paritus kestää puhelimen kääntämisen ja yhteyden katkeamisen.
+• Terävämmät QR-koodit.
+• Ennen liittymistäsi saapuvat ryhmäviestit näytetään eivätkä katoa.
+• Vakaampi yhteys verkon vaihdon jälkeen.

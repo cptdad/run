@@ -88,6 +88,9 @@ internal fun GroupGlyph(color: Color, size: Dp = 12.dp) {
  * Received side, distinct colour, group glyph, "Group message in <group>", and an
  * "Open group" action. [senderAlias] is shown in a GROUP screen (several senders);
  * a 1:1 screen passes null (the sender is the contact of that chat). Not replyable.
+ * [onOpenGroup] is null for a group we are only INVITED to (GroupMessage.groupJoined
+ * false): there is no conversation to open until the invitation is answered, so the
+ * action is left out.
  */
 @Composable
 internal fun GroupEchoBubble(
@@ -95,7 +98,7 @@ internal fun GroupEchoBubble(
     senderAlias: String?,
     text: String,
     timeText: String?,
-    onOpenGroup: () -> Unit,
+    onOpenGroup: (() -> Unit)?,
     bubbleTag: String,
     labelTag: String,
     openTag: String,
@@ -134,16 +137,18 @@ internal fun GroupEchoBubble(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = stringResource(R.string.conversation_group_echo_open),
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            color = EchoAccent,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onOpenGroup)
-                                .testTag(openTag)
-                                .padding(vertical = 6.dp, horizontal = 2.dp),
-                        )
+                        if (onOpenGroup != null) {
+                            Text(
+                                text = stringResource(R.string.conversation_group_echo_open),
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                color = EchoAccent,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable(onClick = onOpenGroup)
+                                    .testTag(openTag)
+                                    .padding(vertical = 6.dp, horizontal = 2.dp),
+                            )
+                        }
                         if (timeText != null) {
                             Box(Modifier.weight(1f))
                             Text(text = timeText, fontSize = 9.sp, color = RunGrey.copy(alpha = 0.6f))

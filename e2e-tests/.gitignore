@@ -22,3 +22,4 @@ prod-tester-cycles*.csv
 
 # test:dynamic_real_life run folders (scenario, actions, ledger, frames — pure artifacts)
 dynamic/runs/
+prod-tester-update/

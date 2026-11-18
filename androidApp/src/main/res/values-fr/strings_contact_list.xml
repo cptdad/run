@@ -117,6 +117,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">Réappairage requis</string>
     <string name="contact_list_waiting_for_inbox">En attente de sa boîte de réception…</string>
+    <string name="contact_list_secure_channel_lost">Canal sécurisé perdu : appairez-vous à nouveau</string>
     <string name="contact_list_introduced_by">Présenté par %1$s</string>
     <string name="contact_list_introduced">Présenté</string>
     <string name="contact_list_repair_chip">Réappairer</string>

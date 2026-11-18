@@ -10,7 +10,7 @@
     <string name="about_tor_runestone_title">Rødt betyr Tor</string>
     <string name="about_tor_runestone_body">Følg med på runesteinen – rødt betyr at du er på Tor. Ringen pulserer kraftigere jo nærmere du kommer, lyser jevnt rødt i det øyeblikket relayet svarer, og så tennes R-en.</string>
     <string name="about_e2e_title">Ende-til-ende-kryptert</string>
-    <string name="about_e2e_body">Hver melding forsegles med en nøkkel bare du og kontakten din har, og etter hvert som dere prater, skrus nøkkelen videre – så selv om én nøkkel skulle bli avslørt, forblir resten forseglet.</string>
+    <string name="about_e2e_body">Hver melding forsegles med en nøkkel bare du og kontakten din har. Når dere har skrevet til hverandre fram og tilbake, skrus nøkkelen videre etter hvert som dere prater – så hvis én nøkkel da skulle bli avslørt, forblir resten forseglet. En kontakt du legger til når begge telefonene har denne versjonen eller nyere, starter i tillegg med en engangs nøkkelutveksling, så en senere kopi av en av telefonene ikke kan gjenskape de første nøklene; eksisterende kontakter får dette bare hvis dere legger hverandre til på nytt.</string>
     <string name="about_relay_title">Et relay som ikke kan lese</string>
     <string name="about_relay_body">Relayet til Rún er bevisst dumt – ingen kontoer, ingenting å lese, bare datablokker med padding i nummererte innbokser som det sender videre, og størrelsen røper ingenting om innholdet. Ingenting blir liggende etter levering – meldinger fjernes fra innboksen etter hvert som du leser dem, og selve innboksen frigis etter en lang periode med stillhet.</string>
     <string name="about_relay_runestone_title">Hvit ᚱ betyr relay</string>

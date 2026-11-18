@@ -94,6 +94,8 @@ struct ConversationView: View {
         // that this screen's poll fetched. Shown marked, never a 1:1 message.
         var echoGroupId: String? = nil
         var echoGroupName: String = ""
+        // False for an echo of a group we are only INVITED to: nothing to open yet.
+        var echoGroupJoined: Bool = true
     }
 
     // MARK: - Body
@@ -110,7 +112,11 @@ struct ConversationView: View {
                 // P1-1 step B: ratchetRefused takes PRECEDENCE when both would show
                 // — it is the strictly worse (send-blocking) escalation of the
                 // advisory above, so showing both would be redundant.
-                if appState.ratchetRefused[contactId] == true {
+                if appState.secureChannelLost[contactId] == true {
+                    // A lost one-time-key channel outranks both: sends fail until the
+                    // contact is removed and paired again, and the user is told why.
+                    secureChannelLostNotice
+                } else if appState.ratchetRefused[contactId] == true {
                     ratchetRefusedNotice
                 } else if appState.forwardSecrecyStalled[contactId] == true {
                     forwardSecrecyStalledNotice
@@ -183,6 +189,7 @@ struct ConversationView: View {
             // this signal is cleared by an INBOUND ratchet blob, not only by this
             // device's own send landing).
             appState.refreshRatchetRefused(contactId: contactId)
+            appState.refreshSecureChannelLost(contactId: contactId)
             startPolling()
             // First-conversation-ever burn-on-read notice (shared helper below,
             // reused by GroupConversationView — same vault-meta latch).
@@ -407,6 +414,18 @@ struct ConversationView: View {
     /// above, so it takes precedence rather than stacking with it. Clears on its
     /// own once an inbound ratchet blob decrypts (MessageManager clears the
     /// underlying latch) — no reset here.
+    private var secureChannelLostNotice: some View {
+        Text(L10n.conversationSecureChannelLostBody)
+            .font(.runeCaption2)
+            .foregroundColor(Color.runTextSecondary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.runSurface)
+            .accessibilityIdentifier("secure_channel_lost_notice")
+    }
+
     private var ratchetRefusedNotice: some View {
         Text(L10n.conversationRatchetRefusedBody)
             .font(.runeCaption2)
@@ -432,7 +451,7 @@ struct ConversationView: View {
                                 senderAlias: nil,
                                 text: msg.text,
                                 timestamp: msg.timestamp,
-                                onOpenGroup: { onOpenGroup(echoGroupId) },
+                                onOpenGroup: msg.echoGroupJoined ? { onOpenGroup(echoGroupId) } : nil,
                                 bubbleId: "conversation_group_echo_bubble",
                                 labelId: "conversation_group_echo_label",
                                 openId: "conversation_group_echo_open"
@@ -685,6 +704,7 @@ struct ConversationView: View {
             // P1-1 step B: re-check the refusal signal too — cleared by an inbound
             // ratchet blob, independent of anything this send did.
             appState.refreshRatchetRefused(contactId: contactId)
+            appState.refreshSecureChannelLost(contactId: contactId)
             // Update delivery status in memory. Never DOWNGRADE: a transport-back
             // re-drive may have flipped this bubble to delivered (onReceive above)
             // while the last attempt was still in flight.
@@ -786,7 +806,8 @@ struct ConversationView: View {
                             text: item.text, isSent: false, delivered: true, failed: false,
                             timestamp: item.timestamp,
                             echoGroupId: item.isGroupEcho ? item.groupId : nil,
-                            echoGroupName: item.groupName
+                            echoGroupName: item.groupName,
+                            echoGroupJoined: item.groupJoined
                         )
                     }
                 for msg in rows {
@@ -826,6 +847,7 @@ struct ConversationView: View {
                 // carries no visible text, e.g. a control-channel announce) is what
                 // clears the refusal, and this is where those land.
                 appState.refreshRatchetRefused(contactId: contactId)
+                appState.refreshSecureChannelLost(contactId: contactId)
                 // The poll may have applied an in-band inbox announce —
                 // unlock the send button without re-entering the screen.
                 if !hasOutbound { refreshHasOutbound() }
@@ -982,13 +1004,15 @@ extension Color {
 /// A GROUP_ECHO bubble: received side, distinct colour, group glyph, "Group message
 /// in <group>", and an "Open group" action. [senderAlias] is shown in a GROUP screen
 /// (several senders); a 1:1 screen passes nil (the sender is that chat's contact).
-/// Not replyable.
+/// Not replyable. `onOpenGroup` is nil for a group we are only INVITED to
+/// (`groupJoined` false): there is no conversation to open until the invitation is
+/// answered, so the action is left out.
 struct GroupEchoBubbleView: View {
     let groupName: String
     let senderAlias: String?
     let text: String
     let timestamp: Int64
-    let onOpenGroup: () -> Void
+    let onOpenGroup: (() -> Void)?
     let bubbleId: String
     let labelId: String
     let openId: String
@@ -1014,13 +1038,15 @@ struct GroupEchoBubbleView: View {
                     .font(.runeBody)
                     .foregroundColor(.white)
                 HStack(spacing: 8) {
-                    Button(action: onOpenGroup) {
-                        Text(L10n.conversationGroupEchoOpen)
-                            .font(.runeCaption)
-                            .foregroundColor(Color.runEchoAccent)
+                    if let onOpenGroup {
+                        Button(action: onOpenGroup) {
+                            Text(L10n.conversationGroupEchoOpen)
+                                .font(.runeCaption)
+                                .foregroundColor(Color.runEchoAccent)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier(openId)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier(openId)
                     if timestamp > 0 {
                         Spacer(minLength: 0)
                         Text(markedBubbleTime(timestamp))

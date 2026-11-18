@@ -57,5 +57,8 @@
 
     <!-- vault-refused add -->
     <string name="add_contact_inbox_in_use">Kontaktia ei voitu lisätä — yksi hänen koodinsa postilaatikoista on jo käytössä täällä. Jos lisäät uudelleen jonkun, joka sinulla jo on, poista ensin vanha kontakti ja yritä sitten uudelleen.</string>
+    <string name="add_contact_pairing_failed">Paritus ei onnistunut: suojattua kanavaa tämän kontaktin kanssa ei voitu muodostaa. Aloita alusta ja tee paritus uudella koodilla.</string>
+    <string name="add_contact_pairing_failed_action">Aloita alusta</string>
+    <string name="add_contact_start_again_error">Kontaktin lisäämistä ei voitu viimeistellä, eikä mitään tallennettu. Aloita alusta saadaksesi uuden koodin.</string>
 
 </resources>

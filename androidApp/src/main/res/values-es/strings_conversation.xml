@@ -9,6 +9,7 @@
     <string name="conversation_fs_stalled_title">Forward secrecy aún no se ha activado</string>
     <string name="conversation_fs_stalled_body">Los mensajes a este contacto siguen cifrados, pero todavía no cuentan con la protección adicional que mantiene a salvo los mensajes anteriores si una clave se expone más adelante. Esto suele resolverse en cuanto responda. Si persiste, elimina el contacto y vuelve a añadirlo.</string>
     <string name="conversation_ratchet_refused_body">No se ha podido establecer un canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo.</string>
+    <string name="conversation_secure_channel_lost_body">Se perdió el canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Denunciar contacto</string>

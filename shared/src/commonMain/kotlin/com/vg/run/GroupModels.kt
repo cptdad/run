@@ -45,6 +45,11 @@ data class GroupMessage(
     val kind: ReceivedItemKind = ReceivedItemKind.OWN,
     // The name of [groupId] (empty for system notices / PRIVATE items).
     val groupName: String = "",
+    // False ONLY for a GROUP_ECHO of a group this device has been INVITED to but
+    // has not joined (its invite is still awaiting the user's answer): the text is
+    // shown, but there is no group conversation to open yet, so the UI leaves out
+    // the "Open group" action. True for everything else.
+    val groupJoined: Boolean = true,
 ) {
     // Swift-friendly kind tests (a Kotlin enum entry named PRIVATE does not export cleanly).
     val isPrivate: Boolean get() = kind == ReceivedItemKind.PRIVATE
@@ -63,6 +68,9 @@ data class DirectItem(
     val kind: ReceivedItemKind = ReceivedItemKind.OWN,
     val groupId: String = "",
     val groupName: String = "",
+    // See [GroupMessage.groupJoined]: false only for an echo of a group whose
+    // invite is still awaiting the user's answer.
+    val groupJoined: Boolean = true,
 ) {
     val isGroupEcho: Boolean get() = kind == ReceivedItemKind.GROUP_ECHO
 }

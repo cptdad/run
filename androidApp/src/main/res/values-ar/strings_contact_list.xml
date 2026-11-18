@@ -122,6 +122,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">إعادة الاقتران مطلوبة</string>
     <string name="contact_list_waiting_for_inbox">في انتظار صندوق وارد جهة الاتصال…</string>
+    <string name="contact_list_secure_channel_lost">فُقدت القناة الآمنة: أعد الاقتران</string>
     <string name="contact_list_introduced_by">قدّمه %1$s</string>
     <string name="contact_list_introduced">مُقدَّم</string>
     <string name="contact_list_repair_chip">إعادة اقتران</string>

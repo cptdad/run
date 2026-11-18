@@ -88,6 +88,7 @@
     <string name="contact_list_memory_dialog_title">Личная заметка</string>
     <string name="contact_list_repair_required">Требуется повторное сопряжение</string>
     <string name="contact_list_waiting_for_inbox">Ожидание почтового ящика контакта…</string>
+    <string name="contact_list_secure_channel_lost">Защищённый канал потерян: выполните сопряжение заново</string>
     <string name="contact_list_introduced_by">Знакомство через %1$s</string>
     <string name="contact_list_introduced">Знакомство</string>
     <string name="contact_list_repair_chip">Сопрячь заново</string>

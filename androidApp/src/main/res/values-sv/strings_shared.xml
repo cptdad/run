@@ -9,7 +9,7 @@
     <string name="about_tor_runestone_title">Rött betyder Tor</string>
     <string name="about_tor_runestone_body">Håll ögonen på runstenen — rött betyder att du är på Tor. Ringen pulserar starkare ju närmare du kommer, lyser stadigt röd i samma stund som reläet svarar, och sedan tänds R:et.</string>
     <string name="about_e2e_title">End-to-end-krypterat</string>
-    <string name="about_e2e_body">Varje meddelande förseglas med en nyckel som bara du och din kontakt har, och medan ni fortsätter chatta vrids den nyckeln framåt — så även om en enskild nyckel exponeras förblir resten förseglad.</string>
+    <string name="about_e2e_body">Varje meddelande förseglas med en nyckel som bara du och din kontakt har. När ni väl har skrivit till varandra fram och tillbaka vrids nyckeln framåt medan ni fortsätter chatta — så att en enskild exponerad nyckel då lämnar resten förseglad. En kontakt som du lägger till när båda telefonerna har den här versionen eller nyare startar dessutom med ett engångsnyckelutbyte, så att en senare kopia av någon av telefonerna inte kan återskapa dess första nycklar; befintliga kontakter får detta bara om ni lägger till varandra igen.</string>
     <string name="about_relay_title">Ett relä som inte kan läsa</string>
     <string name="about_relay_body">Reläet i Rún är medvetet dumt — inga konton, inget att läsa, bara datablobbar med padding i numrerade inkorgar som det skickar vidare, och deras storlek avslöjar därför ingenting om innehållet. Inget blir kvar när något väl har levererats — meddelanden försvinner ur inkorgen när du läser dem, och själva inkorgen återtas efter en lång tids tystnad.</string>
     <string name="about_relay_runestone_title">Vitt ᚱ betyder relä</string>

@@ -586,20 +586,23 @@ class RatchetRoleBindingTest {
         }
         val bobRm = ReferralManager(bobVault) { null }
         val carolRm = ReferralManager(carolVault) { null }
+        // This case pins the LEGACY referral bootstrap's role rule (rv:2 over the two
+        // public keys), which is what two introducees run when either of them predates
+        // the one-time ratchet bootstrap. Both stage like such a build; the v3 roles are
+        // pinned by ReferralBootstrapV3Test.v3Referral_bothDeriveIdenticalStateWithOppositeRoles.
+        for (rm in listOf(bobRm, carolRm)) rm.simulatePreBootstrapV3BuildForTest = true
         val offerJson = """{"ii":${jsonEscapeString(introId)},"pa":${jsonEscapeString("Running Fox")}}"""
         for (rm in listOf(bobRm, carolRm)) {
             rm.handleControl("alice", MessageManager.CONTROL_KIND_REFERRAL_OFFER, offerJson)
         }
-        bobRm.registerAccepted(introId, bobRm.pendingOffers().single(), bobKp, bobMinted)
-        carolRm.registerAccepted(introId, carolRm.pendingOffers().single(), carolKp, carolMinted)
-
-        // The bodies are built by the PRODUCTION builder, so the optional `rv:2` field
-        // on the referral carrier is pinned end to end here (it has no other
-        // round-trip: the QR is pinned through PairingPayload.parse and the announce
-        // through applyInboxAnnounce).
-        val bobAccept = bobRm.acceptBody(introId, bobKp.publicKey, bobMinted)
-        val carolAccept = carolRm.acceptBody(introId, carolKp.publicKey, carolMinted)
+        // The bodies are built by the PRODUCTION builder (what the send carries), so
+        // the optional `rv:2` field on the referral carrier is pinned end to end here (it
+        // has no other round-trip: the QR is pinned through PairingPayload.parse and the
+        // announce through applyInboxAnnounce).
+        val bobAccept = bobRm.registerAccepted(introId, bobRm.pendingOffers().single(), bobKp, bobMinted)
+        val carolAccept = carolRm.registerAccepted(introId, carolRm.pendingOffers().single(), carolKp, carolMinted)
         assertTrue(carolAccept.contains("\"rv\":\"2\""), "the referral accept must advertise role rule v2")
+        assertNull(firstStringFieldAnywhere(carolAccept, "bv"), "a pre-v3 build's accept carries no bv")
 
         // The introducer relays each accept to the other introducee, verbatim.
         bobRm.handleControl("alice", MessageManager.CONTROL_KIND_REFERRAL_ACCEPT, carolAccept)

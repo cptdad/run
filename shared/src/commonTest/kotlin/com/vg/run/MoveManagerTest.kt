@@ -282,6 +282,32 @@ class MoveManagerTest {
         assertNotNull(vault.getContact("contact-1"))
     }
 
+    /**
+     * A v3 contact consists of its ratchet state (docs/ratchet-bootstrap-plan.md §3.5:
+     * never re-initialised). If the state read answers null (an iOS read error does),
+     * the export must FAIL — the existing retryable upload failure, nothing posted, the
+     * vault untouched — rather than ship the contact without it.
+     */
+    @Test
+    fun beginExport_aV3ContactWithoutItsRatchetState_failsAndPostsNothing() = runTest {
+        val vault = seededVault()
+        vault.insertContact(vault.getContact("contact-1")!!.copy(ratchetBootstrapV3 = true))
+        // No `dr/contact-1/text` in the vault: what a null state read looks like to the exporter.
+        val transport = FakeMoveTransport()
+        val mgr = manager(vault, FakeSession(transport))
+
+        mgr.beginExport()
+
+        val state = mgr.exportState.value
+        assertTrue(state is MoveExportState.Failed, "expected Failed, got $state")
+        assertEquals(MoveError.UPLOAD_FAILED, state.error)
+        assertTrue(state.retryable, "the user can retry")
+        assertTrue(transport.posts.isEmpty(), "nothing was exported")
+        assertEquals(listOf(TRANSFER_INBOX), transport.deleted, "the minted transfer inbox is destroyed")
+        assertNull(vault.getMeta(MoveMetaKeys.HANDLE))
+        assertTrue(vault.getContact("contact-1")!!.ratchetBootstrapV3, "the old phone's contact is untouched")
+    }
+
     @Test
     fun beginExport_uploadFailure_destroysTheHalfFilledInbox() = runTest {
         val vault = seededVault()

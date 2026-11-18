@@ -4,6 +4,7 @@ import { tmpdir } from 'os'
 import { execFileSync } from 'child_process'
 import { multiremotebrowser } from '@wdio/globals'
 import { androidLanguageIntentString } from './helpers/AppLocale'
+import { lockIosScreen } from './helpers/iosScreenLock'
 
 /**
  * Physical-device (maintainer lab) helpers shared by the cross-suite confs:
@@ -544,11 +545,9 @@ export async function terminateAppOnAllSeats(): Promise<void> {
         try {
             const drv = mb.getInstance(name) as any
             if (drv?.isIOS) {
-                await Promise.race([
-                    drv.execute('mobile: lock'),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('mobile: lock timed out after 10s')), 10_000)),
-                ])
-                console.log(`[teardown] ${name}: screen locked`)
+                // A short raw power press, not `mobile: lock`: see helpers/iosScreenLock.ts.
+                const locked = await lockIosScreen(drv)
+                console.log(`[teardown] ${name}: ${locked ? 'screen locked' : 'screen NOT locked (still lit) — run `npm run fleet:screens -- --fix`'}`)
             }
         } catch (e) {
             console.log(`[teardown] ${name}: screen lock skipped (${(e as Error).message.split('\n')[0]})`)

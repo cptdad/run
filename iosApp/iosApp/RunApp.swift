@@ -302,6 +302,26 @@ struct RunApp: App {
             AppState.testUnboundedTorKeepAlive = true
             LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-tor-keepalive-unbounded armed")
         }
+        // e2e-only REPRODUCTION (tests/adhoc/network-kick-before-unlock.spec.ts):
+        // the first time Tor reaches `.connected` while the vault is still locked,
+        // fire ONE real network-restore kick (TorManager.kickForNetworkRestore —
+        // the production DisableNetwork toggle, so the SOCKS listener moves before
+        // the unlock). The static it sets exists only in DEBUG, so a release binary
+        // has no path to it at all.
+        if ProcessInfo.processInfo.arguments.contains("--test-network-kick-before-unlock") {
+            AppState.testNetworkKickBeforeUnlock = true
+            LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-network-kick-before-unlock armed")
+        }
+        // Same reproduction, field timeline: the single kick fires when the unlock is
+        // SUBMITTED; `--test-network-kick-at-unlock-lead-ms=N` (alone or alongside)
+        // starts the KDF N ms after it (default 0). AppState.unlock. DEBUG only.
+        let args = ProcessInfo.processInfo.arguments
+        let leadArg = args.first(where: { $0.hasPrefix("--test-network-kick-at-unlock-lead-ms=") })
+        if leadArg != nil || args.contains("--test-network-kick-at-unlock") {
+            let lead = leadArg.flatMap { Int($0.split(separator: "=", maxSplits: 1)[1]) } ?? 0
+            AppState.testNetworkKickAtUnlockLeadMs = max(0, min(lead, 10_000))
+            LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-network-kick-at-unlock armed lead-ms=\(max(0, min(lead, 10_000)))")
+        }
         #endif
         // Debug mode (settings row, ContactListView) may have been turned on in
         // a previous session — including a RELEASE session, since the toggle is

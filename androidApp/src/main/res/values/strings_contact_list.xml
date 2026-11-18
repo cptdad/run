@@ -136,6 +136,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">Re-pair required</string>
     <string name="contact_list_waiting_for_inbox">Waiting for their inbox…</string>
+    <string name="contact_list_secure_channel_lost">Secure channel lost: pair again</string>
     <string name="contact_list_introduced_by">Introduced by %1$s</string>
     <string name="contact_list_introduced">Introduced</string>
     <string name="contact_list_repair_chip">Re-pair</string>

@@ -88,6 +88,7 @@
     <string name="contact_list_memory_dialog_title">Лична белешка</string>
     <string name="contact_list_repair_required">Потребно е повторно спарување</string>
     <string name="contact_list_waiting_for_inbox">Се чека нивното сандаче…</string>
+    <string name="contact_list_secure_channel_lost">Безбедниот канал е изгубен: спарете се повторно</string>
     <string name="contact_list_introduced_by">Претставено од %1$s</string>
     <string name="contact_list_introduced">Претставено</string>
     <string name="contact_list_repair_chip">Спари повторно</string>

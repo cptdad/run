@@ -69,12 +69,44 @@ internal class VaultRatchetStore(private val vault: VaultDatabase) : RatchetStor
         fun stateKey(contactId: String, channel: String) = "dr/$contactId/$channel"
     }
     private fun key(contactId: String, channel: String) = stateKey(contactId, channel)
-    override fun load(contactId: String, channel: String): ByteArray? =
-        vault.getMeta(key(contactId, channel))?.let { decodeBase64(it) }
+    override fun load(contactId: String, channel: String): ByteArray? {
+        val stored = vault.getMeta(key(contactId, channel)) ?: return null
+        return try {
+            decodeBase64(stored)
+        } catch (_: Exception) {
+            // PRESENT but not base64: a different failure from a read that threw. Typed,
+            // so the no-fresh-init load can prove it corrupt like an undecodable blob
+            // instead of reading it as "unavailable" forever. (Every other caller sees
+            // an exception, exactly as before.)
+            throw RatchetStoreUndecodableException(stored.encodeToByteArray())
+        }
+    }
     override fun save(contactId: String, channel: String, blob: ByteArray) {
         vault.putMeta(key(contactId, channel), encodeBase64(blob))
     }
 }
+
+/**
+ * The stored ratchet value is PRESENT but cannot be decoded at the storage layer (not
+ * base64). Carries the raw stored bytes so a caller can tell a stable bad value from
+ * a flapping read. A read that THROWS for any other reason is not this.
+ */
+internal class RatchetStoreUndecodableException(val raw: ByteArray) : Exception("stored ratchet value is not decodable")
+
+/**
+ * A v3 contact's ratchet state cannot be used for THIS operation
+ * (docs/ratchet-bootstrap-plan.md §3.5 "No fresh init, ever"): absent, unreadable,
+ * or not provably the same bytes across reads. Nothing was written and nothing was
+ * re-initialised; the operation fails and the next one retries. Never latched.
+ */
+internal open class RatchetStateUnavailableException(message: String) : Exception(message)
+
+/**
+ * A v3 contact's stored ratchet state is PROVEN corrupt: present, failing to
+ * deserialise, and byte-identical across [RatchetManager.CORRUPT_PROOF_READS] reads.
+ * [RatchetManager]'s `onStateLost` hook has run (the caller latches `dr-lost`).
+ */
+internal class RatchetStateLostException : RatchetStateUnavailableException("ratchet state lost (proven corrupt)")
 
 internal class RatchetManager(
     private val store: RatchetStore,
@@ -83,7 +115,12 @@ internal class RatchetManager(
     // the pair re-bootstraps via legacy — otherwise, with the lock armed, the poll
     // path drops every legacy blob AND the re-inited (send-chainless) ratchet's
     // output → a permanently dead conversation with no relay-404 re-pair signal.
+    // NEVER invoked for an operation called with `noFreshInit = true` (a v3 contact).
     private val onCorruptReinit: (contactId: String, channel: String) -> Unit = { _, _ -> },
+    // Invoked, under [lock], when a `noFreshInit` operation PROVES the stored state
+    // corrupt (see [RatchetStateLostException]). The caller latches `dr-lost`.
+    // Nothing here is reset, re-initialised or deleted.
+    private val onStateLost: (contactId: String, channel: String) -> Unit = { _, _ -> },
 ) {
     /**
      * ONE lock for every contact and both channels, deliberately.
@@ -390,6 +427,132 @@ internal class RatchetManager(
         return live
     }
 
+    // -----------------------------------------------------------------------
+    // Skipped-key sweep (2026-11-15, plan G1).
+    //
+    // [DoubleRatchet.deserialize] ages out skipped message keys older than
+    // [DoubleRatchet.SKIPPED_KEY_TTL_MS], but only a load that goes through
+    // [loadOrInit] writes the pruned state back — and a conversation that goes
+    // quiet is never loaded that way again, so its expired keys stayed in the vault
+    // (the read-only probes prune in RAM only). The sweep below is the vault-side
+    // half: once per unlocked session the platform calls it for every contact.
+    //
+    // THE RULE, per (contact, channel), each under [lock] on its own (other ratchet
+    // ops interleave between contacts):
+    //  - a live uncommitted advance (pending lineage) ⇒ SKIP, untouched. A write
+    //    would change the store fingerprint, and [commitPending]'s compare-and-swap
+    //    would then discard the screen's ticket (a needless re-delivery). Stale
+    //    tickets are NOT expired here: the sweep fires no release hook.
+    //  - no stored blob ⇒ SKIP. Never [loadOrInit]: that would fresh-init a ratchet
+    //    from the pairing secret for a contact that has none.
+    //  - a blob that does not deserialize ⇒ SKIP, untouched. Never [onCorruptReinit]
+    //    (it would delete dr-rxlock / dr-on): the next real op decides, exactly as
+    //    before this sweep existed. No write, no wipe, no callback.
+    //  - deserialized ⇒ WRITE only if the load dropped something (expired or
+    //    over-cap keys), or if the blob predates SER_VERSION 3 and still holds
+    //    skipped keys (those are stamped "now" on every load, so they would never
+    //    age out until a v3 write gives them a real stamp — migrate-on-write).
+    //    The write is a compare-and-swap against the bytes it was derived from.
+    //  - the transient ratchet and the loaded blob are wiped in a finally.
+    // One contact's failure never stops the others. Log lines carry counts only.
+    // -----------------------------------------------------------------------
+
+    /** What one [sweepExpiredSkippedKeys] pass did. Counts only — no identifier. */
+    internal class SkippedKeySweepResult(
+        /** States re-written without their expired (or over-cap / unstamped) keys. */
+        val rewritten: Int,
+        /** States left alone because a screen holds an uncommitted advance on them. */
+        val heldByPendingAdvance: Int,
+        /** Stored blobs that did not deserialize (left untouched). */
+        val unreadable: Int,
+        /** Loads or writes that threw (left untouched; retried next session). */
+        val failed: Int,
+        /** True when [shouldContinue] ended the pass before every contact was seen. */
+        val stoppedEarly: Boolean,
+    )
+
+    private enum class SweepOutcome { UNCHANGED, REWRITTEN, PENDING, UNREADABLE, FAILED, STOPPED }
+
+    /**
+     * Removes expired skipped message keys from the STORE for every id in
+     * [contactIds] on [channel] — see the rule above. Blocking (vault I/O):
+     * call off the main thread. [shouldContinue] is checked under [lock] before
+     * each contact and again right before each write; a false answer ends the pass
+     * (session torn down, transport replaced). Never throws.
+     */
+    fun sweepExpiredSkippedKeys(
+        contactIds: List<String>,
+        channel: String,
+        shouldContinue: () -> Boolean = { true },
+    ): SkippedKeySweepResult {
+        var rewritten = 0; var pending = 0; var unreadable = 0; var failed = 0
+        var stopped = false
+        for (contactId in contactIds) {
+            val outcome = try {
+                lock.withLock { sweepOneLocked(contactId, channel, shouldContinue) }
+            } catch (_: Exception) {
+                SweepOutcome.FAILED
+            }
+            when (outcome) {
+                SweepOutcome.UNCHANGED -> {}
+                SweepOutcome.REWRITTEN -> rewritten++
+                SweepOutcome.PENDING -> pending++
+                SweepOutcome.UNREADABLE -> unreadable++
+                SweepOutcome.FAILED -> failed++
+                SweepOutcome.STOPPED -> { stopped = true }
+            }
+            if (stopped) break
+        }
+        if (rewritten > 0 || unreadable > 0 || failed > 0 || pending > 0) {
+            platformLogWarn(
+                LOG_TAG,
+                "ratchet: skipped-key sweep — $rewritten state(s) pruned, $pending held by an uncommitted advance, " +
+                    "$unreadable unreadable (left as is), $failed failed${if (stopped) ", stopped early" else ""}",
+            )
+        }
+        return SkippedKeySweepResult(rewritten, pending, unreadable, failed, stopped)
+    }
+
+    /** One contact of [sweepExpiredSkippedKeys]. Under [lock]. */
+    private fun sweepOneLocked(contactId: String, channel: String, shouldContinue: () -> Boolean): SweepOutcome {
+        if (!shouldContinue()) return SweepOutcome.STOPPED
+        if (pendingLineage[pendingKey(contactId, channel)] != null) return SweepOutcome.PENDING
+        val blob = try {
+            store.load(contactId, channel)
+        } catch (_: Exception) {
+            return SweepOutcome.FAILED
+        } ?: return SweepOutcome.UNCHANGED
+        var live: DoubleRatchet? = null
+        try {
+            val ratchet = try {
+                DoubleRatchet.deserialize(blob, nowMs = { clockMs() })
+            } catch (_: Exception) {
+                return SweepOutcome.UNREADABLE
+            }
+            live = ratchet
+            val unstampedLegacy = blob[0] < DoubleRatchet.SER_VERSION && ratchet.skippedKeyCount() > 0
+            if (!ratchet.droppedExpiredSkippedOnLoad() && !unstampedLegacy) return SweepOutcome.UNCHANGED
+            // Re-check right before the write: the session may have ended while this
+            // contact was being decoded, and the stored bytes must still be the ones
+            // the pruned state was derived from (a second manager over the same vault
+            // — a transport restart — is not serialized by this lock).
+            if (!shouldContinue()) return SweepOutcome.STOPPED
+            val again = try { store.load(contactId, channel) } catch (_: Exception) { null }
+                ?: return SweepOutcome.FAILED
+            val same = try { again.contentEquals(blob) } finally { again.secureWipe() }
+            if (!same) return SweepOutcome.UNCHANGED
+            return try {
+                persist(contactId, channel, ratchet)
+                SweepOutcome.REWRITTEN
+            } catch (_: Exception) {
+                SweepOutcome.FAILED
+            }
+        } finally {
+            live?.wipe()
+            blob.secureWipe()
+        }
+    }
+
     /** Rules 4 + 5 for a persisting single op: drop every uncommitted advance of this ratchet. */
     private fun discardForPersistLocked(contactId: String, channel: String, why: String, hooks: MutableList<() -> Unit>) {
         val key = pendingKey(contactId, channel)
@@ -466,10 +629,13 @@ internal class RatchetManager(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String, plaintext: ByteArray,
         selfIsBobOverride: Boolean? = null,
+        // A v3 contact (plan §3.5): never initialise a state that is not there —
+        // throws [RatchetStateUnavailableException] instead (see [loadOrInit]).
+        noFreshInit: Boolean = false,
     ): ByteArray? {
         val hooks = mutableListOf<() -> Unit>()
         try {
-            return lock.withLock { tryEncryptLocked(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, plaintext, selfIsBobOverride, hooks) }
+            return lock.withLock { tryEncryptLocked(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, plaintext, selfIsBobOverride, noFreshInit, hooks) }
         } finally {
             runHooks(hooks)
         }
@@ -478,12 +644,12 @@ internal class RatchetManager(
     private fun tryEncryptLocked(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String, plaintext: ByteArray,
-        selfIsBobOverride: Boolean?, hooks: MutableList<() -> Unit>,
+        selfIsBobOverride: Boolean?, noFreshInit: Boolean, hooks: MutableList<() -> Unit>,
     ): ByteArray? {
         // Retrieve-ack rule 4: a send persists, so it must never sit on top of an
         // advance the screen has not shown yet.
         discardForPersistLocked(contactId, channel, "send", hooks)
-        val ratchet = loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride)
+        val ratchet = loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride, noFreshInit)
         return try {
             val wire = ratchet.encrypt(plaintext).encodeWire()
             persist(contactId, channel, ratchet)
@@ -507,10 +673,11 @@ internal class RatchetManager(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String, wireBlob: ByteArray,
         selfIsBobOverride: Boolean? = null,
+        noFreshInit: Boolean = false,
     ): ByteArray {
         val hooks = mutableListOf<() -> Unit>()
         try {
-            return lock.withLock { decryptLocked(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, wireBlob, selfIsBobOverride, hooks) }
+            return lock.withLock { decryptLocked(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, wireBlob, selfIsBobOverride, noFreshInit, hooks) }
         } finally {
             runHooks(hooks)
         }
@@ -519,10 +686,10 @@ internal class RatchetManager(
     private fun decryptLocked(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String, wireBlob: ByteArray,
-        selfIsBobOverride: Boolean?, hooks: MutableList<() -> Unit>,
+        selfIsBobOverride: Boolean?, noFreshInit: Boolean, hooks: MutableList<() -> Unit>,
     ): ByteArray {
         discardForPersistLocked(contactId, channel, "single decrypt", hooks)   // rule 4
-        val ratchet = loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride)
+        val ratchet = loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride, noFreshInit)
         return try {
             val rm = decodeRatchetWire(wireBlob)
             val plain = ratchet.decrypt(rm.header, rm.ciphertext)
@@ -636,6 +803,9 @@ internal class RatchetManager(
         // identity of rules 1/2. True = today's behaviour, persisted before return.
         persist: Boolean = true,
         drainGroup: Any? = null,
+        // A v3 contact (plan §3.5): throws [RatchetStateUnavailableException] rather
+        // than initialising a missing / unreadable state (see [loadOrInit]).
+        noFreshInit: Boolean = false,
     ): List<ByteArray?> {
         require(persist || drainGroup != null) { "an uncommitted drain needs a drain group" }
         val hooks = mutableListOf<() -> Unit>()
@@ -643,7 +813,7 @@ internal class RatchetManager(
             return lock.withLock {
                 decryptBatchLocked(
                     contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, wires,
-                    selfIsBobOverride, deferDamaging, report, maxDeferrableWireBytes, persist, drainGroup, hooks,
+                    selfIsBobOverride, deferDamaging, report, maxDeferrableWireBytes, persist, drainGroup, noFreshInit, hooks,
                 )
             }
         } finally {
@@ -655,7 +825,7 @@ internal class RatchetManager(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String, wires: List<ByteArray>,
         selfIsBobOverride: Boolean?, deferDamaging: Boolean, report: DecryptBatchReport?,
-        maxDeferrableWireBytes: Int, persist: Boolean, drainGroup: Any?,
+        maxDeferrableWireBytes: Int, persist: Boolean, drainGroup: Any?, noFreshInit: Boolean,
         hooks: MutableList<() -> Unit>,
     ): List<ByteArray?> {
         val key = pendingKey(contactId, channel)
@@ -681,7 +851,7 @@ internal class RatchetManager(
         val budget = workBudgetFactory()
         val baseSnapshot = base?.snapshot
         var ratchet = (if (baseSnapshot != null) DoubleRatchet.deserialize(baseSnapshot, nowMs = { clockMs() })
-            else loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride))
+            else loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride, noFreshInit))
             .also { it.workBudget = budget }
         // The compare-and-swap reference for a new advance: inherited along a chain,
         // else the store blob as loadOrInit left it (after any init / prune persist).
@@ -793,10 +963,18 @@ internal class RatchetManager(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String,
         selfIsBobOverride: Boolean? = null,
+        // v3: never initialises; a missing/unreadable state answers false (cannot
+        // send now) instead of throwing — this is a probe. With v3 BOTH roles can
+        // send from birth (Bob on the pre-chain), so a stored state answers true.
+        noFreshInit: Boolean = false,
     ): Boolean = lock.withLock {
         // Cheap probe: Alice has a sending chain from init; Bob only after his first
         // receive — `canSend()` reports exactly that.
-        val ratchet = loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride)
+        val ratchet = try {
+            loadOrInit(contactId, channel, sharedSecret, myInboundInboxId, myOutboundInboxId, selfIsBobOverride, noFreshInit)
+        } catch (e: RatchetStateUnavailableException) {
+            return@withLock false
+        }
         try {
             ratchet.canSend()
         } finally {
@@ -830,7 +1008,14 @@ internal class RatchetManager(
         contactId: String, channel: String, sharedSecret: ByteArray,
         myInboundInboxId: String, myOutboundInboxId: String,
         selfIsBobOverride: Boolean?,
+        noFreshInit: Boolean = false,
     ): DoubleRatchet {
+        // v3 (docs/ratchet-bootstrap-plan.md §3.5): the state was written by the
+        // pairing transaction and is the ONLY state this pairing can ever have —
+        // a fresh init from `sharedSecret` would put text on keys the stored secret
+        // derives, and [onCorruptReinit] would delete dr-rxlock / dr-on. Neither
+        // ever runs here.
+        if (noFreshInit) return loadExistingOrThrow(contactId, channel)
         store.load(contactId, channel)?.let { blob ->
             try {
                 val loaded = DoubleRatchet.deserialize(blob, nowMs = { clockMs() })
@@ -875,6 +1060,72 @@ internal class RatchetManager(
         return ratchet
     }
 
+    /**
+     * The no-fresh-init load (v3). Every outcome is either a usable state or a
+     * typed throw that WROTE NOTHING:
+     *  - absent, or the read itself threw (an iOS read error answers like absent) ⇒
+     *    [RatchetStateUnavailableException]: fail this operation, retry on the next.
+     *    A single miss is never latched — an absent blob is not proof of anything.
+     *  - present but not deserialisable ⇒ re-read; only when [CORRUPT_PROOF_READS]
+     *    reads return the SAME bytes, none of which deserialises, is the state proven
+     *    corrupt: [onStateLost] runs and [RatchetStateLostException] is thrown. A read
+     *    that fails, differs or comes back absent in between ⇒ unavailable (retry).
+     *  - deserialisable ⇒ returned, after the same expired-skipped-key write-back the
+     *    legacy path does.
+     * Every loaded copy is wiped.
+     */
+    private fun loadExistingOrThrow(contactId: String, channel: String): DoubleRatchet {
+        // One read: the blob (decodable = true), or the raw stored bytes of a value that
+        // is present but not decodable at the storage layer (decodable = false). Absent
+        // or a read that threw ⇒ unavailable, never proof.
+        class Read(val bytes: ByteArray, val decodable: Boolean)
+        fun read(): Read {
+            val b = try {
+                store.load(contactId, channel)
+            } catch (e: RatchetStoreUndecodableException) {
+                return Read(e.raw, decodable = false)
+            } catch (e: Exception) {
+                throw RatchetStateUnavailableException("ratchet state unreadable: ${e::class.simpleName}")
+            } ?: throw RatchetStateUnavailableException("no ratchet state")
+            return Read(b, decodable = true)
+        }
+        val first = read()
+        try {
+            val loaded = if (!first.decodable) null else try {
+                DoubleRatchet.deserialize(first.bytes, nowMs = { clockMs() })
+            } catch (_: Exception) {
+                null
+            }
+            if (loaded != null) {
+                if (loaded.droppedExpiredSkippedOnLoad()) {
+                    try { persist(contactId, channel, loaded) } catch (_: Exception) {}
+                }
+                return loaded
+            }
+            // Present and undecodable — at the storage layer (not base64) or as a
+            // ratchet blob. Proven only when every re-read returns the SAME kind of
+            // failure on the SAME bytes.
+            repeat(CORRUPT_PROOF_READS - 1) {
+                val again = try { read() } catch (_: RatchetStateUnavailableException) {
+                    throw RatchetStateUnavailableException("ratchet state read not stable")
+                }
+                try {
+                    if (again.decodable != first.decodable || !again.bytes.contentEquals(first.bytes)) {
+                        throw RatchetStateUnavailableException("ratchet state read not stable")
+                    }
+                } finally {
+                    again.bytes.secureWipe()
+                }
+            }
+            // Counts only — no identifier.
+            platformLogError(LOG_TAG, "ratchet state proven corrupt ($channel) — secure channel lost, no re-init")
+            onStateLost(contactId, channel)
+            throw RatchetStateLostException()
+        } finally {
+            first.bytes.secureWipe()
+        }
+    }
+
     private fun persist(contactId: String, channel: String, ratchet: DoubleRatchet) {
         val blob = ratchet.serialize()
         try {
@@ -901,6 +1152,14 @@ internal class RatchetManager(
          * identical state before each one, so they all meet identical conditions.
          */
         const val MAX_CONSECUTIVE_FAILURES_PER_BATCH = 8
+
+        /**
+         * How many reads of a stored v3 state must return the SAME undecodable bytes
+         * before it counts as proven corrupt ([RatchetStateLostException]). One read is
+         * never enough (§3.5: never latch on a single miss); a byte-identical repeat
+         * rules out a torn or in-flight read inside this operation.
+         */
+        const val CORRUPT_PROOF_READS = 3
 
         /**
          * Retrieve-ack rule 5: how long an UNCOMMITTED advance may live before the

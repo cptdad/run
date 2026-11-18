@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.testTag
@@ -392,7 +391,8 @@ private fun MoveStatusPage(status: String) {
 private fun MoveReadyPage(viewModel: RunViewModel, handle: MoveHandle) {
     val context = LocalContext.current
     val handleText = remember(handle) { MoveHandleCodec.toQrText(handle) }
-    val qr: Bitmap = remember(handleText) { generateQrBitmap(handleText, sizePx = 800) }
+    val qrBudgetPx = qrBudgetPx(260.dp)
+    val qr: Bitmap = remember(handleText, qrBudgetPx) { generateQrBitmap(handleText, qrBudgetPx) }
     var showText by remember { mutableStateOf(false) }
     var copied by remember { mutableStateOf(false) }
     var cancelRefusedMessage by remember { mutableStateOf<String?>(null) }
@@ -419,11 +419,9 @@ private fun MoveReadyPage(viewModel: RunViewModel, handle: MoveHandle) {
     Spacer(Modifier.height(10.dp))
     MoveBody(stringResource(R.string.move_qr_body))
     Spacer(Modifier.height(18.dp))
-    Image(
-        bitmap = qr.asImageBitmap(),
-        contentDescription = null,
+    CrispQrImage(
+        bitmap = qr,
         modifier = Modifier
-            .size(260.dp)
             .clip(RoundedCornerShape(12.dp))
             .testTag("move_qr_image"),
     )

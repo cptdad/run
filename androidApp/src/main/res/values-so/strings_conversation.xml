@@ -9,6 +9,7 @@
     <string name="conversation_fs_stalled_title">Forward secrecy weli ma hirgelin</string>
     <string name="conversation_fs_stalled_body">Fariimaha aad u dirto xiriiriyahan weli waa sirsan yihiin, laakiin weli ma helayaan ilaalinta dheeraadka ah ee fariimihii hore badbaado ku haysa haddii fure goor dambe la ogaado. Inta badan arrintani way dhammaataa marka xiriiriyuhu jawaabo. Haddii ay sii jirto, xiriiriyaha tirtir, kadibna mar kale ku dar.</string>
     <string name="conversation_ratchet_refused_body">Lama samayn karin kanaal ammaan ah oo aad xiriiriyahan la leedahay. Fariimaha lama dirayo. Xiriiriyaha tirtir, kadibna lammaanaanta mar kale samee.</string>
+    <string name="conversation_secure_channel_lost_body">Kanaalka ammaanka ah ee xiriiriyahan waa la waayay. Fariimaha lama dirayo. Xiriiriyaha ka saar, kadibna lammaanaanta mar kale samee.</string>
     <string name="conversation_report_confirm_title">Ka warbixi xiriiriyaha</string>
     <string name="conversation_report_confirm_message">Warbixinnada waa la eegaa oo tallaabo waa laga qaadaa 24 saacadood gudahood. Warbixintaadu waxay ka soo baxdaa app-kaaga email-ka, sidaas darteed waxay noo tusi doontaa cinwaankaaga email-ka — qoraalka qabyada ahna waxaa kaydiya app-kaas, oo ka baxsan Rún, halkaas oo aan laga tirtiri doonin haddii aad Rún tirtirto.</string>
     <string name="conversation_report_confirm_button">U warbixi Rún</string>

@@ -26,14 +26,37 @@ object VaultSnapshotIo {
             .mapNotNull { key -> db.getMeta(key)?.let { value -> key to value } }
             .toMap()
         val groups = db.getAllGroups()
-        return VaultSnapshot(
+        val snapshot = VaultSnapshot(
             contacts = db.getAllContacts(),
             inboxes = db.getAllInboxIds(),
             groups = groups,
             members = groups.flatMap { db.getGroupMembers(it.groupId) },
             meta = meta,
         )
+        // A v3 contact is ONLY its stored ratchet state — it can never be re-initialised
+        // (docs/ratchet-bootstrap-plan.md §3.5). A `_meta` read that answered null (an
+        // iOS read error does) would otherwise drop that state silently while the row
+        // and its v3 flag travel: a dead contact on the new phone with no "pair again".
+        // Refuse the whole export instead; the caller reports the existing retryable
+        // move failure and this vault is not touched. A legacy contact is unaffected.
+        if (v3ContactsMissingRatchetState(snapshot)) throw IncompleteSnapshotException()
+        return snapshot
     }
+
+    /** A snapshot that would move a v3 contact without the ratchet state it consists of. */
+    class IncompleteSnapshotException : Exception("a v3 contact's ratchet state is missing from the snapshot")
+
+    /**
+     * True when a contact with [ContactRecord.ratchetBootstrapV3] has no
+     * `dr/<id>/text` entry in [snapshot]'s meta. Checked on export, on encode and on
+     * decode, so no bundle — from this build or an older one — can create a v3
+     * contact without its state. Never true for a snapshot with no v3 contact.
+     */
+    fun v3ContactsMissingRatchetState(snapshot: VaultSnapshot): Boolean =
+        snapshot.contacts.any { c ->
+            c.ratchetBootstrapV3 &&
+                snapshot.meta[VaultRatchetStore.stateKey(c.contactId, MessageManager.RATCHET_TEXT_CHANNEL)].isNullOrEmpty()
+        }
 
     /**
      * Imports [snapshot] into [db] inside ONE [VaultDatabase.withTransaction]:
@@ -66,6 +89,9 @@ object VaultSnapshotIo {
      * recovery path) converges instead of double-jumping counters.
      */
     fun import(db: VaultDatabase, snapshot: VaultSnapshot, counterJump: Long, bundleId: String) {
+        // Before anything is written (the decoder already refuses such a bundle; this
+        // keeps every other caller of import from creating the dead contact either).
+        if (v3ContactsMissingRatchetState(snapshot)) throw IncompleteSnapshotException()
         db.withTransaction {
             if (db.getMeta(MoveMetaKeys.IMPORTED) == bundleId) return@withTransaction
 

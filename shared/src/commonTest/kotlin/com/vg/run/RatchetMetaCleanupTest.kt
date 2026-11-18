@@ -32,6 +32,11 @@ class RatchetMetaCleanupTest {
                 // role-collision refusal latch. A re-pair is the documented way out of
                 // a refusal, so neither may outlive the contact.
                 "dr-rat-unacked/abc", "dr-refused/abc",
+                // The v3 "secure channel lost — pair again" latch. A re-pair is the
+                // ONLY way out of it, so it must die with the contact.
+                "dr-lost/abc",
+                // v3 key confirmation (confirmed, or the first undecryptable wire).
+                "dr-kc/abc",
                 // The two ratchet-ROLE inputs. A re-pair mints
                 // brand-new pairing secrets, so an inherited order bit would be computed
                 // against the wrong pair — and combined with the new pairing's parity it

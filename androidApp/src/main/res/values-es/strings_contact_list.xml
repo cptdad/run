@@ -121,6 +121,7 @@
     <!-- Contact row / group row -->
     <string name="contact_list_repair_required">Hay que volver a emparejar</string>
     <string name="contact_list_waiting_for_inbox">Esperando su buzón…</string>
+    <string name="contact_list_secure_channel_lost">Canal seguro perdido: vuelve a emparejarlo</string>
     <string name="contact_list_introduced_by">Presentado por %1$s</string>
     <string name="contact_list_introduced">Presentado</string>
     <string name="contact_list_repair_chip">Reemparejar</string>

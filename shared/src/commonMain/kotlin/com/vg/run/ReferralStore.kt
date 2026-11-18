@@ -203,6 +203,15 @@ internal class StoredAccept(
     /** See [REFERRAL_RECORD_MAX_LIFETIME_MS]. Defaults to [createdAt] so a
      *  record written before this field existed migrates on read. */
     val firstSeenAt: Long = createdAt,
+    /**
+     * `bv` — this introduction was staged by a build that runs the one-time ratchet
+     * bootstrap (docs/ratchet-bootstrap-plan.md §4.2). Decided ONCE, at `stageAccept`,
+     * and the ONLY source the accept body's `bv` field is emitted from, so a redrive
+     * (or a retry after an app update between stage and redrive) sends the same bytes
+     * and the decision can never flip. A record written by an older build has no `bv`
+     * and decodes as false: that introduction stays on the legacy bootstrap.
+     */
+    val bootstrapV3: Boolean = false,
 )
 
 /** A received offer parked for consent (introducee role). */
@@ -322,7 +331,25 @@ internal fun encodeStoredAccept(r: StoredAccept): String =
         "," + f("st", if (r.sent) "1" else "0") +
         "," + f("n", r.attempts.toString()) +
         "," + f("ts", r.createdAt.toString()) +
-        "," + f("t0", r.firstSeenAt.toString()) + "}"
+        "," + f("t0", r.firstSeenAt.toString()) +
+        // Written only when set, so a legacy record re-persisted by this build keeps
+        // its exact shape (and its legacy decision).
+        (if (r.bootstrapV3) "," + f(STORED_ACCEPT_BOOTSTRAP_FIELD, REFERRAL_BOOTSTRAP_V3) else "") + "}"
+
+/** The [StoredAccept.bootstrapV3] field of a `ref_p` record (absent = legacy). */
+internal const val STORED_ACCEPT_BOOTSTRAP_FIELD = "bv"
+
+/**
+ * The value of `bv` — in the `ref_p` record and on the wire in the accept body
+ * (`ReferralManager.acceptBody`). Exact match only: any other value, or the field's
+ * absence, is "legacy". A JSON STRING like every other referral field.
+ */
+internal const val REFERRAL_BOOTSTRAP_V3 = "3"
+
+/** True iff the `ref_p` record [raw] carries the `bv` decision (used by the device-move
+ *  export to keep a pending v3-capable introduction off an older importer). */
+internal fun storedAcceptCarriesBootstrapV3(raw: String): Boolean =
+    firstStringFieldAnywhere(raw, STORED_ACCEPT_BOOTSTRAP_FIELD) == REFERRAL_BOOTSTRAP_V3
 
 /**
  * Strict decode: EVERY field must be present and shape-valid, including our own
@@ -375,6 +402,7 @@ internal fun decodeStoredAccept(raw: String): StoredAccept? {
         attempts = firstStringFieldAnywhere(raw, "n")?.toIntOrNull() ?: 0,
         createdAt = ts,
         firstSeenAt = firstSeen(raw, ts),
+        bootstrapV3 = storedAcceptCarriesBootstrapV3(raw),
     )
 }
 

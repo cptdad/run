@@ -1,7 +1,5 @@
-• Maksimal: et skjold markerer kontakter som også bruker Maksimal.
-• Sendte meldinger får full farge når relayet har mottatt dem.
-• Svar på gruppeinvitasjoner og introduksjoner senere fra chattelisten.
-• Gjør til admin spør før du gir fra deg rollen.
-• Grupper: prikken for uleste vises bare på gruppen som fikk meldingen.
-• Hvis relayet ikke svarer, prøver appen en annen vei i stedet for å henge seg opp.
-• Sikkerhetsrettelser etter en ekstern gjennomgang.
+• Kontakter som legges til ved skanning eller introduksjon, starter nå med en engangs nøkkelutveksling: en senere kopi av telefonen kan ikke gjenskape de første nøklene deres. Begge telefonene trenger denne versjonen; eksisterende kontakter er uendret.
+• Parkoblingen tåler at telefonen snus eller at tilkoblingen brytes.
+• Skarpere QR-koder.
+• Gruppemeldinger som kommer før du blir med, vises i stedet for å gå tapt.
+• Stabilere tilkobling etter nettverksbytte.

@@ -45,6 +45,13 @@ data class PairingScan(
      */
     val grpInboxId: String? = null,
     val grpWriteCap: String? = null,
+    /**
+     * The peer's one-time X25519 public key (`"ek"`, base64url-no-pad of 32 bytes,
+     * docs/ratchet-bootstrap-plan.md §4.1), already validated by [PairingPayload.parse]:
+     * well-formed, not a low-order point, not our own. Null = the peer's build has no
+     * v3 bootstrap ⇒ this pairing is legacy on BOTH sides (decision rule §4.1, §6).
+     */
+    val ephemeralPubB64: String? = null,
 )
 
 object PairingPayload {
@@ -73,6 +80,83 @@ object PairingPayload {
     /** SECRET-ONLY payload (renders instantly, before/without the mint). */
     fun buildSecretOnly(secretB64: String): String =
         "{\"secret\":${jsonEscapeString(secretB64)}$roleRuleField}"
+
+    /**
+     * The v3 one-time key field (docs/ratchet-bootstrap-plan.md §4.1): `"ek"`, the
+     * base64url-no-pad of our 32-byte one-time X25519 public key, appended AFTER `rv`
+     * in both code shapes. Its PRESENCE is the capability signal (it implies `rv:2`;
+     * there is no version field). An older parser ignores the unknown key.
+     */
+    const val EPHEMERAL_KEY_FIELD = "ek"
+
+    /** Length of a base64url-no-pad encoding of 32 bytes. */
+    private const val EK_B64URL_LEN = 43
+
+    private fun ekField(ekB64Url: String): String {
+        require(decodeEphemeralKey(ekB64Url) != null) { "not a well-formed one-time key" }
+        return ",${jsonEscapeString(EPHEMERAL_KEY_FIELD)}:${jsonEscapeString(ekB64Url)}"
+    }
+
+    /**
+     * [buildSecretOnly] plus `"ek"` — what a v3-capable session shows. Built only by
+     * [PairingSession]; the original builders stay byte-identical, so a screen that
+     * has not switched to the session keeps emitting a legacy code.
+     */
+    internal fun buildSecretOnlyV3(secretB64: String, ekB64Url: String): String =
+        buildSecretOnly(secretB64).dropLast(1) + ekField(ekB64Url) + "}"
+
+    /** [buildFull] plus `"ek"` (see [buildSecretOnlyV3]). */
+    internal fun buildFullV3(
+        inboxId: String,
+        writeCap: String,
+        ctlInboxId: String,
+        ctlWriteCap: String,
+        secretB64: String,
+        ekB64Url: String,
+        grpInboxId: String? = null,
+        grpWriteCap: String? = null,
+    ): String = buildFull(inboxId, writeCap, ctlInboxId, ctlWriteCap, secretB64, grpInboxId, grpWriteCap)
+        .dropLast(1) + ekField(ekB64Url) + "}"
+
+    /**
+     * Strict decode of an `"ek"` value: exactly 43 base64url characters, canonical (the
+     * unused low 2 bits of the last character are zero), 32 bytes. Null otherwise.
+     * Pure Kotlin — no platform base64 leniency (padding, `+`/`/`, whitespace) reaches
+     * the trust boundary.
+     */
+    internal fun decodeEphemeralKey(s: String): ByteArray? {
+        if (s.length != EK_B64URL_LEN) return null
+        val out = ByteArray(32)
+        var acc = 0
+        var bits = 0
+        var o = 0
+        for ((i, ch) in s.withIndex()) {
+            val v = when (ch) {
+                in 'A'..'Z' -> ch - 'A'
+                in 'a'..'z' -> ch - 'a' + 26
+                in '0'..'9' -> ch - '0' + 52
+                '-' -> 62
+                '_' -> 63
+                else -> return null
+            }
+            if (i == EK_B64URL_LEN - 1 && (v and 0x3) != 0) return null   // non-canonical tail
+            acc = (acc shl 6) or v
+            bits += 6
+            if (bits >= 8) {
+                bits -= 8
+                if (o < 32) out[o++] = ((acc shr bits) and 0xFF).toByte()
+            }
+        }
+        return if (o == 32) out else null
+    }
+
+    /** Same X25519 point (bit 255 is ignored by the function, so it is ignored here). */
+    private fun samePoint(a: ByteArray, b: ByteArray): Boolean {
+        if (a.size != 32 || b.size != 32) return false
+        var diff = (a[31].toInt() and 0x7F) xor (b[31].toInt() and 0x7F)
+        for (i in 0 until 31) diff = diff or (a[i].toInt() xor b[i].toInt())
+        return (diff and 0xFF) == 0
+    }
 
     /**
      * FULL payload (inbox + control pair + group pair + secret) for the Done step /
@@ -116,7 +200,22 @@ object PairingPayload {
      * distinct from the others.
      * [requireFull] rejects a secret-only code (used by the paste path).
      */
-    fun parse(raw: String, myInboxId: String?, mySecretB64: String?, requireFull: Boolean): PairingScan? {
+    fun parse(raw: String, myInboxId: String?, mySecretB64: String?, requireFull: Boolean): PairingScan? =
+        parse(raw, myInboxId, mySecretB64, requireFull, myEphemeralPubB64 = null)
+
+    /**
+     * [parse] with the v3 one-time key checks against OUR key [myEphemeralPubB64]
+     * (base64url-no-pad; null = we have none, so only the echo check is skipped). An
+     * `"ek"` that is present but malformed (not a string, not 43 canonical base64url
+     * characters, not 32 bytes), a LOW-ORDER point ([RatchetBootstrapV3.isLowOrderPublicKey])
+     * or a copy of our own key rejects the WHOLE code — the existing "invalid code"
+     * result, never a crash. These checks run in the 4-argument [parse] too (minus
+     * the echo check), so no build of this codec accepts a malformed `ek`.
+     */
+    fun parse(
+        raw: String, myInboxId: String?, mySecretB64: String?, requireFull: Boolean,
+        myEphemeralPubB64: String?,
+    ): PairingScan? {
         return try {
             val json = parseTopLevelJson(raw)
             fun strField(key: String): String? = json[key]?.let { if (it.isString) it.text else null }
@@ -181,10 +280,26 @@ object PairingPayload {
                 // non-string or unrecognised value reads as "this peer runs the old
                 // role rule", which is the agreeing answer — the marker can only ever
                 // turn the v2 rule ON, never fail a scan.
+                // The v3 one-time key — OPTIONAL, but once present it must be right:
+                // a malformed / low-order / reflected key rejects the code (§4.1). Its
+                // absence is never a rejection (every older build).
+                val ekB64: String?
+                if (json.containsKey(EPHEMERAL_KEY_FIELD)) {
+                    ekB64 = strField(EPHEMERAL_KEY_FIELD) ?: return null           // not a string
+                    val ek = decodeEphemeralKey(ekB64) ?: return null
+                    if (RatchetBootstrapV3.isLowOrderPublicKey(ek)) return null
+                    if (myEphemeralPubB64 != null) {
+                        val mine = decodeEphemeralKey(myEphemeralPubB64)
+                        if (mine != null && samePoint(mine, ek)) return null
+                    }
+                } else {
+                    ekB64 = null
+                }
                 PairingScan(
                     inboxId, writeCap, ctlInboxId, ctlWriteCap, secretB64,
                     roleRuleV2 = strField(ROLE_RULE_FIELD) == ROLE_RULE_V2,
                     grpInboxId = grpInboxId, grpWriteCap = grpWriteCap,
+                    ephemeralPubB64 = ekB64,
                 )
             } finally {
                 secretBytes.secureWipe()

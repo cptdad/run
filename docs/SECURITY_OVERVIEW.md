@@ -201,9 +201,29 @@ loopback port while your proxy app is not running.
 ### Pairing
 
 Contacts are added **in person by QR code**. Each phone shows a code and scans the other's. Each
-side contributes 32 random bytes, and the pairing secret is SHA-256 of the two halves in a fixed
-order. The secret never crosses the network. The codes also carry the relay inbox addresses and the
-capabilities to write to them.
+side contributes 32 random bytes (its "half"), which never cross the network. The codes also carry
+the relay inbox addresses and the capabilities to write to them.
+
+How the keys of a new contact are made depends on the app version on **both** phones:
+
+- **Both phones run a version with the one-time key exchange.** Each code also carries a one-time
+  X25519 public key made for this pairing only. Each phone combines its own one-time private key
+  with the other phone's public key, and everything the conversation starts from (the pairing
+  secret the vault stores and the first ratchet keys) is derived from that result together with
+  the two halves. The one-time private keys are held only in the app's memory, are never written to
+  the vault, and are overwritten once the contact is saved or the pairing is abandoned (this
+  follows from the code; it has not been checked in a memory image). A picture of both codes
+  therefore gives neither the stored pairing secret nor any message key.
+- **Either phone runs an older version.** The pairing works exactly as before: the pairing secret is
+  SHA-256 of the two halves in a fixed order. Both halves are shown on screen in the clear, so a
+  camera that captures **both** codes during the pairing has the pairing secret without touching
+  either phone. Pair where the screens are not overlooked.
+
+**Contacts are not upgraded.** A contact keeps the construction it was made with for as long as it
+exists: every contact added before this change, and every contact added with a phone running an
+older version, stays on the older construction. Deleting the contact and pairing again, with both
+phones up to date, is the only way to move it. The app does not currently show which construction a
+contact uses.
 
 A contact you already have can also **introduce** two of their contacts remotely. Then the two new
 contacts agree on a secret with ephemeral X25519 keys passed through the introducer. The introducer
@@ -211,23 +231,56 @@ never learns the resulting secret. They could, however, substitute their own key
 middle undetected. You trust an introduced contact exactly as far as you trust the person who
 introduced them. Introduced contacts are labelled as such.
 
+When both introduced phones run a version with the one-time key exchange, the first ratchet keys
+are derived from that ephemeral exchange in the same way (introductions involving an older version
+keep the older construction). One difference from scanning: each introduced phone keeps its
+ephemeral private key in the vault from the moment it accepts until the introduction completes on
+that phone, because the other side's answer can arrive much later. A copy of that vault taken in
+this window, together with recorded relay traffic, can open the messages each side sends before it
+has heard back from the other. Once both phones have completed the introduction, nothing they store
+opens those messages. An introducer who removes the capability marker from one side's answer leaves
+the two contacts unable to talk to each other; the phone with the one-time exchange then shows
+"secure channel lost" once the other side sends a text. Removing it from both answers gives two
+contacts on the older construction, without a warning; that is within the trust you already place
+in the introducer.
+
 ### Double Ratchet on the text channel
 
 Text messages use the **Double Ratchet** (the Signal algorithm: X25519, HKDF-SHA256, HMAC-SHA256,
-AES-256-GCM, header bound as associated data). Once the ratchet runs, messages have **forward
-secrecy** (past message keys are deleted as the chain advances) and **post-compromise recovery**
-(a new key exchange the attacker did not see locks them out again). Skipped keys for out-of-order
-messages expire after 24 hours. Group messages are sent separately to each member over that member's
+AES-256-GCM, header bound as associated data). Once ratchet messages have gone in both directions
+(see the next section for what comes before, which differs between new and older contacts),
+messages have **forward secrecy** (past message keys are deleted as the chain advances) and
+**post-compromise recovery** (a new key exchange the attacker did not see locks them out again).
+For a contact made with the one-time key exchange, both phones can send ratchet messages from the
+first message, and their keys are deleted as the chain advances from the start; a conversation in
+which only one side ever writes has that forward secrecy but no post-compromise recovery. Skipped keys for out-of-order
+messages expire after 24 hours; an expired key is deleted from the vault the next time that
+conversation is used or the app is unlocked, whichever comes first. Group messages are sent separately to each member over that member's
 own pairwise channel.
 
 ### The static envelope: bootstrap and fallback
 
-The ratchet cannot start until both sides have heard from each other. Until then, and for some
-control signals, messages use a **static envelope**: AES-256-GCM under a key derived from the
-pairing secret. This envelope has **no forward secrecy**. Anyone who later gets the pairing secret
-from an opened vault can decrypt every static-envelope message they recorded.
+Some messages use a **static envelope**: AES-256-GCM under a key derived from the stored pairing
+secret. This envelope has **no forward secrecy**. Anyone who later gets the pairing secret from an
+opened vault can decrypt every static-envelope message they recorded. What uses it depends on how
+the contact was made.
 
-What uses it:
+**Contacts made with the one-time key exchange.** Texts (one-to-one and group), the inbox
+announcement at pairing, and the introduction and group-membership signals always use the ratchet,
+from the first message, on both phones. If the ratchet cannot be used for a message (for example its
+stored state cannot be read at that moment), that send fails; the message is never sent on the
+static envelope instead, and the ratchet is never restarted from the pairing
+secret. If the stored state is proven damaged, the app marks the contact "secure channel lost",
+tells the other phone so it shows the same, and refuses to send until you remove the contact and
+pair again. Static-envelope texts and signals of those kinds that claim to come from such a contact
+are dropped. Only small notices still use the static envelope: group activity hints, screenshot
+notices, the "I use Maximum" notice and the "secure channel lost" notice. For these contacts the
+static key comes from the exchanged pairing secret, so it cannot be computed from a picture of the
+codes, but someone with an opened vault and recorded traffic can read those notices, and forge them.
+
+**Contacts on the older construction** (made before this change, or with a phone running an older
+version). The ratchet cannot start until both sides have heard from each other. Until then, and for
+some control signals, messages use the static envelope:
 
 - **Texts sent before you have received anything from the contact.** In a normal two-way
   conversation this is the first few messages of a new pairing. In a conversation where only one
@@ -240,6 +293,32 @@ What uses it:
   "new group message" hint) and screenshot notices always use it. Referral and group-membership
   signals (invite, join, roster, leave) move onto the ratchet once both phones support it and the
   ratchet is running. Until then they use the static envelope too.
+
+For these older contacts the **first ratchet chain is also started from the pairing secret**: the
+root key and the receiving side's first ratchet key are derived from it. So the ratchet messages
+the initiating side sends before it has received the other side's first ratchet message can be
+decrypted, like static-envelope messages, by anyone who recorded them and later gets the pairing
+secret, from an opened vault or, for a scanned contact, from a picture of both codes. Full forward
+secrecy and post-compromise recovery start once ratchet messages have gone in both directions.
+Contacts made with the one-time key exchange do not have this: their first ratchet keys cannot be
+derived from the stored pairing secret or from the codes. (Like any ratchet state, the receiving
+phone's current state opens messages sent to it that it has not processed yet; that is the
+in-transit exposure listed below.)
+
+**What a seized phone or a recorded relay can recover**, in short:
+
+- **Recorded relay traffic alone** opens nothing, for either kind of contact.
+- **Contact made with the one-time key exchange, phone opened later.** Messages that the receiving
+  phone has already received and processed cannot be decrypted from what remains in either phone's
+  vault. This is pinned by automated tests that run every key derivation in the code against
+  everything both simulated phones store; it is not a measurement on real devices, and whether old
+  copies survive in flash memory below the file system has not been examined. What an opened vault
+  does give: messages still in transit or not yet processed by the receiving phone, the ability to
+  impersonate you to that contact and the contact to you until the next exchange of replies, and the
+  small static-envelope notices listed above.
+- **Contact on the older construction, phone opened later** (or, for a scanned contact, a picture
+  of both codes): every static-envelope text and the first ratchet chain described above, plus the
+  same current-state exposure.
 
 Messages without the replay fields described below are dropped, never accepted as a downgrade.
 
@@ -296,12 +375,15 @@ touches. When the app connects, it asks for the pending counts of all your inbox
 so the relay learns your full set of inbox addresses at once. It also sees size classes and timing.
 The shape of a group send reveals that a group exists and roughly how large it is. Some request
 features show the kind of traffic: whether a message is allowed to wake the recipient, whether it is
-text or control, and whether it is a ratchet message. If you enabled notifications, it can link your
+text or control, and whether it is a ratchet message. That last point also shows whether a new
+pairing used the one-time key exchange (its first control message is a ratchet message). If you enabled notifications, it can link your
 inboxes to a push token. It cannot see your IP address or any message content.
 
 **What a hostile relay can do:** drop, delay or withhold messages; show a message a second time
-once; push a pairing into the "refuse to send" state by serving junk; and choose when the app shows
-its "new version available" notice. It cannot inject readable messages, read your traffic, or learn
+once; push an older-construction contact into the "refuse to send" state by serving junk; make the
+add-contact screen of a new pairing show "Pairing didn't work" by serving junk before the genuine
+first message (the notice clears when that message arrives, and nothing is deleted unless you tap
+"Start again"); and choose when the app shows its "new version available" notice. It cannot inject readable messages, read your traffic, or learn
 who you are from the relay connection.
 
 **On iOS it can also put any text on your lock screen under Rún's name.** The relay operator holds
@@ -345,9 +427,9 @@ Rún has had **no independent third-party security review**. All review so far h
 repeated rounds through 2026, done with AI assistance and checked by hand. They looked at the
 vault, key handling, wipe paths, the message protocol and the relay interaction against the threat
 model above. Findings were reproduced before they were fixed, and many fixes come with tests that
-pin the behaviour. This is not a substitute for outside review. A review of the protocol by a
-cryptographer is planned once the protocol description is published. Until then, treat the design
-as unreviewed by outsiders.
+pin the behaviour. This is not a substitute for outside review. No cryptographer has reviewed the
+protocol. The protocol description is public so that anyone can read and check it. Treat the
+design as unreviewed by outsiders.
 
 ## 8. Known limitations
 
@@ -369,8 +451,9 @@ These are open gaps and accepted trade-offs. Each line says what it means for yo
   server. After you turn push off, deleted entries can linger in freed database pages until the next
   wipe.
 - **On iOS, some copies of key material in memory cannot be reliably erased**: copies made when
-  data crosses between the Swift and Kotlin layers, and two copies of the database key that the
-  database engine keeps while the vault is open. They live only in the running process.
+  data crosses between the Swift and Kotlin layers, copies inside Apple's CryptoKit during X25519
+  operations (ratchet steps and the one-time pairing key exchange), and two copies of the database
+  key that the database engine keeps while the vault is open. They live only in the running process.
 - **After you leave the app, the process may linger up to about three minutes** (not on Maximum)
   with the vault locked but freed memory from the session not yet cleared.
 - **On iOS, uninstalling may leave a few Keychain items** until you reinstall or reset the device.
@@ -409,20 +492,42 @@ These are open gaps and accepted trade-offs. Each line says what it means for yo
 
 ### Ratchet and pairing roles
 
-- **Static-envelope messages have no forward secrecy** (section 4). This covers one-sided
-  conversations, the bootstrap, the always-static control signals, and up to 8 refused-later sends.
+- **Existing contacts keep the older construction for life** (section 4). Only contacts added after
+  this change, with both phones up to date, get the one-time key exchange. Re-pairing is the only way
+  to move a contact, and the app does not show which contacts still use the older construction.
+- **Static-envelope messages have no forward secrecy** (section 4). For older-construction contacts
+  this covers one-sided conversations, the bootstrap, the always-static control signals, and up to
+  8 refused-later sends. For contacts made with the one-time key exchange it covers only the small
+  notices listed in section 4.
 - **An opened vault lets someone impersonate you to your contacts until the next ratchet round
-  trip.** The vault holds the pairing secrets, write capabilities and current ratchet state.
-  Forged static-envelope control signals are accepted until the ratchet is fully established.
+  trip**, for every contact. The vault holds the pairing secrets, write capabilities and current
+  ratchet state. For older-construction contacts, forged static-envelope control signals are also
+  accepted until the ratchet is fully established; for contacts made with the one-time key exchange,
+  only the small static notices can be forged this way.
+- **Introductions keep the one-time private key in the vault for a while.** Until an introduction
+  completes on a phone, a copy of that phone's vault can open the first messages of the new
+  conversation (section 4). A scanned pairing never stores its one-time keys.
+- **A lost secure channel needs a new pairing.** For a contact made with the one-time key exchange,
+  damaged ratchet state is never repaired by restarting from the pairing secret. The contact shows
+  "secure channel lost" and stays unusable until it is removed and paired again. Someone holding an
+  opened vault image of either phone can also forge the notice that causes this, for that one
+  contact.
+- **A pairing whose one-time key was removed from one code does not work and may not say why.** If
+  someone substitutes or edits a displayed code (already a full man-in-the-middle, as with any
+  pairing), one phone can end up waiting for the other indefinitely instead of reporting a failure.
 - **The ratchet roles in older pairings can be chosen by the other side.** Pairings made with older
   versions, or where either side runs an older version, decide which phone takes which ratchet role
   by comparing inbox addresses, and the peer controls its own address. Newer pairings derive the
   role from the pairing secrets, but a modified client can still pick its role in about two tries.
-  A role clash is detected and leads to the send refusal above, not to silent weakening.
-- **An introducer can strip the role information from an introduction**, and the pair then falls
-  back to the older rule instead of refusing.
-- **The first ratchet steps prove possession of the pairing secret, nothing more.** Someone who
-  holds the pairing secret and a write capability can forge the second step of the bootstrap.
+  A role clash is detected and leads to the send refusal above, not to silent weakening. (For a
+  contact made with the one-time key exchange both roles come from one shared derivation; a
+  mismatch there means the two phones derived different keys; for a scanned pairing the add-contact
+  screen then reports "Pairing didn't work", an introduction has no such notice.)
+- **An introducer can strip the role information from an introduction** of older-construction
+  contacts, and the pair then falls back to the older rule instead of refusing.
+- **For older-construction contacts, the first ratchet steps prove possession of the pairing
+  secret, nothing more.** Someone who holds the pairing secret and a write capability can forge the
+  second step of the bootstrap.
 
 ### The relay and push
 

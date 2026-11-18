@@ -18,6 +18,8 @@ data class ContactListSnapshot(
     val pendingIds: Set<String>,
     /** Contacts that reported Maximum while this device is at MAXIMUM (the shield after the name). Ids only. */
     val maximumIds: Set<String> = emptySet(),
+    /** Contacts whose one-time-key secure channel is lost ("pair again" row marker). Ids only. */
+    val lostIds: Set<String> = emptySet(),
 )
 
 /**

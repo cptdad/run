@@ -29,4 +29,17 @@ class MigrationSchemaPinTest {
             "MigrationBundleCodec.CURRENT_SCHEMA must be bumped with DatabaseManager.DATABASE_VERSION",
         )
     }
+
+    /**
+     * Owner decision D4 (docs/ratchet-bootstrap-plan.md §4.3): a vault with no v3
+     * contact is exported at the schema the PREVIOUS build reads (v10), so a move to
+     * an older build keeps working until the first v3 pairing. If a later schema step
+     * moves DATABASE_VERSION again, this pin forces a decision about what a
+     * "no new feature in use" bundle should claim instead of silently keeping 10.
+     */
+    @Test
+    fun legacyExportSchema_isTheSchemaBeforeTheV3Step() {
+        assertEquals(11, DatabaseManager.DATABASE_VERSION, "revisit LEGACY_EXPORT_SCHEMA with the next schema step")
+        assertEquals(10, MigrationBundleCodec.LEGACY_EXPORT_SCHEMA)
+    }
 }

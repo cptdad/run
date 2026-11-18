@@ -9,7 +9,7 @@
     <string name="about_tor_runestone_title">Red means Tor</string>
     <string name="about_tor_runestone_body">Watch the runestone — red means you\'re on Tor. Its ring pulses harder the closer you get, holds solid red the moment the relay answers, and then the R lights.</string>
     <string name="about_e2e_title">End-to-end encrypted</string>
-    <string name="about_e2e_body">Every message is sealed with a key only you and your contact hold, and as you keep chatting that key ratchets forward — so exposing a single key still leaves the rest sealed.</string>
+    <string name="about_e2e_body">Every message is sealed with a key only you and your contact hold. Once you have written back and forth, that key ratchets forward as you keep chatting — so exposing a single key then leaves the rest sealed. A contact you add with both phones on this version or newer also starts with a one-time key exchange, so a later copy of either phone cannot recreate its first keys; existing contacts get this only if you add each other again.</string>
     <string name="about_relay_title">A relay that can\'t read</string>
     <string name="about_relay_body">Rún\'s relay is deliberately dumb — no accounts, nothing to read, just padded blobs in numbered inboxes it passes along, their padded size revealing nothing about the contents. Nothing lingers once it\'s delivered — messages clear from the inbox as you read them, and the inbox itself is reclaimed after a long stretch of silence.</string>
     <string name="about_relay_runestone_title">White ᚱ means Relay</string>

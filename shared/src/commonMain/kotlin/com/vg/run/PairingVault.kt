@@ -61,7 +61,6 @@ object PairingVault {
         myGrpReadCap: String? = null,
     ) {
         val now = currentTimeMillis()
-        val oneYear = VaultSeedDefaults.INBOX_LIFETIME_MS
 
         // The contact row + its up-to-6 inbox rows + the
         // ratchet marker are ONE atomic batch. Without this, a torn write (a later
@@ -73,6 +72,68 @@ object PairingVault {
         // so an aborted add leaves NO partial row bearing a live pairing secret. The
         // sibling referral path (ReferralManager) already wraps its equivalent writes.
         vault.withTransaction {
+            writeContactAndInboxRows(
+                vault = vault, now = now,
+                contact = ContactRecord(
+                    contactId = contactId,
+                    sharedSecret = sharedSecret,
+                    trustLevel = VaultSeedDefaults.DEFAULT_TRUST_LEVEL,
+                    alias = alias,
+                    aliasLastRotated = now,
+                    mnemonic = mnemonic,
+                ),
+                peerInboxId = peerInboxId, peerWriteCap = peerWriteCap,
+                peerCtlInboxId = peerCtlInboxId, peerCtlWriteCap = peerCtlWriteCap,
+                myInboxId = myInboxId, myReadCap = myReadCap,
+                myCtlInboxId = myCtlInboxId, myCtlReadCap = myCtlReadCap,
+                peerGrpInboxId = peerGrpInboxId, peerGrpWriteCap = peerGrpWriteCap,
+                myGrpInboxId = myGrpInboxId, myGrpReadCap = myGrpReadCap,
+            )
+            // Mark this fresh pairing ratchet-capable (text-channel forward secrecy);
+            // SEND activation flips later once both inboxes exist + a first inbound.
+            MessageManager.markRatchetCapable(vault, contactId)
+            // The ratchet ROLE inputs, in the SAME transaction as the
+            // contact they belong to — a half-written pairing must never leave a role
+            // bit over a contact that does not exist, nor a contact whose role bit was
+            // rolled back (it would then silently use the id-order rule while the peer
+            // uses the secret order: the exact collision this closes).
+            if (mySecretHalf != null && peerSecretHalf != null) {
+                MessageManager.recordRatchetRoleInputs(
+                    vault, contactId, mySecretHalf, peerSecretHalf, peerRoleRuleV2,
+                )
+            }
+        }
+    }
+
+    /**
+     * The contact row and its inbox rows — the part of a pairing save that is the
+     * same for the legacy ([savePairedContact]) and the v3 ([savePairedContactV3])
+     * path. Call INSIDE the caller's transaction. Writes, in order: the ownership
+     * gate (throws [InboxInUseException] before writing anything), the contact row,
+     * the peer's outbound + control-outbound rows (optional — absent from a
+     * secret-only scan / pre-v7 peer), our inbound + control-inbound rows, the
+     * peer's/our GROUP rows (optional, same rule).
+     */
+    private fun writeContactAndInboxRows(
+        vault: VaultDatabase,
+        now: Long,
+        contact: ContactRecord,
+        peerInboxId: String?,
+        peerWriteCap: String?,
+        peerCtlInboxId: String?,
+        peerCtlWriteCap: String?,
+        myInboxId: String,
+        myReadCap: String,
+        myCtlInboxId: String,
+        myCtlReadCap: String,
+        peerGrpInboxId: String?,
+        peerGrpWriteCap: String?,
+        myGrpInboxId: String?,
+        myGrpReadCap: String?,
+    ) {
+        val contactId = contact.contactId
+        val oneYear = VaultSeedDefaults.INBOX_LIFETIME_MS
+        run {
             // `inbox_ids` is keyed by inboxId with replace-on-conflict, so a
             // peer-supplied id that already exists would SILENTLY overwrite that row —
             // reassigning it to this brand-new contact, flipping its direction and
@@ -94,16 +155,7 @@ object PairingVault {
                     myGrpInboxId = myGrpInboxId, myGrpReadCap = myGrpReadCap,
                 ),
             )?.let { throw InboxInUseException() }
-            vault.insertContact(
-                ContactRecord(
-                    contactId = contactId,
-                    sharedSecret = sharedSecret,
-                    trustLevel = VaultSeedDefaults.DEFAULT_TRUST_LEVEL,
-                    alias = alias,
-                    aliasLastRotated = now,
-                    mnemonic = mnemonic,
-                )
-            )
+            vault.insertContact(contact)
             // Peer's outbound inbox — where we SEND (their inbox + their writeCap).
             // Skipped for a secret-only scan; the peer's inbox arrives later in-band.
             if (peerInboxId != null && peerWriteCap != null) {
@@ -162,20 +214,149 @@ object PairingVault {
                     )
                 )
             }
-            // Mark this fresh pairing ratchet-capable (text-channel forward secrecy);
-            // SEND activation flips later once both inboxes exist + a first inbound.
-            MessageManager.markRatchetCapable(vault, contactId)
-            // The ratchet ROLE inputs, in the SAME transaction as the
-            // contact they belong to — a half-written pairing must never leave a role
-            // bit over a contact that does not exist, nor a contact whose role bit was
-            // rolled back (it would then silently use the id-order rule while the peer
-            // uses the secret order: the exact collision this closes).
-            if (mySecretHalf != null && peerSecretHalf != null) {
-                MessageManager.recordRatchetRoleInputs(
-                    vault, contactId, mySecretHalf, peerSecretHalf, peerRoleRuleV2,
-                )
-            }
         }
+    }
+
+    /** Why the v3 bootstrap refused — the public mirror of the internal
+     *  [RatchetBootstrapV3.Refusal], one value each, same meaning. */
+    enum class V3Refusal { MALFORMED_INPUT, SPENT_EPHEMERAL_KEY, REFLECTED_PEER_KEY, LOW_ORDER_PEER_KEY, KEY_AGREEMENT_FAILED }
+
+    /** By NAME: the two enums carry the same names (pinned by a test), so a value added
+     *  to one without the other fails that test instead of mapping to a neighbour. */
+    internal fun v3Refusal(r: RatchetBootstrapV3.Refusal): V3Refusal = V3Refusal.valueOf(r.name)
+
+    /** What [savePairedContactV3] did. Never thrown — the Swift bridge gets a value. */
+    sealed class V3SaveResult {
+        /** Committed: contact row (v3, ss'), inbox rows, ratchet state and markers. */
+        object Saved : V3SaveResult()
+        /** The bootstrap refused (1:1 with [RatchetBootstrapV3.Refusal]); NOTHING written. */
+        class Refused(val reason: V3Refusal) : V3SaveResult()
+        /** The two QR secret halves are identical (no role order exists); nothing written. */
+        object IdenticalSecretHalves : V3SaveResult()
+        /** One of the peer's inbox ids is owned elsewhere ([InboxInUseException]); nothing written. */
+        object InboxInUse : V3SaveResult()
+        /** A vault write failed; the transaction ROLLED BACK — nothing written. */
+        object WriteFailed : V3SaveResult()
+    }
+
+    /**
+     * The v3 pairing transaction (docs/ratchet-bootstrap-plan.md §3.5 "Pairing
+     * transaction", §3.2, §3.3) — the sibling of [savePairedContact] for a peer whose
+     * code carried a one-time key. Step B calls it at exactly the point it calls
+     * [savePairedContact] today (each side, at its own save, after scanning the
+     * peer's code — secret-only or full), with the same arguments plus the two
+     * one-time keys; the pending-row / scan-back flow is unchanged (the pending side
+     * simply has no peer inbox rows yet and learns them from the ratchet-sealed
+     * announce).
+     *
+     * [pairingSecretFromHalves] is `ss_halves` = [deriveSharedSecret] of the two QR
+     * halves (what the legacy path stores); it is the HKDF salt here and is NOT
+     * stored. [myEphemeralPriv] is CONSUMED — wiped on every path. The halves and the
+     * secret are read only (the caller keeps its existing wipes).
+     *
+     * One transaction, FAIL-CLOSED (unlike [MessageManager.markRatchetCapable], every
+     * write here throws on failure and rolls the whole pairing back): the contact row
+     * with the v3 flag and `ss'`, the inbox rows, the serialized initial ratchet state
+     * (`dr/<id>/text`), the role-order bit, `dr-intent`, `dr-on`, `dr-rxlock`,
+     * `dr-rolerv2` = "1" and `dr-rxseen-ctlcap` = "1" (a v3 peer runs rule v2 and seals
+     * control by construction). The bootstrap's `Ready` is wiped afterwards on every path.
+     */
+    fun savePairedContactV3(
+        vault: VaultDatabase,
+        contactId: String,
+        pairingSecretFromHalves: ByteArray,
+        myEphemeralPriv: ByteArray,
+        peerEphemeralPub: ByteArray,
+        mySecretHalf: ByteArray,
+        peerSecretHalf: ByteArray,
+        peerInboxId: String?,
+        peerWriteCap: String?,
+        peerCtlInboxId: String?,
+        peerCtlWriteCap: String?,
+        myInboxId: String,
+        myReadCap: String,
+        myCtlInboxId: String,
+        myCtlReadCap: String,
+        alias: String,
+        mnemonic: String = "",
+        peerGrpInboxId: String? = null,
+        peerGrpWriteCap: String? = null,
+        myGrpInboxId: String? = null,
+        myGrpReadCap: String? = null,
+    ): V3SaveResult {
+        val mineSortsFirst = ratchetRoleOrderBit(mySecretHalf, peerSecretHalf)
+        if (mineSortsFirst == null) {
+            myEphemeralPriv.secureWipe()   // consumed on every path, as bootstrap does
+            return V3SaveResult.IdenticalSecretHalves
+        }
+        val ready = when (val r = RatchetBootstrapV3.bootstrap(myEphemeralPriv, peerEphemeralPub, pairingSecretFromHalves, mineSortsFirst)) {
+            is RatchetBootstrapV3.Result.Refused -> return V3SaveResult.Refused(v3Refusal(r.reason))
+            is RatchetBootstrapV3.Result.Ready -> r
+        }
+        var stateBlob: ByteArray? = null
+        // The row gets its own bytes ([ready] is wiped below, and a store that keeps the
+        // record must not see them zeroed mid-call). Every store copies or encodes them
+        // during the insert, so this array is wiped once the transaction has returned.
+        val rowSecret = ready.pairingSecret.copyOf()
+        try {
+            val blob = ready.ratchet.serialize()
+            stateBlob = blob
+            val now = currentTimeMillis()
+            vault.withTransaction {
+                writeContactAndInboxRows(
+                    vault = vault, now = now,
+                    contact = ContactRecord(
+                        contactId = contactId,
+                        sharedSecret = rowSecret,
+                        trustLevel = VaultSeedDefaults.DEFAULT_TRUST_LEVEL,
+                        alias = alias,
+                        aliasLastRotated = now,
+                        mnemonic = mnemonic,
+                        ratchetBootstrapV3 = true,
+                    ),
+                    peerInboxId = peerInboxId, peerWriteCap = peerWriteCap,
+                    peerCtlInboxId = peerCtlInboxId, peerCtlWriteCap = peerCtlWriteCap,
+                    myInboxId = myInboxId, myReadCap = myReadCap,
+                    myCtlInboxId = myCtlInboxId, myCtlReadCap = myCtlReadCap,
+                    peerGrpInboxId = peerGrpInboxId, peerGrpWriteCap = peerGrpWriteCap,
+                    myGrpInboxId = myGrpInboxId, myGrpReadCap = myGrpReadCap,
+                )
+                writeV3RatchetStateInTxn(vault, contactId, blob, mineSortsFirst)
+            }
+            return V3SaveResult.Saved
+        } catch (_: InboxInUseException) {
+            return V3SaveResult.InboxInUse
+        } catch (e: Exception) {
+            // Class name only — never a value from the pairing.
+            platformLogError("PairingVault", "v3 pairing save rolled back: ${e::class.simpleName}")
+            return V3SaveResult.WriteFailed
+        } finally {
+            stateBlob?.secureWipe()
+            rowSecret.secureWipe()
+            ready.wipe()
+        }
+    }
+
+    /**
+     * The ratchet half of a v3 contact's birth (docs/ratchet-bootstrap-plan.md §3.5
+     * "Pairing transaction"), shared by the QR pairing ([savePairedContactV3]) and the
+     * referral commit (`ReferralManager.commitReferredContactLocked`) so the two can
+     * never write different marker sets. Call INSIDE the caller's transaction, after the
+     * contact row (with `ratchetBootstrapV3 = true`) is written.
+     *
+     * Writes the serialized initial state (`dr/<id>/text`), the role-order bit, and
+     * `dr-rolerv2`, `dr-intent`, `dr-on`, `dr-rxlock`, `dr-rxseen-ctlcap` = "1" (a v3
+     * peer runs rule v2 and seals control by construction). Every write THROWS on
+     * failure (both actuals' putMeta fail closed), which rolls the whole birth back.
+     */
+    internal fun writeV3RatchetStateInTxn(vault: VaultDatabase, contactId: String, stateBlob: ByteArray, mineSortsFirst: Boolean) {
+        VaultRatchetStore(vault).save(contactId, MessageManager.RATCHET_TEXT_CHANNEL, stateBlob)
+        vault.putMeta(MessageManager.drRoleOrderKey(contactId), if (mineSortsFirst) "1" else "0")
+        vault.putMeta(MessageManager.drPeerRoleRuleV2Key(contactId), "1")
+        vault.putMeta(MessageManager.drIntentKey(contactId), "1")
+        vault.putMeta(MessageManager.drOnKey(contactId), "1")
+        vault.putMeta(MessageManager.drRecvLockKey(contactId), "1")
+        vault.putMeta(MessageManager.drCtlCapKey(contactId), "1")
     }
 
     /**

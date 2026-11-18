@@ -15,7 +15,7 @@
     <string name="about_tor_runestone_title">Rød betyder Tor</string>
     <string name="about_tor_runestone_body">Hold øje med runestenen — rød betyder, at du er på Tor. Ringen pulserer kraftigere, jo tættere du kommer, lyser konstant rød i det øjeblik relæet svarer, og så tændes R\'et.</string>
     <string name="about_e2e_title">End-to-end-krypteret</string>
-    <string name="about_e2e_body">Hver besked forsegles med en nøgle, som kun du og din kontakt har, og mens I skriver videre, drejer nøglen fremad — så selv hvis én nøgle skulle blive afsløret, forbliver resten forseglet.</string>
+    <string name="about_e2e_body">Hver besked forsegles med en nøgle, som kun du og din kontakt har. Når I først har skrevet frem og tilbage, drejer nøglen fremad, mens I skriver videre — så hvis én nøgle så skulle blive afsløret, forbliver resten forseglet. En kontakt, du tilføjer, når begge telefoner har denne version eller nyere, starter desuden med en engangsnøgleudveksling, så en senere kopi af en af telefonerne ikke kan genskabe dens første nøgler; eksisterende kontakter får det kun, hvis I tilføjer hinanden igen.</string>
     <string name="about_relay_title">Et relæ, der ikke kan læse</string>
     <string name="about_relay_body">Rún-relæet er bevidst dumt — ingen konti, intet at læse, kun datablokke i nummererede indbakker, som det sender videre, og fordi blokkene er fyldt op med padding, afslører deres størrelse intet om indholdet. Intet bliver liggende, når det først er leveret — beskeder forsvinder fra indbakken, efterhånden som du læser dem, og selve indbakken bliver inddraget efter lang tids stilhed.</string>
     <string name="about_relay_runestone_title">Hvidt ᚱ betyder relæ</string>

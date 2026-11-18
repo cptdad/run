@@ -153,6 +153,17 @@ export const Ids = {
      */
     scanInjectField: 'scan_inject_field',
     scanInjectSubmit: 'scan_inject_submit',
+    /** DEBUG + SIMULATOR-only (iOS) image seam on the scan step: decodes
+     *  NSTemporaryDirectory()/scan-inject.png with Vision and hands the string to
+     *  the camera's own write target. `scan_inject_image_result` reads "idle" /
+     *  "decoded" / "no code: <reason>". iOS has no Android sibling (an emulator HAS a
+     *  camera; the camera specs use the virtual scene instead). */
+    scanInjectImage: 'scan_inject_image',
+    scanInjectImageResult: 'scan_inject_image_result',
+    /** The Show step's instant QR image (Android: the bitmap with its white
+     *  quiet zone; iOS: the white padded tile) — an element screenshot of it is
+     *  directly scannable. */
+    addShowQr: 'add_show_qr',
     /** DEBUG-only text mirror of the INSTANT secret-only QR on the Show step —
      *  the code a peer's camera reads first. */
     debugInstantCode: 'debug_instant_code',
@@ -168,6 +179,9 @@ export const Ids = {
     addContactScanBackQr: 'add_contact_scan_back_qr',
     /** Cancel button in the AddContact sheet toolbar. */
     addContactCancel: 'add_contact_cancel',
+    /** The destructive "Delete" action of the Android "Cancel pairing?" consent dialog —
+     *  the only way out of the half-done scan-back state (add_contact_cancel opens it). */
+    addContactCancelPairingConfirm: 'add_contact_cancel_pairing_confirm',
     /** Done button shown after a successful add. */
     addContactDone: 'add_contact_done',
     /** Save button in the Android alias entry overlay after debug add. */
@@ -217,6 +231,26 @@ export const Ids = {
      * send).
      */
     ratchetRefusedNotice: 'ratchet_refused_notice',
+    /**
+     * 1:1 conversation notice shown while MessageManager.secureChannelLost is true
+     * (a one-time-key pairing whose secure channel is gone: pair again). Sends to
+     * the contact fail and are not attempted. Outranks `ratchet_refused_notice`.
+     * Identical id on both platforms.
+     */
+    secureChannelLostNotice: 'secure_channel_lost_notice',
+    /**
+     * Contact-row marker for the same state; the contact id is appended
+     * (`contact_secure_lost_<contactId>`). Identical id on both platforms.
+     */
+    contactSecureLostPrefix: 'contact_secure_lost_',
+    /**
+     * Add-contact "pairing failed" notice (key confirmation failed on the scan-first
+     * side) and its single action, which deletes the half-made contact and starts a
+     * new pairing. The notice is not terminal: it disappears again if the pairing
+     * completes after all. Identical ids on both platforms.
+     */
+    pairingFailedNotice: 'pairing_failed_notice',
+    pairingFailedStartAgain: 'pairing_failed_start_again',
     /**
      * Step 1 of the one-time first-open onboarding: the burn-on-read CONCEPT
      * dialog. Since the RuneDialog rework both platforms carry these ids (the

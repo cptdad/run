@@ -495,7 +495,7 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
     private fun protectDbFiles(dbPath: String) = iosProtectVaultDbFiles(dbPath)
 
     private fun createTables() {
-        exec("CREATE TABLE IF NOT EXISTS contacts (contact_id TEXT PRIMARY KEY, shared_secret TEXT NOT NULL, trust_level INTEGER NOT NULL DEFAULT 0, alias TEXT NOT NULL DEFAULT '', alias_last_rotated INTEGER NOT NULL DEFAULT 0, mnemonic TEXT NOT NULL DEFAULT '', outbound_counter INTEGER NOT NULL DEFAULT 0, inbound_counter INTEGER NOT NULL DEFAULT 0, inbound_epoch TEXT NOT NULL DEFAULT '', outbound_ctl_counter INTEGER NOT NULL DEFAULT 0, inbound_ctl_counter INTEGER NOT NULL DEFAULT 0, vouched_by_contact_id TEXT, vouched_at INTEGER NOT NULL DEFAULT 0, outbound_grp_counter INTEGER NOT NULL DEFAULT 0, inbound_grp_counter INTEGER NOT NULL DEFAULT 0)")
+        exec("CREATE TABLE IF NOT EXISTS contacts (contact_id TEXT PRIMARY KEY, shared_secret TEXT NOT NULL, trust_level INTEGER NOT NULL DEFAULT 0, alias TEXT NOT NULL DEFAULT '', alias_last_rotated INTEGER NOT NULL DEFAULT 0, mnemonic TEXT NOT NULL DEFAULT '', outbound_counter INTEGER NOT NULL DEFAULT 0, inbound_counter INTEGER NOT NULL DEFAULT 0, inbound_epoch TEXT NOT NULL DEFAULT '', outbound_ctl_counter INTEGER NOT NULL DEFAULT 0, inbound_ctl_counter INTEGER NOT NULL DEFAULT 0, vouched_by_contact_id TEXT, vouched_at INTEGER NOT NULL DEFAULT 0, outbound_grp_counter INTEGER NOT NULL DEFAULT 0, inbound_grp_counter INTEGER NOT NULL DEFAULT 0, ratchet_v3 INTEGER NOT NULL DEFAULT 0)")
         exec("CREATE TABLE IF NOT EXISTS inbox_ids (inbox_id TEXT PRIMARY KEY, contact_id TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, direction TEXT NOT NULL, cap TEXT)")
         // NO message table (v9, 2026-09-15) — messages are never written to disk.
         // The line that used to stand here CREATEd one; it is now the DROP that
@@ -575,6 +575,10 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
             // Existing contacts are preserved — nothing is dropped or rewritten.
             "outbound_grp_counter INTEGER NOT NULL DEFAULT 0",
             "inbound_grp_counter INTEGER NOT NULL DEFAULT 0",
+            // v11 — the one-time ratchet bootstrap flag (ContactRecord.ratchetBootstrapV3,
+            // docs/ratchet-bootstrap-plan.md §3.4). Same idempotent ALTER; DEFAULT 0, so
+            // every existing contact reads "not v3" and keeps its legacy rules.
+            "ratchet_v3 INTEGER NOT NULL DEFAULT 0",
         )) {
             try { exec("ALTER TABLE contacts ADD COLUMN $col") } catch (_: Throwable) { /* already present */ }
         }
@@ -721,13 +725,28 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
             // execChecked: a failed persist must THROW so MessageManager's
             // fail-closed replay guards fire — not silently
             // report success like the old swallowing bridge.
-            execChecked("INSERT OR REPLACE INTO contacts (contact_id, shared_secret, trust_level, alias, alias_last_rotated, mnemonic, outbound_counter, inbound_counter, inbound_epoch, outbound_ctl_counter, inbound_ctl_counter, vouched_by_contact_id, vouched_at, outbound_grp_counter, inbound_grp_counter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                contact.contactId, encodeBase64(contact.sharedSecret), contact.trustLevel,
-                contact.alias, contact.aliasLastRotated, contact.mnemonic,
-                contact.outboundCounter, contact.inboundCounter, contact.inboundEpoch,
-                contact.outboundCtlCounter, contact.inboundCtlCounter,
-                contact.vouchedByContactId, contact.vouchedAt,
-                contact.outboundGrpCounter, contact.inboundGrpCounter)
+            //
+            // v11: the `ratchet_v3` column is NAMED only for a v3 row. A legacy row
+            // takes the column DEFAULT 0 through the REPLACE, which is its correct
+            // value — so a vault whose ALTER above somehow did not land keeps every
+            // legacy write working (only a v3 save would fail, loudly, and roll back).
+            if (contact.ratchetBootstrapV3) {
+                execChecked("INSERT OR REPLACE INTO contacts (contact_id, shared_secret, trust_level, alias, alias_last_rotated, mnemonic, outbound_counter, inbound_counter, inbound_epoch, outbound_ctl_counter, inbound_ctl_counter, vouched_by_contact_id, vouched_at, outbound_grp_counter, inbound_grp_counter, ratchet_v3) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    contact.contactId, encodeBase64(contact.sharedSecret), contact.trustLevel,
+                    contact.alias, contact.aliasLastRotated, contact.mnemonic,
+                    contact.outboundCounter, contact.inboundCounter, contact.inboundEpoch,
+                    contact.outboundCtlCounter, contact.inboundCtlCounter,
+                    contact.vouchedByContactId, contact.vouchedAt,
+                    contact.outboundGrpCounter, contact.inboundGrpCounter, 1L)
+            } else {
+                execChecked("INSERT OR REPLACE INTO contacts (contact_id, shared_secret, trust_level, alias, alias_last_rotated, mnemonic, outbound_counter, inbound_counter, inbound_epoch, outbound_ctl_counter, inbound_ctl_counter, vouched_by_contact_id, vouched_at, outbound_grp_counter, inbound_grp_counter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    contact.contactId, encodeBase64(contact.sharedSecret), contact.trustLevel,
+                    contact.alias, contact.aliasLastRotated, contact.mnemonic,
+                    contact.outboundCounter, contact.inboundCounter, contact.inboundEpoch,
+                    contact.outboundCtlCounter, contact.inboundCtlCounter,
+                    contact.vouchedByContactId, contact.vouchedAt,
+                    contact.outboundGrpCounter, contact.inboundGrpCounter)
+            }
         } finally { lock.unlock() }
         return 1L
     }
@@ -1080,6 +1099,17 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
     // -----------------------------------------------------------------------
 
     private fun Map<String, Any?>.toContact(): ContactRecord? {
+        // v11 flag, STRICT: no column at all ⇒ this vault never ran the v11 ALTER, so
+        // no v3 row can exist in it (the v3 INSERT names the column and would have
+        // failed) ⇒ legacy. A column that IS there but whose value is not exactly
+        // 0 or 1 is an unreadable row and is DROPPED, like a row missing its id —
+        // never read as "legacy", which would put a v3 contact back on the static
+        // envelope (docs/ratchet-bootstrap-plan.md §3.4).
+        val v3 = if (!containsKey("ratchet_v3")) false else when (num("ratchet_v3")) {
+            0L -> false
+            1L -> true
+            else -> return null
+        }
         return ContactRecord(
             contactId = str("contact_id") ?: return null,
             sharedSecret = str("shared_secret")?.let { decodeBase64(it) } ?: return null,
@@ -1098,6 +1128,7 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
             inboundGrpCounter = num("inbound_grp_counter") ?: 0L,
             vouchedByContactId = str("vouched_by_contact_id"),
             vouchedAt = num("vouched_at") ?: 0L,
+            ratchetBootstrapV3 = v3,
         )
     }
 

@@ -256,79 +256,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كل رسالة مُحكمة الإغلاق بمفتاح لا يملكه سواك أنت وجهة اتصالك، ومع استمرار المحادثة يتقدّم هذا المفتاح خطوة بعد خطوة — فحتى لو انكشف مفتاح واحد تبقى البقية مُحكمة الإغلاق."
+            "value": "كل رسالة مُحكمة الإغلاق بمفتاح لا يملكه سواك أنت وجهة اتصالك. وبعد أن تتبادلا الرسائل ذهابًا وإيابًا، يتقدّم هذا المفتاح خطوة بعد خطوة مع استمرار المحادثة — فإذا انكشف مفتاح واحد حينها تبقى البقية مُحكمة الإغلاق. وجهة الاتصال التي تضيفها حين يكون على الهاتفين هذا الإصدار أو أحدث تبدأ أيضًا بتبادل مفاتيح لمرة واحدة، فلا تستطيع نسخة لاحقة من أيٍّ من الهاتفين إعادة إنشاء مفاتيحها الأولى؛ ولا تحصل جهات الاتصال الحالية على ذلك إلا إذا أضاف كلٌّ منكما الآخر من جديد."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hver besked forsegles med en nøgle, som kun du og din kontakt har, og mens I skriver videre, drejer nøglen fremad — så selv hvis én nøgle skulle blive afsløret, forbliver resten forseglet."
+            "value": "Hver besked forsegles med en nøgle, som kun du og din kontakt har. Når I først har skrevet frem og tilbage, drejer nøglen fremad, mens I skriver videre — så hvis én nøgle så skulle blive afsløret, forbliver resten forseglet. En kontakt, du tilføjer, når begge telefoner har denne version eller nyere, starter desuden med en engangsnøgleudveksling, så en senere kopi af en af telefonerne ikke kan genskabe dens første nøgler; eksisterende kontakter får det kun, hvis I tilføjer hinanden igen."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jede Nachricht wird mit einem Schlüssel versiegelt, den nur du und dein Kontakt besitzen, und je länger ihr schreibt, desto weiter rückt dieser Schlüssel vor — wird also ein einzelner Schlüssel offengelegt, bleibt der Rest trotzdem versiegelt."
+            "value": "Jede Nachricht wird mit einem Schlüssel versiegelt, den nur du und dein Kontakt besitzen. Sobald ihr hin und her geschrieben habt, rückt dieser Schlüssel weiter vor, während ihr weiterschreibt — wird dann ein einzelner Schlüssel offengelegt, bleibt der Rest trotzdem versiegelt. Ein Kontakt, den du hinzufügst, wenn beide Telefone diese oder eine neuere Version haben, startet außerdem mit einem einmaligen Schlüsselaustausch, sodass eine spätere Kopie eines der beiden Telefone seine ersten Schlüssel nicht nachbilden kann; bestehende Kontakte bekommen das nur, wenn ihr euch neu hinzufügt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Every message is sealed with a key only you and your contact hold, and as you keep chatting that key ratchets forward — so exposing a single key still leaves the rest sealed."
+            "value": "Every message is sealed with a key only you and your contact hold. Once you have written back and forth, that key ratchets forward as you keep chatting — so exposing a single key then leaves the rest sealed. A contact you add with both phones on this version or newer also starts with a one-time key exchange, so a later copy of either phone cannot recreate its first keys; existing contacts get this only if you add each other again."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada mensaje se sella con una clave que solo tenéis tu contacto y tú, y a medida que seguís hablando esa clave avanza sin volver atrás, así que exponer una sola clave deja el resto igual de sellado."
+            "value": "Cada mensaje se sella con una clave que solo tenéis tu contacto y tú. Una vez que habéis intercambiado mensajes en ambos sentidos, esa clave avanza sin volver atrás mientras seguís hablando, así que exponer una sola clave deja entonces el resto igual de sellado. Un contacto que añadas con ambos teléfonos en esta versión o una más reciente empieza además con un intercambio de claves de un solo uso, así que una copia posterior de cualquiera de los dos teléfonos no puede recrear sus primeras claves; los contactos existentes solo lo obtienen si volvéis a añadiros."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "هر پیام با کلیدی مهر و موم می‌شود که فقط شما و مخاطبتان دارید، و هر چه گفتگو ادامه پیدا کند این کلید گام‌به‌گام جلو می‌رود — پس حتی لو رفتن یک کلید، بقیه را همچنان مهر و موم‌شده باقی می‌گذارد."
+            "value": "هر پیام با کلیدی مهر و موم می‌شود که فقط شما و مخاطبتان دارید. وقتی میان شما پیام‌ها در هر دو جهت رد و بدل شد، این کلید با ادامهٔ گفتگو گام‌به‌گام جلو می‌رود — پس در آن مرحله حتی لو رفتن یک کلید، بقیه را همچنان مهر و موم‌شده باقی می‌گذارد. مخاطبی که وقتی هر دو گوشی این نسخه یا نسخهٔ تازه‌تری دارند می‌افزایید، افزون بر این با یک تبادل کلید یک‌بارمصرف آغاز می‌شود، پس رونوشتی که بعدها از هر یک از دو گوشی گرفته شود نمی‌تواند نخستین کلیدهای آن را دوباره بسازد؛ مخاطبان کنونی فقط در صورتی از این بهره‌مند می‌شوند که دوباره یکدیگر را بیفزایید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jokainen viesti sinetöidään avaimella, joka on vain sinulla ja kontaktillasi, ja keskustelun jatkuessa avain kiertyy eteenpäin — joten yhden avaimen paljastuminen jättää loput silti sinetöidyiksi."
+            "value": "Jokainen viesti sinetöidään avaimella, joka on vain sinulla ja kontaktillasi. Kun olette kirjoittaneet toisillenne molempiin suuntiin, avain kiertyy eteenpäin keskustelun jatkuessa — joten yhden avaimen paljastuminen jättää silloin loput sinetöidyiksi. Kontakti, jonka lisäät, kun molemmissa puhelimissa on tämä tai uudempi versio, alkaa lisäksi kertakäyttöisellä avaintenvaihdolla, joten kummankaan puhelimen myöhempi kopio ei pysty luomaan uudelleen sen ensimmäisiä avaimia; nykyiset kontaktit saavat tämän vain, jos lisäätte toisenne uudelleen."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chaque message est scellé avec une clé que vous et votre contact êtes seuls à détenir, et, à mesure que la conversation avance, cette clé progresse d'un cran — de sorte que l'exposition d'une seule clé laisse tout le reste scellé."
+            "value": "Chaque message est scellé avec une clé que vous et votre contact êtes seuls à détenir. Une fois que vous vous êtes écrit dans les deux sens, cette clé progresse d'un cran à mesure que la conversation avance — de sorte que l'exposition d'une seule clé laisse alors tout le reste scellé. Un contact que vous ajoutez alors que les deux téléphones ont cette version ou une plus récente démarre en plus par un échange de clés à usage unique, de sorte qu'une copie ultérieure de l'un ou l'autre téléphone ne peut pas recréer ses premières clés ; les contacts existants n'en bénéficient que si vous vous ajoutez à nouveau."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Секоја порака е заклучена со клуч што само вие и вашиот контакт го поседувате, а како што разговарате, тој клуч постојано напредува — така што откривањето само на еден клуч ги остава сите останати заклучени."
+            "value": "Секоја порака е заклучена со клуч што само вие и вашиот контакт го поседувате. Откако ќе си пишувате во двете насоки, тој клуч постојано напредува додека разговарате — така што откривањето само на еден клуч тогаш ги остава сите останати заклучени. Контакт што ќе го додадете кога двата телефона имаат оваа или понова верзија исто така започнува со еднократна размена на клучеви, па подоцнежна копија од кој било од двата телефона не може повторно да ги создаде неговите први клучеви; постојните контакти го добиваат ова само ако повторно се додадете еден со друг."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hver melding forsegles med en nøkkel bare du og kontakten din har, og etter hvert som dere prater, skrus nøkkelen videre – så selv om én nøkkel skulle bli avslørt, forblir resten forseglet."
+            "value": "Hver melding forsegles med en nøkkel bare du og kontakten din har. Når dere har skrevet til hverandre fram og tilbake, skrus nøkkelen videre etter hvert som dere prater – så hvis én nøkkel da skulle bli avslørt, forblir resten forseglet. En kontakt du legger til når begge telefonene har denne versjonen eller nyere, starter i tillegg med en engangs nøkkelutveksling, så en senere kopi av en av telefonene ikke kan gjenskape de første nøklene; eksisterende kontakter får dette bare hvis dere legger hverandre til på nytt."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Каждое сообщение запечатано ключом, который есть только у вас и вашего собеседника, и по мере переписки этот ключ обновляется — поэтому даже если один ключ будет раскрыт, остальные останутся запечатанными."
+            "value": "Каждое сообщение запечатано ключом, который есть только у вас и вашего собеседника. Как только вы обменялись сообщениями в обе стороны, этот ключ обновляется по мере переписки — поэтому даже если один ключ будет раскрыт, остальные останутся запечатанными. Контакт, который вы добавите, когда на обоих телефонах эта версия или новее, к тому же начинается с одноразового обмена ключами, поэтому более поздняя копия любого из телефонов не позволит воссоздать его первые ключи; существующие контакты получат это, только если вы добавите друг друга заново."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fariin kasta waxaa lagu xidhaa fure aad adiga iyo xiriiriyahaaga uun haysataan, marka aad sii wadato sheekaysigana furahaasi ratchet ayuu ku sii gudbaa — sidaa darteed haddii fure keliya la ogaado, kuwa kale weli way sirsan yihiin."
+            "value": "Fariin kasta waxaa lagu xidhaa fure aad adiga iyo xiriiriyahaaga uun haysataan. Marka aad labadiinuba fariimo isu dhaafsataan, furahaasi ratchet ayuu ku sii gudbaa inta aad sii wadato sheekaysiga — sidaa darteed haddii fure keliya la ogaado markaas, kuwa kale weli way sirsan yihiin. Xiriiriye aad ku darto marka labada taleefanba ay haystaan noocan ama mid ka cusub wuxuu sidoo kale ku bilaabmaa isweydaarsi fure oo hal mar ah, sidaa darteed nuqul dambe oo mid ka mid ah labada taleefan ma dib u abuuri karo furayaashiisa ugu horreeya; xiriiriyayaasha hadda jira tan waxay helaan oo keliya haddii aad mar kale is ku dartaan."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Varje meddelande förseglas med en nyckel som bara du och din kontakt har, och medan ni fortsätter chatta vrids den nyckeln framåt — så även om en enskild nyckel exponeras förblir resten förseglad."
+            "value": "Varje meddelande förseglas med en nyckel som bara du och din kontakt har. När ni väl har skrivit till varandra fram och tillbaka vrids nyckeln framåt medan ni fortsätter chatta — så att en enskild exponerad nyckel då lämnar resten förseglad. En kontakt som du lägger till när båda telefonerna har den här versionen eller nyare startar dessutom med ett engångsnyckelutbyte, så att en senare kopia av någon av telefonerna inte kan återskapa dess första nycklar; befintliga kontakter får detta bara om ni lägger till varandra igen."
           }
         }
       }
@@ -5313,6 +5313,172 @@
         }
       }
     },
+    "add_contact_pairing_failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم ينجح الاقتران: تعذّر إنشاء القناة الآمنة مع جهة الاتصال هذه. ابدأ من جديد للاقتران برمز جديد."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parringen virkede ikke: den sikre kanal med denne kontakt kunne ikke oprettes. Start forfra for at parre med en ny kode."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kopplung hat nicht funktioniert: Der sichere Kanal mit diesem Kontakt konnte nicht eingerichtet werden. Fang neu an, um mit einem neuen Code zu koppeln."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pairing didn't work: the secure channel with this contact could not be set up. Start again to pair with a new code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El emparejamiento no funcionó: no se pudo establecer el canal seguro con este contacto. Empieza de nuevo para emparejarte con un código nuevo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جفت‌سازی انجام نشد: کانال امن با این مخاطب برقرار نشد. برای جفت‌سازی با یک کد تازه، از نو شروع کنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paritus ei onnistunut: suojattua kanavaa tämän kontaktin kanssa ei voitu muodostaa. Aloita alusta ja tee paritus uudella koodilla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'appairage n'a pas fonctionné : le canal sécurisé avec ce contact n'a pas pu être établi. Recommencez pour vous appairer avec un nouveau code."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спарувањето не успеа: безбедниот канал со овој контакт не можеше да се воспостави. Започнете одново за да се спарите со нов код."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parkoblingen fungerte ikke: den sikre kanalen med denne kontakten kunne ikke settes opp. Start på nytt for å parkoble med en ny kode."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сопряжение не удалось: защищённый канал с этим контактом не удалось установить. Начните заново, чтобы выполнить сопряжение с новым кодом."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lammaanaanta ma shaqayn: kanaalka ammaanka ah ee xiriiriyahan lama dhisi karin. Mar kale bilow si aad ugu lammaanowdo koodh cusub."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parkopplingen fungerade inte: den säkra kanalen med den här kontakten kunde inte upprättas. Börja om för att parkoppla med en ny kod."
+          }
+        }
+      }
+    },
+    "add_contact_pairing_failed_action": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ابدأ من جديد"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start forfra"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu starten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar de nuevo"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "از نو شروع کنید"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aloita alusta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recommencer"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Започни одново"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start på nytt"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать заново"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mar kale bilow"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Börja om"
+          }
+        }
+      }
+    },
     "add_contact_paste_not_ready": {
       "extractionState": "manual",
       "localizations": {
@@ -6554,6 +6720,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Löser proof-of-work…"
+          }
+        }
+      }
+    },
+    "add_contact_start_again_error": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر إكمال إضافة جهة الاتصال هذه ولم يُحفظ أي شيء. ابدأ من جديد للحصول على رمز جديد."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det lykkedes ikke at færdiggøre tilføjelsen af denne kontakt, og intet blev gemt. Start forfra for at få en ny kode."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Hinzufügen dieses Kontakts konnte nicht abgeschlossen werden, und es wurde nichts gespeichert. Fang neu an, um einen neuen Code zu erhalten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't finish adding this contact, and nothing was saved. Start again to get a new code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo terminar de añadir este contacto y no se guardó nada. Empieza de nuevo para obtener un código nuevo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افزودن این مخاطب کامل نشد و چیزی ذخیره نشد. برای گرفتن کد تازه، از نو شروع کنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontaktin lisäämistä ei voitu viimeistellä, eikä mitään tallennettu. Aloita alusta saadaksesi uuden koodin."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de terminer l'ajout de ce contact, et rien n'a été enregistré. Recommencez pour obtenir un nouveau code."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не можеше да се заврши додавањето на овој контакт и ништо не беше зачувано. Започнете одново за да добиете нов код."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kunne ikke fullføre tilleggingen av denne kontakten, og ingenting ble lagret. Start på nytt for å få en ny kode."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось завершить добавление этого контакта, ничего не сохранено. Начните заново, чтобы получить новый код."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ku darista xiriiriyahan lama dhammaystiri karin, waxna lama kaydin. Mar kale bilow si aad koodh cusub u hesho."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det gick inte att slutföra tillägget av kontakten och ingenting sparades. Börja om för att få en ny kod."
           }
         }
       }
@@ -14967,6 +15216,89 @@
         }
       }
     },
+    "contact_list_secure_channel_lost": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فُقدت القناة الآمنة: أعد الاقتران"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sikker kanal mistet: par jer igen"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicherer Kanal verloren: erneut koppeln"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure channel lost: pair again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canal seguro perdido: vuelve a emparejarlo"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کانال امن از دست رفت: دوباره جفت‌سازی کنید"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suojattu kanava katkesi: tee paritus uudelleen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canal sécurisé perdu : appairez-vous à nouveau"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Безбедниот канал е изгубен: спарете се повторно"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sikker kanal mistet: parkoble på nytt"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Защищённый канал потерян: выполните сопряжение заново"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kanaalka ammaanka ah waa la waayay: lammaanaanta mar kale samee"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Säker kanal förlorad: parkoppla på nytt"
+          }
+        }
+      }
+    },
     "contact_list_unread_messages_description": {
       "extractionState": "manual",
       "localizations": {
@@ -16374,6 +16706,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "⚠ Skärmdumpen sparades i Bilder — den bilden är INTE krypterad och kan synkas till iCloud."
+          }
+        }
+      }
+    },
+    "conversation_secure_channel_lost_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فُقدت القناة الآمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. أزل جهة الاتصال ثم أعد الاقتران."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Den sikre kanal med denne kontakt er gået tabt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der sichere Kanal mit diesem Kontakt ging verloren. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se perdió el canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کانال امن با این مخاطب از دست رفته است. پیام‌ها ارسال نمی‌شوند. مخاطب را بردارید و دوباره جفت‌سازی کنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suojattu kanava tämän kontaktin kanssa katkesi. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le canal sécurisé avec ce contact a été perdu. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Безбедниот канал со овој контакт е изгубен. Пораките не се испраќаат. Отстранете го контактот и спарете се повторно."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Den sikre kanalen med denne kontakten gikk tapt. Meldinger sendes ikke. Fjern kontakten og parkoble på nytt."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Защищённый канал с этим контактом потерян. Сообщения не отправляются. Удалите контакт и выполните сопряжение заново."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kanaalka ammaanka ah ee xiriiriyahan waa la waayay. Fariimaha lama dirayo. Xiriiriyaha ka saar, kadibna lammaanaanta mar kale samee."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Den säkra kanalen med den här kontakten har gått förlorad. Meddelanden skickas inte. Ta bort kontakten och parkoppla på nytt."
           }
         }
       }

@@ -22,8 +22,11 @@ package com.vg.run
 //   * post-compromise   — a future DH step the attacker didn't observe heals
 //                         the channel (Signal's "break-in recovery").
 // The very first batch of messages (before the first DH step) is still
-// recoverable from `sharedSecret` — that is the unavoidable bootstrap cost of a
-// symmetric pairing with no online handshake.
+// recoverable from `sharedSecret`: rk0 and Bob's first ratchet key are derived
+// from it, so everything Alice sends before she decrypts Bob's first ratchet
+// message opens with the stored secret plus the cleartext header. This is NOT
+// unavoidable — the pairing exchange can carry one-time public keys; see
+// docs/ratchet-bootstrap-plan.md for the planned replacement for new pairings.
 //
 // This file is the PURE, transport-agnostic ratchet primitive. It performs no
 // I/O and touches no vault — it is exercised end to end by DoubleRatchetTest.
@@ -533,7 +536,10 @@ internal class DoubleRatchet private constructor(
 
         fun initAsAlice(sharedSecret: ByteArray, nowMs: () -> Long = { currentTimeMillis() }): DoubleRatchet {
             val rk0 = hkdfSha256(sharedSecret, ZERO_SALT, INFO_INIT, 32)
-            val (_, bobPub) = bobRatchetKey(sharedSecret)
+            val (bobPriv, bobPub) = bobRatchetKey(sharedSecret)
+            // Alice only needs Bob's PUBLIC key. The private half is a by-product of
+            // the derivation — zero it now instead of leaving it to the GC (plan G5).
+            bobPriv.secureWipe()
             val self = x25519GenerateKeypair()
             // Alice performs the first DH step immediately so she can send first.
             val (rk1, ck) = kdfRk(rk0, x25519EcdhChecked(self.privateKey, bobPub))
@@ -542,6 +548,61 @@ internal class DoubleRatchet private constructor(
                 rootKey = rk1, dhSelfPriv = self.privateKey, dhSelfPub = self.publicKey,
                 dhRemotePub = bobPub, sendChain = ck, recvChain = null,
                 sendN = 0, recvN = 0, prevSendN = 0, skipped = mutableMapOf(), nowMs = nowMs,
+            )
+        }
+
+        /**
+         * The v3 initiator ("Alice") state — docs/ratchet-bootstrap-plan.md §3.2. Built ONLY by
+         * [RatchetBootstrapV3.bootstrap], which derives the inputs from a one-time pairing DH;
+         * the legacy [initAsAlice] above is untouched and still serves every other pairing.
+         *
+         * `{root = rk1, self = a1, remote = rB_pub, sendChain = CKs, recvChain = CK_pre}` after
+         * `(rk1, CKs) = KDF_RK(rk0, X25519(a1, rB_pub))`. Unlike the legacy state Alice also
+         * holds a RECEIVING chain from birth (Bob's pre-chain), so Bob can send at once and
+         * his first messages land here with no DH step.
+         *
+         * Ownership: [preChain] becomes the receiving chain (not copied, not wiped here);
+         * [rootKey0] stays the CALLER's to wipe; [bobPub] is public and copied.
+         */
+        internal fun initV3AsAlice(
+            rootKey0: ByteArray, bobPub: ByteArray, preChain: ByteArray,
+            nowMs: () -> Long = { currentTimeMillis() },
+        ): DoubleRatchet {
+            require(rootKey0.size == 32 && bobPub.size == 32 && preChain.size == 32) { "v3 init keys must be 32 bytes" }
+            val self = x25519GenerateKeypair()
+            val (rk1, ck) = try {
+                kdfRk(rootKey0, x25519EcdhChecked(self.privateKey, bobPub))
+            } catch (e: Exception) {
+                self.privateKey.secureWipe()
+                throw e
+            }
+            return DoubleRatchet(
+                rootKey = rk1, dhSelfPriv = self.privateKey, dhSelfPub = self.publicKey,
+                dhRemotePub = bobPub.copyOf(), sendChain = ck, recvChain = preChain,
+                sendN = 0, recvN = 0, prevSendN = 0, skipped = mutableMapOf(), nowMs = nowMs,
+            )
+        }
+
+        /**
+         * The v3 responder ("Bob") state — docs/ratchet-bootstrap-plan.md §3.2:
+         * `{root = rk0, self = rB_seed/rB_pub, remote = null, sendChain = CK_pre, recvChain = null}`.
+         * Bob can send at once on the pre-chain (headers `(rB_pub, pn = 0, n)`); his first
+         * receive is an ordinary [dhRatchet] that overwrites (and wipes) rk0, rB_seed and the
+         * pre-chain key.
+         *
+         * Ownership: all three secrets become fields of the state (not copied, not wiped here).
+         */
+        internal fun initV3AsBob(
+            rootKey0: ByteArray, bobPriv: ByteArray, bobPub: ByteArray, preChain: ByteArray,
+            nowMs: () -> Long = { currentTimeMillis() },
+        ): DoubleRatchet {
+            require(rootKey0.size == 32 && bobPriv.size == 32 && bobPub.size == 32 && preChain.size == 32) {
+                "v3 init keys must be 32 bytes"
+            }
+            return DoubleRatchet(
+                rootKey = rootKey0, dhSelfPriv = bobPriv, dhSelfPub = bobPub, dhRemotePub = null,
+                sendChain = preChain, recvChain = null, sendN = 0, recvN = 0, prevSendN = 0,
+                skipped = mutableMapOf(), nowMs = nowMs,
             )
         }
 

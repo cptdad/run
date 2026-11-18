@@ -61,5 +61,8 @@
 
     <!-- vault-refused add (peer inbox id already owned by an existing contact) -->
     <string name="add_contact_inbox_in_use">Dieser Kontakt konnte nicht hinzugefügt werden — eines der Postfächer in seinem Code ist hier schon in Gebrauch. Wenn du jemanden erneut hinzufügst, den du bereits hast, lösche zuerst den alten Kontakt und versuch es dann noch einmal.</string>
+    <string name="add_contact_pairing_failed">Die Kopplung hat nicht funktioniert: Der sichere Kanal mit diesem Kontakt konnte nicht eingerichtet werden. Fang neu an, um mit einem neuen Code zu koppeln.</string>
+    <string name="add_contact_pairing_failed_action">Neu starten</string>
+    <string name="add_contact_start_again_error">Das Hinzufügen dieses Kontakts konnte nicht abgeschlossen werden, und es wurde nichts gespeichert. Fang neu an, um einen neuen Code zu erhalten.</string>
 
 </resources>
