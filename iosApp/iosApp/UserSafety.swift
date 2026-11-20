@@ -141,7 +141,7 @@ struct EulaView: View {
 /// contacts are filtered out of the contact list and their conversations are
 /// closed, so a blocked contact's messages never reach the UI. The shared
 /// background sweeps EXCLUDE these IDs on BOTH channels: the TEXT peek
-/// (contactUnreadCounts/peekUnreadCounts) and
+/// (contactUnreadSweep/peekUnreadCounts) and
 /// the CONTROL channel too (GroupManager.blockedContacts, set from
 /// BlockStore.blocked(): pollAllControls/pollGroup skip a blocked contact's
 /// inbox and ingest drops any invite/referral-offer/inbox-announce from a

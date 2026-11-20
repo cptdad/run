@@ -164,7 +164,7 @@ object PushWakeFreshness {
      * [sweepStartedAtMs] is the wall clock taken BEFORE that cycle issued its
      * first request — the conservative end: a message present when the sweep
      * began was observed by it; one appended during it may not have been.
-     * [sweepComplete] is `GroupManager.contactUnreadCounts`' `onSweepFinished`
+     * [sweepComplete] is `GroupManager.contactUnreadSweep`'s `onSweepFinished`
      * answer (every text + group peek answered); [controlPassRan] is whether
      * `pollAllControls` returned without throwing. The decision itself is
      * [sweepStampAction].

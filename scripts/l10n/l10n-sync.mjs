@@ -72,6 +72,9 @@ const TARGET_LOCALES = LOCALES.filter((l) => l !== "en");
 // Store Connect has no metadata locale for it). KEEP IN SYNC with
 // gen-store-metadata.py LOCALES and the table in docs/store-listing/README.md;
 // `status` fails closed if a LOCALES entry has no row here.
+// ASC en-US (2026-11-19) is NOT a row: it is an English alias of en-GB in
+// gen-store-metadata.py ASC_EXTRA (English sources, own hand-edited `en-US:` keyword
+// line), so there is nothing to translate or lock — the line is invisible here.
 const LOCALE_INFO = {
   sv: { asc: "sv", play: "sv-SE", name: "Swedish" },
   de: { asc: "de-DE", play: "de-DE", name: "German" },
@@ -549,14 +552,21 @@ translations shown with each item.
   line — keep it one unit (no added blank lines).
 - \`play-short\` ≤ 80 chars. \`play-full\` / \`appstore-full\` ≤ 4000 chars.
 - \`whatsnew\` = bullets only, each line starting with \`• \`, ≤ 500 chars total, no header.
-- \`play-title\` ≤ 30 chars: the Google Play app TITLE, keyed by the PLAY locale (en-US, sv-SE, fa, mk-MK…). Same
-  shape as the App Store name: literal \`Rún – \` (en dash) + the language's short noun phrase for "private
-  messenger" — REUSE your \`appstore-name\` wording where that locale has one; fa/mk coin it from the subtitle noun.
-- \`appstore-name\` ≤ 30 chars: the App Store NAME — keep the literal prefix \`Rún – \` (en dash) and
-  follow it with the language's natural short noun phrase for "private messenger" (reuse the head
-  noun of your \`appstore-subtitle\`; never repeat "Tor"). It is what people see under the icon.
-- \`appstore-subtitle\` ≤ 30 chars, no superlatives. \`appstore-keywords\` ≤ 100 chars,
-  comma-separated, NO space after commas, don't repeat "Rún".
+- \`appstore-name\` ≤ 30 chars: the App Store NAME, shape \`Rún <messenger> – <private chat>\`:
+  "Rún" + the language's everyday one-word noun for a messenger app (the word people type when
+  searching, e.g. sv "meddelandeapp"; keep "Messenger" where the language itself uses it), as ONE
+  contiguous phrase, then \` – \` (en dash) + the language's short phrase for "private chat". If
+  that does not fit in 30, shorten the second part; as a last resort drop it (\`Rún <messenger>\`).
+  Never "Tor" in the name. (Store search folds "Rún" to "run", so the name must carry a phrase.)
+  Exception, owner's choice 2026-11-19: Swedish keeps exactly \`Rún – Privat meddelandeapp\`.
+- \`play-title\` ≤ 30 chars: the Google Play app TITLE, keyed by the PLAY locale (en-US, sv-SE, fa,
+  mk-MK…). Same shape and wording as that language's \`appstore-name\`; fa/mk coin it the same way.
+- \`appstore-subtitle\` ≤ 30 chars, no superlatives; keep "Tor" literal.
+- \`appstore-keywords\` ≤ 100 chars, comma-separated, NO space after commas. Never repeat a word
+  that is already in that locale's name or subtitle, nor "Rún" (the store combines words across
+  the three fields, so a repeat wastes characters). Fill the 100 with relevant search words the
+  English list covers. Never "anonymous" or "burn on read" (App Store rejection 2026-10-09), no
+  other app's or brand's name.
 - App Store texts never mention Android/Google; Play texts may name Google's push servers
   (FCM). Keep the platform deltas exactly as the English source does.
 - No unverifiable superlatives, no hard timer numbers, no "no third-party SDKs", no decoy

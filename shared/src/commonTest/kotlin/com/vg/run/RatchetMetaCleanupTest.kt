@@ -53,6 +53,9 @@ class RatchetMetaCleanupTest {
                 // The persisted group unread attribution (which groups this sender's
                 // pending group texts belong to). A re-paired peer must not inherit dots.
                 "grp-unread/abc",
+                // Send-404 evidence about this peer's inboxes. A re-paired peer has new
+                // inboxes, and the row must not survive as a "they deleted you" note.
+                "snd-nf/abc",
             ),
             keys.toSet(),
         )

@@ -1,5 +1,7 @@
-• Los contactos añadidos escaneando o por presentación empiezan ahora con un intercambio de claves de un solo uso: una copia posterior del teléfono no puede recrear sus primeras claves. Ambos teléfonos necesitan esta versión; los contactos existentes no cambian.
+• Los contactos nuevos empiezan con un intercambio de claves de un solo uso: una copia posterior del teléfono no puede recrear sus primeras claves. Ambos teléfonos necesitan esta versión.
 • El emparejamiento resiste girar el teléfono o una caída de la conexión.
 • Códigos QR más nítidos.
-• Los mensajes de grupo que llegan antes de unirte se muestran en vez de perderse.
+• Se muestran los mensajes de grupo que llegan antes de unirte.
+• Las invitaciones a grupos no enviadas se reenvían.
+• Puntos de mensajes no leídos más fiables.
 • Conexión más estable tras un cambio de red.

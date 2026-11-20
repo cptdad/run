@@ -1,0 +1,7 @@
+• Nya kontakter startar med ett engångsnyckelutbyte: en senare kopia av telefonen kan inte återskapa deras första nycklar. Båda telefonerna behöver den här versionen.
+• Parkopplingen klarar att telefonen vrids eller att anslutningen bryts.
+• Skarpare QR-koder.
+• Gruppmeddelanden som kommer innan du gått med visas i stället för att gå förlorade.
+• Gruppinbjudningar som inte skickades skickas igen.
+• Pålitligare prickar för olästa meddelanden.
+• Stabilare anslutning efter ett nätverksbyte.

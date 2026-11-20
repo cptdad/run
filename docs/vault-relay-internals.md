@@ -290,7 +290,7 @@ Custom **capability-based** HTTP API on the relay (not REST-conventional):
   - `"di"` — **destination-inbox id**. Distinguishes DIRECTION within a channel, which `ch` cannot: it defeats a relay reflecting your own outbound blob onto your inbound inbox (both are `"m"`, and the two directions have separate counter baselines). Same capable-peer downgrade rule as `ch`.
 - Padding: power-of-two buckets 256 B → 131 KB + random fill, hides plaintext length from the relay and any observer.
 - Envelope: richer than `{"t","m"}` — carries epoch/counter/routing fields. Legacy no-counter / plaintext-only envelopes are **hard-dropped** on receive (`parseEnvelope` returns null → the caller `?: continue`s) — consistent with the anti-replay rule above, NOT "still accepted".
-- Self-healing: the relay collapses NOT_FOUND/UNAUTHORIZED/LOCKED into a single `404`. A **persistent 404 streak** (relay up, inbox gone — e.g. cap rotated out) flags the contact for re-pair on the control and message channels (the GROUP channel is deliberately excluded — it self-heals in band by re-mint + re-announce; see the third-inbox-pair section below). Relay-loss state is `SyncLock`-guarded since the channels poll on different coroutines. `429` backs off silently. Inbound and outbound use **separate inboxes** (plus a separate control-inbox pair and, since v10, a group-text pair) to avoid echo loops.
+- Self-healing: the relay collapses NOT_FOUND/UNAUTHORIZED/LOCKED into a single `404`. A **persistent 404 streak** (relay up, inbox gone — e.g. cap rotated out) flags the contact for re-pair on the control and message channels (the GROUP channel is deliberately excluded — it self-heals in band by re-mint + re-announce; see the third-inbox-pair section below). Relay-loss state is `SyncLock`-guarded since the channels poll on different coroutines. A 404 on a SEND is separate evidence about the PEER's inbox: it never badges anything, it only ends automatic re-drives once proven (see "A 404 on a send ends the automatic re-drive of that item" below). `429` backs off silently. Inbound and outbound use **separate inboxes** (plus a separate control-inbox pair and, since v10, a group-text pair) to avoid echo loops.
 
 ### Retrieve-ack: the relay deletes on ACK, not on fetch; the screens persist + ack only once a message is on screen (2026-11-03)
 
@@ -845,6 +845,97 @@ Two consequences to know:
     obligation — it is an honest-drift signal, exactly as the `GroupManager` header already says, and a member that
     wants to stop receiving rosters can simply ignore them.
 
+### A group invite that did not leave is re-sent (2026-11-18)
+
+- **The gap.** `createGroup` and `addMember` ignored the targets `fanOutControl` reported as not reached. A member
+  whose invite was dropped (a Tor drop at that moment, a relay refusal, no transport at all) never got it, never
+  joined, and nothing showed it. In `addMember` the roster that follows the invite did record an obligation for the
+  newcomer, but a roster for a group the newcomer was never invited to is dropped on arrival, so the redrive could
+  not help.
+- **The rule.** An undelivered invite becomes a `grp_ctl_pend:<groupId>:<contactId>` obligation of kind `invite`
+  in the existing redrive (`MembershipControlRedrive`), state UNDELIVERED only — a delivered invite records nothing,
+  exactly like a leave. The redrive re-derives the body from CURRENT state (`GroupManager.buildInviteForMember`: the
+  group's current epoch and member set, the member's own memberId, the same field layout as the original invite) and
+  sends it with push on, as the original did. It is dropped when the member is gone, has joined (an admin stores a
+  member's tags from its join), the group is gone, or we are no longer the admin; it is closed when the relay takes
+  it. Bounds: 12 attempts, the 7-day ceiling (the hard bound), the 256-record cap — but unlike a roster the attempts
+  are SPACED (`inviteRetryIntervalMs`, measured from the entry's stored `lastSentMs`, no format change): the first
+  re-send at the next sweep, then at least 1, 2, 4 … minutes after the previous attempt, capped at 6 h, so the 12
+  attempts span about 20 h. The redrive rides the control sweep, which runs every ~2.5 s in the fast cadence, so a
+  flat once-per-sweep count spent the whole budget in ~30 s of transport outage — the very drop at invitation time
+  this redrive is for. Rosters and leaves keep their every-sweep cadence: a roster also has the ack-gated resends and
+  the hash-mismatch re-roster behind it and its fast redrive is part of convergence speed, and changing the leave's
+  pinned bound was not needed for this fix (the same burn exists there and is a candidate for the same spacing). An
+  invite obligation outranks a roster for the same member (`record` does not replace it); `handleJoin` clears it
+  before the join's roster records its own, `removeMember` deletes it at once (a remove followed by a re-add whose
+  invite IS delivered must not leave the old entry re-sending an invitation for the new slot), and an `addMember`
+  whose invite was delivered clears any older one (`clearInvite`). Same key, so both residue classifiers already
+  purge it on a contact or group delete.
+- **Combined with the send-404 evidence (next section).** A transport failure retries within those bounds; an invite to
+  an inbox the relay keeps answering 404 for ends on the GONE verdict without spending them.
+- **Compatibility.** An older build decodes an `invite` record as "no obligation" and deletes it — a downgrade loses a
+  pending re-send, nothing else.
+- **Known limitations.** Not ack-gated: a relay that answers 2xx and discards the invite is not countered (the same
+  accepted residual as a leave). A re-send after later membership changes is a different offer from the original
+  (newer epoch/members), so if the original did land and the invitee declined it, the re-send can prompt once more;
+  this needs a POST that landed while the client saw a transport failure. The member's JOIN (`acceptInvite`) and the
+  post-handoff self-join are still fire-and-forget — a lost join leaves that member unresolved until the next roster.
+- **Tests.** `GroupInviteRedriveTest` (commonTest).
+
+### A 404 on a send ends the automatic re-drive of that item (2026-11-18)
+
+- **The gap.** A relay 404 on an append was reported to one caller (the group-text fallback) and was otherwise a
+  plain `false`, which cannot tell "the peer deleted us" from "Tor dropped". Every queued item that re-drives on
+  failure therefore kept POSTing to a missing inbox for the life of its record. Seen on the dev relay: an introducer
+  re-POSTed an introduction offer to a contact who had deleted it (12 `NOT_FOUND`s in one run — one session's
+  `MAX_OFFER_SEND_ATTEMPTS` budget); the budget resets per session and each attempt refreshed the session's idle TTL,
+  so the offer was retried for up to the 28-day ceiling and the `ref_s` record never ended.
+- **The evidence (`PeerInboxGone.kt`).** Fed by the two POST sites (`sendEnvelopeSerialized`,
+  `sendOverTextRatchet`), stored per contact in `_meta` as `snd-nf/<contactId>` =
+  `v1;<inboxTag>,<count>,<lastCountedMs>[;…]` (≤ 3 entries, one per destination inbox; the tag is a short
+  domain-separated hash of the inbox id). Rules:
+  1. A 404 counts only if the relay PROVED it holds our state within the last 15 min: an authenticated 2xx on one
+     of our existing inboxes (a drain, a control peek, a batch-peek count) or an accepted append (RAM-only, per
+     transport). A mint does not count — an emptied relay answers mints too. A relay that restarted with an empty or
+     unreadable shell snapshot 404s our own inboxes as well, so it never produces evidence.
+  2. Three counted 404s, each at least one hour after the previous counted one (≥ 2 h of continuous 404s from a relay
+     that is otherwise answering for us). A burst inside the hour counts once. A correct write capability is never
+     locked out (RELAY_SPEC "Lockout"), so a lockout cannot produce these 404s.
+  3. Bound to the inbox id: a re-announced inbox starts clean; ANY 2xx on that inbox deletes its entry.
+  4. Evidence older than 7 days (since its last counted 404) is ignored, so a wrong verdict re-probes weekly.
+  5. A transport failure, any other status, a malformed row, a read error or a backward clock step changes nothing /
+     answers SEND.
+  Verdict (`MessageManager.peerInboxVerdict` / `controlInboxVerdict`): SEND; HOLD (a counted 404 less than an hour
+  ago — skip this automatic attempt without spending its budget or refreshing its record); GONE.
+- **What a verdict may do — and may not.** It ends an automatic retry. It never deletes a contact, a row, ratchet
+  state or key material, never latches `dr-lost`, never badges, never touches a user-initiated send (a typed message,
+  a Retry tap). The row is in `ratchetMetaKeysForContact` (dies with the contact; a send to a contact deleted
+  mid-flight writes nothing) and travels with a device move (`MoveMetaPolicy`, prefix `snd-nf/`). Log lines are
+  counts only.
+- **Per re-drive.**
+
+  | queued item | on GONE | on HOLD |
+  |---|---|---|
+  | introducer's undelivered offer (`ref_s`) | the introduction ENDS: `ref_s` and its `ref_r` records dropped — the same terminal state as an expired introduction (no screen shows an introducer-side "introducing" state) | skipped |
+  | introducer's queued relayed accept (`ref_r`) | the introduction ends (as above) | skipped |
+  | introducee's unsent accept (`ref_p` st=0) | not re-sent; the record (its keypair and minted inboxes) is KEPT and not refreshed, so the idle TTL reclaims it | skipped |
+  | membership obligations (`grp_ctl_pend`: roster, leave, invite) | obligation dropped | skipped, attempts untouched |
+  | v3 channel-lost notice (`chlost`) | not sent; stays owed | not sent |
+  | Maximum level notice (`plvl`) | contact skipped without spending a pass attempt; marker left unset | same |
+
+- **Already bounded, unchanged.** 1:1 text (a 404 is `FAILED`, never parked for the transport re-drive); group text
+  (one send + the one text-inbox fallback, then the user-visible undelivered mark); `act` and screenshot notices
+  (one POST, no retry); the pairing-time inbox announce (3 attempts) and the group-inbox backfill announce
+  (`grp-ann/`, 4 attempts ≥ 24 h apart); the hash-mismatch re-roster (driven by the member's own traffic, 10 min per
+  member).
+- **Known limitations.** A peer that deleted us costs up to three hourly 404s per destination inbox before the verdict,
+  plus one re-probe a week for the skip-type items (`chlost`, `plvl`, `ref_p`) while their records live. A user who
+  starts a new introduction to such a contact sends its two offers once; the next sweep ends it. A relay that keeps
+  answering our own inboxes while answering 404 for one peer inbox for two hours is believed — that is the
+  definition of "gone" the relay gives us.
+- **Tests.** `PeerInboxGoneTest.kt` (commonTest: policy, referral re-drives, brick-safety — an emptied relay, a
+  transport failure, a recovered inbox — and the sibling loops), `GroupInviteRedriveTest`.
+
 ### The control-poll fast cadence is armed only by traffic that can converge something (2026-09-16)
 
 `lastControlActivityAtMs` used to be re-armed by `controlPollDelayMs(convergingNow)`, and both platforms pass
@@ -1058,7 +1149,63 @@ vault/relay code.
   the symbol appears in the contact path. `legacyGroupPending` (the old `groupPendingByContact` subtraction) SURVIVES
   but is now written ONLY for a `KIND_ACTIVITY` notice WITHOUT the new optional `"gi":"1"` field — i.e. only for a text
   that really did ride the legacy text-inbox path (an un-upgraded peer, or a pairing still in its backfill window). For
-  a converged new↔new pairing it is provably dead weight, kept for exactly the two rollout cells that still need it.
+  a converged new↔new pairing it is provably dead weight, kept for exactly the two rollout cells that still need it
+  (plus any copy a sender's group-inbox 404 fallback put back on the text inbox: that notice carries no `gi` either).
+  **Legacy heal on an answered 0 (2026-11-18).** The compensator used to be clamped to the depth only for a contact
+  with a NON-ZERO depth, so a unit whose text had already left the relay — a group screen drained the legacy text
+  before its notice was applied (the sender posts the text first, the notice one jitter gap later), or a notice
+  younger than the 48 h age gate described a text the relay had already expired at 24 h — stood for the whole session
+  and hid that contact's next real 1:1 text (no dot, or a count one short) until the 1:1 was opened or the session
+  ended. A text-inbox peek that ANSWERED 0 now clears the contact's compensator, and an unknown peek never does.
+  Guard: every counted legacy notice steps a RAM generation counter and stamps its contact; the sweep reads the
+  counter BEFORE its first peek, and neither the zero heal nor the existing non-zero clamp's write-back touches a
+  contact stamped after that read (its text may have landed after the peek). **Lease guard:** a blob OUR drain has
+  leased is invisible to `/peek` (retrieve-ack above) and can come back without being deleted — an ack lost over Tor,
+  a partially committed screen drain, an abandoned screen poll — so a 0 seen during one of our leases proves nothing.
+  `TextLeaseLedger` (process-wide like `PendingLegacyRegistry`, RAM only) takes an IN-FLIGHT mark for a contact's
+  TEXT inbox BEFORE the leasing GET (the relay starts the lease when it serves the request, before the client has
+  parsed anything) and resolves it with the answer: a clean "nothing leased" (a non-2xx HTTP status, an empty inbox,
+  a relay that deleted at fetch) clears it; blobs under a lease token become that lease, settled when any `POST /ack`
+  for the token answers 200; an answer the client never saw or could not read (transport failure, unparseable body,
+  a token it refused) stays a possible lease. Every unsettled entry is forgotten after `LEASE_GUARD_MS` (120 s, past
+  the relay's 60 s lease), and only `MAX_UNSEEN_STREAK` (3) CONSECUTIVE unseen outcomes per contact are recorded.
+  Neither heal runs for a contact with an unsettled entry or with a lease taken or settled since the sweep began.
+  Without it the heal could remove a unit whose group text was merely leased (or served in a response lost over Tor)
+  and light the CONTACT row when it came back. **Session end:** the ledger and the uncommitted-legacy registry are
+  cleared by `MessageManager.scrubInMemory` AND, unconditionally, by `MessageManager.endProcessReceiveSession()` at
+  lock and at wipe on both platforms (Android `lockSession` / `performEmergencyWipe`, twice each — after the manager
+  drop and after the Tor stop; iOS `IosAppController.endSessionRam`), because Android drops the manager without a
+  scrub on Tor Failed/Idle; the registry parts are marked settled + discarded exactly as the manager scrub does, so a
+  late commit from a stale screen writes and acks nothing. A RECEIVE-SESSION epoch (`TextLeaseLedger.sessionEpoch`,
+  bumped by every session end) is captured by each `MessageManager` at CONSTRUCTION — both platforms build a new
+  manager per transport inside an unlocked session (Android `RunViewModel.wireRelayTransport`, iOS
+  `IosAppController.connectTor` / `connectDirect`) and none survives a lock. Every write a manager makes to EITHER
+  registry is refused once its epoch is not the current one: the ledger's in-flight mark (`beginFetch`) and its
+  resolution, and the uncommitted-legacy insert (whose part is then settled + discarded, so a late commit writes and
+  acks nothing). So a drain in flight across a lock — or a fetch STARTED after it by a manager nobody scrubbed —
+  cannot write either back, and a closed manager takes no mark. A same-session reconnect (Tor Failed → Connected)
+  builds its manager under the SAME epoch, so the old manager's pending drains and lease records stay valid. Residuals: a 1:1 text that lands between such a drain and the sweep that heals (the same cycle normally; up
+  to the 120 s guard after a lost ack or a lost GET response; a drain loop that keeps failing blocks the heal for at
+  most ~120 s after its third consecutive unseen outcome, then stops blocking even if it keeps failing — a lease
+  served in a FOURTH consecutive lost response is not guarded) is still hidden until the next answered sweep after it
+  is read, or the 1:1 is opened; a relay lease configured longer than 120 s outlives the guard; the old Android
+  manager's own RAM (its `RatchetManager`'s uncommitted snapshots) is still not zeroed when it was dropped without a
+  scrub — the registry clear drops the references, not the bytes. Tests: `LegacyPendingHealTest`,
+  `LegacyHealLeaseTest`, `TextLeaseLedgerTest`, `ReceiveSessionEpochTest`, `ProcessReceiveSessionWiringSourceTest`.
+  **The CONTACT-dot publish merges, it does not replace (2026-11-18).** Both platforms publish
+  `GroupManager.contactUnreadSweep(…).applyTo(shown)` (`ContactUnreadSweep`), merged against the map shown at
+  publish time (Android inside the session-epoch check, iOS inside `MainActor.run`). An ANSWERED peek, 0 included,
+  replaces the contact's value; an UNKNOWN text peek (transport error, 429, a cap-rotation 404) keeps the value already
+  shown for at most `MAX_UNKNOWN_UNREAD_CARRY` (3) consecutive sweeps; a sweep with NO transport (Android's Tor
+  Failed/Idle, where the control loop keeps running) keeps every existing, non-blocked contact's shown value and does
+  not spend that bound; a move-frozen device keeps nothing. Before this, one failed peek blanked that contact's dot
+  for a cycle, and on Android a Tor outage blanked every contact dot until reconnect. Why a carried dot cannot stick:
+  only a value still in the shown map is carried, so `markContactRead` (both platforms, on opening the conversation)
+  wins for a carried contact (a peek that ANSWERED N > 0 before the conversation was opened still republishes that
+  dot until the next sweep — about one cycle, unchanged by this rule); a deleted or blocked contact is not swept and so not carried; and an inbox that never answers again lets go
+  after the bound. `UnreadPeek` carries `textAnswered` (every answered depth) and `swept` for this; the group dot
+  already kept its last depth on an unknown peek. The connect-time prime stays merge-only. Tests:
+  `UnreadSweepCarryTest`; the source guard also scans `contactUnreadSweep` and `ContactUnreadSweep.applyTo`.
   `groupUnreadCounts` is `max(groupUnread[g], ownUntaken(g)) + unseenScreenshotNotices(g) + presenceBump(g)`
   — `max` not `+` because a buffered text and its own notice describe the SAME message. `ownUntaken(g)` counts only
   the OWN items left in group g's screen buffer (an orphaned poll); PRIVATE / GROUP_ECHO items never count.
@@ -1650,9 +1797,10 @@ serialization, unchanged — it already serializes both v3 initial states) and N
   (`v3RatchetSendFailureLine`). A group
   text that 404s on the peer's group inbox gets the existing one retry on the text inbox (`sendGroupTextRouted`),
   still over the ratchet. A 404 on a send does NOT: fall back to the static envelope, latch `dr-lost`, re-init, touch
-  `dr-kc`, or feed the relay-lost 404 streak (`noteRelay404` is called only from the drain path). Older than v3 and
-  unchanged: a sender is never told that the contact is gone, so an introduction offer to a contact who deleted you is
-  retried without end. A retry is a fresh encrypt.
+  `dr-kc`, or feed the relay-lost 404 streak (`noteRelay404` is called only from the drain path). It DOES feed the
+  send-404 evidence (the section "A 404 on a send ends the automatic re-drive of that item", above), exactly like a static-path
+  404, so an introduction offer to a contact who deleted you is no longer retried without end. A retry is a fresh
+  encrypt.
 - **Retrieve-ack interaction: "ratchet drop … failed to decrypt" is not necessarily a key-exchange failure.** A
   session that persisted a ratchet advance (a background drain, or a screen's `commit()`) and ended before its
   `POST /ack` landed (teardown sets `acksClosed`; the ack is fire-and-forget) leaves the blob leased, not deleted; the

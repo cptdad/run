@@ -1,1 +1,1 @@
-Anonymer Messenger über Tor, Ende-zu-Ende-verschlüsselt. Ohne Konto, ohne Spur.
+Privater Messenger über Tor. Ohne Konto, ohne Telefonnummer, ohne E-Mail.

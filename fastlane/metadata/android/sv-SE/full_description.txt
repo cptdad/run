@@ -1,4 +1,4 @@
-Rún är en säker meddelandeapp byggd för personer som vägrar att kompromissa med integriteten. Varje meddelande är end-to-end-krypterat innan det lämnar din enhet. När en konversation går fram och tillbaka vrids nycklarna framåt medan ni chattar — så även om en nyckel skulle exponeras förblir resten av konversationen förseglad.
+Rún är en privat meddelandeapp via Tor, byggd för personer som vägrar att kompromissa med integriteten. Varje meddelande är end-to-end-krypterat innan det lämnar din enhet. När en konversation går fram och tillbaka vrids nycklarna framåt medan ni chattar — så även om en nyckel skulle exponeras förblir resten av konversationen förseglad.
 
 Rún kräver varken konto, telefonnummer eller e-postadress. Det finns inget som länkar tillbaka till din identitet. Kontakter läggs till personligen via QR-kodskanning, eller via en betrodd introduktion från någon du redan litar på — ingen central katalog, ingen kontaktmatchning, ingen social graf.
 

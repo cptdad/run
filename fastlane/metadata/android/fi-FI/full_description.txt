@@ -1,8 +1,8 @@
-Rún on turvallinen viestisovellus ihmisille, jotka eivät suostu tinkimään yksityisyydestä. Jokainen viesti salataan päästä päähän, ennen kuin se lähtee laitteeltasi. Kun keskustelu kulkee molempiin suuntiin, avaimet kiertyvät eteenpäin — joten vaikka yksi avain paljastuisi, loput pysyvät sinetöityinä.
+Rún pikaviestin tarjoaa yksityisen chatin Tor-verkon kautta niille, jotka eivät tingi yksityisyydestä. Jokainen viesti salataan päästä päähän, ennen kuin se lähtee laitteeltasi. Kun viestit kulkevat molempiin suuntiin, avaimet kiertyvät eteenpäin — vaikka yksi avain paljastuisi, loput pysyvät sinetöityinä.
 
 Rún ei vaadi tiliä, puhelinnumeroa eikä sähköpostiosoitetta. Mikään ei linkity henkilöllisyyteesi. Kontaktit lisätään kasvokkain QR-koodeja lukemalla tai taatun esittelyn kautta — ei keskitettyä hakemistoa, ei kontaktien etsintää, ei sosiaalista verkostoa.
 
-Kaikki liikenne reititetään Tor-verkon kautta, mikä piilottaa IP-osoitteesi ja sijaintisi jopa Rún-sovelluksen omalta välityspalvelimelta. Verkkoasi tarkkaileva näkee vain salattua Tor-liikennettä — ei kenen kanssa puhut tai mitä sanot. Viestit täytetään kiinteisiin kokoihin, joten edes viestin pituus ei vuoda.
+Kaikki liikenne kulkee Tor-verkon kautta, mikä piilottaa IP-osoitteesi ja sijaintisi jopa Rún-sovelluksen omalta välityspalvelimelta. Verkkoasi tarkkaileva näkee vain salattua Tor-liikennettä — ei kenen kanssa puhut tai mitä sanot. Viestit täytetään kiinteisiin kokoihin, joten edes viestin pituus ei vuoda.
 
 Viestit elävät vain muistissa — niitä ei koskaan kirjoiteta levylle. Poistu keskustelusta tai sulje sovellus, ja ne ovat poissa. Ei viestihistoriaa selattavaksi, ei arkistoa haastettavaksi, ei varmuuskopiota vuotamaan. Välityspalvelin säilyttää vain tilapäisiä salattuja möykkyjä, joita se ei voi lukea, postilaatikoissa, jotka vanhenevat itsestään.
 

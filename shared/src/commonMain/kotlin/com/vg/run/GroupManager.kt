@@ -181,6 +181,15 @@ class GroupManager(
         internal const val MAX_PENDING_ACTIVITY_PER_MEMBER = 99
 
         /**
+         * How many CONSECUTIVE steady sweeps may answer UNKNOWN for a contact's text
+         * inbox while its contact dot is still carried ([contactUnreadSweep]). Long
+         * enough to ride out a transient peek failure (one Tor timeout, a 429, a
+         * cap-rotation 404), short enough that an inbox which never answers again
+         * stops holding a dot: 3 idle cycles is ~3–5 minutes.
+         */
+        internal const val MAX_UNKNOWN_UNREAD_CARRY = 3
+
+        /**
          * An activity notice is IGNORED once it is
          * older than this. Every control append now carries the uniform 7-day relay
          * ttl ([MessageManager.CONTROL_APPEND_TTL_SECONDS]) so the ttl stops being a
@@ -646,6 +655,7 @@ class GroupManager(
         transport = { transport(it) },
         rosterBody = { buildRosterBody(it) },
         leaveBody = { epoch, memberId -> leaveBody(epoch, memberId) },
+        inviteBody = { groupId, contactId -> buildInviteForMember(groupId, contactId) },
     )
 
     private fun transport(where: String): MessageManager? {
@@ -1100,6 +1110,8 @@ class GroupManager(
         // only its RAM index (contactIds/groupIds) goes.
         tally.scrub()
         unreadMarkers.scrub()
+        // The contact-dot carry's unknown-peek streaks: contactIds, same class.
+        unknownPeekLock.withLock { unknownTextPeekStreak.clear() }
         departureLock.withLock { departureAnnounced.clear() }
         // (groupId, contactId) pairs — social-graph state in the same class as
         // [departureAnnounced], so it goes in the same scrub. Losing it costs one
@@ -2905,7 +2917,7 @@ class GroupManager(
 
         val hash = membershipHash(groupId, 1, allIds.toList())
         val memArray = allIds.joinToString(",") { jsonEscapeString(it) }
-        fanOutControl(
+        val undeliveredInvites = fanOutControl(
             targets = memberIdByContact.keys.toList(),
             groupId = groupId,
             kind = KIND_INVITE,
@@ -2918,6 +2930,11 @@ class GroupManager(
             // one group control kind worth waking a device for.
             noPush = false,
         )
+        // An invite that did not leave (Tor drop, relay refusal, no transport at all)
+        // used to be lost: that member never joined and nothing showed it. It is now
+        // a durable obligation the control sweep re-sends (bounded like a roster;
+        // ended early if that member's inbox is gone on the relay).
+        ctlRedrive.record(groupId, KIND_INVITE, 1, hash, undeliveredInvites, delivered = emptyList())
         // These pairings may predate the group inbox — arm the backfill so the
         // control sweep tops them up before the first group text goes out.
         armGroupInboxBackfillForGroup(groupId)
@@ -2953,7 +2970,7 @@ class GroupManager(
         val allIds = members.map { it.memberId } + newId
         val hash = membershipHash(groupId, newEpoch, allIds)
         val memArray = allIds.joinToString(",") { jsonEscapeString(it) }
-        fanOutControl(
+        val undeliveredInvite = fanOutControl(
             targets = listOf(contactId), groupId = groupId, kind = KIND_INVITE,
             bodyFor = {
                 """{"n":${jsonEscapeString(g.name)},"ep":$newEpoch,"adm":${jsonEscapeString(g.adminMemberId)},"you":${jsonEscapeString(newId)},"mem":[$memArray]}"""
@@ -2962,6 +2979,12 @@ class GroupManager(
             // Same reason as createGroup's invite: user-visible, so it wakes.
             noPush = false,
         )
+        // Recorded BEFORE the roster below: an undelivered invite outranks that
+        // roster's obligation for the newcomer (MembershipControlRedrive.record).
+        ctlRedrive.record(groupId, KIND_INVITE, newEpoch, hash, undeliveredInvite, delivered = emptyList())
+        // A delivered invite supersedes any older invite entry for this contact (belt to
+        // removeMember's clear: an entry from an earlier membership of the same contact).
+        if (undeliveredInvite.isEmpty()) ctlRedrive.clearInvite(groupId, contactId)
         broadcastRoster(groupId)
         // The newcomer (and every member whose pairing predates the group
         // inbox) may need one minted and announced.
@@ -3021,6 +3044,12 @@ class GroupManager(
         // Their persisted unread units for this group stop lighting it (after the
         // commit — never inside a vault transaction).
         member.contactId?.let { unreadMarkers.detachMember(it, groupId) }
+        // An invite still waiting to be re-sent to the removed member is moot. Deleted
+        // now, not left for the next sweep to notice: a re-add before that sweep would
+        // otherwise find it and re-send an invitation for the new slot on top of the one
+        // the re-add delivers. Before the roster below, so the removed member's final
+        // roster copy gets its normal entry.
+        member.contactId?.let { ctlRedrive.clearInvite(groupId, it) }
         broadcastRoster(groupId, alsoTo = member.contactId)
         return true
     }
@@ -3195,6 +3224,32 @@ class GroupManager(
         // one final copy (alsoTo), which is what makes them stop polling — becomes a
         // durable obligation the control sweep redrives.
         ctlRedrive.record(groupId, KIND_ROSTER, g.epoch, hash, failed, delivered = targets)
+    }
+
+    /**
+     * The KIND_INVITE body (and its membership hash) for re-sending an invite that did
+     * not leave, derived from the CURRENT vault state — the same field layout
+     * [createGroup] and [addMember] send, at the group's current epoch and member set
+     * (so a re-send after later membership changes is already up to date, and the
+     * invitee's join is answered with the current roster as usual).
+     *
+     * Null — "nothing left to invite" — when the group is gone, we are no longer its
+     * admin (only the admin's invite resolves correctly at the invitee), the contact
+     * is no longer a member, or the member has JOINED (an admin stores a member's tags
+     * from its join, so non-empty tags mean the invite arrived). A vault read that
+     * THROWS propagates (like the roster re-derive beside it), so an unreadable vault
+     * aborts the pass instead of being mistaken for "nothing left to invite".
+     */
+    internal fun buildInviteForMember(groupId: String, contactId: String): Pair<String, String>? {
+        val g = vault.getGroup(groupId) ?: return null
+        if (!g.isAdmin) return null
+        val members = vault.getGroupMembers(groupId)
+        val member = members.firstOrNull { it.contactId == contactId } ?: return null
+        if (member.memberId == g.myMemberId || member.tags.isNotEmpty()) return null
+        val allIds = members.map { it.memberId }
+        val memArray = allIds.joinToString(",") { jsonEscapeString(it) }
+        val body = """{"n":${jsonEscapeString(g.name)},"ep":${g.epoch},"adm":${jsonEscapeString(g.adminMemberId)},"you":${jsonEscapeString(member.memberId)},"mem":[$memArray]}"""
+        return body to membershipHash(groupId, g.epoch, allIds)
     }
 
     /**
@@ -3671,6 +3726,9 @@ class GroupManager(
             platformLogError(TAG, "join persist failed: ${e::class.simpleName}")
             return
         }
+        // The invite reached them (this IS their answer): its re-send obligation ends,
+        // before the roster below records its own for this member.
+        ctlRedrive.clearInvite(groupId, senderContactId)
         // Store the (changed) tags above, but THROTTLE the
         // expensive N-member fan-out per member — the dedup above is defeated by
         // attacker-varied padding. The latest tags still propagate on the next
@@ -4249,29 +4307,122 @@ class GroupManager(
      * group text from an upgraded peer is not on this inbox, is not counted here,
      * and cannot reach this number by any path.
      *
-     * The arithmetic is [GroupUnreadTally.contactCountsFrom] (deliberately its own
-     * function, so the property above is checkable by reading one body); the peeking is
-     * [sweepUnreadInboxes]. Cleared by [pollDirect] — i.e. by opening the
-     * conversation, which drains the inbox.
-     *
-     * [onSweepFinished] (optional) is told whether the sweep got a
-     * definite answer from EVERY inbox it peeked ([MessageManager.UnreadPeek.complete]);
-     * `false` when there was no transport. Called after the counts are computed,
-     * never with anything but that one Boolean — it cannot influence the count.
+     * The counts of [contactUnreadSweep], without its carry: what the arithmetic says
+     * for the contacts whose peek ANSWERED. The platforms publish the sweep itself
+     * ([ContactUnreadSweep.applyTo]); this stays for callers that want the bare
+     * numbers. It runs the same sweep, with the same side effects.
      */
     fun contactUnreadCounts(
         blockedContactIds: Set<String> = emptySet(),
         onSweepFinished: ((complete: Boolean) -> Unit)? = null,
     ): Map<String, Int> {
+        val sweep = contactUnreadSweep(blockedContactIds, onSweepFinished)
+        return sweep.counts
+    }
+
+    /**
+     * The steady-state CONTACT-dot sweep, as the platforms publish it:
+     * `shown = contactUnreadSweep(...).applyTo(shown)`.
+     *
+     * The arithmetic is [GroupUnreadTally.contactCountsFrom] (deliberately its own
+     * function, so the contact-dot invariant is checkable by reading one body); the
+     * peeking is [sweepUnreadInboxes]. Cleared by [pollDirect] — i.e. by opening the
+     * conversation, which drains the inbox — and at once by the platforms'
+     * `markContactRead`.
+     *
+     * **Unknown is not zero (2026-11-18).** The platforms used to REPLACE their whole
+     * map with the counts, so one failed peek blanked that contact's lit dot for a
+     * cycle while the message was still waiting, and on Android a sweep with no
+     * transport (Tor Failed/Idle, the loop still running) blanked EVERY contact dot
+     * for the whole outage. [ContactUnreadSweep.carry] now names the contacts whose
+     * dot is kept: a swept contact whose text peek did not answer, for at most
+     * [MAX_UNKNOWN_UNREAD_CARRY] consecutive sweeps; and with no transport every
+     * existing, non-blocked contact, WITHOUT spending that bound (with no transport
+     * nothing on this device can drain the inbox; relay expiry is the only other
+     * way a message leaves, and the first answered sweep corrects that). A
+     * move-frozen device carries nothing — the session's gated provider answers
+     * "no transport" for it, so that case is told apart here.
+     *
+     * The legacy compensator heals on an ANSWERED 0 here too
+     * ([GroupUnreadTally.contactCountsFrom]); the generation is read BEFORE the first
+     * peek, so a notice applied while the sweep is in flight is never healed by a 0
+     * that predates its text. Nor is a contact whose text inbox holds a lease of ours
+     * ([TextLeaseLedger]): its leased blobs are hidden from the peek and can return.
+     *
+     * [onSweepFinished] (optional) is told whether the sweep got a definite answer
+     * from EVERY inbox it peeked ([MessageManager.UnreadPeek.complete]); `false` when
+     * there was no transport. Called after the counts are computed, never with
+     * anything but that one Boolean — it cannot influence the count.
+     */
+    fun contactUnreadSweep(
+        blockedContactIds: Set<String> = emptySet(),
+        onSweepFinished: ((complete: Boolean) -> Unit)? = null,
+    ): ContactUnreadSweep {
+        val sweepGeneration = tally.legacyGeneration()
+        val leaseGeneration = TextLeaseLedger.generation()
         val peeked = sweepUnreadInboxes(blockedContactIds)
         if (peeked == null) {
             onSweepFinished?.invoke(false)
-            return emptyMap()
+            return ContactUnreadSweep(emptyMap(), carryWithoutTransport(blockedContactIds))
         }
         val unseen = screenshotStore.unseenCounts(isGroup = false)
-        val counts = tally.contactCountsFrom(peeked.text, unseen, blockedContactIds)
+        val answeredZero = peeked.textAnswered.filterValues { it <= 0 }.keys
+        // A peek is not proof while our own drain holds a lease on that inbox (its
+        // blobs are hidden from /peek and can come back): no heal for those contacts.
+        val healBlocked = peeked.textAnswered.keys.filterTo(mutableSetOf()) {
+            TextLeaseLedger.blocksHeal(it, leaseGeneration)
+        }
+        val counts = tally.contactCountsFrom(
+            peeked.text, unseen, blockedContactIds, answeredZero, sweepGeneration, healBlocked,
+        )
+        val carry = noteUnknownTextPeeks(peeked.swept, peeked.textAnswered.keys)
         onSweepFinished?.invoke(peeked.complete)
-        return counts
+        return ContactUnreadSweep(counts, carry)
+    }
+
+    // Consecutive UNKNOWN text-peek sweeps per contact — see [contactUnreadSweep].
+    // contactIds + small counts, RAM only, session-scoped: dies in [scrubInMemory].
+    private val unknownPeekLock = SyncLock()
+    private val unknownTextPeekStreak = mutableMapOf<String, Int>()
+
+    /**
+     * Steps the per-contact unknown-peek streak for one answered sweep and returns
+     * the contacts whose shown dot is still carried. A contact that answered resets;
+     * one no longer swept (deleted, blocked) is forgotten.
+     */
+    private fun noteUnknownTextPeeks(swept: Set<String>, answered: Set<String>): Set<String> =
+        unknownPeekLock.withLock {
+            unknownTextPeekStreak.keys.retainAll(swept)
+            val carry = mutableSetOf<String>()
+            for (contactId in swept) {
+                if (contactId in answered) {
+                    unknownTextPeekStreak.remove(contactId)
+                    continue
+                }
+                val n = (unknownTextPeekStreak[contactId] ?: 0) + 1
+                unknownTextPeekStreak[contactId] = n
+                if (n <= MAX_UNKNOWN_UNREAD_CARRY) carry.add(contactId)
+            }
+            carry
+        }
+
+    /**
+     * No transport: every existing, non-blocked contact keeps the dot already shown,
+     * and the streak is not stepped. A move-frozen vault (or a frozen probe that
+     * fails — [isMoveFrozen] fails toward frozen) and an unreadable contact list
+     * carry nothing, which is the old behaviour.
+     */
+    private fun carryWithoutTransport(blockedContactIds: Set<String>): Set<String> {
+        if (isMoveFrozen(vault)) return emptySet()
+        return try {
+            vault.getAllContacts()
+                .onEach { it.sharedSecret.secureWipe() }
+                .map { it.contactId }
+                .filterTo(mutableSetOf()) { it !in blockedContactIds }
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "unread carry: contact list unreadable: ${e::class.simpleName}")
+            emptySet()
+        }
     }
 
     /**
@@ -4284,7 +4435,7 @@ class GroupManager(
      * [GroupUnreadTally.contactCountsFrom], the group half is published into the
      * tally's group-inbox depths for the GROUP dot's presence bump and is never
      * returned to the caller at all. Null = no transport (the caller answers with
-     * no counts, exactly as before).
+     * no counts, and carries the dots already shown — see [contactUnreadSweep]).
      */
     private fun sweepUnreadInboxes(blockedContactIds: Set<String>): MessageManager.UnreadPeek? {
         val mgr = transport("contactUnreadCounts") ?: return null

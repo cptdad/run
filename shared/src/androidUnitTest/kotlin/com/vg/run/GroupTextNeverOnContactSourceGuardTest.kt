@@ -18,9 +18,11 @@ import kotlin.test.assertTrue
 // It scans the BODIES of the only two functions that ever compute a contact's
 // unread number — `GroupUnreadTally.contactCountsFrom` (the steady-state sweep's
 // arithmetic) and `GroupUnreadTally.primeUnreadCountFor` (the connect-time
-// prime's) — plus the public entry point `GroupManager.contactUnreadCounts`, with
-// comments stripped so the prose ABOUT the invariant cannot satisfy or trip it.
-// It searches GroupManager.kt and GroupUnreadTally.kt together.
+// prime's) — plus the public entry points `GroupManager.contactUnreadCounts` and
+// `GroupManager.contactUnreadSweep`, and `ContactUnreadSweep.applyTo` (the publish
+// merge both platforms run, which also produces a contact number), with comments
+// stripped so the prose ABOUT the invariant cannot satisfy or trip it. It searches
+// GroupManager.kt, GroupUnreadTally.kt and ContactUnreadSweep.kt together.
 //
 // It lives in androidUnitTest because that is the only JVM test source set with a
 // filesystem, the same reason `LegacyMessageTableRemovalTest` and
@@ -34,7 +36,7 @@ class GroupTextNeverOnContactSourceGuardTest {
             val body = bodyOf(fn)
             assertTrue(
                 body.length > 40,
-                "$fn was not found in GroupManager.kt / GroupUnreadTally.kt (or is empty) — a guard that silently " +
+                "$fn was not found in GroupManager.kt / GroupUnreadTally.kt / ContactUnreadSweep.kt (or is empty) — a guard that silently " +
                     "scans nothing passes forever. If it was renamed, rename it here too.",
             )
             for (symbol in FORBIDDEN) {
@@ -169,8 +171,9 @@ class GroupTextNeverOnContactSourceGuardTest {
         return ""
     }
 
-    /** GroupManager.kt + GroupUnreadTally.kt, comments stripped. */
-    private fun scanned(): String = source(GROUP_MANAGER) + "\n" + source(GROUP_UNREAD_TALLY)
+    /** GroupManager.kt + GroupUnreadTally.kt + ContactUnreadSweep.kt, comments stripped. */
+    private fun scanned(): String =
+        source(GROUP_MANAGER) + "\n" + source(GROUP_UNREAD_TALLY) + "\n" + source(CONTACT_UNREAD_SWEEP)
 
     private fun source(path: String = GROUP_MANAGER): String {
         val f = File(repoRoot(), path)
@@ -195,6 +198,7 @@ class GroupTextNeverOnContactSourceGuardTest {
         const val GROUP_MANAGER = "shared/src/commonMain/kotlin/com/vg/run/GroupManager.kt"
         const val MESSAGE_MANAGER = "shared/src/commonMain/kotlin/com/vg/run/MessageManager.kt"
         const val GROUP_UNREAD_TALLY = "shared/src/commonMain/kotlin/com/vg/run/GroupUnreadTally.kt"
+        const val CONTACT_UNREAD_SWEEP = "shared/src/commonMain/kotlin/com/vg/run/ContactUnreadSweep.kt"
 
         val BLOCK_COMMENT = Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL)
         val LINE_COMMENT = Regex("""//[^\n]*""")
@@ -202,6 +206,8 @@ class GroupTextNeverOnContactSourceGuardTest {
         /** Every function that computes, or returns, a CONTACT unread number. */
         val GUARDED_FUNCTIONS = listOf(
             "fun contactUnreadCounts",
+            "fun contactUnreadSweep",
+            "fun applyTo",
             "fun contactCountsFrom",
             "fun primeUnreadCountFor",
         )

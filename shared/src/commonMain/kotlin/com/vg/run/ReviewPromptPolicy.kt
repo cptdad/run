@@ -42,16 +42,18 @@ package com.vg.run
 /** Minimum successful unlocks before an established user is eligible. */
 // REVIEW_PROMPT_TEST_THRESHOLDS is generated at build time (shared/build.gradle.kts,
 // REVIEW_PROMPT_TEST=1): a device-test-only override so a release-configuration
-// build can prove the OS review-sheet wiring without waiting 3 days and pairing
+// build can prove the OS review-sheet wiring without waiting a day and pairing
 // a contact. It is false in every shipping build; the real thresholds follow.
-internal val REVIEW_PROMPT_MIN_UNLOCKS: Int = if (REVIEW_PROMPT_TEST_THRESHOLDS) 2 else 5
+// Lowered 2026-11-19 from 5 unlocks / 3 days (owner: "Vi måste göra appen sökbar!"):
+// store search ranks on ratings, and the OS caps the sheet itself (Apple: 3 per year).
+internal val REVIEW_PROMPT_MIN_UNLOCKS: Int = if (REVIEW_PROMPT_TEST_THRESHOLDS) 2 else 3
 
 /** Minimum paired contacts before an established user is eligible — a
  *  contact-less install has nothing to review the app FOR yet. */
 internal val REVIEW_PROMPT_MIN_CONTACTS: Int = if (REVIEW_PROMPT_TEST_THRESHOLDS) 0 else 1
 
-/** Minimum elapsed time since the first unlock, in milliseconds (3 days). */
-internal val REVIEW_PROMPT_MIN_AGE_MS: Long = if (REVIEW_PROMPT_TEST_THRESHOLDS) 0L else 3L * 24 * 60 * 60 * 1000
+/** Minimum elapsed time since the first unlock, in milliseconds (1 day). */
+internal val REVIEW_PROMPT_MIN_AGE_MS: Long = if (REVIEW_PROMPT_TEST_THRESHOLDS) 0L else 1L * 24 * 60 * 60 * 1000
 
 /**
  * The (firstUnlockAt, unlockCount) counters to persist after a successful

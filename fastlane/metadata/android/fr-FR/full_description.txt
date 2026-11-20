@@ -1,4 +1,4 @@
-Rún est une messagerie sécurisée pour qui refuse tout compromis sur la vie privée. Chaque message est chiffré de bout en bout avant de quitter votre appareil. Dès qu'une conversation va dans les deux sens, les clés progressent au fil des échanges : une clé exposée laisserait le reste scellé.
+Rún messagerie est une application de chat privé via Tor, pour qui refuse tout compromis sur la vie privée. Chaque message est chiffré de bout en bout avant de quitter votre appareil. Dès qu'une conversation va dans les deux sens, les clés progressent au fil des échanges : une clé exposée laisserait le reste scellé.
 
 Rún ne demande ni compte, ni numéro de téléphone, ni e-mail. Rien ne remonte à votre identité. Les contacts s'ajoutent en personne par code QR, ou par la présentation cautionnée d'une personne de confiance — pas d'annuaire, pas de découverte de contacts, pas de graphe social.
 

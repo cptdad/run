@@ -1,5 +1,6 @@
 package com.vg.run
 
+import com.vg.run.GroupManager.Companion.KIND_INVITE
 import com.vg.run.GroupManager.Companion.KIND_LEAVE
 import com.vg.run.GroupManager.Companion.KIND_ROSTER
 import com.vg.run.GroupManager.Companion.MEMBERSHIP_CONTROL_TTL_SECONDS
@@ -8,7 +9,8 @@ import com.vg.run.GroupManager.Companion.membershipHash
 
 // ---------------------------------------------------------------------------
 // MembershipControlRedrive — the durable, ACK-GATED redrive of group membership
-// control (roster / leave), split out of GroupManager. All state is `_meta`
+// control (roster / leave), split out of GroupManager — and of a group INVITE that
+// did not leave (createGroup / addMember, recorded undelivered only). All state is `_meta`
 // under [GroupMetaKeys.CTL_PEND_PREFIX] (`grp_ctl_pend:<groupId>:<contactId>`);
 // there is no RAM state and no lock. The two mechanisms and their bounds are
 // described at GroupManager's `MEMBERSHIP_CONTROL_TTL_SECONDS` and in
@@ -21,6 +23,10 @@ internal class MembershipControlRedrive(
     private val transport: (String) -> MessageManager?,
     private val rosterBody: (String) -> String?,
     private val leaveBody: (Long, String) -> String,
+    // (groupId, contactId) → (invite body, membership hash) derived from CURRENT vault
+    // state, or null when that member no longer needs an invite (gone, joined, or we
+    // are no longer the admin) — see GroupManager.buildInviteForMember.
+    private val inviteBody: (String, String) -> Pair<String, String>? = { _, _ -> null },
 ) {
     companion object {
         private const val TAG = "GroupManager"
@@ -29,6 +35,22 @@ internal class MembershipControlRedrive(
         private const val MAX_CTL_PEND_RECORDS = 256
         private const val MAX_CTL_ACK_RESENDS = 4
         private const val CTL_ACK_RESEND_INTERVAL_MS = 30L * 60 * 1000
+
+        // An undelivered INVITE is re-sent at a GROWING spacing, measured from the
+        // entry's stored lastSentMs: the first re-send at the next sweep, then 1, 2,
+        // 4 … min apart, capped at 6 h. The redrive rides the control sweep, which
+        // runs every ~2.5 s in the fast cadence, so a flat once-per-sweep count spent
+        // all 12 attempts in ~30 s of transport outage — exactly the drop at
+        // invitation time this redrive exists for. With the spacing the 12 attempts
+        // span ~20 h of trying; the 7-day ceiling stays the hard bound.
+        private const val INVITE_RETRY_BASE_MS = 60L * 1000
+        private const val INVITE_RETRY_MAX_INTERVAL_MS = 6L * 60 * 60 * 1000
+
+        /** Minimum time after an invite attempt before the next one, given how many
+         *  attempts were already counted. */
+        internal fun inviteRetryIntervalMs(attempts: Int): Long =
+            if (attempts <= 0) 0L
+            else minOf(INVITE_RETRY_BASE_MS shl minOf(attempts - 1, 20), INVITE_RETRY_MAX_INTERVAL_MS)
     }
 
     /**
@@ -72,7 +94,9 @@ internal class MembershipControlRedrive(
             fun decode(raw: String?): CtlObligation? {
                 val p = raw?.split('|') ?: return null
                 if (p.size != 5 && p.size != 8) return null
-                val kind = p[0]; if (kind != KIND_ROSTER && kind != KIND_LEAVE) return null
+                // KIND_INVITE is new (an older build decodes it as "no obligation" and
+                // deletes it — the downgrade loses a pending invite re-send, nothing else).
+                val kind = p[0]; if (kind != KIND_ROSTER && kind != KIND_LEAVE && kind != KIND_INVITE) return null
                 val epoch = p[1].toLongOrNull() ?: return null
                 val hash = p[2]; if (hash.isEmpty() || hash.length > 64) return null
                 val attempts = p[3].toIntOrNull() ?: return null
@@ -123,6 +147,13 @@ internal class MembershipControlRedrive(
                 if (c in failed) continue
                 val key = ctlPendKey(groupId, c)
                 val prior = CtlObligation.decode(vault.getMeta(key))
+                // An invite that never left outranks a roster: a roster to a member that
+                // was never invited is dropped on arrival (no such group there), so
+                // replacing the invite obligation would lose the only message that can
+                // bring them in (addMember fans the invite, then the roster). The invite
+                // re-send is built from CURRENT state, so it carries the newer roster's
+                // epoch and members anyway; the join it brings in clears it ([clearInvite]).
+                if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) continue
                 vault.putMeta(
                     key,
                     CtlObligation(
@@ -134,9 +165,10 @@ internal class MembershipControlRedrive(
             for (c in failed) {
                 val key = ctlPendKey(groupId, c)
                 val prior = CtlObligation.decode(vault.getMeta(key))
+                if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) continue   // see above
                 // Attempts carry over only WITHIN the undelivered state (see the
-                // CtlObligation kdoc).
-                val attempts = if (prior != null && !prior.awaitingAck) prior.attempts else 0
+                // CtlObligation kdoc) and the same kind.
+                val attempts = if (prior != null && !prior.awaitingAck && prior.kind == kind) prior.attempts else 0
                 vault.putMeta(
                     key,
                     CtlObligation(
@@ -173,6 +205,18 @@ internal class MembershipControlRedrive(
             )
             .take(all.size - MAX_CTL_PEND_RECORDS)
             .forEach { vault.deleteMeta(it.first) }
+    }
+
+    /** The invitee's KIND_JOIN was applied (GroupManager.handleJoin): the invite
+     *  obligation, if any, is done — removed before the join's roster is recorded,
+     *  so that roster gets its normal obligation. Never throws. */
+    fun clearInvite(groupId: String, contactId: String) {
+        try {
+            val key = ctlPendKey(groupId, contactId)
+            if (CtlObligation.decode(vault.getMeta(key))?.kind == KIND_INVITE) vault.deleteMeta(key)
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "clearing an invite obligation failed: ${e::class.simpleName}")
+        }
     }
 
     // End-to-end acknowledgement: [contactId] was seen carrying OUR membership hash
@@ -232,7 +276,27 @@ internal class MembershipControlRedrive(
             // [isGroupMetaResidueForContact] on delete; the check below is the backstop
             // for a record that outlived one, and it costs nothing to defer.)
             if (ob.awaitingAck && now >= ob.lastSentMs && now - ob.lastSentMs < CTL_ACK_RESEND_INTERVAL_MS) continue
+            // An undelivered invite waits out its growing spacing (see
+            // inviteRetryIntervalMs). Same backward-clock rule: a stamp in the future
+            // never blocks a re-send. Rosters and leaves keep their every-sweep cadence.
+            if (ob.kind == KIND_INVITE && !ob.awaitingAck && now >= ob.lastSentMs &&
+                now - ob.lastSentMs < inviteRetryIntervalMs(ob.attempts)
+            ) continue
             if (vault.getContact(contactId) == null) { runCatching { vault.deleteMeta(key) }; continue }
+            // The relay keeps answering 404 for this member's control inbox (it deleted
+            // us, or the inbox expired): nothing we re-send can land, so the obligation
+            // ends instead of spending its attempts on a missing inbox. HOLD = a 404
+            // counted less than an hour ago: skip this sweep, attempts untouched. A
+            // transport failure never produces either (see PeerInboxGonePolicy).
+            when (mgr.controlInboxVerdict(contactId)) {
+                PeerInboxVerdict.GONE -> {
+                    runCatching { vault.deleteMeta(key) }
+                    platformLogWarn(TAG, "membership control '${ob.kind}': the member's inbox is gone on the relay — obligation dropped")
+                    continue
+                }
+                PeerInboxVerdict.HOLD -> continue
+                PeerInboxVerdict.SEND -> Unit
+            }
             val send: Pair<String, String>? = when (ob.kind) {   // body to hash
                 KIND_ROSTER -> {
                     val g = vault.getGroup(groupId)
@@ -252,13 +316,19 @@ internal class MembershipControlRedrive(
                 // obligations outright; this is the belt to that braces, because the
                 // obligation may name a peer whose invite arrived by another route.
                 KIND_LEAVE -> if (vault.getGroup(groupId) != null) null else leaveBody(ob.epoch, ob.leaverMemberId) to ob.hash
+                // Re-derived from CURRENT state (current epoch + member set, the member's
+                // own memberId); null when the member is gone, has joined, or we are no
+                // longer the admin — then there is nothing left to invite.
+                KIND_INVITE -> inviteBody(groupId, contactId)
                 else -> null
             }
             if (send == null) { runCatching { vault.deleteMeta(key) }; continue }
             if (sent > 0) sleepInterSendJitter()
             sent++
             val ok = try {
-                mgr.sendGroupControl(contactId, groupId, ob.kind, send.first, send.second, noPush = true, ttlSeconds = MEMBERSHIP_CONTROL_TTL_SECONDS)
+                // An invite wakes the device (user-visible, as at createGroup /
+                // addMember); every other membership kind is silent bookkeeping.
+                mgr.sendGroupControl(contactId, groupId, ob.kind, send.first, send.second, noPush = ob.kind != KIND_INVITE, ttlSeconds = MEMBERSHIP_CONTROL_TTL_SECONDS)
             } catch (e: Exception) {
                 platformLogWarn(TAG, "membership redrive send threw: ${e::class.simpleName}"); false
             }
@@ -267,9 +337,12 @@ internal class MembershipControlRedrive(
                     // A LEAVE the relay took is done: nothing can acknowledge it
                     // (the group is gone locally), so an AWAITING-ACK record would
                     // only keep the left group's roster residue in `_meta`.
-                    ok && ob.kind == KIND_LEAVE -> {
+                    // An INVITE the relay took is done too: the invitee answers with a
+                    // join (or declines, which must not be re-prompted), and it is not
+                    // ack-gated — the same accepted residual as a leave.
+                    ok && (ob.kind == KIND_LEAVE || ob.kind == KIND_INVITE) -> {
                         vault.deleteMeta(key)
-                        platformLog(TAG, "membership control 'leave' accepted on a redrive — obligation closed")
+                        platformLog(TAG, "membership control '${ob.kind}' accepted on a redrive — obligation closed")
                     }
                     // Relay took it for the FIRST time: stop re-sending every sweep,
                     // start waiting for the member's own hash. The record is

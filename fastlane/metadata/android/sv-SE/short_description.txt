@@ -1,1 +1,1 @@
-Anonym, end-to-end-krypterad meddelandeapp via Tor. Inga konton. Inga spår.
+Privat meddelandeapp via Tor. Utan konto, utan telefonnummer, utan e-post.

@@ -4866,13 +4866,22 @@ final class AppState: ObservableObject {
                     // Pass the blocked-contact set so the background sweep
                     // does not poll blocked inboxes (block now stops the network
                     // fetch, not just the row display).
-                    let contactUnread = intMap(gm.contactUnreadCounts(blockedContactIds: BlockStore.blocked()))
+                    let contactSweep = gm.contactUnreadSweep(blockedContactIds: BlockStore.blocked())
                     let groupUnread = intMap(gm.groupUnreadCounts())
                     await MainActor.run {
                         // Publish only on CHANGE. An unconditional
                         // assign fires @Published every poll cycle even when unchanged,
                         // recreating ContentView and churning its timer/renders for nothing.
                         guard self.isPollSessionCurrent(pollSession) else { return }
+                        // MERGED against what is shown NOW, not replaced: an unknown
+                        // peek keeps a lit dot (bounded), and a CARRIED contact whose
+                        // conversation was opened during the sweep stays cleared
+                        // (ContactUnreadSweep.applyTo, shared with Android's
+                        // RunViewModel.startControlPoll). A peek that ANSWERED N > 0
+                        // before the conversation was opened still republishes that dot
+                        // until the next sweep (about one cycle).
+                        let shown = self.unreadCounts.mapValues { KotlinInt(int: Int32(clamping: $0)) }
+                        let contactUnread = intMap(contactSweep.applyTo(current: shown))
                         if self.unreadCounts != contactUnread { self.unreadCounts = contactUnread }
                         if self.groupUnreadCounts != groupUnread { self.groupUnreadCounts = groupUnread }
                     }

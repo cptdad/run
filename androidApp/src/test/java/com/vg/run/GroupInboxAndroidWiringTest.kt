@@ -109,7 +109,7 @@ class GroupInboxAndroidWiringTest {
      * No path in RunViewModel may reach the
      * contact-unread map through the pre-group-inbox [MessageManager.peekUnreadCounts]
      * wrapper, nor through the group-inbox's RAM-only pending map. RunViewModel is
-     * only ever allowed to consume [GroupManager.contactUnreadCounts] /
+     * only ever allowed to consume [GroupManager.contactUnreadSweep] /
      * [GroupManager.groupUnreadCounts] / [GroupManager.primeUnreadCounts], which do
      * the mixing (or deliberately don't) in commonMain where it is pinned by
      * MetaResiduePurgeTest's siblings, not re-derived per platform.
@@ -118,7 +118,7 @@ class GroupInboxAndroidWiringTest {
     fun runViewModelNeverTouchesTheLegacyOrGroupInternalUnreadSymbols() {
         assertFalse(
             "RunViewModel must not call the pre-group-inbox peekUnreadCounts( wrapper — " +
-                "it must go through GroupManager's contactUnreadCounts()/primeUnreadCounts()",
+                "it must go through GroupManager's contactUnreadSweep()/primeUnreadCounts()",
             viewModel.contains("peekUnreadCounts("),
         )
         assertFalse(
@@ -133,13 +133,15 @@ class GroupInboxAndroidWiringTest {
     @Test
     fun theContactDotIsPublishedOnlyFromTheSharedContactApi() {
         assertTrue(
-            "the steady-state sweep must publish _unreadCounts from GroupManager.contactUnreadCounts()",
+            "the steady-state sweep must publish _unreadCounts from GroupManager.contactUnreadSweep()",
             // Prefix, not the full `()`: since 2026-10-14 the call also passes the
             // PushWakeFreshness completeness callback (a Boolean out, never a count).
             // Since the session-epoch guard the sweep result is held in a local and
             // published only while the session is still current — same source.
-            viewModel.contains("val sweptContactCounts = it.contactUnreadCounts(") &&
-                viewModel.contains("_unreadCounts.value = sweptContactCounts"),
+            // Since 2026-11-18 it is MERGED through the shared ContactUnreadSweep.applyTo
+            // (an unknown peek keeps the shown dot) — still no arithmetic here.
+            viewModel.contains("val contactSweep = it.contactUnreadSweep(") &&
+                viewModel.contains("_unreadCounts.update { shown -> contactSweep.applyTo(shown) }"),
         )
         assertTrue(
             "the connect-time prime must publish per-contact counts from GroupManager.primeUnreadCounts's callback",

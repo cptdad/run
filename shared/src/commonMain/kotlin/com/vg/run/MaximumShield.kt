@@ -177,13 +177,19 @@ class MaximumShield(
     fun reconcile(
         blocked: Set<String> = emptySet(),
         maxAttempts: Int = MAX_ATTEMPTS_PER_PASS,
+        // A contact whose control inbox the relay keeps answering 404 for
+        // (MessageManager.controlInboxVerdict != SEND): skipped WITHOUT spending one of
+        // this pass's attempts, and its marker is left as it is, so the announcement
+        // goes out if that inbox ever answers again. Before this, a peer that deleted
+        // us was re-sent the announcement on every pass, forever.
+        held: (contactId: String) -> Boolean = { false },
         send: (contactId: String, max: Boolean) -> Boolean,
     ): Int {
         // One pass at a time: the sweep fires every 60-90 s and a pass with a few
         // spread sends over Tor can outlast that.
         if (!passLock.withLock { if (passRunning) false else { passRunning = true; true } }) return 0
         try {
-            return reconcileLocked(blocked, maxAttempts, send)
+            return reconcileLocked(blocked, maxAttempts, held, send)
         } finally {
             passLock.withLock { passRunning = false }
         }
@@ -192,6 +198,7 @@ class MaximumShield(
     private fun reconcileLocked(
         blocked: Set<String>,
         maxAttempts: Int,
+        held: (contactId: String) -> Boolean,
         send: (contactId: String, max: Boolean) -> Boolean,
     ): Int {
         val lvl = level()
@@ -208,6 +215,7 @@ class MaximumShield(
                 val marker = vault.getMeta(MaximumShieldPolicy.sentMarkerKey(id))
                 val needsSend = if (wantMax) marker != "1" else marker == "1"
                 if (!needsSend) continue
+                if (try { held(id) } catch (_: Exception) { false }) continue
                 if (attempts >= maxAttempts) break
                 if (attempts > 0) {
                     sleeper(jitterMs())

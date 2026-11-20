@@ -74,6 +74,9 @@ internal fun ratchetMetaKeysForContact(contactId: String): List<String> = listOf
     // here and not in GroupMetaKeys: a group delete DETACHES its units (GroupManager)
     // instead, and the restore detaches any unit whose group is gone.
     // DELIBERATELY NOT carried by a device move (MoveMetaPolicy.deniedPrefixes).
+    PeerInboxGonePolicy.keyFor(contactId),        // send-404 evidence about this peer's inboxes —
+    // a re-paired peer has NEW inboxes, and evidence that outlived the contact would
+    // be a per-contact "they deleted you" note left in the vault after the delete
     // The pending read-cap rotation markers, one per inbound inbox. Each holds
     // a LIVE capability candidate, so leaving one behind on delete would be a new
     // capability leak in the vault (exactly the residue class this list exists for).
@@ -107,9 +110,9 @@ internal object GroupMetaKeys {
     const val ROSTER_RL_PREFIX = "grp_roster_rl:"
     /**
      * `grp_ctl_pend:<groupId>:<contactId>` — a durable
-     * UNDELIVERED membership-control obligation (roster or leave) the control
-     * sweep redrives. Value `<kind>|<epoch>|<hash>|<attempts>|<firstSeenMs>`; the
-     * roster body itself is re-derived from live vault state at redrive time.
+     * membership-control obligation (roster, leave, or an invite that never left) the
+     * control sweep redrives. Value per `MembershipControlRedrive.CtlObligation`; the
+     * roster and invite bodies are re-derived from live vault state at redrive time.
      */
     const val CTL_PEND_PREFIX = "grp_ctl_pend:"
 }

@@ -128,7 +128,12 @@ fun createSessionManagers(
                     val blocked = try { groupManager.blockedContacts() } catch (_: Exception) { null }
                     // A throwing block-list provider skips the pass: never announce to a
                     // contact we cannot prove is not blocked.
-                    if (blocked != null) shield.reconcile(blocked) { cid, max -> mgr.sendMaximumAnnouncement(cid, max) }
+                    if (blocked != null) {
+                        shield.reconcile(
+                            blocked,
+                            held = { cid -> mgr.controlInboxVerdict(cid) != PeerInboxVerdict.SEND },
+                        ) { cid, max -> mgr.sendMaximumAnnouncement(cid, max) }
+                    }
                 }
             }
         }

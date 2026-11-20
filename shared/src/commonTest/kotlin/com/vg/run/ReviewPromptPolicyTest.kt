@@ -6,13 +6,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 private const val NOW = 1_000_000_000_000L
-private const val THREE_DAYS_MS = 3L * 24 * 60 * 60 * 1000
+private const val ONE_DAY_MS = 1L * 24 * 60 * 60 * 1000
 
 /** Every gate satisfied — the shared "eligible" baseline the boundary tests mutate ONE field of. */
 private fun eligibleArgs(
     now: Long = NOW,
-    firstUnlockAt: Long? = NOW - THREE_DAYS_MS,
-    unlockCount: Int = 5,
+    firstUnlockAt: Long? = NOW - ONE_DAY_MS,
+    unlockCount: Int = 3,
     contactCount: Int = 1,
     alreadyPrompted: Boolean = false,
     isDebugBuild: Boolean = false,
@@ -37,17 +37,17 @@ class ReviewPromptPolicyTest {
     }
 
     // -------------------------------------------------------------------
-    // Unlock-count boundary (>= 5)
+    // Unlock-count boundary (>= 3)
     // -------------------------------------------------------------------
 
     @Test
-    fun exactlyFiveUnlocks_isEligible() {
-        assertTrue(eligibleArgs(unlockCount = 5))
+    fun exactlyThreeUnlocks_isEligible() {
+        assertTrue(eligibleArgs(unlockCount = 3))
     }
 
     @Test
-    fun fourUnlocks_isNotEligible() {
-        assertFalse(eligibleArgs(unlockCount = 4))
+    fun twoUnlocks_isNotEligible() {
+        assertFalse(eligibleArgs(unlockCount = 2))
     }
 
     @Test
@@ -56,22 +56,22 @@ class ReviewPromptPolicyTest {
     }
 
     // -------------------------------------------------------------------
-    // Age boundary (>= 3 days since firstUnlockAt)
+    // Age boundary (>= 1 day since firstUnlockAt)
     // -------------------------------------------------------------------
 
     @Test
-    fun exactlyThreeDaysElapsed_isEligible() {
-        assertTrue(eligibleArgs(firstUnlockAt = NOW - THREE_DAYS_MS))
+    fun exactlyOneDayElapsed_isEligible() {
+        assertTrue(eligibleArgs(firstUnlockAt = NOW - ONE_DAY_MS))
     }
 
     @Test
-    fun oneMillisecondShortOfThreeDays_isNotEligible() {
-        assertFalse(eligibleArgs(firstUnlockAt = NOW - THREE_DAYS_MS + 1))
+    fun oneMillisecondShortOfOneDay_isNotEligible() {
+        assertFalse(eligibleArgs(firstUnlockAt = NOW - ONE_DAY_MS + 1))
     }
 
     @Test
-    fun wellPastThreeDays_staysEligible() {
-        assertTrue(eligibleArgs(firstUnlockAt = NOW - THREE_DAYS_MS * 10))
+    fun wellPastOneDay_staysEligible() {
+        assertTrue(eligibleArgs(firstUnlockAt = NOW - ONE_DAY_MS * 10))
     }
 
     @Test
@@ -150,7 +150,7 @@ class ReviewPromptPolicyTest {
 
     @Test
     fun afterUnlock_laterCallsNeverMoveAnAlreadySetFirstUnlockAt() {
-        val firstEver = NOW - THREE_DAYS_MS
+        val firstEver = NOW - ONE_DAY_MS
         val result = ReviewPromptPolicy.afterUnlock(now = NOW, firstUnlockAt = firstEver, unlockCount = 4)
         assertEquals(firstEver, result.firstUnlockAt)
         assertEquals(5, result.unlockCount)

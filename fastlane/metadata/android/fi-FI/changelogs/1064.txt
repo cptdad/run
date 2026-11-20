@@ -1,5 +1,7 @@
-• Skannaamalla tai esittelyn kautta lisätyt kontaktit alkavat nyt kertakäyttöisellä avaintenvaihdolla: puhelimen myöhempi kopio ei pysty luomaan uudelleen niiden ensimmäisiä avaimia. Molemmissa puhelimissa on oltava tämä versio; nykyiset kontaktit eivät muutu.
+• Uudet kontaktit alkavat kertakäyttöisellä avaintenvaihdolla: puhelimen myöhempi kopio ei pysty luomaan uudelleen niiden ensimmäisiä avaimia. Molemmissa puhelimissa on oltava tämä versio.
 • Paritus kestää puhelimen kääntämisen ja yhteyden katkeamisen.
 • Terävämmät QR-koodit.
 • Ennen liittymistäsi saapuvat ryhmäviestit näytetään eivätkä katoa.
+• Lähettämättä jääneet ryhmäkutsut lähetetään uudelleen.
+• Luotettavammat lukemattomien viestien pisteet.
 • Vakaampi yhteys verkon vaihdon jälkeen.

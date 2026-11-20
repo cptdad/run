@@ -3527,10 +3527,18 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                 try {
                     groupManager?.let {
                         var peekComplete = false
-                        val sweptContactCounts = it.contactUnreadCounts(onSweepFinished = { c -> peekComplete = c })
+                        val contactSweep = it.contactUnreadSweep(onSweepFinished = { c -> peekComplete = c })
                         val sweptGroupCounts = it.groupUnreadCounts()
                         if (sessionStillCurrent(pollEpoch)) {
-                            _unreadCounts.value = sweptContactCounts
+                            // Merged against what is shown NOW, not replaced: an unknown
+                            // peek (or no transport — Tor Failed/Idle keeps this loop
+                            // running) keeps a lit dot, and a CARRIED contact whose
+                            // conversation was opened during the sweep stays cleared
+                            // (ContactUnreadSweep). A peek that ANSWERED N > 0 before the
+                            // conversation was opened still republishes that dot until
+                            // the next sweep (about one cycle). iOS sibling:
+                            // AppState.startControlPoll.
+                            _unreadCounts.update { shown -> contactSweep.applyTo(shown) }
                             _groupUnreadCounts.value = sweptGroupCounts
                         }
                         // Every text + group inbox answered its peek and the control
@@ -4584,6 +4592,9 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // last step, after the Tor stop. (The in-flight sends were cancelled with
         // the session jobs, before the vault close.)
         TransportFailedSends.shared.endSession()
+        // Same gap, same fix, for the process-wide receive state (lease ledger +
+        // uncommitted-legacy registry): unconditional, never behind the manager.
+        MessageManager.endProcessReceiveSession()
         // Scrub decrypted group-message/invite buffers + the ephemeral referral
         // X25519 private key from RAM BEFORE dropping the references — nulling alone
         // leaves them resident in the deliberately-kept-alive process.
@@ -4636,6 +4647,8 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // after the child is confirmed dead.
         torManager?.stopAndDiscardState()
         torManager = null
+        // Again after the Tor stop, for a drain that began before it.
+        MessageManager.endProcessReceiveSession()
         // Final step, AFTER the Tor stop: stopping Tor is what fails any POST still
         // in flight, and that failure is exactly when a send tries to park.
         TransportFailedSends.shared.endSession()
@@ -4762,6 +4775,9 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // repeated as the very last step, after the Tor stop.
         cancelInFlightSends()
         TransportFailedSends.shared.endSession()
+        // Same gap, same fix, for the process-wide receive state (lease ledger +
+        // uncommitted-legacy registry): unconditional, never behind the manager.
+        MessageManager.endProcessReceiveSession()
         groupManager?.scrubInMemory()
         referralManager?.scrubInMemory()
         groupManager = null
@@ -4941,7 +4957,9 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // Final step, AFTER the Tor stop (or hand-off): stopping Tor is what fails
         // any POST still in flight, and that failure is exactly when a send tries
         // to park. With stopTor=false (re-auth lock) Tor stays up and the epoch
-        // bump above is what refuses a late park.
+        // bump above is what refuses a late park. The receive-state end is repeated
+        // here too, for a drain that began before the Tor stop.
+        MessageManager.endProcessReceiveSession()
         TransportFailedSends.shared.endSession()
     }
 

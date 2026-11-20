@@ -242,6 +242,21 @@ does not yet name both parties — are retried **once per control sweep** from
 nothing runs without a live transport. This also closes the sibling defect where the introducer's
 relay-forward ignored `sendDirectControl`'s return and swallowed a failed forward silently.
 
+**A peer whose inbox is gone ends the redrive (2026-11-18).** Before this, an offer to a
+contact who had deleted the introducer answered `404` on every attempt and was retried for up
+to the 28-day ceiling (each attempt refreshed the session's idle TTL), and the introduction
+never ended. Every send now feeds the send-404 evidence (`PeerInboxGone.kt`,
+`docs/vault-relay-internals.md` "A 404 on a send ends the automatic re-drive of that item"):
+three counted 404s an hour apart, from a relay that has just proven it still holds our own
+inboxes. On that GONE verdict the introducer's undelivered-offer redrive and its queued-relay
+redrive END the introduction — `ref_s` and its `ref_r` records are dropped, the same terminal
+state the TTL reaches for an expired introduction (no screen shows an introducer-side
+"introducing" state, so there is no new UI or text). An introducee's unsent accept to an
+introducer that deleted it is simply no longer re-sent: its `ref_p` (keypair, minted inboxes)
+is kept and not refreshed, and the TTL reclaims it. While a 404 was counted less than an hour
+ago the attempt is skipped without spending the budget. A transport failure, a single 404 or a
+relay that lost its state never ends anything. A user's Retry tap always sends.
+
 **The OFFER leg is durable too.** `startReferral` used to fire both offers and DISCARD both
 return values, so one dropped circuit silently swallowed half an introduction: the introducer saw
 success, one introducee never saw a consent prompt, and nothing retried. It now records the

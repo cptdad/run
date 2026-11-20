@@ -1,1 +1,1 @@
-Anonymous, end-to-end encrypted messenger over Tor. No accounts. No traces.
+Private messenger over Tor. No account, no phone number, no email.

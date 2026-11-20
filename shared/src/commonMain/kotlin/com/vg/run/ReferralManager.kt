@@ -1147,6 +1147,7 @@ class ReferralManager(
         }
         for ((introId, contactA, contactB) in work) {
             var attempted = false
+            var ended = false
             for ((target, other) in listOf(contactA to contactB, contactB to contactA)) {
                 val alreadyDone = lock.withLock { introSessions[introId]?.offered?.contains(target) != false }
                 if (alreadyDone) continue
@@ -1155,6 +1156,17 @@ class ReferralManager(
                     platformLogWarn(TAG, "referral offer redrive: a party is gone — skipped")
                     continue
                 }
+                // The relay keeps answering 404 for this party's control inbox (they
+                // deleted us, or the inbox expired): the introduction cannot complete,
+                // so it ENDS here — the same terminal state as an expired one — instead
+                // of re-POSTing the offer for up to 28 days. HOLD = a 404 counted less
+                // than an hour ago: skip without spending the budget or refreshing.
+                when (mgr.controlInboxVerdict(target)) {
+                    PeerInboxVerdict.GONE -> { endIntroduction(introId); ended = true }
+                    PeerInboxVerdict.HOLD -> continue
+                    PeerInboxVerdict.SEND -> Unit
+                }
+                if (ended) break
                 attempted = true
                 val sent = try {
                     sendReferralControl(
@@ -1185,6 +1197,33 @@ class ReferralManager(
                 }
                 persistSession(introId, live)
             }
+        }
+    }
+
+    /**
+     * INTRODUCER: ends introduction [introId] because one party's inbox is gone on
+     * the relay ([PeerInboxVerdict.GONE]). Drops the session and every un-relayed
+     * accept queued for it — RAM and vault — which is exactly the terminal state the
+     * TTL reaches for an introduction that expired. Neither record holds key material
+     * (the session names two contacts; a queued accept is the other introducee's
+     * PUBLIC key and inbox offer), and nothing else is touched: no contact, no
+     * ratchet, no tombstone. A party that DID get its offer is left with a consent
+     * prompt that can no longer complete, the same as when the other side declines.
+     * Never throws.
+     */
+    private fun endIntroduction(introId: String) {
+        try {
+            lock.withLock {
+                introSessions.remove(introId)
+                dropRecord(ReferralMetaKeys.SESSION_PREFIX + introId)
+                for (key in relayRedrives.filterValues { it.introId == introId }.keys.toList()) {
+                    relayRedrives.remove(key)
+                    dropRecord(ReferralMetaKeys.REDRIVE_PREFIX + key)
+                }
+            }
+            platformLogWarn(TAG, "introduction ended: a party's inbox is gone on the relay")
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "ending an introduction failed: ${e::class.simpleName}")
         }
     }
 
@@ -1255,6 +1294,12 @@ class ReferralManager(
                 }
         }
         for ((introId, introducer, body) in work) {
+            // The introducer's control inbox keeps answering 404 (it deleted us):
+            // our accept can never be relayed. Stop re-sending; the record and its
+            // material are KEPT, untouched and un-refreshed, so the idle TTL reclaims
+            // them exactly as it would for a dead introducer — nothing is destroyed
+            // on this evidence. A user-driven Retry still sends (it never asks this).
+            if (mgr.controlInboxVerdict(introducer) != PeerInboxVerdict.SEND) continue
             val sent = try {
                 sendReferralControl(mgr, introducer, MessageManager.CONTROL_KIND_REFERRAL_ACCEPT, body)
             } catch (e: Exception) {
@@ -1283,6 +1328,17 @@ class ReferralManager(
         }
         for ((ids, body) in work) {
             val (introId, toContactId, fromContactId) = ids
+            // Already gone (an introduction ended earlier in this pass): no send.
+            if (lock.withLock { redriveKey(introId, toContactId) !in relayRedrives }) continue
+            // The party this accept must reach has no inbox on the relay any more:
+            // the introduction cannot complete, so it ends (session + queued accepts),
+            // the same terminal state as an expired one. HOLD skips this sweep without
+            // spending the budget or refreshing the record.
+            when (mgr.controlInboxVerdict(toContactId)) {
+                PeerInboxVerdict.GONE -> { endIntroduction(introId); continue }
+                PeerInboxVerdict.HOLD -> continue
+                PeerInboxVerdict.SEND -> Unit
+            }
             val sent = try {
                 sendReferralControl(mgr, toContactId, MessageManager.CONTROL_KIND_REFERRAL_ACCEPT, body)
             } catch (e: Exception) {

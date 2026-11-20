@@ -80,6 +80,11 @@ object MoveMetaPolicy {
         // so both stay meaningful; dropping the marker would only make the new phone
         // re-announce to every contact once.
         "plvl-peer/", "plvl-sent/",
+        // Send-404 evidence about a peer's inboxes (`PeerInboxGonePolicy`). It
+        // describes the PEER's inboxes on the relay, which a move does not change, and
+        // it is what keeps the automatic re-drives to a deleted peer ended; dropping it
+        // would only restart that bounded probe on the new phone.
+        PeerInboxGonePolicy.KEY_PREFIX,
         // The anti-eclipse tombstone
         // (`group_admin:<groupId>`, GroupManager.adminMetaKey) — the ONLY key in the
         // vault whose prefix is `group_` rather than `grp_`, which is exactly why it

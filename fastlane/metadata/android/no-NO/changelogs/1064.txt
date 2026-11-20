@@ -1,5 +1,7 @@
-• Kontakter som legges til ved skanning eller introduksjon, starter nå med en engangs nøkkelutveksling: en senere kopi av telefonen kan ikke gjenskape de første nøklene deres. Begge telefonene trenger denne versjonen; eksisterende kontakter er uendret.
+• Nye kontakter starter med en engangs nøkkelutveksling: en senere kopi av telefonen kan ikke gjenskape de første nøklene deres. Begge telefonene trenger denne versjonen.
 • Parkoblingen tåler at telefonen snus eller at tilkoblingen brytes.
 • Skarpere QR-koder.
 • Gruppemeldinger som kommer før du blir med, vises i stedet for å gå tapt.
+• Gruppeinvitasjoner som ikke ble sendt, sendes på nytt.
+• Mer pålitelige prikker for uleste meldinger.
 • Stabilere tilkobling etter nettverksbytte.

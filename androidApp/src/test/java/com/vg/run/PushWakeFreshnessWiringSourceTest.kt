@@ -127,7 +127,7 @@ class PushWakeFreshnessWiringSourceTest {
         val body = viewModel.functionBody("private fun startControlPoll() {")
         assertTrue(
             "the unread sweep must be asked for its completeness through onSweepFinished",
-            body.contains("contactUnreadCounts(onSweepFinished = { c -> peekComplete = c })"),
+            body.contains("contactUnreadSweep(onSweepFinished = { c -> peekComplete = c })"),
         )
         val call = body.functionCall("PushWakeFreshness.recordInboxSweep(")
         assertTrue("sweepComplete must be the callback's answer:\n$call", call.contains("sweepComplete = peekComplete"))
@@ -136,7 +136,7 @@ class PushWakeFreshnessWiringSourceTest {
         // that never answered (threw before the callback) reads incomplete.
         assertTrue(body.contains("var peekComplete = false"))
         val declAt = body.indexOf("var peekComplete = false")
-        val sweepAt = body.indexOf("contactUnreadCounts(onSweepFinished")
+        val sweepAt = body.indexOf("contactUnreadSweep(onSweepFinished")
         val recordAt = body.indexOf("PushWakeFreshness.recordInboxSweep(")
         assertTrue(declAt < sweepAt && sweepAt < recordAt)
     }

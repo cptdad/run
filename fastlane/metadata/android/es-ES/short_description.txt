@@ -1,1 +1,1 @@
-Mensajería anónima cifrada de extremo a extremo por Tor. Sin cuentas ni rastro.
+Mensajería privada vía Tor. Sin cuenta, sin número de teléfono, sin email.

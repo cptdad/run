@@ -2390,6 +2390,9 @@ class IosAppController {
      *    no-transport branch), so the manager scrub cannot be their only clear.
      *    `endSession()` bumps the session epoch AND clears, so a send still in
      *    flight that captured the old epoch cannot re-park after this.
+     *  - The process-wide receive state ([MessageManager.endProcessReceiveSession]:
+     *    the text-lease ledger and the uncommitted-legacy registry) is ended the same
+     *    way, unconditionally.
      *    Unconditional — parity with Android `RunViewModel.lockSession` /
      *    `performEmergencyWipe`; [adoptOpenedVault] begins the next session.
      */
@@ -2397,6 +2400,9 @@ class IosAppController {
         messageManager?.scrubInMemory()
         messageManager = null
         TransportFailedSends.shared.endSession()
+        // Process-wide receive state (lease ledger + uncommitted-legacy registry):
+        // unconditional, never behind the manager — parity with Android.
+        MessageManager.endProcessReceiveSession()
         groupManager?.scrubInMemory()
         referralManager?.scrubInMemory()
         groupManager = null

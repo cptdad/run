@@ -73,6 +73,11 @@ private class GtRelay : InboxQueueRelay(
      *  socket error), as opposed to [forget]'s clean 404. Sweep-completeness tests. */
     var throwOnPeekOf: Set<String> = emptySet()
 
+    /** Test-only: invoked with the inbox id at the START of a single `GET …/peek`,
+     *  before the relay counts, outside every lock — the hook can append blobs and
+     *  apply notices "while the sweep is in flight". */
+    var onSinglePeek: ((String) -> Unit)? = null
+
     /** What the next successful mint hands back. */
     var mintInboxId = gtInbox("minted")
     var mintReadCap = GT_CAP2
@@ -131,6 +136,7 @@ private class GtRelay : InboxQueueRelay(
         if (url.contains("/inbox/") && url.endsWith("/peek") && relayInboxIdOf(url) in throwOnPeekOf) {
             throw RuntimeException("simulated transport timeout")
         }
+        if (url.contains("/inbox/") && url.endsWith("/peek")) onSinglePeek?.invoke(relayInboxIdOf(url))
         return super.get(url, headers, timeoutSeconds)
     }
 }
@@ -1484,5 +1490,269 @@ class GroupInboxPushSurfaceTest {
         assertEquals(setOf(gtInbox("p1"), gtInbox("p2"), gtInbox("p3")), pushable)
         assertEquals(pushable, enumerated, "register and de-register must enumerate the identical set")
         assertEquals(GT_CAP2, allPushableInboxes(vault).single { it.inboxId == gtInbox("p3") }.readCap)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The steady sweep's CONTACT-dot publish rule (2026-11-18): an UNKNOWN text peek
+// keeps the dot already on screen (bounded), an ANSWERED peek replaces it. Both
+// platforms publish `contactUnreadSweep(...).applyTo(current)`, so these tests
+// pin exactly what the contact list shows.
+// ---------------------------------------------------------------------------
+
+class UnreadSweepCarryTest {
+
+    /** What a platform holds after publishing [sweep] over [current]. */
+    private fun publish(current: Map<String, Int>, sweep: ContactUnreadSweep) = sweep.applyTo(current)
+
+    @Test
+    fun aTransientTextPeekFailure_keepsTheLitDot() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        assertEquals(mapOf("a" to 1), shown)
+
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        assertEquals(1, h.relay.depth(h.txtToB), "precondition: the message is still waiting on the relay")
+        assertEquals(mapOf("a" to 1), publish(shown, h.gm.contactUnreadSweep()), "an unknown peek must not blank the dot")
+    }
+
+    @Test
+    fun anUnknownPeek_neverInventsADotThatWasNotShown() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        assertEquals(emptyMap(), publish(emptyMap(), h.gm.contactUnreadSweep()))
+    }
+
+    @Test
+    fun theCarryIsBounded_toThreeConsecutiveUnknownSweeps() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        var shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        repeat(GroupManager.MAX_UNKNOWN_UNREAD_CARRY) {
+            shown = publish(shown, h.gm.contactUnreadSweep())
+            assertEquals(mapOf("a" to 1), shown, "unknown sweep ${it + 1} still carries")
+        }
+        shown = publish(shown, h.gm.contactUnreadSweep())
+        assertEquals(emptyMap(), shown, "a peek that never answers again stops holding the dot (lost inbox)")
+    }
+
+    @Test
+    fun anAnswerResetsTheBound() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        var shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        repeat(GroupManager.MAX_UNKNOWN_UNREAD_CARRY) { shown = publish(shown, h.gm.contactUnreadSweep()) }
+        h.relay.throwOnPeekOf = emptySet()
+        shown = publish(shown, h.gm.contactUnreadSweep())
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        repeat(GroupManager.MAX_UNKNOWN_UNREAD_CARRY) { shown = publish(shown, h.gm.contactUnreadSweep()) }
+        assertEquals(mapOf("a" to 1), shown)
+    }
+
+    @Test
+    fun aConversationReadMeanwhile_isNeverResurrectedByAnUnknownPeek() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        assertEquals(mapOf("a" to 1), shown)
+        // markContactRead on the platform: the key leaves the shown map.
+        val afterRead = shown - "a"
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        assertEquals(emptyMap(), publish(afterRead, h.gm.contactUnreadSweep()))
+    }
+
+    @Test
+    fun anAnsweredZero_clearsTheDot() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        assertEquals(listOf("hi"), h.gm.pollDirect("a").map { it.text })
+        assertEquals(emptyMap(), publish(shown, h.gm.contactUnreadSweep()))
+    }
+
+    @Test
+    fun aDeletedContact_isNeverCarried() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        h.bVault.deleteContact("a")
+        assertEquals(emptyMap(), publish(shown, h.gm.contactUnreadSweep()))
+    }
+
+    @Test
+    fun aBlockedContact_isNeverCarried() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        assertEquals(emptyMap(), publish(shown, h.gm.contactUnreadSweep(blockedContactIds = setOf("a"))))
+    }
+
+    @Test
+    fun noTransport_keepsEveryShownDot_withoutSpendingTheBound() {
+        // Android's Tor Failed/Idle: the loop keeps running with no MessageManager.
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        var shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        var transportUp = false
+        val gm = GroupManager(h.bVault) { if (transportUp) h.bMgr else null }
+        repeat(GroupManager.MAX_UNKNOWN_UNREAD_CARRY + 2) {
+            shown = publish(shown, gm.contactUnreadSweep())
+        }
+        assertEquals(mapOf("a" to 1), shown, "a Tor outage must not blank the contact dots")
+        // A shown key for a contact that no longer exists is not carried.
+        assertEquals(mapOf("a" to 1), publish(shown + ("ghost" to 2), gm.contactUnreadSweep()))
+        // The outage did not spend the bound: a first unknown peek after it still carries.
+        transportUp = true
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        assertEquals(mapOf("a" to 1), publish(shown, gm.contactUnreadSweep()))
+    }
+
+    @Test
+    fun moveFrozen_carriesNothing() {
+        if (!aeadUp()) return
+        val h = GtHarness()
+        assertTrue(h.sendDirect("hi"))
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        h.bVault.putMeta(MoveMetaKeys.FROZEN, "1")
+        // Production shape (SessionManagers): the gated provider answers NO
+        // transport on a frozen vault — that must not take the no-transport carry.
+        val gated = GroupManager(h.bVault) { if (isMoveFrozen(h.bVault)) null else h.bMgr }
+        assertEquals(emptyMap(), publish(shown, gated.contactUnreadSweep()))
+        // …and a MessageManager built after the freeze refuses the sweep itself.
+        val freshMgr = MessageManager(h.bVault, "http://relay.test", h.relay)
+        val direct = GroupManager(h.bVault) { freshMgr }
+        assertEquals(emptyMap(), publish(shown, direct.contactUnreadSweep()))
+    }
+
+    @Test
+    fun anUnknownPeek_keepsTheShownNumber_notJustTheDot() {
+        // The carried value is the shown COUNT (the carry is a max over counts, which
+        // for an unknown peek hold at most the unseen-screenshot-notice term).
+        if (!aeadUp()) return
+        val h = GtHarness()
+        repeat(3) { assertTrue(h.sendDirect("hi $it")) }
+        val shown = publish(emptyMap(), h.gm.contactUnreadSweep())
+        assertEquals(mapOf("a" to 3), shown)
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        assertEquals(mapOf("a" to 3), publish(shown, h.gm.contactUnreadSweep()))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The LEGACY compensator must not outlive the text it describes (2026-11-18). A
+// legacy group text drained BEFORE its notice was applied (or a notice whose text
+// had already expired) left a unit that no sweep could heal — the heal ran only
+// for a contact with a non-zero depth — and that unit then hid the contact's next
+// real 1:1 message.
+// ---------------------------------------------------------------------------
+
+class LegacyPendingHealTest {
+
+    @Test
+    fun legacyNoticeAppliedAfterTheGroupScreenDrainedItsText_doesNotHideTheNext1to1Text() {
+        if (!aeadUp()) return
+        val h = GtHarness(aHasGrpRow = false)
+        assertEquals(MessageManager.GroupTextRoute.MAIN, h.sendGroupText("crew"))
+        // The group screen polls first: the text leaves the relay before its notice is applied.
+        assertEquals(listOf("crew"), h.gm.pollGroup(h.gid).map { it.text })
+        assertTrue(h.sendNotice(gi = false))
+        h.sweepControl()
+        // The same cycle's unread sweep: the text inbox answers 0.
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+
+        assertTrue(h.sendDirect("private"))
+        assertEquals(mapOf("a" to 1), h.gm.contactUnreadCounts(), "the 1:1 text must light the contact row")
+    }
+
+    @Test
+    fun aLegacyNoticeWithNoTextBehindIt_isHealedByAnAnsweredZero() {
+        if (!aeadUp()) return
+        // A notice whose text expired (24 h retention vs the 48 h notice age gate).
+        val h = GtHarness(aHasGrpRow = false)
+        h.gm.handleControl("a", h.gid, GroupManager.KIND_ACTIVITY, "{}", 0L)
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+
+        assertTrue(h.sendDirect("private"))
+        assertEquals(mapOf("a" to 1), h.gm.contactUnreadCounts())
+    }
+
+    @Test
+    fun anUnknownPeek_neverHealsTheCompensator() {
+        if (!aeadUp()) return
+        val h = GtHarness(aHasGrpRow = false)
+        assertEquals(MessageManager.GroupTextRoute.MAIN, h.sendGroupText("crew"))
+        assertTrue(h.sendNotice(gi = false))
+        h.sweepControl()
+        h.relay.throwOnPeekOf = setOf(h.txtToB)
+        h.gm.contactUnreadCounts()
+        h.relay.throwOnPeekOf = emptySet()
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts(), "the group text is still subtracted")
+    }
+
+    @Test
+    fun aNoticeAppliedWhileTheSweepIsInFlight_isNotHealedByThatSweepsZero() {
+        if (!aeadUp()) return
+        // The generation guard. The sweep peeks A's EMPTY text inbox (answered 0) and
+        // then, for a group-sharing contact, A's group inbox. At that second peek —
+        // still inside the same sweep — a legacy group text lands on the text inbox
+        // and its notice is applied. The sweep's 0 predates the text, so it must not
+        // remove the fresh unit: otherwise the next sweep lights the CONTACT row for
+        // a group text.
+        val h = GtHarness(aHasGrpRow = false)
+        var fired = false
+        h.relay.onSinglePeek = { id ->
+            if (id == h.grpToB && !fired) {
+                fired = true
+                assertEquals(MessageManager.GroupTextRoute.MAIN, h.sendGroupText("crew"))
+                h.gm.handleControl("a", h.gid, GroupManager.KIND_ACTIVITY, "{}", 0L)
+            }
+        }
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+        assertTrue(fired, "precondition: the arrival happened inside the sweep")
+        h.relay.onSinglePeek = null
+        assertEquals(1, h.relay.depth(h.txtToB))
+
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts(), "the queued group text stays off the contact row")
+    }
+
+    @Test
+    fun aNoticeAppliedWhileTheSweepIsInFlight_isNotClampedAwayByThatSweepsDepth() {
+        if (!aeadUp()) return
+        // The same guard on the NON-ZERO clamp. One legacy group text is queued and
+        // noticed (tally 1, depth 1). The sweep peeks depth 1; then, inside the same
+        // sweep, a second legacy group text lands and is noticed (tally 2). Clamping
+        // the tally to that sweep's stale depth (1) would leave the second group text
+        // unsubtracted, and the next sweep would light the CONTACT row for it.
+        val h = GtHarness(aHasGrpRow = false)
+        assertEquals(MessageManager.GroupTextRoute.MAIN, h.sendGroupText("crew 1"))
+        assertTrue(h.sendNotice(gi = false))
+        h.sweepControl()
+        var fired = false
+        h.relay.onSinglePeek = { id ->
+            if (id == h.grpToB && !fired) {
+                fired = true
+                assertEquals(MessageManager.GroupTextRoute.MAIN, h.sendGroupText("crew 2"))
+                h.gm.handleControl("a", h.gid, GroupManager.KIND_ACTIVITY, "{}", 0L)
+            }
+        }
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts())
+        assertTrue(fired, "precondition: the arrival happened inside the sweep")
+        h.relay.onSinglePeek = null
+        assertEquals(2, h.relay.depth(h.txtToB))
+
+        assertEquals(emptyMap(), h.gm.contactUnreadCounts(), "both group texts stay off the contact row")
     }
 }

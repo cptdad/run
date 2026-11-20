@@ -101,6 +101,17 @@ internal class GroupUnreadTally(
     private val unattributedSinceMs = mutableMapOf<String, Long>()
     private val noticeCheckedAfterGrace = mutableSetOf<String>()
 
+    // The legacy compensator's heal guard: a counter stepped by every counted LEGACY
+    // notice, and the value it had when each contact's tally last grew. A sweep
+    // reads [legacyGeneration] before its first peek; an answered 0 heals a
+    // contact only if its tally has not grown since (see [contactCountsFrom]).
+    private var legacyGenerationCounter = 0L
+    private val legacyStampByContact = mutableMapOf<String, Long>()
+
+    /** The legacy-notice generation; a sweep reads it BEFORE its first peek and
+     *  hands it back to [contactCountsFrom]. */
+    fun legacyGeneration(): Long = lock.withLock { legacyGenerationCounter }
+
     /**
      * Keeps the notice-grace state of [contactId] in step with its two group-inbox
      * tallies. Becoming unattributed starts the clock (once — a growing depth does
@@ -180,7 +191,10 @@ internal class GroupUnreadTally(
             grpNoticedByContact[senderContactId] = grpPending + 1
             // Attribution caught up → a waiting fallback never shows.
             reconcileGraceLocked(senderContactId)
-        } else groupPendingByContact[senderContactId] = legacyPending + 1
+        } else {
+            groupPendingByContact[senderContactId] = legacyPending + 1
+            legacyStampByContact[senderContactId] = ++legacyGenerationCounter
+        }
         true
     }
 
@@ -319,6 +333,7 @@ internal class GroupUnreadTally(
      *  is authoritatively zero. */
     fun textInboxDrained(contactId: String) = lock.withLock {
         groupPendingByContact.remove(contactId)
+        legacyStampByContact.remove(contactId)
     }
 
     /** Clear a group's unread count — its conversation was opened. */
@@ -418,9 +433,24 @@ internal class GroupUnreadTally(
      * KIND_ACTIVITY notice WITHOUT `gi`, i.e. only for a group text that really is
      * queued on that contact's TEXT inbox (a legacy peer, or one still inside the
      * backfill window). It is clamped so it can never exceed what is actually on
-     * the relay, which also HEALS the tally downward as texts expire. For a
-     * converged new↔new pairing it is provably always zero — delete the machinery
-     * in release N+2.
+     * the relay (the heal-down write below). For a converged new↔new pairing it is
+     * provably always zero — delete the machinery in release N+2.
+     *
+     * The clamp runs only for a contact in [raw], i.e. a NON-ZERO depth, so on its
+     * own it could never take the tally to zero: a unit left behind by a text that
+     * already left the relay (drained by a group screen before its notice was
+     * applied, or expired under a notice younger than the 48 h age gate) stood for
+     * the whole session and hid that contact's next real 1:1 text. [answeredZero]
+     * closes that (2026-11-18): a contact whose text-inbox peek ANSWERED 0 has
+     * nothing of theirs on the relay, so its legacy tally is zero — unless a legacy
+     * notice was counted after [sweepGeneration] was read (the sweep's 0 may then
+     * predate that notice's text). An UNKNOWN peek is in neither set and never heals.
+     * The non-zero clamp's write-back takes the same guard. Neither heal runs for a
+     * contact in [healBlocked]: one of OUR drains holds a lease on its text inbox
+     * ([TextLeaseLedger]), and a leased blob is invisible to the peek but can come
+     * back (lost ack, partial commit, abandoned screen poll). The default
+     * [sweepGeneration] (no generation supplied) keeps the shipped unguarded clamp
+     * and heals no zero.
      *
      * The notice term is a UNION, not a filter: the sweep only reports contacts
      * with a non-zero relay count, so a contact whose only unread thing is a
@@ -432,13 +462,34 @@ internal class GroupUnreadTally(
         raw: Map<String, Int>,
         unseen: Map<String, Int>,
         blockedContactIds: Set<String>,
+        answeredZero: Set<String> = emptySet(),
+        sweepGeneration: Long = Long.MIN_VALUE,
+        healBlocked: Set<String> = emptySet(),
     ): Map<String, Int> {
         val out = lock.withLock {
+            for (contactId in answeredZero) {
+                if (contactId in raw) continue
+                // Our own drain holds a lease on this inbox: the 0 may be hiding a
+                // blob that comes back (TextLeaseLedger). The next sweep decides.
+                if (contactId in healBlocked) continue
+                if ((legacyStampByContact[contactId] ?: 0L) > sweepGeneration) continue
+                groupPendingByContact.remove(contactId)
+                legacyStampByContact.remove(contactId)
+            }
             val acc = mutableMapOf<String, Int>()
             for ((contactId, total) in raw) {
                 val pending = (groupPendingByContact[contactId] ?: 0)
                 val groupPart = if (pending > total) total else pending
-                if (groupPart < pending) groupPendingByContact[contactId] = groupPart  // heal down
+                // Heal down — unless a legacy notice was counted after the sweep read
+                // [sweepGeneration]: its text may have landed after this depth was
+                // peeked, and clamping to that stale depth would leave it unsubtracted.
+                // This sweep's number still uses the clamped value; only the write waits.
+                val stamp = legacyStampByContact[contactId] ?: 0L
+                if (groupPart < pending && contactId !in healBlocked &&
+                    (sweepGeneration == Long.MIN_VALUE || stamp <= sweepGeneration)
+                ) {
+                    groupPendingByContact[contactId] = groupPart
+                }
                 val direct = total - groupPart
                 if (direct > 0) acc[contactId] = direct
             }
@@ -466,11 +517,12 @@ internal class GroupUnreadTally(
         return direct + (unseen[contactId] ?: 0)
     }
 
-    // Session end (GroupManager.scrubInMemory): all seven are contactIds/groupIds +
+    // Session end (GroupManager.scrubInMemory): all eight maps are contactIds/groupIds +
     // counts/timestamps — the same class of session state — and die in the same breath. The
     // vault mirror is untouched here (that is the point of it); GroupManager owns it.
     fun scrub() = lock.withLock {
         groupUnread.clear(); groupPendingByContact.clear()
+        legacyStampByContact.clear()
         groupInboxPendingByContact.clear(); grpNoticedByContact.clear()
         restoredUnits.clear()
         unattributedSinceMs.clear(); noticeCheckedAfterGrace.clear()

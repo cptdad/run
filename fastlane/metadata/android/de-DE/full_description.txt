@@ -1,4 +1,4 @@
-Rún ist ein sicherer Messenger für Menschen, die bei Privatsphäre keine Kompromisse machen. Jede Nachricht wird Ende-zu-Ende verschlüsselt, bevor sie dein Gerät verlässt. Sobald ihr hin und her schreibt, rücken die Schlüssel weiter – ein offengelegter Schlüssel gibt nie den Rest der Unterhaltung preis.
+Rún Messenger ist eine private Chat-App über Tor für alle, die bei Privatsphäre keine Kompromisse machen. Jede Nachricht wird Ende-zu-Ende verschlüsselt, bevor sie dein Gerät verlässt. Schreibt ihr hin und her, rücken die Schlüssel weiter – ein offengelegter Schlüssel gibt nie den Rest des Chats preis.
 
 Rún braucht weder Konto noch Telefonnummer noch E-Mail-Adresse — nichts, was zu deiner Identität zurückführt. Kontakte fügt ihr persönlich per QR-Code hinzu oder über eine verbürgte Vorstellung durch eine Vertrauensperson — kein Verzeichnis, keine Kontaktsuche, kein Social Graph.
 

@@ -676,6 +676,10 @@ class MessageManager(
             pendingLegacy.clear()
         }
         ackUnconfirmedLock.withLock { ackUnconfirmed.clear() }
+        // Contact ids + lease tokens, process-wide like the legacy registry above. The
+        // platforms ALSO clear it unconditionally at lock / wipe
+        // ([endProcessReceiveSession]): a manager dropped without a scrub never gets here.
+        TextLeaseLedger.scrub()
         screenshotNoticeLock.withLock { pendingScreenshotNotices.clear() }
         // The catch-up marks are contact ids (social-graph state) — same rule.
         sealedControlCatchUpLock.withLock {
@@ -2646,6 +2650,105 @@ class MessageManager(
         var transportFailed: Boolean = false
     }
 
+    // -----------------------------------------------------------------------
+    // A relay 404 on a SEND is evidence that the peer's inbox is gone
+    // ([PeerInboxGonePolicy] holds the rule and its bounds). Fed by the two POST
+    // sites ([sendEnvelopeSerialized], [sendOverTextRatchet]); read by every queued
+    // item that re-drives on failure, which ends its retry on a GONE verdict instead
+    // of re-POSTing to a missing inbox for the life of its record.
+    // -----------------------------------------------------------------------
+
+    /** Clock for the send-404 evidence; injectable for tests (production: wall clock). */
+    internal var peerInboxEvidenceClockMs: () -> Long = { currentTimeMillis() }
+
+    /**
+     * When the relay last PROVED it holds our state: an authenticated 2xx on one of
+     * our existing inboxes (a drain, a control peek, a batch-peek count) or an
+     * accepted append to an existing peer inbox — never a mint, which an emptied
+     * relay also answers. RAM-only, per transport. A 404 counts as evidence only within
+     * [PeerInboxGonePolicy.RELAY_PROOF_MAX_AGE_MS] of it — a relay that came back with
+     * an empty shell table 404s our own inboxes too and so never refreshes it.
+     */
+    @Volatile
+    private var relayProvedOurStateAtMs: Long = Long.MIN_VALUE
+
+    private fun noteRelayProvedOurState() {
+        relayProvedOurStateAtMs = peerInboxEvidenceClockMs()
+    }
+
+    private fun relayRecentlyProvedOurState(now: Long): Boolean {
+        val at = relayProvedOurStateAtMs
+        return at != Long.MIN_VALUE && now >= at && now - at <= PeerInboxGonePolicy.RELAY_PROOF_MAX_AGE_MS
+    }
+
+    /**
+     * Records what the relay answered to one append on [inboxId] (a PEER's inbox).
+     * 2xx clears that inbox's evidence; a 404 may count (see [PeerInboxGonePolicy]);
+     * a transport failure or any other status changes nothing. Runs inside the
+     * per-contact send lock, so two sends to one contact never race the row. Never
+     * writes for a contact deleted mid-send (that would resurrect a purged key).
+     * Best effort; never throws. Log lines carry counts only.
+     */
+    private fun notePeerInboxAnswer(contactId: String, inboxId: String, result: HttpResult?) {
+        if (result == null) return
+        try {
+            val now = peerInboxEvidenceClockMs()
+            if (result.isSuccess) noteRelayProvedOurState()
+            if (!result.isSuccess && result.code != 404) return
+            val key = PeerInboxGonePolicy.keyFor(contactId)
+            val raw = databaseManager.getMeta(key)
+            if (raw == null && result.isSuccess) return   // steady state: one keyed read
+            val before = PeerInboxGonePolicy.decode(raw)
+            val tag = PeerInboxGonePolicy.inboxTag(inboxId)
+            val after = if (result.isSuccess) {
+                PeerInboxGonePolicy.afterAccepted(before, tag)
+            } else {
+                PeerInboxGonePolicy.afterNotFound(before, tag, now, relayRecentlyProvedOurState(now))
+            }
+            if (after === before) return
+            if (!contactExists(contactId)) return
+            val encoded = PeerInboxGonePolicy.encode(after)
+            if (encoded == null) databaseManager.deleteMeta(key) else databaseManager.putMeta(key, encoded)
+            if (!result.isSuccess) {
+                val count = after.firstOrNull { it.tag == tag }?.count ?: 0
+                if (count >= PeerInboxGonePolicy.GONE_AFTER_COUNTED_404S) {
+                    platformLogWarn(LOG_TAG, "peer inbox answered 404 on repeated sends — automatic retries to it end")
+                } else {
+                    platformLogWarn(LOG_TAG, "peer inbox answered 404 on a send ($count of ${PeerInboxGonePolicy.GONE_AFTER_COUNTED_404S})")
+                }
+            }
+        } catch (e: Exception) {
+            platformLogWarn(LOG_TAG, "send-404 evidence not recorded: ${e::class.simpleName}")
+        }
+    }
+
+    /**
+     * The verdict for the next AUTOMATIC send to [contactId] on [chan] — the
+     * destination row resolved exactly as [sendEnvelopeSerialized] resolves it (a
+     * missing non-MAIN row falls back to MAIN). Fails toward
+     * [PeerInboxVerdict.SEND] on any read error or a missing row. For re-drive
+     * loops only: a user-initiated send never consults it.
+     */
+    internal fun peerInboxVerdict(contactId: String, chan: Chan = Chan.CTL): PeerInboxVerdict = try {
+        val raw = databaseManager.getMeta(PeerInboxGonePolicy.keyFor(contactId))
+        if (raw == null) {
+            PeerInboxVerdict.SEND
+        } else {
+            val row = (if (chan == Chan.MAIN) null else databaseManager.getInboxIdForContact(contactId, chan.outDir))
+                ?: databaseManager.getInboxIdForContact(contactId, "outbound")
+            if (row == null) PeerInboxVerdict.SEND
+            else PeerInboxGonePolicy.verdict(
+                PeerInboxGonePolicy.decode(raw), PeerInboxGonePolicy.inboxTag(row.inboxId), peerInboxEvidenceClockMs(),
+            )
+        }
+    } catch (_: Exception) {
+        PeerInboxVerdict.SEND
+    }
+
+    /** [peerInboxVerdict] on the CONTROL channel, for callers outside this file's
+     *  [Chan] (the control-kind re-drives). */
+    internal fun controlInboxVerdict(contactId: String): PeerInboxVerdict = peerInboxVerdict(contactId, Chan.CTL)
+
     private fun sendEnvelope(
         contactId: String,
         plaintext: String,
@@ -3027,6 +3130,10 @@ class MessageManager(
             // Only a real 404 — a transport drop leaves it false, because "unreachable"
             // is not evidence that an inbox is gone.
             if (result?.code == 404) status?.inboxGone = true
+            // The same answer, as durable evidence about THIS destination inbox (a 404
+            // may end the automatic re-drives to it; a 2xx clears it). See
+            // [notePeerInboxAnswer] — it never deletes, re-inits or wipes anything.
+            notePeerInboxAnswer(contactId, inboxId, result)
             // A successful control send opens a convergence window: we now expect a
             // reply (roster/join ack), so the poll loop follows up FAST instead of
             // idling (see [controlPollDelayMs]). OUR OWN send, so it counts as
@@ -3741,6 +3848,7 @@ class MessageManager(
             if (pending != null && ref.controlContactId != null) {
                 // Exactly [peekControlRef]'s side effect, for exactly its refs.
                 noteRelayHealthy(ref.controlContactId, Chan.CTL)
+                noteRelayProvedOurState()
             }
         }
         // A 2xx from the relay over `.onion` IS a completed round trip — the same
@@ -3802,6 +3910,7 @@ class MessageManager(
         // 200 carries, so it clears the control channel's 404 streak; without this,
         // skipping the drain on an idle cycle would leave a stale streak standing.
         noteRelayHealthy(contactId, Chan.CTL)
+        noteRelayProvedOurState()   // see the drain's 2xx branch
         markRelayRoundTripCompleted()
         return outcome.pending
     }
@@ -3905,6 +4014,7 @@ class MessageManager(
         val outcome = peekOnce(target.inboxId, target.readCap)
         if (!outcome.live) return null
         noteRelayHealthy(target.contactId, Chan.CTL)
+        noteRelayProvedOurState()   // see the drain's 2xx branch
         markRelayRoundTripCompleted()
         return outcome.pending
     }
@@ -3937,11 +4047,22 @@ class MessageManager(
      * since the one consumer (Android's late-FCM-wake suppression,
      * `PushWakeFreshness`) may only claim "the app has seen every inbox" on proof.
      * It never feeds a count.
+     *
+     * [textAnswered] (2026-11-18) is every TEXT-inbox depth the relay ANSWERED,
+     * a genuine 0 included, and [swept] is every contact the sweep walked. A
+     * contact in [swept] but not in [textAnswered] is UNKNOWN (its peek failed),
+     * which [text] alone cannot tell apart from an answered 0. Two consumers need
+     * that difference: the contact-dot carry rule
+     * ([GroupManager.contactUnreadSweep] — an unknown peek keeps the dot already
+     * on screen) and the legacy compensator's heal (only an answered 0 proves the
+     * text inbox is empty). A move-frozen sweep walks nothing, so both are empty.
      */
     internal class UnreadPeek(
         val text: Map<String, Int>,
         val group: Map<String, Int>,
         val complete: Boolean = false,
+        val textAnswered: Map<String, Int> = emptyMap(),
+        val swept: Set<String> = emptySet(),
     )
 
     /**
@@ -3974,6 +4095,7 @@ class MessageManager(
             .toMutableList()
         contacts.secureShuffle()  // CSPRNG Fisher–Yates — non-predictable sweep order
         val counts = mutableMapOf<String, Int>()
+        val answered = mutableMapOf<String, Int>()
         val groupCounts = mutableMapOf<String, Int>()
         var requests = 0
         var complete = true
@@ -3981,6 +4103,8 @@ class MessageManager(
             jitterBeforeRequest(requests); requests++
             val n = peekInbox(c.contactId)
             if (n == null) complete = false
+            // Unknown (null) is NOT zero: absent from [answered] too.
+            if (n != null) answered[c.contactId] = n
             if (n != null && n > 0) counts[c.contactId] = n
             if (c.contactId !in groupSharingContactIds) continue
             jitterBeforeRequest(requests); requests++
@@ -3990,7 +4114,7 @@ class MessageManager(
             if (g == null) complete = false
             if (g != null) groupCounts[c.contactId] = g
         }
-        return UnreadPeek(counts, groupCounts, complete)
+        return UnreadPeek(counts, groupCounts, complete, answered, contacts.mapTo(mutableSetOf()) { it.contactId })
     }
 
     /** The sweep's inter-request traffic discipline, single-sourced so the text
@@ -4633,6 +4757,9 @@ class MessageManager(
         val posted = postWithTransientRetry(url, RATCHET_WIRE_MAGIC + wire, sendHeaders(writeCap, noPush),
             Chan.entries.firstOrNull { it.outDir == target.direction }?.logLabel ?: "text")
         if (posted?.code == 404) status?.inboxGone = true
+        // Durable send-404 evidence, exactly as on the static path. Bookkeeping only:
+        // the chain advance above stands either way.
+        notePeerInboxAnswer(contactId, target.inboxId, posted)
         // Transport-class failure: the chain has advanced (the peer will see one
         // skipped key), and a re-drive is a FRESH encrypt — exactly what a manual
         // Retry does today.
@@ -4848,6 +4975,12 @@ class MessageManager(
             for (contactId in v3Ids) {
                 val key = drLostKey(contactId)
                 if (databaseManager.getMeta(key) != DR_LOST_NOTICE_OWED) continue
+                // A peer whose control inbox the relay keeps answering 404 for has
+                // deleted us (or its inbox expired): the notice cannot land, so stop
+                // re-POSTing it every sweep. Nothing is written — the notice stays
+                // owed and goes out if a later send to that inbox ever lands (the
+                // evidence clears on any 2xx, and ages out after a week).
+                if (controlInboxVerdict(contactId) != PeerInboxVerdict.SEND) continue
                 val ok = try {
                     sendDirectControl(contactId, CONTROL_KIND_CHANNEL_LOST, "{}", noPush = true, ttlSeconds = CONTROL_APPEND_TTL_SECONDS)
                 } catch (_: Exception) { false }
@@ -5652,6 +5785,12 @@ class MessageManager(
     @Volatile
     private var acksClosed = false
 
+    /** The receive session this manager belongs to ([TextLeaseLedger.sessionEpoch]),
+     *  captured at construction: once a lock / wipe has ended that session, this
+     *  manager writes neither the lease ledger nor the uncommitted-legacy registry —
+     *  also when nobody scrubbed it (Android drops it unscrubbed on Tor Failed/Idle). */
+    private val receiveEpoch: Long = TextLeaseLedger.sessionEpoch()
+
     private val ackJob = SupervisorJob()
     private val ackScope = CoroutineScope(ackJob + ioDispatcher)
 
@@ -5767,6 +5906,8 @@ class MessageManager(
         }
         if (result.code == 200) {
             ackUnconfirmedLock.withLock { for (item in chunk) ackUnconfirmed.remove(item.labelKey) }
+            // The relay deleted the listed ids and released the rest of each token.
+            for (item in chunk) TextLeaseLedger.settled(item.token)
             platformLog(LOG_TAG, "retrieve-ack: ${chunk.size} inbox(es), $ids blob(s) deleted")
         } else {
             platformLogWarn(LOG_TAG, "retrieve-ack: ${chunk.size} inbox(es) not acked (code=${result.code}) — the lease will expire and the blobs come back")
@@ -5937,7 +6078,11 @@ class MessageManager(
         internal val inboxRecord: InboxIdRecord,
         internal val url: String,
         internal val headers: Map<String, String>,
-    )
+    ) {
+        /** TEXT inbox only: the [TextLeaseLedger] in-flight mark [fetchDrain] takes
+         *  BEFORE its GET; resolved by [finishDrainCore]. */
+        @Volatile internal var leaseMark: TextLeaseLedger.Mark? = null
+    }
 
     /** The TEXT inbox's [prepareDrain] (GroupManager has no [Chan]). */
     internal fun prepareTextDrain(contactId: String): PreparedDrain? = prepareDrain(contactId, Chan.MAIN)
@@ -6016,12 +6161,18 @@ class MessageManager(
     }
 
     /** The ONLY concurrent stage: the GET. Never throws; null = the request failed. */
-    internal fun fetchDrain(p: PreparedDrain): HttpResult? = try {
-        httpClient.get(p.url, headers = p.headers)
-    } catch (e: Exception) {
-        // Class name only — a transport exception's message can carry the relay host.
-        platformLogError(LOG_TAG, "poll failed (${p.chan.logLabel}): ${e::class.simpleName}")
-        null
+    internal fun fetchDrain(p: PreparedDrain): HttpResult? {
+        // BEFORE the GET: the relay starts the lease when it SERVES the request, so a
+        // concurrent unread sweep must see this fetch as a possible lease from now on
+        // (TextLeaseLedger; resolved in [finishDrainCore]). Never from a closed instance.
+        if (p.chan == Chan.MAIN && !acksClosed) p.leaseMark = TextLeaseLedger.beginFetch(p.contactId, receiveEpoch)
+        return try {
+            httpClient.get(p.url, headers = p.headers)
+        } catch (e: Exception) {
+            // Class name only — a transport exception's message can carry the relay host.
+            platformLogError(LOG_TAG, "poll failed (${p.chan.logLabel}): ${e::class.simpleName}")
+            null
+        }
     }
 
     /**
@@ -6057,7 +6208,14 @@ class MessageManager(
         }
 
     private fun finishDrainCoreHoldingSecret(p: PreparedDrain, fetched: HttpResult?, drainGroup: Any?): DrainOutcome {
-        val result = fetched ?: return DrainOutcome.EMPTY
+        // TextLeaseLedger: how this fetch ended for the in-flight mark. A clean "nothing
+        // leased" answer clears it, blobs under a lease become that lease, and an answer
+        // never seen or not readable stays a possible lease (bounded there).
+        val mark = p.leaseMark
+        val result = fetched ?: run {
+            mark?.let { TextLeaseLedger.resolveUnseen(it) }
+            return DrainOutcome.EMPTY
+        }
         val contactId = p.contactId
         val chan = p.chan
         val contact = p.contact
@@ -6077,6 +6235,14 @@ class MessageManager(
         // the streak per channel: an attacker who rotates a victim's read
         // cap out from under them would otherwise silently kill text delivery
         // with NO UI signal (the message channel previously never flagged).
+        if (!result.isSuccess || result.body == null) {
+            mark?.let {
+                // A real HTTP status that is not 2xx (404, 429, 5xx…) served nothing; a
+                // transport failure (no status) or a 2xx without a body was never seen.
+                if (!result.isSuccess && result.code in 100..599) TextLeaseLedger.resolveClean(it)
+                else TextLeaseLedger.resolveUnseen(it)
+            }
+        }
         if (result.code == 404) {
             noteRelay404(contactId, chan)
             return DrainOutcome.EMPTY
@@ -6086,6 +6252,10 @@ class MessageManager(
         // Healthy response (an empty inbox is still a 200) → this channel is
         // alive: clear its 404 streak and, once every channel is healthy, the flag.
         noteRelayHealthy(contactId, chan)
+        // …and the relay's inbox table is loaded: a send-404 may count as evidence
+        // ([notePeerInboxAnswer]). Only an authenticated read of an EXISTING inbox of
+        // ours sets this — never a mint, which succeeds on an emptied relay too.
+        noteRelayProvedOurState()
         // Same evidence, second use — the relay answering 2xx for THIS inbox under
         // our read cap proves it still holds it, which is what lets us re-stamp the
         // row's informational lease (and repair a vault already past its stamp). The
@@ -6097,10 +6267,25 @@ class MessageManager(
         } catch (_: Exception) {
             platformLogWarn(LOG_TAG, "poll: unparseable blobs array in a 2xx response — drain yielded no messages")
             // Nothing to ack by id: the lease (if any) expires and the relay retries.
+            mark?.let { TextLeaseLedger.resolveUnseen(it) }
             return DrainOutcome.EMPTY
         }
         // Retrieve-ack: the lease token + per-blob ids (untrusted, validated).
         val lease = parseLease(result.body, blobs.size)
+        // A lease of ours on a TEXT inbox hides its blobs from /peek until it ends;
+        // the legacy compensator's heal must not trust a 0 meanwhile (TextLeaseLedger).
+        // The ledger ignores a mark from before a session end (its epoch), so a drain in
+        // flight across a lock or wipe cannot write it back.
+        if (mark != null) {
+            when {
+                blobs.isEmpty() -> TextLeaseLedger.resolveClean(mark)
+                lease != null -> TextLeaseLedger.resolveLeased(mark, lease.token)
+                // No token at all: a relay that predates the lease deleted at fetch.
+                // A token we refused (malformed): the relay may hold a lease we cannot see.
+                firstStringFieldAnywhere(result.body, "token").isNullOrEmpty() -> TextLeaseLedger.resolveClean(mark)
+                else -> TextLeaseLedger.resolveUnseen(mark)
+            }
+        }
         // PENDING mode only for the text-bearing inboxes; a CTL drain is always a
         // background drain.
         val pendingMode = drainGroup != null && chan.isText
@@ -7055,7 +7240,19 @@ class MessageManager(
         } else {
             // Rules 2/4/5 discarding this advance release its lease at once.
             part.ratchetTicket?.onDiscarded = { releaseLease(part) }
-            if (part.legacyBaseline != null) pendingLock.withLock { pendingLegacy[legacyKey] = part }
+            if (part.legacyBaseline != null) pendingLock.withLock {
+                // A manager whose receive session has ended (a lock / wipe landed while
+                // this drain was in flight — on Android possibly a manager nobody
+                // scrubbed) registers nothing, and its part is settled + discarded
+                // exactly as [endProcessReceiveSession] would have done: a late commit
+                // writes no baseline and sends no ack (the lease expires and the next
+                // session re-receives). The session end bumps the epoch BEFORE it clears
+                // this registry under [pendingLock], so an insert that passed this check
+                // is cleared by it.
+                if (acksClosed || !TextLeaseLedger.isCurrentSession(receiveEpoch)) {
+                    part.legacyDiscarded = true; part.settled = true
+                } else pendingLegacy[legacyKey] = part
+            }
         }
         return DrainOutcome(msgs, null, part)
     }
@@ -8019,6 +8216,33 @@ class MessageManager(
         bytesToHex(sha256(sharedSecret + "msg-epoch".encodeToByteArray()).copyOfRange(0, 6))
 
     companion object {
+        /**
+         * Session end for the PROCESS-wide receive state no single instance owns:
+         * [TextLeaseLedger] (contact ids + lease tokens) and the uncommitted-legacy
+         * registry (each part: contact id, inbox id, read capability, lease token).
+         * [scrubInMemory] clears both too, but only for a manager that still exists —
+         * Android drops it WITHOUT a scrub when Tor goes Failed/Idle (so a parked
+         * send survives the outage), and the lock / wipe that follows then has no
+         * manager to scrub. Both platforms call this UNCONDITIONALLY at lock and at
+         * wipe (Android `RunViewModel.lockSession` / `performEmergencyWipe`, iOS
+         * `IosAppController.endSessionRam`), the way they end the parked-send ledger.
+         * Same effect on the registry as [scrubInMemory]: every part is marked settled
+         * and discarded, so a late commit from a stale screen writes nothing. RAM
+         * only, no I/O, never throws.
+         */
+        /** Test seam: how many uncommitted legacy drains the process registry holds. */
+        internal fun pendingLegacyCountForTest(): Int = PendingLegacyRegistry.lock.withLock { PendingLegacyRegistry.map.size }
+
+        fun endProcessReceiveSession() {
+            try { TextLeaseLedger.scrub() } catch (_: Exception) {}
+            try {
+                PendingLegacyRegistry.lock.withLock {
+                    for (part in PendingLegacyRegistry.map.values) { part.legacyDiscarded = true; part.settled = true }
+                    PendingLegacyRegistry.map.clear()
+                }
+            } catch (_: Exception) {}
+        }
+
         // Relay reachability probe: fresh onion streams can miss rendezvous under
         // concurrent load, so try twice before reporting the relay unreachable.
         internal const val RELAY_HEALTH_ATTEMPTS    = 2
