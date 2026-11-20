@@ -169,4 +169,28 @@ class ReviewPromptPolicyTest {
         assertEquals(6, unlockCount)
         assertEquals(NOW, firstUnlockAt)
     }
+
+    // --- debug gate (2026-11-20: REVIEW_PROMPT_TEST=1 opens it on debug builds) ---
+
+    @Test
+    fun debugGate_blocksAnOrdinaryDebugBuild() {
+        assertTrue(ReviewPromptPolicy.debugGateBlocks(isDebugBuild = true, testKnob = false))
+    }
+
+    @Test
+    fun debugGate_letsADebugBuildWithTheTestKnobThrough() {
+        assertFalse(ReviewPromptPolicy.debugGateBlocks(isDebugBuild = true, testKnob = true))
+    }
+
+    @Test
+    fun debugGate_neverBlocksAReleaseBuild() {
+        assertFalse(ReviewPromptPolicy.debugGateBlocks(isDebugBuild = false, testKnob = false))
+        assertFalse(ReviewPromptPolicy.debugGateBlocks(isDebugBuild = false, testKnob = true))
+    }
+
+    @Test
+    fun shippingBuildsCarryNoTestKnob() {
+        // The unit-test compilation never sets REVIEW_PROMPT_TEST, like every shipping path.
+        assertFalse(REVIEW_PROMPT_TEST_THRESHOLDS)
+    }
 }

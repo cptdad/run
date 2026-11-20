@@ -119,9 +119,11 @@ if (releaseArtifactIntent && debugArtifactRequested) {
 }
 // Build-time-only test knob for the in-app store-review prompt
 // (ReviewPromptPolicy.kt): REVIEW_PROMPT_TEST=1 compiles a binary whose
-// thresholds are 2 unlocks / 0 contacts / 0 days instead of 5 / 1 / 3 days,
-// so a RELEASE-configuration device build can prove the OS review sheet
-// wiring in minutes (debug builds never prompt at all). Nothing sets this
+// thresholds are 2 unlocks / 0 contacts / 0 days instead of 3 / 1 / 1 day AND
+// opens the debug gate (ReviewPromptPolicy.debugGateBlocks), so a DEBUG device
+// build on the dev relay proves the OS review sheet wiring in minutes
+// (e2e-tests: test:device:reviewprompt:ios). Ordinary debug builds never
+// prompt. Nothing sets this
 // env var in any shipping path (Xcode Cloud, the pre-push .aab, fastlane).
 // Refused for ANY release compilation this
 // invocation resolves — reuses releaseArtifactIntent above (assembleRelease,

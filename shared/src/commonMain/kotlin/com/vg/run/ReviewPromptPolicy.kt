@@ -35,15 +35,16 @@ package com.vg.run
 // rendered; on a debug/TestFlight build Apple always shows it, which is
 // exactly why callers must gate [isDebugBuild] on the SAME build-flag
 // mechanism [VaultSelector] uses for the Argon2id KDF cost — see
-// [isDebugBuildPublic] in BuildFlags.kt — so an e2e/debug build can never see
-// this prompt).
+// [isDebugBuildPublic] in BuildFlags.kt — so an e2e/debug build never sees
+// this prompt, unless it was compiled with REVIEW_PROMPT_TEST=1, see
+// [ReviewPromptPolicy.debugGateBlocks]).
 // ---------------------------------------------------------------------------
 
 /** Minimum successful unlocks before an established user is eligible. */
 // REVIEW_PROMPT_TEST_THRESHOLDS is generated at build time (shared/build.gradle.kts,
-// REVIEW_PROMPT_TEST=1): a device-test-only override so a release-configuration
-// build can prove the OS review-sheet wiring without waiting a day and pairing
-// a contact. It is false in every shipping build; the real thresholds follow.
+// REVIEW_PROMPT_TEST=1): a device-test-only override so a debug build (the
+// Gradle guard refuses it for every release compilation) can prove the OS
+// review-sheet wiring without waiting a day and pairing a contact. It is false in every shipping build; the real thresholds follow.
 // Lowered 2026-11-19 from 5 unlocks / 3 days (owner: "Vi måste göra appen sökbar!"):
 // store search ranks on ratings, and the OS caps the sheet itself (Apple: 3 per year).
 internal val REVIEW_PROMPT_MIN_UNLOCKS: Int = if (REVIEW_PROMPT_TEST_THRESHOLDS) 2 else 3
@@ -67,9 +68,23 @@ data class ReviewPromptCounters(
 object ReviewPromptPolicy {
 
     /**
+     * The debug gate of [shouldPrompt]: a debug build never prompts, EXCEPT a
+     * debug build compiled with the REVIEW_PROMPT_TEST=1 knob ([testKnob] =
+     * REVIEW_PROMPT_TEST_THRESHOLDS). Added 2026-11-20 (owner chose "Testläge i
+     * debug") so the review-prompt e2e spec can run on an ordinary debug build
+     * against the DEV relay: the Gradle guard in shared/build.gradle.kts refuses
+     * the knob for every release compilation, so a distributable never carries
+     * it, and the normal fleet/e2e debug builds never set it — they still never
+     * prompt.
+     */
+    internal fun debugGateBlocks(isDebugBuild: Boolean, testKnob: Boolean): Boolean =
+        isDebugBuild && !testKnob
+
+    /**
      * True only when EVERY gate passes:
      *  - [isDebugBuild] is false — never in a debug/e2e build, regardless of
-     *    the other counters;
+     *    the other counters, unless it carries the REVIEW_PROMPT_TEST=1 knob
+     *    ([debugGateBlocks]);
      *  - [alreadyPrompted] is false — a strict one-shot per install; once the
      *    OS request has been MADE this never re-arms (there is no "ask again
      *    later" path, by design — a repeated ask is the opposite of privacy-
@@ -93,7 +108,7 @@ object ReviewPromptPolicy {
         alreadyPrompted: Boolean,
         isDebugBuild: Boolean,
     ): Boolean {
-        if (isDebugBuild) return false
+        if (debugGateBlocks(isDebugBuild, REVIEW_PROMPT_TEST_THRESHOLDS)) return false
         if (alreadyPrompted) return false
         if (unlockCount < REVIEW_PROMPT_MIN_UNLOCKS) return false
         if (contactCount < REVIEW_PROMPT_MIN_CONTACTS) return false

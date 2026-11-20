@@ -1,0 +1,7 @@
+• Nye kontakter starter med en engangsnøgleudveksling: en senere kopi af telefonen kan ikke genskabe deres første nøgler. Begge telefoner skal have denne version.
+• Parringen klarer, at telefonen drejes, eller at forbindelsen afbrydes.
+• Skarpere QR-koder.
+• Gruppebeskeder, der kommer, før du er med, vises i stedet for at gå tabt.
+• Gruppeinvitationer, der ikke blev sendt, sendes igen.
+• Mere pålidelige prikker for ulæste beskeder.
+• Mere stabil forbindelse efter netværksskift.
