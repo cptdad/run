@@ -552,13 +552,15 @@ translations shown with each item.
   line — keep it one unit (no added blank lines).
 - \`play-short\` ≤ 80 chars. \`play-full\` / \`appstore-full\` ≤ 4000 chars.
 - \`whatsnew\` = bullets only, each line starting with \`• \`, ≤ 500 chars total, no header.
-- \`appstore-name\` ≤ 30 chars: the App Store NAME, shape \`Rún <messenger> – <private chat>\`:
-  "Rún" + the language's everyday one-word noun for a messenger app (the word people type when
-  searching, e.g. sv "meddelandeapp"; keep "Messenger" where the language itself uses it), as ONE
-  contiguous phrase, then \` – \` (en dash) + the language's short phrase for "private chat". If
-  that does not fit in 30, shorten the second part; as a last resort drop it (\`Rún <messenger>\`).
-  Never "Tor" in the name. (Store search folds "Rún" to "run", so the name must carry a phrase.)
-  Exception, owner's choice 2026-11-19: Swedish keeps exactly \`Rún – Privat meddelandeapp\`.
+- \`appstore-name\` ≤ 30 chars: the App Store NAME, shape \`Rún Messenger – <private chat>\`:
+  the literal brand phrase "Rún Messenger" in EVERY language (owner's choice 2026-11-21, so a
+  search for "rún messenger" is an exact name match in every storefront — never translate
+  "Messenger"), then \` – \` (en dash) + the language's short phrase for "private chat". If that
+  does not fit in 30, shorten the second part; as a last resort drop it (\`Rún Messenger\`). The
+  language's own everyday word for a messenger app (fr "messagerie", ru "мессенджер", …) goes
+  into that locale's \`appstore-keywords\` instead. Never "Tor" in the name.
+  Exception, owner's choice 2026-11-19 (kept 2026-11-21): Swedish keeps exactly
+  \`Rún – Privat meddelandeapp\`.
 - \`play-title\` ≤ 30 chars: the Google Play app TITLE, keyed by the PLAY locale (en-US, sv-SE, fa,
   mk-MK…). Same shape and wording as that language's \`appstore-name\`; fa/mk coin it the same way.
 - \`appstore-subtitle\` ≤ 30 chars, no superlatives; keep "Tor" literal.
