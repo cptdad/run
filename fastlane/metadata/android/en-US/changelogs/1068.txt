@@ -1,0 +1,1 @@
+• If the app closes while a group invitation, membership change or departure is still being sent, the members it missed get it the next time you open the app.

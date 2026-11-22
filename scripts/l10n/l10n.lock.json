@@ -46,7 +46,7 @@
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     },
     "whatsnew": {
-      "en": "• New contacts start with a one-time key exchange: a later copy of the phone cannot recreate their first keys. Both phones need this version.\n• Pairing survives turning the phone or a dropped connection.\n• Sharper QR codes.\n• Group messages that arrive before you join are shown, not lost.\n• Unsent group invitations are sent again.\n• More reliable unread dots.\n• Steadier connecting after a network change.",
+      "en": "• If the app closes while a group invitation, membership change or departure is still being sent, the members it missed get it the next time you open the app.",
       "ok": "ar,da,de,es,fa,fi,fr,mk,nb,ru,sv"
     }
   },

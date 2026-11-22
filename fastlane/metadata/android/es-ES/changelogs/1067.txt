@@ -1,7 +1,1 @@
-• Los contactos nuevos empiezan con un intercambio de claves de un solo uso: una copia posterior del teléfono no puede recrear sus primeras claves. Ambos teléfonos necesitan esta versión.
-• El emparejamiento resiste girar el teléfono o una caída de la conexión.
-• Códigos QR más nítidos.
-• Se muestran los mensajes de grupo que llegan antes de unirte.
-• Las invitaciones a grupos no enviadas se reenvían.
-• Puntos de mensajes no leídos más fiables.
-• Conexión más estable tras un cambio de red.
+• Si la app se cierra mientras aún se envía una invitación de grupo, un cambio de miembros o una salida, los miembros que no lo recibieron lo reciben la próxima vez que abras la app.

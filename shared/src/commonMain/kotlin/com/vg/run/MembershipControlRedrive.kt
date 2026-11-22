@@ -11,8 +11,11 @@ import com.vg.run.GroupManager.Companion.membershipHash
 // MembershipControlRedrive — the durable, ACK-GATED redrive of group membership
 // control (roster / leave), split out of GroupManager — and of a group INVITE that
 // did not leave (createGroup / addMember, recorded undelivered only). All state is `_meta`
-// under [GroupMetaKeys.CTL_PEND_PREFIX] (`grp_ctl_pend:<groupId>:<contactId>`);
-// there is no RAM state and no lock. The two mechanisms and their bounds are
+// under [GroupMetaKeys.CTL_PEND_PREFIX] (`grp_ctl_pend:<groupId>:<contactId>`).
+// The only RAM state is the set of records a fan-out is sending to RIGHT NOW in
+// this process ([duringFanOut]) — it tells [redrive] to keep its hands off them
+// and dies with the process, which is exactly when those records become the
+// redrive's business. The two mechanisms and their bounds are
 // described at GroupManager's `MEMBERSHIP_CONTROL_TTL_SECONDS` and in
 // docs/vault-relay-internals.md ("Group membership control is durable",
 // "Delivery is confirmed END TO END"). Logs keep the "GroupManager" tag.
@@ -115,6 +118,41 @@ internal class MembershipControlRedrive(
 
     private fun ctlPendKey(groupId: String, contactId: String) = GroupMetaKeys.CTL_PEND_PREFIX + groupId + ":" + contactId
 
+    // Records a fan-out in THIS process is working through right now (key → nesting
+    // count: handleJoin wraps its tag write and the roster fan-out it triggers).
+    private val inFlightLock = SyncLock()
+    private val inFlight = HashMap<String, Int>()
+
+    private fun isInFlight(key: String): Boolean = inFlightLock.withLock { key in inFlight }
+
+    /**
+     * Run one membership fan-out ([block]: its [recordBeforeFanOut], the sends, the
+     * per-target [markDelivered] and the closing [record]) with every target's record
+     * marked IN FLIGHT, so a control sweep on another thread does not redrive them.
+     *
+     * The records written before the first send look exactly like "undelivered" to
+     * [redrive], and the admin's own fan-outs (create / add / remove / transfer /
+     * leave) run from the UI, outside the sweep: without this mark a sweep landing
+     * mid-fan-out re-sent the whole fan-out next to it (two invites and two wake-ups
+     * per invitee, two rosters per member) and then wrote its stale snapshot over the
+     * fan-out's own bookkeeping. RAM only by design: after a process death nothing is
+     * in flight, and the records are the next session's to redrive at once.
+     */
+    fun <T> duringFanOut(groupId: String, targets: List<String>, block: () -> T): T {
+        val keys = targets.distinct().map { ctlPendKey(groupId, it) }
+        inFlightLock.withLock { for (k in keys) inFlight[k] = (inFlight[k] ?: 0) + 1 }
+        try {
+            return block()
+        } finally {
+            inFlightLock.withLock {
+                for (k in keys) {
+                    val left = (inFlight[k] ?: 1) - 1
+                    if (left <= 0) inFlight.remove(k) else inFlight[k] = left
+                }
+            }
+        }
+    }
+
     /**
      * Persist one obligation per (group, contact) for a fan-out of [kind].
      *
@@ -145,38 +183,9 @@ internal class MembershipControlRedrive(
             val now = clock()
             for (c in delivered) {
                 if (c in failed) continue
-                val key = ctlPendKey(groupId, c)
-                val prior = CtlObligation.decode(vault.getMeta(key))
-                // An invite that never left outranks a roster: a roster to a member that
-                // was never invited is dropped on arrival (no such group there), so
-                // replacing the invite obligation would lose the only message that can
-                // bring them in (addMember fans the invite, then the roster). The invite
-                // re-send is built from CURRENT state, so it carries the newer roster's
-                // epoch and members anyway; the join it brings in clears it ([clearInvite]).
-                if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) continue
-                vault.putMeta(
-                    key,
-                    CtlObligation(
-                        kind, epoch, hash, attempts = 0, firstSeenMs = prior?.firstSeenMs ?: now,
-                        awaitingAck = true, lastSentMs = now, leaverMemberId = leaverMemberId,
-                    ).encode(),
-                )
+                writeAwaiting(groupId, c, kind, epoch, hash, now, leaverMemberId)
             }
-            for (c in failed) {
-                val key = ctlPendKey(groupId, c)
-                val prior = CtlObligation.decode(vault.getMeta(key))
-                if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) continue   // see above
-                // Attempts carry over only WITHIN the undelivered state (see the
-                // CtlObligation kdoc) and the same kind.
-                val attempts = if (prior != null && !prior.awaitingAck && prior.kind == kind) prior.attempts else 0
-                vault.putMeta(
-                    key,
-                    CtlObligation(
-                        kind, epoch, hash, attempts, firstSeenMs = prior?.firstSeenMs ?: now,
-                        awaitingAck = false, lastSentMs = now, leaverMemberId = leaverMemberId,
-                    ).encode(),
-                )
-            }
+            for (c in failed) writeUndelivered(groupId, c, kind, epoch, hash, now, leaverMemberId)
             if (failed.isNotEmpty()) {
                 platformLogWarn(TAG, "membership control '$kind' undelivered to ${failed.size} member(s) — recorded for redrive")
             }
@@ -184,6 +193,82 @@ internal class MembershipControlRedrive(
             if (failed.isNotEmpty() || delivered.isNotEmpty()) trim()
         } catch (e: Exception) {
             platformLogWarn(TAG, "recording undelivered membership control failed: ${e::class.simpleName}")
+        }
+    }
+
+    /** One AWAITING-ACK record for [contactId] (shared by [record] and [markDelivered]). */
+    private fun writeAwaiting(
+        groupId: String, contactId: String, kind: String, epoch: Long, hash: String, now: Long, leaverMemberId: String,
+    ) {
+        val key = ctlPendKey(groupId, contactId)
+        val prior = CtlObligation.decode(vault.getMeta(key))
+        // An invite that never left outranks a roster: a roster to a member that
+        // was never invited is dropped on arrival (no such group there), so
+        // replacing the invite obligation would lose the only message that can
+        // bring them in (addMember fans the invite, then the roster). The invite
+        // re-send is built from CURRENT state, so it carries the newer roster's
+        // epoch and members anyway; the join it brings in clears it ([clearInvite]).
+        if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) return
+        vault.putMeta(
+            key,
+            CtlObligation(
+                kind, epoch, hash, attempts = 0, firstSeenMs = prior?.firstSeenMs ?: now,
+                awaitingAck = true, lastSentMs = now, leaverMemberId = leaverMemberId,
+            ).encode(),
+        )
+    }
+
+    /** One UNDELIVERED record for [contactId] (shared by [record] and [recordBeforeFanOut]). */
+    private fun writeUndelivered(
+        groupId: String, contactId: String, kind: String, epoch: Long, hash: String, now: Long, leaverMemberId: String,
+    ) {
+        val key = ctlPendKey(groupId, contactId)
+        val prior = CtlObligation.decode(vault.getMeta(key))
+        if (prior?.kind == KIND_INVITE && kind == KIND_ROSTER) return   // see writeAwaiting
+        // Attempts carry over only WITHIN the undelivered state (see the
+        // CtlObligation kdoc) and the same kind.
+        val attempts = if (prior != null && !prior.awaitingAck && prior.kind == kind) prior.attempts else 0
+        vault.putMeta(
+            key,
+            CtlObligation(
+                kind, epoch, hash, attempts, firstSeenMs = prior?.firstSeenMs ?: now,
+                awaitingAck = false, lastSentMs = now, leaverMemberId = leaverMemberId,
+            ).encode(),
+        )
+    }
+
+    /**
+     * Make a membership fan-out durable BEFORE its first send: every target gets an
+     * UNDELIVERED record of [kind]. Each target's record is then settled right after
+     * ITS OWN send is accepted ([markDelivered]): a ROSTER becomes AWAITING-ACK, an
+     * INVITE / LEAVE (not ack-gated — a delivered copy records nothing) is removed.
+     * If the process dies mid-fan-out — the session is torn down on every background,
+     * and nothing after the dying POST runs — only the targets that were NOT reached
+     * (plus the one whose send was in flight) still hold an undelivered record, and
+     * the next session's [redrive] re-sends to exactly those. Without this, the death
+     * left NO obligation, and the re-delivered JOIN that caused the roster is a
+     * no-op (unchanged-tags dedup in GroupManager.handleJoin), so members that
+     * missed the joiner's tags stayed without them until the next membership event.
+     *
+     * The same holds for an INVITE (createGroup / addMember: the unreached invitees
+     * were never told) and the leaver's own LEAVE (leaveGroup: the group is already
+     * deleted locally, so nothing else would ever tell them). [leaverMemberId] is for
+     * a LEAVE, as in [record].
+     *
+     * Same key and format as [record] — nothing new to purge or migrate; an older
+     * build reads these as ordinary undelivered records. Never throws: a failed write
+     * costs this guarantee (the pre-2026-11-21 behaviour), never the fan-out.
+     */
+    fun recordBeforeFanOut(
+        groupId: String, kind: String, epoch: Long, hash: String, targets: List<String>, leaverMemberId: String = "",
+    ) {
+        if (targets.isEmpty()) return
+        try {
+            val now = clock()
+            for (c in targets.distinct()) writeUndelivered(groupId, c, kind, epoch, hash, now, leaverMemberId)
+            trim()
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "recording a membership fan-out before send failed: ${e::class.simpleName}")
         }
     }
 
@@ -207,6 +292,31 @@ internal class MembershipControlRedrive(
             .forEach { vault.deleteMeta(it.first) }
     }
 
+    /**
+     * The relay accepted the fan-out's copy of [kind] for [contactId] — settle that
+     * target's [recordBeforeFanOut] record NOW, before the next target's send, so a
+     * death later in the loop does not re-send to a target that was already reached
+     * (a second invite and wake-up for an invitee who may have joined or declined
+     * since; a left group's roster residue kept for a member that got the leave).
+     *  - ROSTER: AWAITING-ACK, as [record] writes it (an undelivered invite still
+     *    outranks it).
+     *  - INVITE / LEAVE: removed — only a record of the SAME kind (an older record of
+     *    another kind is left alone).
+     * Writes no new key, so there is nothing to trim. Never throws.
+     */
+    fun markDelivered(groupId: String, kind: String, epoch: Long, hash: String, contactId: String) {
+        try {
+            if (kind == KIND_ROSTER) {
+                writeAwaiting(groupId, contactId, kind, epoch, hash, clock(), leaverMemberId = "")
+            } else {
+                val key = ctlPendKey(groupId, contactId)
+                if (CtlObligation.decode(vault.getMeta(key))?.kind == kind) vault.deleteMeta(key)
+            }
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "settling a delivered membership record failed: ${e::class.simpleName}")
+        }
+    }
+
     /** The invitee's KIND_JOIN was applied (GroupManager.handleJoin): the invite
      *  obligation, if any, is done — removed before the join's roster is recorded,
      *  so that roster gets its normal obligation. Never throws. */
@@ -222,9 +332,19 @@ internal class MembershipControlRedrive(
     // End-to-end acknowledgement: [contactId] was seen carrying OUR membership hash
     // for [groupId] ([GroupManager]'s `noteMembershipView`), so its obligation, if
     // any, is done.
+    //
+    // EXCEPT an UNDELIVERED roster: the hash covers only epoch + member ids, and a
+    // roster that follows a JOIN changes neither (it carries the joiner's tags), so a
+    // member that never got it still echoes our hash. Such a record is kept until a
+    // send to that member is accepted (it then becomes AWAITING-ACK, which this
+    // clears) — bounded by the 12-attempt / 7-day limits like any undelivered record.
+    // An unreadable record is deleted as before (fails toward "no obligation").
     fun acknowledge(groupId: String, contactId: String) {
         val key = ctlPendKey(groupId, contactId)
-        if (vault.getMeta(key) != null) {
+        val raw = vault.getMeta(key)
+        if (raw != null) {
+            val ob = CtlObligation.decode(raw)
+            if (ob != null && ob.kind == KIND_ROSTER && !ob.awaitingAck) return
             vault.deleteMeta(key)
             platformLog(TAG, "membership control acknowledged end-to-end by one member")
         }
@@ -238,7 +358,10 @@ internal class MembershipControlRedrive(
      * state (superset semantics: the latest roster subsumes the missed one); a
      * leave re-sends the stored epoch + our old memberId, since the group is
      * already gone locally. An obligation whose contact or (for rosters)
-     * group/admin role is gone is dropped — there is nothing left to say.
+     * group/admin role is gone is dropped — there is nothing left to say. The one
+     * roster a NON-admin still owes is its own admin HANDOFF (see the roster branch).
+     * A record a fan-out in this process is sending to right now is left alone
+     * ([duringFanOut]).
      *
      * An AWAITING_ACK record (the relay took the append but the member has never
      * since echoed our membership hash) is re-sent on the SLOW
@@ -261,6 +384,9 @@ internal class MembershipControlRedrive(
             val sep = rest.indexOf(':')
             if (sep <= 0 || sep == rest.length - 1) { runCatching { vault.deleteMeta(key) }; continue }
             val groupId = rest.substring(0, sep); val contactId = rest.substring(sep + 1)
+            // A fan-out is working on this record right now: it is not "undelivered"
+            // yet, and that fan-out's own bookkeeping settles it.
+            if (isInFlight(key)) continue
             val ob = CtlObligation.decode(vault.getMeta(key))
             val maxAttempts = if (ob != null && ob.awaitingAck) MAX_CTL_ACK_RESENDS else MAX_CTL_REDRIVE_ATTEMPTS
             if (ob == null || now - ob.firstSeenMs > CTL_PEND_MAX_LIFETIME_MS || ob.attempts >= maxAttempts) {
@@ -300,7 +426,16 @@ internal class MembershipControlRedrive(
             val send: Pair<String, String>? = when (ob.kind) {   // body to hash
                 KIND_ROSTER -> {
                     val g = vault.getGroup(groupId)
-                    if (g == null || !g.isAdmin) null
+                    // Only the admin's roster is honoured — with ONE exception: the
+                    // HANDOFF roster. transferAdmin persists us out of the role first,
+                    // and the members that have not applied that roster still accept
+                    // rosters from OUR channel only (and drop the successor's), so if we
+                    // do not re-send it nobody can. A non-admin holds a roster record at
+                    // the group's CURRENT epoch only from its own handoff (it writes no
+                    // other roster, and a re-join purges the group's records); while the
+                    // epoch has not moved the re-derived body is that same roster. Once
+                    // the successor has moved the epoch our copy is stale and is dropped.
+                    if (g == null || (!g.isAdmin && ob.epoch != g.epoch)) null
                     else rosterBody(groupId)?.let { body ->
                         val members = vault.getGroupMembers(groupId)
                         body to membershipHash(groupId, g.epoch, members.map { it.memberId })
@@ -332,6 +467,9 @@ internal class MembershipControlRedrive(
             } catch (e: Exception) {
                 platformLogWarn(TAG, "membership redrive send threw: ${e::class.simpleName}"); false
             }
+            // A fan-out for this member started while our send was on the wire: its
+            // bookkeeping is newer than the snapshot we hold — do not write over it.
+            if (isInFlight(key)) continue
             try {
                 when {
                     // A LEAVE the relay took is done: nothing can acknowledge it

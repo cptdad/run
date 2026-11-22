@@ -1,7 +1,1 @@
-• New contacts start with a one-time key exchange: a later copy of the phone cannot recreate their first keys. Both phones need this version.
-• Pairing survives turning the phone or a dropped connection.
-• Sharper QR codes.
-• Group messages that arrive before you join are shown, not lost.
-• Unsent group invitations are sent again.
-• More reliable unread dots.
-• Steadier connecting after a network change.
+• If the app closes while a group invitation, membership change or departure is still being sent, the members it missed get it the next time you open the app.

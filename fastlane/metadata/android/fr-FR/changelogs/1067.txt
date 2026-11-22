@@ -1,7 +1,1 @@
-• Les nouveaux contacts commencent par un échange de clés à usage unique : une copie ultérieure du téléphone ne peut recréer leurs premières clés. Il faut cette version sur les deux téléphones.
-• L'appairage résiste à la rotation du téléphone et aux coupures.
-• Codes QR plus nets.
-• Les messages de groupe reçus avant votre arrivée s'affichent.
-• Les invitations de groupe non envoyées sont renvoyées.
-• Pastilles de non-lus plus fiables.
-• Connexion plus stable après un changement de réseau.
+• Si l'appli se ferme pendant l'envoi d'une invitation de groupe, d'un changement de membres ou d'un départ, l'envoi reprend vers les membres non atteints à la prochaine ouverture de l'appli.

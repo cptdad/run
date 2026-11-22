@@ -1,0 +1,1 @@
+• Si l'appli se ferme pendant l'envoi d'une invitation de groupe, d'un changement de membres ou d'un départ, l'envoi reprend vers les membres non atteints à la prochaine ouverture de l'appli.

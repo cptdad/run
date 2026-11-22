@@ -845,6 +845,79 @@ Two consequences to know:
     obligation — it is an honest-drift signal, exactly as the `GroupManager` header already says, and a member that
     wants to stop receiving rosters can simply ignore them.
 
+### A membership fan-out is durable BEFORE its first send (2026-11-21)
+
+- **The gap (seen on the dev relay).** An admin drained a JOIN and fanned the roster to 2 of 4 members before the
+  app was closed (whole-session teardown on background). `broadcastRoster` wrote its obligations only AFTER
+  `fanOutControl` returned, so the death left none. At the next session the un-ACKed JOIN was re-delivered and hit
+  `handleJoin`'s unchanged-tags dedup (the tags were persisted before the fan-out): no roster. And neither heal path
+  could see it: a JOIN moves no epoch and no member id, so `membershipHash` is identical before and after the
+  joiner's tags — the two members that missed them echoed our hash, which looks converged (no hash-mismatch
+  re-roster) and would even have acknowledged an obligation had one existed. They stayed without the joiner's tags
+  until an unrelated membership event. The INVITE fan-outs (`createGroup`, `addMember`) and the leaver's own LEAVE
+  (`leaveGroup`) had the same shape: obligations written only after the loop, so a death mid-loop left the unreached
+  invitees uninvited and the unreached members holding the leaver (`GroupSiblingFanOutDeathTest` reproduced all three).
+- **The rule.** Every membership fan-out goes through `GroupManager.fanOutMembership`, which calls
+  `MembershipControlRedrive.recordBeforeFanOut` before its first send: each target gets an UNDELIVERED
+  `grp_ctl_pend:<groupId>:<contactId>` record of that kind (same key, same 8-field format, invite precedence and
+  attempt carry-over exactly as `record`). Each target's record is then settled right after ITS OWN send is accepted
+  (`markDelivered`, before the next target's send): a roster becomes AWAITING-ACK as before; an invite / leave — not
+  ack-gated, a delivered copy records nothing — is removed (same kind only). The targets that failed keep their record
+  (the closing `record(failed)` is also the fallback if the pre-write did not take). The leave records are written after
+  the local `deleteGroup` (which would purge them), with `leaverMemberId`. A death mid-loop therefore leaves an
+  undelivered record only for the targets that were NOT reached, plus the one whose send was on the wire, and the next
+  session's redrive re-sends to exactly those: the CURRENT roster, an invite re-derived from current state
+  (`buildInviteForMember`), or the stored leave. The one in-flight target may receive a duplicate, which is harmless on
+  the receiver: `handleRoster` re-applies full state; `handleInvite` returns for a group already joined, an
+  already-parked invite, or an exactly-declined offer (the re-derived offer is identical while membership is
+  unchanged); `handleLeave` returns when the group or the sender's slot is already gone, or the memberId is stale.
+  Per-JOIN fan-out is unchanged. (2026-11-22: settling was per fan-out, after the loop, in the first version — a death
+  then re-sent to EVERY target, i.e. a second invite and wake-up for invitees who had already answered.)
+- **In flight (2026-11-22).** A pre-written record is indistinguishable from "undelivered", and the admin's own
+  fan-outs (create / add / remove / transfer / leave) run from the UI, outside the control sweep — so a sweep landing
+  mid-fan-out redrove the whole fan-out next to it (two invites and two wake-ups per invitee, two rosters per member)
+  and wrote its stale snapshot over the fan-out's bookkeeping. `MembershipControlRedrive.duringFanOut` marks the
+  fan-out's records in RAM for its whole duration (pre-write → sends → closing record); `redrive` skips a marked record,
+  both when it reads it and again before it writes its own bookkeeping. RAM only by design: a process death clears it,
+  and the records are then the next session's to redrive at once. It is the class's only RAM state.
+- **A join's tags and its roster debt are one transaction (2026-11-22).** `handleJoin` stored the joiner's tags — the
+  dedup key — and only later, inside `broadcastRoster`, wrote the roster records; a teardown between the two (the vault
+  closes under a running sweep) reproduced the original gap. Tags, `clearInvite`, the throttle stamp and the roster
+  pre-write now sit in one `withTransaction`, under the in-flight mark; `broadcastRoster(preRecorded = true)` then only
+  sends. A THROTTLED join (`rosterBroadcastAllowed` false) still stores its tags and records nothing, on purpose: a
+  record would make the redrive the fan-out the throttle refuses. Its tags propagate with the next roster.
+- **The admin handoff roster (2026-11-22).** `transferAdmin` persists this device out of the admin role and then fans
+  the roster that moves the authority; members that have not applied it accept rosters from the EX-admin's channel
+  only. `redrive` used to drop every roster record of a non-admin, so a handoff copy that failed or was cut off by a
+  death was never re-sent — a permanent split. It now redrives a non-admin's roster record while `ob.epoch` equals the
+  group's current epoch: a non-admin can hold such a record only from its own handoff, and with the epoch unchanged
+  the re-derived body is that same roster. Once the successor has moved the epoch the record is dropped as before.
+- **Acknowledgement.** `acknowledge` no longer deletes an UNDELIVERED **roster** record — a matching hash proves nothing
+  about a roster that never left (a JOIN's roster changes neither epoch nor ids) — so it is kept until a send to that
+  member is accepted (then AWAITING-ACK, which the hash clears). An undelivered INVITE is still cleared by a matching
+  hash: that contact can only hold the group's member set via the invite (a roster for an un-invited group is dropped),
+  so the hash does prove the invite arrived. A LEAVE record is never reached (`noteMembershipView` needs the group,
+  which is gone; a re-join purges the group's records). An unreadable record is still deleted. Known cost: for a roster
+  that DID change the epoch or the member set, a matching hash is real proof, but the record cannot tell the two cases
+  apart (no field for it), so a copy whose POST reported failure yet landed costs one more roster before it is cleared.
+- **Safety.** No new key (the prefix is already in both residue classifiers), no wire change, no new log identifier.
+  `recordBeforeFanOut` / `markDelivered` never throw: a failed write costs this guarantee, never the fan-out. Bounds
+  are the existing 12 attempts / 7 days / 256 records (invites keep their growing spacing). A duplicate JOIN with
+  unchanged tags still sends nothing when nothing is owed. `_meta` cost per fan-out to N targets: N reads + N writes
+  and one key scan before the sends, then one read + one write (or delete) per accepted target; the closing record
+  touches only the failed targets.
+- **Not covered.** A death in the instant between `leaveGroup`'s local `deleteGroup` and its pre-send record (no send
+  has happened yet; covering it needs a record that survives the group purge, i.e. a new key outside
+  `isGroupMetaResidueForGroup`, deliberately not added). A death in `addMember` on the invite also skips the roster
+  that follows it: the existing members then learn of the newcomer from the roster the newcomer's JOIN triggers after
+  the re-sent invite, or from the hash-mismatch re-roster (the epoch moved, so their traffic now mismatches). A handoff
+  roster once the successor has moved the epoch, or once the ex-admin has LEFT (handoff-then-leave: `deleteGroup` purges
+  the group's records, so a handoff copy that had not landed by then is gone). The post-handoff self-join
+  (`sendSelfJoinToNewAdmin`) and `acceptInvite`'s JOIN remain fire-and-forget (as before). A throttled join's tags
+  (above). An AWAITING-ACK roster after a JOIN keeps the hash blind spot against a relay that 2xx-and-discards it.
+- **Tests.** `GroupRosterFanOutDeathTest`, `GroupSiblingFanOutDeathTest` and `GroupFanOutReviewFollowUpTest` (commonTest,
+  in `GroupConvergenceTest.kt`).
+
 ### A group invite that did not leave is re-sent (2026-11-18)
 
 - **The gap.** `createGroup` and `addMember` ignored the targets `fanOutControl` reported as not reached. A member

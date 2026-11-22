@@ -1,0 +1,1 @@
+• Lukkes appen, mens en gruppeinvitation, en medlemsændring eller en udmeldelse stadig sendes, får de medlemmer, der ikke blev nået, den næste gang du åbner appen.

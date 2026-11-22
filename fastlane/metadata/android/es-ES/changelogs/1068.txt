@@ -1,0 +1,1 @@
+• Si la app se cierra mientras aún se envía una invitación de grupo, un cambio de miembros o una salida, los miembros que no lo recibieron lo reciben la próxima vez que abras la app.

@@ -1,0 +1,1 @@
+• Stängs appen medan en gruppinbjudan, en medlemsändring eller ett utträde fortfarande skickas, får de medlemmar som inte nåddes den nästa gång du öppnar appen.

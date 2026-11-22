@@ -1,0 +1,1 @@
+• Jos sovellus sulkeutuu, kun ryhmäkutsua, jäsenmuutosta tai eroamista vielä lähetetään, tavoittamatta jääneet jäsenet saavat sen, kun seuraavan kerran avaat sovelluksen.

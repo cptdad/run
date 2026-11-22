@@ -1,7 +1,1 @@
-• Uudet kontaktit alkavat kertakäyttöisellä avaintenvaihdolla: puhelimen myöhempi kopio ei pysty luomaan uudelleen niiden ensimmäisiä avaimia. Molemmissa puhelimissa on oltava tämä versio.
-• Paritus kestää puhelimen kääntämisen ja yhteyden katkeamisen.
-• Terävämmät QR-koodit.
-• Ennen liittymistäsi saapuvat ryhmäviestit näytetään eivätkä katoa.
-• Lähettämättä jääneet ryhmäkutsut lähetetään uudelleen.
-• Luotettavammat lukemattomien viestien pisteet.
-• Vakaampi yhteys verkon vaihdon jälkeen.
+• Jos sovellus sulkeutuu, kun ryhmäkutsua, jäsenmuutosta tai eroamista vielä lähetetään, tavoittamatta jääneet jäsenet saavat sen, kun seuraavan kerran avaat sovelluksen.

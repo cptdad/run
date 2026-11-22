@@ -1,7 +1,1 @@
-• Neue Kontakte starten mit einem einmaligen Schlüsselaustausch: Eine spätere Kopie des Telefons kann ihre ersten Schlüssel nicht nachbilden. Beide Telefone brauchen diese Version.
-• Die Kopplung übersteht Drehen des Telefons und Verbindungsabbrüche.
-• Schärfere QR-Codes.
-• Vor deinem Beitritt eingehende Gruppennachrichten werden angezeigt.
-• Ungesendete Gruppeneinladungen werden nachgesendet.
-• Zuverlässigere Punkte für ungelesene Nachrichten.
-• Stabilere Verbindung nach Netzwechsel.
+• Schließt sich die App, während eine Gruppeneinladung, eine Mitgliederänderung oder ein Austritt noch gesendet wird, erhalten die nicht erreichten Mitglieder sie, wenn du die App das nächste Mal öffnest.

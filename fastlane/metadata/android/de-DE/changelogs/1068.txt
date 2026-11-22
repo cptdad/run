@@ -1,0 +1,1 @@
+• Schließt sich die App, während eine Gruppeneinladung, eine Mitgliederänderung oder ein Austritt noch gesendet wird, erhalten die nicht erreichten Mitglieder sie, wenn du die App das nächste Mal öffnest.
