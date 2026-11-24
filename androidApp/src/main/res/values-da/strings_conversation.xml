@@ -10,9 +10,9 @@
     <string name="conversation_alias_unknown">Ukendt</string>
     <string name="conversation_contact_fallback">Kontakt</string>
     <string name="conversation_fs_stalled_title">Forward secrecy er ikke aktiveret endnu</string>
-    <string name="conversation_fs_stalled_body">Beskeder til denne kontakt er stadig krypteret, men de får endnu ikke den ekstra beskyttelse, der holder tidligere beskeder sikre, hvis en nøgle senere bliver kompromitteret. Det klarer sig som regel, når kontakten svarer. Hvis det fortsætter, skal du fjerne kontakten og tilføje den igen.</string>
-    <string name="conversation_ratchet_refused_body">Der kunne ikke oprettes en sikker kanal med denne kontakt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen.</string>
-    <string name="conversation_secure_channel_lost_body">Den sikre kanal med denne kontakt er gået tabt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen.</string>
+    <string name="conversation_fs_stalled_body">Beskeder til denne kontakt er stadig krypteret, men de får endnu ikke den ekstra beskyttelse, der holder tidligere beskeder sikre, hvis en nøgle senere bliver kompromitteret. Det klarer sig som regel, når kontakten svarer. Hvis det fortsætter, skal I parre jer igen og derefter slette den gamle kontakt.</string>
+    <string name="conversation_ratchet_refused_body">Der kunne ikke oprettes en sikker kanal med denne kontakt. Beskeder bliver ikke sendt. Par jer igen, og slet derefter denne kontakt.</string>
+    <string name="conversation_secure_channel_lost_body">Den sikre kanal med denne kontakt er gået tabt. Beskeder bliver ikke sendt. Par jer igen, og slet derefter denne kontakt.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Anmeld kontakt</string>

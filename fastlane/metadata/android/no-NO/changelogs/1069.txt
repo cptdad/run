@@ -1,0 +1,5 @@
+• Hver kontakt viser om den bruker en oppdatert eller en eldre parkobling.
+• Etter flytting til ny telefon viser menyen når innboksene dine har byttet til nye tilgangsnøkler.
+• En sletting bekrefter hver fjerning; slettede grupper og kontakter etterlater færre spor.
+• Gruppeendringer som ble avbrutt da appen ble lukket, når medlemmene som gikk glipp av dem, neste gang.
+• Layoutrettelser, blant annet feltet for passfrase og språk som skrives fra høyre mot venstre.

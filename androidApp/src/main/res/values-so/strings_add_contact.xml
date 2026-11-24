@@ -43,7 +43,8 @@
     <string name="add_contact_copied_bang">Waa la koobiyeeyay!</string>
     <string name="add_contact_invalid_code">Koodh aan sax ahayn</string>
     <string name="add_contact_paste_not_ready">Sanduuqa weli waa la diyaarinayaa — wax yar ka dib isku day mar kale</string>
-    <string name="add_contact_inbox_in_use">Xiriiriyahan lama darin karin — mid ka mid ah sanduuqyada ku jira koodhkooda ayaa hore loogu isticmaalayaa halkan. Haddii aad dib u darayso qof aad hore u haysay, marka hore tirtir xiriiriyihii hore, kadibna isku day mar kale.</string>
+    <string name="add_contact_inbox_in_use">Xiriiriyahan lama darin karin — mid ka mid ah sanduuqyada ku jira koodhkooda ayaa hore loogu isticmaalayaa halkan. Mar kale bilow, si labadiinuba aad u muujisaan koodhad cusub.</string>
+    <string name="add_contact_older_pairing_note">Nooca Rún ee ay haystaan waa ka duugsan yahay, sidaas darteed tani waa lammaanaan hore. Weydii inay cusboonaysiiyaan Rún, kadibna lammaanaanta mar kale samee.</string>
     <string name="add_contact_pairing_failed">Lammaanaanta ma shaqayn: kanaalka ammaanka ah ee xiriiriyahan lama dhisi karin. Mar kale bilow si aad ugu lammaanowdo koodh cusub.</string>
     <string name="add_contact_pairing_failed_action">Mar kale bilow</string>
     <string name="add_contact_start_again_error">Ku darista xiriiriyahan lama dhammaystiri karin, waxna lama kaydin. Mar kale bilow si aad koodh cusub u hesho.</string>

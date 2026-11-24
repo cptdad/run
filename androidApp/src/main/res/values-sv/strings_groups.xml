@@ -43,6 +43,7 @@
     <string name="group_info_leave_confirm_admin_message">Du är admin. Överlämna rollen först, annars kan ingen ändra medlemslistan.</string>
     <string name="group_info_leave_confirm_message">De andra medlemmarna får veta att du lämnade gruppen.</string>
     <string name="group_info_leave_unread_warning">Det du har skickat som de andra inte har läst än kanske aldrig visas för dem.</string>
+    <string name="group_info_leave_kept_note">Rún sparar en privat anteckning om gruppens ID och vem som var admin i ditt krypterade valv, så att appen kan varna dig om någon annan senare bjuder in dig igen. Anteckningen följer med dig till en ny telefon och raderas först när Rún raderas.</string>
     <string name="group_info_leave_confirm_action">Lämna</string>
     <!-- Väljaren för ny admin: Android använder separat rubrik och underrubrik;
          iOS slår ihop dem till en mening och använder en annan navigeringsrubrik.

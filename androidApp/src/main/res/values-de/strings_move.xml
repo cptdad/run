@@ -63,4 +63,6 @@
     <string name="move_error_import">Deine Daten konnten nicht vollständig übertragen werden. Versuch es erneut.</string>
     <string name="move_error_already_imported">Dieses Handy hat bereits eine Übertragung übernommen.</string>
     <string name="move_import_skip_label">Ohne fortfahren</string>
+    <string name="move_securing_pending">Deine Postfächer werden auf neue Zugangsschlüssel umgestellt…</string>
+    <string name="move_securing_done">Deine Postfächer nutzen jetzt neue Zugangsschlüssel</string>
 </resources>

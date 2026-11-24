@@ -137,6 +137,7 @@ class MetaResiduePurgeTest {
         v.putMeta(inviteKey(C2), "30")
         v.putMeta(rosterKey(G1, C2), "4000")
         v.putMeta(adminKey(G1), C1)   // valued by C1, but a group-scoped tombstone
+        v.putMeta(adminKey(G2), C2)
 
         v.deleteContact(C1)
 
@@ -145,7 +146,10 @@ class MetaResiduePurgeTest {
         assertNull(v.getMeta(rosterKey(G2, C1)))
         assertNotNull(v.getMeta(inviteKey(C2)), "another contact's throttle must be untouched")
         assertNotNull(v.getMeta(rosterKey(G1, C2)))
-        assertNotNull(v.getMeta(adminKey(G1)), "group_admin tombstone is group-scoped — kept on contact delete")
+        // RÚN-06: the tombstone is KEPT (group-scoped) but no longer names the deleted contact.
+        assertEquals(GroupAdminTombstone.DELETED_ADMIN, v.getMeta(adminKey(G1)),
+            "group_admin tombstone is kept on contact delete, rewritten to gone")
+        assertEquals(C2, v.getMeta(adminKey(G2)), "another contact's tombstone is untouched")
         assertNull(v.getContact(C1))
     }
 

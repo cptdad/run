@@ -61,9 +61,10 @@ object MoveMetaPolicy {
         // group inbox (`cap-pend/<id>/inbound-grp`). The THIRD inbox pair itself
         // needs no entry here at all: inbox rows are table rows, not `_meta`, so
         // they travel verbatim through `VaultSnapshotIo.export`'s `getAllInboxIds()`
-        // exactly as the v7 control pair does, and `MoveManager`'s D4 pass rotates
-        // their read caps because it iterates OWNED_READ_DIRECTIONS
-        // (MoveManager.kt:764). The inbox pair itself therefore needs no entry.
+        // exactly as the v7 control pair does, and the D4 pass rotates their read
+        // caps because the obligation set is built from OWNED_READ_DIRECTIONS
+        // (`moveRotationObligations`, MoveRotationObligations.kt). The inbox pair
+        // itself therefore needs no entry.
         //
         // `grp-ann/` (`MessageManager.groupBackfillKey`) is the group-inbox
         // backfill throttle and it TRAVELS — deliberately, and note the HYPHEN:
@@ -74,7 +75,9 @@ object MoveMetaPolicy {
         // neither, so dropping it would hand the new phone a fresh budget for every
         // contact that never converged — a burst of grinds and announces on exactly
         // the launch that is already paying for the D4 read-cap rotations.
-        "m2-chseen", "ib-bound-seen/", "cap-pend/", "grp-ann/", "grp_", "ref_", "ssn:",
+        // (`ssn:` — persisted screenshot notices — is NOT here any more; see
+        // deniedPrefixes.)
+        "m2-chseen", "ib-bound-seen/", "cap-pend/", "grp-ann/", "grp_", "ref_",
         // The Maximum shield's two per-contact rows (`MaximumShieldPolicy`): the peer's
         // remembered claim and the last level we announced. Contact ids survive the move,
         // so both stay meaningful; dropping the marker would only make the new phone
@@ -94,9 +97,10 @@ object MoveMetaPolicy {
         // contact is flagged as an eclipse attempt. A move that dropped it handed the
         // new phone a blank slate for every group it had ever left: the attacker who
         // was refused on the old phone is silently accepted on the new one. Its value
-        // is a contactId (or SELF_ADMIN_MARKER) and contact ids are preserved by the
-        // bundle, so it is meaningful on arrival; it carries no key material.
-        "group_admin:",
+        // is a contactId (or SELF_ADMIN_MARKER, or GroupAdminTombstone.DELETED_ADMIN
+        // once that contact was deleted) and contact ids are preserved by the bundle,
+        // so it is meaningful on arrival; it carries no key material.
+        GroupAdminTombstone.PREFIX,
     )
     val deniedPrefixes: List<String> = listOf(
         "vlt_", "pin_", "inactivity_", "change_pin_", "run.crypto", "review_prompt", "update_nudge",
@@ -111,6 +115,18 @@ object MoveMetaPolicy {
         // one day. Carrying it would add per-contact "N group texts in group G at time T"
         // metadata to a bundle that crosses devices, for no correctness gain.
         GroupUnreadMarkerStore.PREFIX,
+        // The persisted screenshot notices (`ssn:<conversation>:<sender>:<receivedMs>`,
+        // ScreenshotNoticeStore), same rule and same reasoning as the unread markers
+        // (RÚN-06, owner decision): a ≤ 24 h display hint that nothing depends on,
+        // naming who took a screenshot of which conversation and when. Not carried;
+        // the cost is at most a day of notices on the new phone. Denied (not merely
+        // un-allowed) so all four filter sites — export, encode, decode, import —
+        // also drop the rows a bundle from an older build still carries.
+        ScreenshotNoticeMetaKeys.PREFIX,
+        // RÚN-03 (owner decision): the older-pairing banner's one global dismissal
+        // flag stays on the old phone; the new phone shows the banner again. Denied
+        // (not merely un-allowed) for the same reason as the line above.
+        OlderPairingBanner.META_KEY,
     )
     fun isAllowedKey(key: String): Boolean =
         deniedPrefixes.none { key.startsWith(it) } && allowedPrefixes.any { key.startsWith(it) }
@@ -125,6 +141,20 @@ object MoveMetaKeys {
     const val HANDLE = "mig_handle"
     /** bundleId of the import that completed on this (NEW) phone. Written LAST in the import transaction. */
     const val IMPORTED = "mig_imported"
+    /**
+     * Comma-separated inbox ids whose post-import read-cap rotation has not been
+     * confirmed yet (MoveRotationObligations.kt). Written in full INSIDE the import
+     * transaction, before [IMPORTED]; no cap on its length. The grammar is the one
+     * older builds wrote, so a list they left behind reads unchanged.
+     */
+    const val ROTATE_PENDING = "mig_rotate_pending"
+    /**
+     * "2" once [ROTATE_PENDING] is known to hold the COMPLETE obligation set: written
+     * by the import transaction itself, or by the one-time re-rotation seed on a
+     * phone that imported on an older build. Never "done" on its own — the move is
+     * secured only when this is present AND the list is empty.
+     */
+    const val ROTATE_VERSION = "mig_rot_v"
 }
 
 enum class MoveError {
@@ -146,12 +176,40 @@ sealed class MoveExportState {
 }
 
 enum class MoveExportStep { UNREGISTER_PUSH, FREEZE, MINT, UPLOAD }
+/**
+ * Import progress. [SECURING] is kept for source compatibility (both UIs switch over
+ * it) but `importFromHandle` no longer reports it: securing runs after the import
+ * returns, off the import screen ([MoveSecuringState]).
+ */
 enum class MoveImportStep { FETCHING, IMPORTING, SECURING }
 
 sealed class MoveImportResult {
+    /**
+     * The identity is imported. It does NOT mean the old phone's copy of the inbox
+     * read capabilities is dead yet — that is [MoveSecuringState.Complete], which
+     * the background securing pass and the control sweep reach later.
+     */
     data class Success(val contacts: Int, val groups: Int) : MoveImportResult()
     data class Failure(val error: MoveError) : MoveImportResult()
 }
+
+/**
+ * Where the post-import read-cap rotation stands on THIS phone, derived from the
+ * vault every time it is asked (nothing about it is held in RAM).
+ */
+sealed class MoveSecuringState {
+    /** This vault never imported a move. */
+    data object NotMoved : MoveSecuringState()
+    /** Rotations are still owed ([outstanding] listed entries; 0 = the one-time re-rotation has not been seeded yet). */
+    data class Pending(val outstanding: Int) : MoveSecuringState()
+    /** Every listed rotation was confirmed or legitimately excluded. */
+    data object Complete : MoveSecuringState()
+    /** The vault could not be read (closed / read error). Claims nothing. */
+    data object Unknown : MoveSecuringState()
+}
+
+/** The settings-menu status row both UIs show for [MoveSecuringState]. */
+enum class MoveSecuringRow { HIDDEN, PENDING, DONE }
 
 /**
  * Relay operations the move needs, on an inbox that belongs to no contact.
@@ -210,7 +268,11 @@ interface MoveManagerApi {
     /** Old phone: delete the bundle and unfreeze. Returns false (and leaves the state) when the bundle was already drained. */
     suspend fun cancelExport(): Boolean
 
-    /** New phone, after its own provision + unlock: fetch, import (+counter jump), rotate read caps. */
+    /**
+     * New phone, after its own provision + unlock: fetch, import (+counter jump) with the
+     * read-cap rotation obligations committed in the same transaction. The rotations
+     * themselves run afterwards (`MoveManager.secureImportedInboxes` + the control sweep).
+     */
     suspend fun importFromHandle(handle: MoveHandle, onProgress: (MoveImportStep) -> Unit): MoveImportResult
 }
 

@@ -64,7 +64,8 @@
     <!-- valvet nekar tillägget (motpartens inkorgs-id ägs redan av en befintlig
          kontakt). Hålls byte-identisk mellan plattformarna — se den delade
          kommentaren i både AddContactScreen.kt och AddContactView.swift. -->
-    <string name="add_contact_inbox_in_use">Kunde inte lägga till kontakten — en av inkorgarna i deras kod används redan här. Om du lägger till någon du redan har på nytt, radera den gamla kontakten först och försök sedan igen.</string>
+    <string name="add_contact_inbox_in_use">Kunde inte lägga till kontakten — en av inkorgarna i deras kod används redan här. Börja om, så att ni båda visar nya koder.</string>
+    <string name="add_contact_older_pairing_note">Deras version av Rún är äldre, så det här är en äldre parkoppling. Be dem uppdatera Rún och parkoppla sedan på nytt.</string>
     <string name="add_contact_pairing_failed">Parkopplingen fungerade inte: den säkra kanalen med den här kontakten kunde inte upprättas. Börja om för att parkoppla med en ny kod.</string>
     <string name="add_contact_pairing_failed_action">Börja om</string>
     <string name="add_contact_start_again_error">Det gick inte att slutföra tillägget av kontakten och ingenting sparades. Börja om för att få en ny kod.</string>

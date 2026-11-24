@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">¿No puedes desbloquear? Usa el código de recuperación</string>
     <string name="pin_orphaned_vault_notice">Este dispositivo tiene una caja fuerte, pero no hay ningún PIN ni frase de contraseña guardados para ella, así que nada puede abrirla. Su contenido no se puede recuperar.</string>
     <string name="pin_erase_start_over">Borrar y empezar de cero</string>
+    <string name="pin_erase_finishing_title">Terminando el borrado</string>
+    <string name="pin_setup_blocked_message">La configuración aún no puede empezar. Desbloquea el teléfono y toca Reintentar.</string>
+    <string name="pin_erase_finishing_message">Todavía no se han borrado algunos datos de este teléfono. Desbloquea el teléfono y toca Reintentar. La configuración se abrirá cuando termine el borrado.</string>
 
     <!-- Passphrase strength meter (shared by entry/setup/change) -->
     <string name="pin_strength_too_weak">Demasiado débil</string>

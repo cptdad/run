@@ -515,6 +515,8 @@ fun AddContactScreen(
             PairingSaveOutcome.SAVED_V3, PairingSaveOutcome.SAVED_LEGACY -> {
                 pendingContactId = newContactId
                 savedPeerInboxId = data.inboxId
+                // RÚN-03: an older pairing again (their app is older) — the Done note.
+                session.savedOlderPairing = ContactPairing.savedAsOlder(outcome)
                 // We scanned their FULL code, so we have a send channel — deliver our
                 // own inboxes in-band (they only saw our secret-only QR). Idempotent
                 // on the receiving side; survives leaving this screen (ViewModel scope).
@@ -809,6 +811,7 @@ fun AddContactScreen(
                 // SHOW-first role only. A pairing that completed via the peer's
                 // scan-back gets the bare "✓ Contact added" — we never announced.
                 showAnnounceHint = savedPeerInboxId != null,
+                olderPairing = session.savedOlderPairing,
                 alias = pendingAlias,
                 mnemonic = mnemonicText,
                 onMnemonicChange = { mnemonicText = it },
@@ -843,9 +846,10 @@ fun AddContactScreen(
                 myReadCap = myReadCap,
                 mintState = mintState,
                 vault = vault,
-                onContactSaved = { contactId, alias, peerInboxId ->
+                onContactSaved = { contactId, alias, peerInboxId, olderPairing ->
                     pendingContactId = contactId
                     pendingAlias = alias
+                    session.savedOlderPairing = olderPairing
                     // The paste exchange always trades FULL codes, so this is never
                     // null — without it the Done step would render the scan-back
                     // role (and its "Keep waiting" gate) over a pairing that is
@@ -1234,6 +1238,8 @@ private fun DoneStep(
     myQrPayload: String?,
     scanBackNeeded: Boolean,
     showAnnounceHint: Boolean,
+    /** RÚN-03: the save came out as an older pairing (their app is older). */
+    olderPairing: Boolean,
     alias: String,
     mnemonic: String,
     onMnemonicChange: (String) -> Unit,
@@ -1266,6 +1272,22 @@ private fun DoneStep(
                 color = RunWhite.copy(alpha = 0.85f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.testTag("add_done_alias"),
+            )
+        }
+        if (olderPairing) {
+            // RÚN-03: a NEW pairing that came out as an older one. Shown in both Done
+            // states; the contact itself works. iOS sibling: doneStep in AddContactView.
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.add_contact_older_pairing_note),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 13.sp),
+                color = RunWhite,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(RunSurfaceAlt)
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .testTag("add_contact_older_pairing_note"),
             )
         }
         Spacer(Modifier.height(6.dp))
@@ -1819,7 +1841,7 @@ private fun CodeExchangeTab(
     myReadCap: String?,
     mintState: MintState,
     vault: VaultDatabase,
-    onContactSaved: (contactId: String, alias: String, peerInboxId: String?) -> Unit,
+    onContactSaved: (contactId: String, alias: String, peerInboxId: String?, olderPairing: Boolean) -> Unit,
     onStartAgain: (message: String) -> Unit,
 ) {
     // Reached only via the hidden 5-tap gesture (the access gate). Mint runs
@@ -1995,21 +2017,20 @@ private fun CodeExchangeTab(
                     // No announce here: the paste exchange always trades FULL
                     // codes, so neither side ends up pending. Both halves are present,
                     // so the session fixes the role order exactly as on the camera path.
-                    when (
-                        pairing.save(
-                            vault = vault,
-                            contactId = newContactId,
-                            peer = data,
-                            myInboxId = r.minted.inboxId,
-                            myReadCap = r.minted.readCapability,
-                            myCtlInboxId = r.ctlMinted.inboxId,
-                            myCtlReadCap = r.ctlMinted.readCapability,
-                            alias = alias,
-                            mnemonic = "",
-                            myGrpInboxId = r.grpMinted?.inboxId,
-                            myGrpReadCap = r.grpMinted?.readCapability,
-                        )
-                    ) {
+                    val outcome = pairing.save(
+                        vault = vault,
+                        contactId = newContactId,
+                        peer = data,
+                        myInboxId = r.minted.inboxId,
+                        myReadCap = r.minted.readCapability,
+                        myCtlInboxId = r.ctlMinted.inboxId,
+                        myCtlReadCap = r.ctlMinted.readCapability,
+                        alias = alias,
+                        mnemonic = "",
+                        myGrpInboxId = r.grpMinted?.inboxId,
+                        myGrpReadCap = r.grpMinted?.readCapability,
+                    )
+                    when (outcome) {
                         PairingSaveOutcome.SAVED_V3, PairingSaveOutcome.SAVED_LEGACY -> {
                             // Latch AFTER the save succeeded (a refused save leaves the
                             // latch clear, so the user can retry) — same order as saveContact().
@@ -2017,7 +2038,7 @@ private fun CodeExchangeTab(
                             // Always non-null here: `parsed` is built with
                             // requireFull = true, so the paste path can never land the
                             // Done step in the scan-back state.
-                            onContactSaved(newContactId, alias, data.inboxId)
+                            onContactSaved(newContactId, alias, data.inboxId, ContactPairing.savedAsOlder(outcome))
                         }
                         // Refused, nothing written. The latch stays clear and the parse
                         // is untouched, so a retry (after deleting the stale contact)

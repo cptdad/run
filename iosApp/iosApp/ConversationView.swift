@@ -62,13 +62,12 @@ struct ConversationView: View {
     // in the body's modifier chain (conversation_report stays the same
     // a11y id on the sheet row; only its downstream action changes).
     @State private var showReportConfirm = false
-    // CONVERSATION-SCOPED "I took a screenshot" sender. Distinct from
-    // ScreenshotProtection's app-wide banner (kept, unchanged) — that one has
-    // no notion of which conversation is open, so it never sends; this one
-    // exists only to send, and is registered/removed symmetrically with
-    // onAppear/onDisappear so it is armed only while THIS conversation is the
-    // foreground screen.
-    @State private var screenshotObserver: NSObjectProtocol? = nil
+    // CONVERSATION-SCOPED "I took a screenshot" sender (RÚN-07). Distinct from
+    // ScreenshotProtection's app-wide banner (kept, unchanged), which never sends.
+    // This screen registers a SCOPE with AppState (onAppear / onDisappear): the
+    // conversations whose text is in its list — this 1:1 plus the group of every echo
+    // row. AppState's single observer notifies the union of all registered scopes.
+    @State private var screenshotScopeToken: UUID? = nil
 
     struct ChatMessage: Identifiable {
         let id:        String
@@ -194,30 +193,13 @@ struct ConversationView: View {
             // First-conversation-ever burn-on-read notice (shared helper below,
             // reused by GroupConversationView — same vault-meta latch).
             if let vault = appState.vault { showBurnNotice = consumeBurnNoticeOnce(vault) }
-            // Screenshot-taken notice: best-effort, fire-and-forget, off-main —
-            // a failed send is silent (MessageManager.sendScreenshotNotice never
-            // throws; its Boolean is for logs only). Armed only while this
-            // conversation is on screen — removed in onDisappear below.
-            screenshotObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.userDidTakeScreenshotNotification, object: nil, queue: .main
-            ) { _ in
-                let mgr = appState.controller.messageManager
-                DispatchQueue.global(qos: .utility).async {
-                    // Root-caused prod bug (docs/screenshot-notice-persistence-design.md
-                    // §0): this send's result used to be discarded unlogged, so a
-                    // silent failure here (e.g. no transport yet) left nothing in the
-                    // logs to distinguish "peer never got the notice" from "peer got
-                    // it but never opened the conversation before the RAM buffer was
-                    // scrubbed". sendScreenshotNotice() itself never throws.
-                    if let sent = mgr?.sendScreenshotNotice(contactId: contactId) {
-                        LogBuffer.shared.append(level: sent ? "D" : "W", tag: "Chat",
-                            message: "screenshot notice send \(sent ? "ok" : "FAILED")")
-                    } else {
-                        LogBuffer.shared.append(level: "W", tag: "Chat",
-                            message: "screenshot notice not sent — no messageManager (no transport yet)")
-                    }
-                }
-            }
+            // Screenshot-taken notice (RÚN-07): best-effort, fire-and-forget, off-main,
+            // sent by AppState's one observer to every conversation in this screen's
+            // scope — read from the rows at the moment of the screenshot. Registered
+            // only while this conversation is on screen — removed in onDisappear below.
+            // The send result is logged (counts only) by AppState.screenshotTaken.
+            if let old = screenshotScopeToken { appState.unregisterScreenshotScope(old) }
+            screenshotScopeToken = appState.registerScreenshotScope { screenshotOrigins() }
         }
         .burnOnReadNotice(isPresented: $showBurnNotice)
         .sheet(isPresented: $showConversationActions, onDismiss: runPendingConversationAction) {
@@ -235,9 +217,9 @@ struct ConversationView: View {
                         .secondary(L10n.commonCancel) { },
                     ])
         .onDisappear {
-            if let obs = screenshotObserver {
-                NotificationCenter.default.removeObserver(obs)
-                screenshotObserver = nil
+            if let token = screenshotScopeToken {
+                appState.unregisterScreenshotScope(token)
+                screenshotScopeToken = nil
             }
             pollTask?.cancel()
             // Do NOT cancel in-flight SEND tasks: a send must survive leaving the
@@ -544,6 +526,21 @@ struct ConversationView: View {
         if claimed != maximumShield { maximumShield = claimed }
     }
 
+    /// RÚN-07: the conversations whose text is in this screen's list right now — this
+    /// 1:1, plus the group of every GROUP_ECHO row (its sender is always this contact:
+    /// a 1:1 screen drains only this contact's inboxes). "In the list", not "scrolled
+    /// into view": the row-level on-screen state is not reliable, and this errs toward
+    /// telling a conversation, never toward missing one. Deduplicated by the shared layer.
+    private func screenshotOrigins() -> [ScreenshotOrigin] {
+        var origins = [ScreenshotOrigin(conversationId: contactId, isGroup: false, senderContactId: contactId)]
+        for msg in messages {
+            if let gid = msg.echoGroupId {
+                origins.append(ScreenshotOrigin(conversationId: gid, isGroup: true, senderContactId: contactId))
+            }
+        }
+        return origins
+    }
+
     private func contactAlias() -> String {
         guard let vault = appState.vault else { return L10n.conversationContactFallback }
         // getContact() carries a raw sharedSecret;
@@ -731,6 +728,11 @@ struct ConversationView: View {
         pollTask?.cancel()   // Cancel any prior loop before reassigning
         pollTask = Task { @MainActor in
             var verdictShown = false
+            // RÚN-05: the session this loop belongs to. Every `await` below is followed
+            // by isConversationPollCurrent(session) before `messages` is touched, so a
+            // poll that resumes after this screen closed (onDisappear cancels the task
+            // and erases the list) or after a lock appends nothing to it.
+            let session = appState.conversationPollToken
             // Announce the fetch the instant the conversation opens (drifts in) —
             // but only when the relay is actually reachable; with no relay there
             // are no runes to consult.
@@ -747,6 +749,7 @@ struct ConversationView: View {
             // notices from here on. Dedupe id keys on receivedAt (the
             // store's stable ordering key), matching the per-tick drain.
             let persistedNotices = await appState.loadScreenshotNotices(conversationId: contactId)
+            guard appState.isConversationPollCurrent(session) else { return }
             for n in persistedNotices {
                 let stableId = "ss-\(n.senderContactId)-\(n.receivedAt)"
                 if messages.contains(where: { $0.id == stableId }) { continue }
@@ -784,7 +787,7 @@ struct ConversationView: View {
                     if Task.isCancelled, let d { appState.abandonDrain(d); return nil }
                     return d
                 }
-                guard let drainOpt = drained, !Task.isCancelled else {
+                guard let drainOpt = drained, appState.isConversationPollCurrent(session) else {
                     if let d = drained ?? nil { appState.abandonDrain(d) }
                     break
                 }
@@ -823,25 +826,32 @@ struct ConversationView: View {
                 // above. Dedupe id keys on receivedAt (the store's stable
                 // ordering key) so it matches the load-on-open id.
                 let noticesRS = await appState.drainScreenshotNotices(conversationId: contactId)
-                for n in noticesRS {
-                    let stableId = "ss-\(n.senderContactId)-\(n.receivedAt)"
-                    if messages.contains(where: { $0.id == stableId }) { continue }
-                    messages.append(ChatMessage(
-                        id: stableId,
-                        text: L10n.commonScreenshotNotice(n.senderAlias) + " · " + formatNoticeTime(n.timestamp),
-                        isSent: false,
-                        delivered: true,
-                        failed: false,
-                        timestamp: n.timestamp,
-                        isNotice: true,
-                        expiresAt: n.expiresAt
-                    ))
+                // RÚN-05: the screen may have closed (or the app locked) during that
+                // await — append nothing then. The text rows above were appended BEFORE
+                // it, so the drain is still committed below exactly as before (a lock
+                // has already closed the ack fence, so that commit writes nothing).
+                if appState.isConversationPollCurrent(session) {
+                    for n in noticesRS {
+                        let stableId = "ss-\(n.senderContactId)-\(n.receivedAt)"
+                        if messages.contains(where: { $0.id == stableId }) { continue }
+                        messages.append(ChatMessage(
+                            id: stableId,
+                            text: L10n.commonScreenshotNotice(n.senderAlias) + " · " + formatNoticeTime(n.timestamp),
+                            isSent: false,
+                            delivered: true,
+                            failed: false,
+                            timestamp: n.timestamp,
+                            isNotice: true,
+                            expiresAt: n.expiresAt
+                        ))
+                    }
                 }
                 // Everything is on screen (the @State list holds the items): COMMIT, off
                 // main, and finish it before the next poll of this conversation starts.
                 // NEVER commit from a scenePhase/teardown path — an uncommitted drain
                 // is what protects the message across a lock.
                 if let drain, !drain.isEmpty { await appState.commitDrain(drain) }
+                guard appState.isConversationPollCurrent(session) else { break }
                 // P1-1 step B: re-read ratchetRefused on every poll tick, not just
                 // on open/after-send — an inbound ratchet blob (possibly one that
                 // carries no visible text, e.g. a control-channel announce) is what
@@ -884,6 +894,7 @@ struct ConversationView: View {
                 // beacon); the first fetch above is immediate. Leaving cancels this
                 // task, so back is never delayed by the cadence.
                 try? await Task.sleep(nanoseconds: UInt64.random(in: 500...1200) * 1_000_000)
+                guard appState.isConversationPollCurrent(session) else { break }
             }
         }
     }

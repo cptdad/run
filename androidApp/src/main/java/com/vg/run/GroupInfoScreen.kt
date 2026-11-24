@@ -546,6 +546,7 @@ fun GroupInfoScreen(
                     else
                         stringResource(R.string.group_info_leave_confirm_message))
                         + "\n\n" + stringResource(R.string.group_info_leave_unread_warning)
+                        + "\n\n" + stringResource(R.string.group_info_leave_kept_note)
                 )
             }
             // Destructive LAST (safety rule, RuneDialog.kt).
@@ -587,8 +588,11 @@ fun GroupInfoScreen(
                 style = MaterialTheme.typography.titleMedium,
                 color = RunWhite,
             )
+            // Tapping a member below hands over AND leaves at once (no further
+            // confirm), so this sheet carries the kept-record note of every leave path.
             Text(
-                text = stringResource(R.string.group_info_choose_admin_subtitle_android),
+                text = stringResource(R.string.group_info_choose_admin_subtitle_android)
+                    + "\n\n" + stringResource(R.string.group_info_leave_kept_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = RunGrey,
             )

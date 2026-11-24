@@ -19,6 +19,9 @@
     <string name="pin_use_recovery_code_prompt">Ma furi kartid? Isticmaal koodhka soo-celinta</string>
     <string name="pin_orphaned_vault_notice">Qalabkan wuxuu leeyahay khasnad, laakiin PIN ama weedh sir ah lama kaydin, sidaas darteed waxba ma furi karo. Waxa ku jira lama soo celin karo.</string>
     <string name="pin_erase_start_over">Tirtir oo dib u bilow</string>
+    <string name="pin_erase_finishing_title">Tirtiridda waa la dhammaystirayaa</string>
+    <string name="pin_setup_blocked_message">Diyaarintu weli ma bilaabmi karto. Fur taleefankaaga, kadibna taabo Isku day mar kale.</string>
+    <string name="pin_erase_finishing_message">Xog ku jirta taleefankan weli lama tirtirin. Fur taleefankaaga, kadibna taabo Isku day mar kale. Diyaarintu waxay furmaysaa marka tirtiriddu dhammaato.</string>
     <string name="pin_strength_too_weak">Aad u daciif ah</string>
     <string name="pin_strength_still_weak">Weli aad ayuu u daciif yahay — ku dar erayo</string>
     <string name="pin_strength_strong">Xoog leh</string>

@@ -80,7 +80,7 @@
 
     <!-- Reset relay access -->
     <string name="contact_list_reset_relay_title">هل تريد إعادة تعيين الوصول إلى المُرحّل؟</string>
-    <string name="contact_list_reset_relay_message">سيحصل Rún على مفاتيح وصول جديدة لهذه المحادثة من المُرحّل. تبقى رسائلك وسجلّك وجهة الاتصال هذه كما هي تمامًا، ولا يحتاج %1$s إلى فعل أي شيء.\n\nافعل هذا إذا كنت تعتقد أن شخصًا آخر أمسك بهاتفك وهو غير مقفل. لا يُلغي هذا أي شيء قرأه ذلك الشخص بالفعل — وإذا كان الهاتف قد أُخذ فعلًا، فالحل الأسلم يبقى حذف جهة الاتصال هذه والاقتران من جديد شخصيًا.</string>
+    <string name="contact_list_reset_relay_message">سيحصل Rún على مفاتيح وصول جديدة لهذه المحادثة من المُرحّل. تبقى رسائلك وسجلّك وجهة الاتصال هذه كما هي تمامًا، ولا يحتاج %1$s إلى فعل أي شيء.\n\nافعل هذا إذا كنت تعتقد أن شخصًا آخر أمسك بهاتفك وهو غير مقفل. لا يُلغي هذا أي شيء قرأه ذلك الشخص بالفعل — وإذا كان الهاتف قد أُخذ فعلًا، فالحل الأسلم يبقى الاقتران من جديد شخصيًا ثم حذف جهة الاتصال هذه.</string>
     <string name="contact_list_reset_button">إعادة تعيين</string>
     <string name="contact_list_reset_relay_success">تمت إعادة تعيين الوصول إلى المُرحّل.</string>
     <string name="contact_list_reset_relay_failure">تعذّر الوصول إلى المُرحّل. سيكمل Rún هذا بنفسه.</string>
@@ -112,6 +112,15 @@
     <string name="contact_list_reset_relay_in_progress">جارٍ إعادة تعيين الوصول إلى المُرحّل…</string>
     <string name="contact_list_reset_relay_button">إعادة تعيين الوصول إلى المُرحّل</string>
     <string name="contact_list_delete_contact_button">حذف جهة الاتصال</string>
+    <string name="contact_list_pairing_label">الاقتران</string>
+    <string name="contact_list_pairing_current">حديث</string>
+    <string name="contact_list_pairing_current_note">أُنشئ والتطبيقان كلاهما محدَّثان. لا شيء عليك فعله.</string>
+    <string name="contact_list_pairing_older">اقتران أقدم</string>
+    <string name="contact_list_pairing_older_note">أُنشئ بإصدار أقدم من Rún. تحديث التطبيق لا يغيّر ذلك، أما إعادة الاقتران فتغيّره.</string>
+    <string name="contact_list_pair_again_button">كيف تعيد الاقتران</string>
+    <string name="contact_list_pair_again_why">اضغط مطولًا على جهة اتصال لترى أي اقتران تستخدم.\n\nمع اقتران أقدم، فإن من سجّل رسائلك في طريقها ثم حصل لاحقًا على مفتاح هذا الاقتران — من أحد هاتفيكما أو، إذا اقترنتما شخصيًا، من صورة للرمزين معًا — قد يتمكن من قراءة رسائلكما الأولى المتبادلة (إلى أن يكون كلاكما قد كتب)، وبعض رسائل المجموعات والتقديم. الرسائل المسجّلة وحدها لا تكفي. أما الرسائل اللاحقة فمحمية بالطريقة نفسها كما في الاقتران الحديث.\n\nإعادة الاقتران لا تحمي إلا الرسائل المُرسَلة بعدها.</string>
+    <string name="contact_list_pair_again_steps">1. حدِّثا Rún كلاكما.\n2. التقيا وأعيدا الاقتران عبر «إضافة جهة اتصال». ستحصل على جهة اتصال جديدة، باسم جديد ومن دون ملاحظة تذكير.\n3. تحقّق من أن جهة الاتصال الجديدة تُظهر «حديث» في قائمتها وأن الرسائل تصل في الاتجاهين.\n4. بعد ذلك يحذف كلٌّ منكما جهة الاتصال القديمة. اقرأ رسائلها الجديدة أولًا: حذف جهة اتصال يحذف أيضًا رسائلها التي لا تزال تنتظر على المُرحّل.</string>
+    <string name="contact_list_pair_again_groups">المجموعات التي تشتركان فيها بالفعل لا تنتقل إلى جهة الاتصال الجديدة. يجب على مشرف المجموعة إزالة هذا الشخص ثم إضافته من جديد.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">تذكير خاص بهوية جهة الاتصال هذه. لا يراه أحد سواك.</string>
@@ -141,6 +150,14 @@
         <item quantity="few">%1$d جهات اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
         <item quantity="many">%1$d جهة اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
         <item quantity="other">%1$d جهة اتصال تحتاج إلى إعادة الاقتران. انقر لإضافتها من جديد.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="zero">لا توجد جهات اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
+        <item quantity="one">جهة اتصال واحدة تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
+        <item quantity="two">جهتا اتصال تستخدمان اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
+        <item quantity="few">%1$d جهات اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
+        <item quantity="many">%1$d جهة اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
+        <item quantity="other">%1$d جهة اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران.</item>
     </plurals>
     <string name="connect_log_title">سجل الاتصال</string>
 

@@ -8,13 +8,13 @@
 
     <!-- Forward-secrecy-stalled notice (ConversationScreen.kt / ConversationView.swift) -->
     <string name="conversation_fs_stalled_title">Forward secrecy hasn\'t engaged</string>
-    <string name="conversation_fs_stalled_body">Messages to this contact are still encrypted, but they don\'t yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, remove and re-add the contact.</string>
+    <string name="conversation_fs_stalled_body">Messages to this contact are still encrypted, but they don\'t yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, pair again, then delete the old contact.</string>
 
     <!-- Ratchet role-collision refusal notice (ConversationScreen.kt / ConversationView.swift) -->
-    <string name="conversation_ratchet_refused_body">Secure channel could not be established with this contact. Messages are not being sent. Remove the contact and pair again.</string>
+    <string name="conversation_ratchet_refused_body">Secure channel could not be established with this contact. Messages are not being sent. Pair again, then delete this contact.</string>
 
     <!-- Secure channel lost notice (ConversationScreen.kt / ConversationView.swift) -->
-    <string name="conversation_secure_channel_lost_body">The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again.</string>
+    <string name="conversation_secure_channel_lost_body">The secure channel with this contact was lost. Messages are not being sent. Pair again, then delete this contact.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Report Contact</string>

@@ -18,6 +18,9 @@
     <string name="pin_use_recovery_code_prompt">Får du ikke låst opp? Bruk gjenopprettingskode</string>
     <string name="pin_orphaned_vault_notice">Enheten har et hvelv, men ingen PIN eller passfrase er lagret for det, så ingenting kan åpne det. Innholdet kan ikke gjenopprettes.</string>
     <string name="pin_erase_start_over">Slett og start på nytt</string>
+    <string name="pin_erase_finishing_title">Fullfører slettingen</string>
+    <string name="pin_setup_blocked_message">Oppsettet kan ikke starte ennå. Lås opp telefonen, og trykk på Prøv igjen.</string>
+    <string name="pin_erase_finishing_message">Noen data på denne telefonen er ikke slettet ennå. Lås opp telefonen, og trykk på Prøv igjen. Oppsettet åpnes når slettingen er fullført.</string>
 
     <!-- Styrkemåler for passfrase -->
     <string name="pin_strength_too_weak">For svak</string>

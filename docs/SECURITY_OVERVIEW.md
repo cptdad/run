@@ -49,8 +49,34 @@ The adversaries considered, in order of priority:
 ## 2. The vault
 
 Everything the app keeps on the device (contacts, aliases, keys, inbox addresses, ratchet state)
-lives in one encrypted database, the vault. **Messages are not written to disk at all.** They exist
-in memory while a conversation is open and are gone when it closes.
+lives in one encrypted database, the vault. **Messages are not written to disk at all.** What the
+app keeps in memory, and for how long:
+
+- **A message you have opened** is erased when you leave its chat or the app locks. After that, no
+  late network reply can put it back on a closed screen or into a locked session.
+- **A message still waiting to be shown** because its sender is not yet confirmed (a group member
+  your phone has not matched to a contact yet, or a group whose invitation has not arrived) stays
+  in memory until it is shown or the app locks. It is never shown more than ten minutes after it
+  arrived and is dropped from memory at the next background check or conversation refresh after
+  that (there is no separate timer), or at the lock. If the app locks first it is
+  lost unseen: by then the relay has normally deleted its copy. A waiting message from a confirmed
+  sender stays until its chat shows it or the app locks.
+- **Locking ends everything.** On lock, background or wipe every waiting message is discarded and
+  nothing about them is saved, not even a count.
+- On Android, opening Group Info leaves the group chat, so the chat's messages are erased; on iOS
+  Group Info is a sheet over the chat and they stay until you leave the chat.
+- A message from another conversation can appear inside the chat you have open (a private message
+  shown in a group, a message of another group shown in a group or in a private chat). By design it
+  is shown there in full, on both platforms, and accessibility services can read it like any other
+  text on screen. When you take a screenshot on iOS, a notice therefore goes to the chat you have
+  open AND to every conversation whose message is in that chat's list (once each, best effort, never
+  retried), so the people in those conversations learn of the capture too. Android sends no notice;
+  its release builds block screenshots.
+
+"Erased" means the app drops every reference to the text. What the app cannot control: copies the
+operating system keeps in memory it manages itself (text layout and drawing caches, the accessibility
+tree, the system's own string copies) and when the runtime's garbage collector reuses that memory.
+These have not been measured on a device.
 
 ### Encryption and the two factors
 
@@ -221,9 +247,41 @@ How the keys of a new contact are made depends on the app version on **both** ph
 
 **Contacts are not upgraded.** A contact keeps the construction it was made with for as long as it
 exists: every contact added before this change, and every contact added with a phone running an
-older version, stays on the older construction. Deleting the contact and pairing again, with both
-phones up to date, is the only way to move it. The app does not currently show which construction a
-contact uses.
+older version, stays on the older construction. Installing a newer version does not change this:
+the construction is stored in the contact's row in the vault, and nothing rewrites it. Each
+contact's menu (press and hold the contact) shows it: **Current** for the one-time key exchange,
+**Older pairing** for the older construction. While at least one contact uses an older pairing,
+the contact list shows a banner that can be closed. Closing it is one setting for the whole vault;
+a move to a new phone does not carry it and a wipe erases it. There is no marker on the list rows.
+
+What is weaker for an older pairing is narrow (details in the next two sections). Someone who has
+**both** recorded relay traffic **and** that pairing's secret (from an opened vault of either phone,
+from a move bundle together with its transfer code, or, for a contact paired in person, from a
+picture of both codes) can read the texts each side sent before it first received something from
+the other, the few texts the receiving side may send on the static envelope before its first
+ratchet message arrives (at most 8 in a row), the first ratchet chain, and the static pairing,
+introduction and group signals, and can forge those static signals. Recorded traffic alone opens
+nothing. Ratchet messages after a round trip in both directions are protected the same way for
+both kinds of contact.
+
+**Pairing again** is the only way to move to the one-time key exchange, and it protects only the
+messages sent after it. It creates a **new** contact (a new name, no memory note, not marked as
+introduced); it does not convert the old one. The in-app guide gives this order: both phones
+update; pair again in person; check that the new contact shows Current and that messages get
+through both ways; then both delete the old contact. A cancelled or failed pairing therefore leaves
+the old contact working. Deleting the old contact also deletes its inboxes on the relay, so
+messages still waiting there are lost; read them first. Traffic recorded earlier stays readable to
+anyone who later gets the old pairing secret, which stays in the other phone's vault until that
+person deletes the old contact too. If the other phone runs a version without the exchange, the new
+contact is an older pairing again, and the add-contact screen says so.
+
+**Groups after pairing again.** Group members are matched to contacts by tags derived from the
+pairing secret at the time they joined, and nothing re-sends those tags for an existing membership.
+So after pairing again and deleting the old contact, that person is no longer matched in the groups
+you already share, on either phone, until the group's admin removes them and adds them again; the
+guide asks for that. If that person was the admin, a new invitation from them to the same group can
+show the warning that the group has a different admin. This follows from the code; it has not been
+checked on devices.
 
 A contact you already have can also **introduce** two of their contacts remotely. Then the two new
 contacts agree on a secret with ephemeral X25519 keys passed through the introducer. The introducer
@@ -271,8 +329,8 @@ from the first message, on both phones. If the ratchet cannot be used for a mess
 stored state cannot be read at that moment), that send fails; the message is never sent on the
 static envelope instead, and the ratchet is never restarted from the pairing
 secret. If the stored state is proven damaged, the app marks the contact "secure channel lost",
-tells the other phone so it shows the same, and refuses to send until you remove the contact and
-pair again. Static-envelope texts and signals of those kinds that claim to come from such a contact
+tells the other phone so it shows the same, and refuses to send until you pair again (and then
+delete the old contact). Static-envelope texts and signals of those kinds that claim to come from such a contact
 are dropped. Only small notices still use the static envelope: group activity hints, screenshot
 notices, the "I use Maximum" notice and the "secure channel lost" notice. For these contacts the
 static key comes from the exchanged pairing secret, so it cannot be computed from a picture of the
@@ -445,6 +503,11 @@ These are open gaps and accepted trade-offs. Each line says what it means for yo
 - **The names of stored items reveal your settings.** Even without any key, an examiner can tell
   whether the hardware-bound key is in use and whether a recovery code exists. A one-byte marker
   showing which wrapping scheme is used is also unencrypted.
+- **Every group you have left still has one note in the vault**: the group's random ID and who its
+  admin was (one of your contacts, or you). It lets the app warn you if someone else later invites
+  you back into the same group. Deleting that contact removes the reference to them; the group ID
+  stays. The note moves to a new phone with you and only a wipe erases it. Anyone who opens the vault
+  with your credential can read it, and the group ID is the same on every member's phone.
 - **On Android, Tor's data directory stays between launches**, so an image taken after first unlock
   shows the app has used Tor. Every wipe deletes it.
 - **On Android with UnifiedPush**, a settings file shows that push was configured and names the push
@@ -493,8 +556,11 @@ These are open gaps and accepted trade-offs. Each line says what it means for yo
 ### Ratchet and pairing roles
 
 - **Existing contacts keep the older construction for life** (section 4). Only contacts added after
-  this change, with both phones up to date, get the one-time key exchange. Re-pairing is the only way
-  to move a contact, and the app does not show which contacts still use the older construction.
+  this change, with both phones up to date, get the one-time key exchange. Pairing again, which
+  makes a new contact, is the only way to move, and it protects only later messages. Each contact's
+  menu shows which construction it uses; the list itself has no per-contact marker, only a banner
+  that can be closed. After pairing again, the person drops out of groups you already share until
+  the group's admin removes and re-adds them.
 - **Static-envelope messages have no forward secrecy** (section 4). For older-construction contacts
   this covers one-sided conversations, the bootstrap, the always-static control signals, and up to
   8 refused-later sends. For contacts made with the one-time key exchange it covers only the small

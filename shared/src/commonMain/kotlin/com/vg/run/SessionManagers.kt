@@ -81,7 +81,8 @@ fun createSessionManagers(
     //
     // The persisted screenshot notices ride the same hook, for the same reason and
     // with the same "no timer of its own" discipline: their 24 h expiry needs a
-    // cadence, the sweep's first pass runs seconds after unlock, and both calls are
+    // cadence (GroupManager's init also prunes once per session, because this sweep
+    // needs a live transport — RÚN-06), and both calls are
     // cheap local reads that never throw (GroupManager catches; the sweep catches
     // again). Order is irrelevant — they share no state.
     groupManager.onControlSweep = {
@@ -103,11 +104,14 @@ fun createSessionManagers(
         // roster, bounded per member and per sweep. Wired here (never inside a poll)
         // so it rides the same live-transport cadence as the redrives beside it.
         groupManager.rerosterUnconvergedMembers()
-        // "Move to new device": read-cap rotations that did not land during the
-        // NEW phone's post-import "Securing" step. Same rationale as the redrives
-        // above — the work needs a cadence with a live transport and must not have a
-        // timer of its own. Cheap-gated on one `_meta` read, so a vault that never
-        // moved pays a single lookup; never throws (the sweep catches too).
+        // "Move to new device": the NEW phone's post-import read-cap rotations
+        // (obligations committed with the import, MoveRotationObligations.kt) — at
+        // most MoveRotation.SWEEP_BUDGET rotations per sweep, unconfirmed ones to the
+        // back of the list — plus the one-time re-rotation seed for a phone that
+        // imported on an older build. Same rationale as the redrives above — the
+        // work needs a cadence with a live transport and must not have a timer of
+        // its own. Cheap-gated on one `_meta` read, so a vault that never moved pays
+        // a single lookup; never throws (the sweep catches too).
         retryPendingMoveRotations(vault, gatedProvider())
         // v3 "secure channel lost": tell each peer whose pairing this device can no
         // longer serve, so its phone shows the same "pair again" state instead of a

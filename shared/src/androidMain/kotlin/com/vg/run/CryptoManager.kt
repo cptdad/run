@@ -275,18 +275,43 @@ class CryptoManager(context: Context) {
          * silently swallowed. Returns true when at least one half is PROVEN.
          */
         fun eraseMasterKey(context: Context): Boolean {
-            var aliasGone = false
+            val (alias, blobDestroyed) = eraseMasterKeyBothHalves(context)
+            return alias != EraseOutcome.UNRESOLVED || blobDestroyed
+        }
+
+        /**
+         * RÚN-02: the wipe's DEVICE_KEY item. Runs exactly [eraseMasterKey]'s two
+         * kills, but reports the ALIAS half alone: DELETED / ALREADY_ABSENT only when
+         * `containsAlias` proves the master key gone. A surviving alias over a
+         * destroyed keyset is UNRESOLVED on purpose — a pre-wipe image of
+         * `run_keyset_prefs` unwraps under that alias forever, and the next keyset
+         * would be wrapped by it too — so the wipe stays latched (no new keyset, no
+         * fresh setup) until a retry removes it.
+         */
+        fun eraseMasterKeyChecked(context: Context): EraseResult =
+            EraseResult(eraseMasterKeyBothHalves(context).first, EraseResult.STATUS_NONE)
+
+        private fun eraseMasterKeyBothHalves(context: Context): Pair<EraseOutcome, Boolean> {
+            var everPresent = false
+            var goneAfter: Boolean? = null
             for (attempt in 1..3) {
                 try {
                     val ks = KeyStore.getInstance("AndroidKeyStore")
                     ks.load(null)
-                    if (ks.containsAlias(MASTER_KEY_ALIAS)) ks.deleteEntry(MASTER_KEY_ALIAS)
-                    if (!ks.containsAlias(MASTER_KEY_ALIAS)) { aliasGone = true; break }
+                    if (ks.containsAlias(MASTER_KEY_ALIAS)) {
+                        everPresent = true
+                        ks.deleteEntry(MASTER_KEY_ALIAS)
+                    }
+                    goneAfter = !ks.containsAlias(MASTER_KEY_ALIAS)
+                    if (goneAfter == true) break
                     platformLogWarn("CryptoManager", "master key alias survived deleteEntry (attempt $attempt)")
                 } catch (e: Exception) {
+                    goneAfter = null
                     platformLogWarn("CryptoManager", "master key delete attempt $attempt failed: ${e::class.simpleName}")
                 }
             }
+            val aliasOutcome = WipeErasePolicy.aliasDeleteOutcome(everPresent, goneAfter)
+            val aliasGone = aliasOutcome != EraseOutcome.UNRESOLVED
             // Second, independent kill: destroy the ciphertext itself. Overwrite
             // (not just delete) so a pre-wipe copy of the file is the only copy that
             // ever held the real blob, and a surviving alias unwraps only junk here.
@@ -309,7 +334,21 @@ class CryptoManager(context: Context) {
             } else if (!aliasGone || !blobDestroyed) {
                 platformLogWarn("CryptoManager", "crypto-erase proven by one half only (alias=$aliasGone blob=$blobDestroyed file=$fileGone)")
             }
-            return aliasGone || blobDestroyed
+            return aliasOutcome to blobDestroyed
+        }
+
+        /**
+         * RÚN-02: true when BOTH the master-key alias and the wrapped keyset exist,
+         * i.e. constructing a [CryptoManager] would only LOAD. Any read failure
+         * answers false (the mint gate then refuses — the deferrable direction).
+         */
+        private fun deviceKeyExists(context: Context): Boolean = try {
+            val ks = KeyStore.getInstance("AndroidKeyStore")
+            ks.load(null)
+            ks.containsAlias(MASTER_KEY_ALIAS) &&
+                context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE).getString(KEYSET_NAME, null) != null
+        } catch (_: Exception) {
+            false
         }
 
         /**
@@ -583,6 +622,15 @@ class CryptoManager(context: Context) {
     private val aead: Aead
 
     init {
+        // RÚN-02: while a wipe's erase is unresolved, no master key and no keyset may
+        // be CREATED — and a fresh keyset wrapped by a SURVIVING old master key is a
+        // creation too. Same rule as iOS getOrCreateKey: an existing key (alias AND
+        // keyset both present) still loads; only a mint is refused. Throwing is the
+        // existing defer path (CryptoProvider passes KeyUnavailableException
+        // through), so nothing is created at all. Neutral message (it can be logged).
+        if (!WipeErasePolicy.mayMintDeviceKey() && !deviceKeyExists(context)) {
+            throw KeyUnavailableException("device key not available (not created)")
+        }
         // Register all AEAD key types with the Tink runtime.
         // This must be called before any keyset operations.
         AeadConfig.register()

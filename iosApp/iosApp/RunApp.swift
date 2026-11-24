@@ -316,6 +316,24 @@ struct RunApp: App {
         // SUBMITTED; `--test-network-kick-at-unlock-lead-ms=N` (alone or alongside)
         // starts the KDF N ms after it (default 0). AppState.unlock. DEBUG only.
         let args = ProcessInfo.processInfo.arguments
+        // RÚN-02 device procedure: `--test-wipe-probe` logs the presence of every key
+        // class + the last erase report (flags, counts, OSStatus numbers — never key
+        // material); `--test-wipe-after-ms=<n>` arms one deniable wipe n ms after
+        // launch inside a background task, so it can run on a locked phone. The
+        // statics exist only in DEBUG.
+        if args.contains("--test-wipe-probe") {
+            AppState.testWipeProbe = true
+            LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-wipe-probe armed")
+        }
+        if args.contains("--test-wipe-nondeniable") {
+            AppState.testWipeNonDeniable = true
+            LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-wipe-nondeniable armed")
+        }
+        if let wipeAfter = args.first(where: { $0.hasPrefix("--test-wipe-after-ms=") }),
+           let ms = Int(wipeAfter.split(separator: "=", maxSplits: 1)[1]) {
+            AppState.testWipeAfterMs = max(0, min(ms, 25_000))
+            LogBuffer.shared.append(level: "W", tag: "DiagSwift", message: "test-wipe-after-ms=\(max(0, min(ms, 25_000))) armed")
+        }
         let leadArg = args.first(where: { $0.hasPrefix("--test-network-kick-at-unlock-lead-ms=") })
         if leadArg != nil || args.contains("--test-network-kick-at-unlock") {
             let lead = leadArg.flatMap { Int($0.split(separator: "=", maxSplits: 1)[1]) } ?? 0

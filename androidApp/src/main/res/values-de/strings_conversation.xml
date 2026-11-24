@@ -7,9 +7,9 @@
     <string name="conversation_alias_unknown">Unbekannt</string>
     <string name="conversation_contact_fallback">Kontakt</string>
     <string name="conversation_fs_stalled_title">Forward Secrecy ist noch nicht aktiviert</string>
-    <string name="conversation_fs_stalled_body">Nachrichten an diesen Kontakt sind weiterhin verschlüsselt, aber sie erhalten noch nicht den zusätzlichen Schutz, der frühere Nachrichten schützt, falls später ein Schlüssel offengelegt wird. Das klärt sich normalerweise, sobald der Kontakt antwortet. Besteht das Problem weiterhin, entferne den Kontakt und füge ihn erneut hinzu.</string>
-    <string name="conversation_ratchet_refused_body">Mit diesem Kontakt konnte kein sicherer Kanal aufgebaut werden. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch.</string>
-    <string name="conversation_secure_channel_lost_body">Der sichere Kanal mit diesem Kontakt ging verloren. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch.</string>
+    <string name="conversation_fs_stalled_body">Nachrichten an diesen Kontakt sind weiterhin verschlüsselt, aber sie erhalten noch nicht den zusätzlichen Schutz, der frühere Nachrichten schützt, falls später ein Schlüssel offengelegt wird. Das klärt sich normalerweise, sobald der Kontakt antwortet. Besteht das Problem weiterhin, führe die Kopplung erneut durch und lösche dann den alten Kontakt.</string>
+    <string name="conversation_ratchet_refused_body">Mit diesem Kontakt konnte kein sicherer Kanal aufgebaut werden. Nachrichten werden nicht gesendet. Führe die Kopplung erneut durch und lösche dann diesen Kontakt.</string>
+    <string name="conversation_secure_channel_lost_body">Der sichere Kanal mit diesem Kontakt ging verloren. Nachrichten werden nicht gesendet. Führe die Kopplung erneut durch und lösche dann diesen Kontakt.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Kontakt melden</string>

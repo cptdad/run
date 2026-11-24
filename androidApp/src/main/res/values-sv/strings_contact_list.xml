@@ -87,7 +87,7 @@
 
     <!-- Återställ reläåtkomst (samma formulering på båda plattformarna) -->
     <string name="contact_list_reset_relay_title">Återställa reläåtkomsten?</string>
-    <string name="contact_list_reset_relay_message">Rún hämtar nya åtkomstnycklar för den här konversationen från reläet. Dina meddelanden, din historik och kontakten är kvar precis som de är, och %1$s behöver inte göra någonting.\n\nGör det här om du tror att någon annan haft din telefon medan den var upplåst. Det gör inte det de redan hunnit läsa ogjort — och om telefonen verkligen togs är det säkraste ändå att radera kontakten och parkoppla på nytt personligen.</string>
+    <string name="contact_list_reset_relay_message">Rún hämtar nya åtkomstnycklar för den här konversationen från reläet. Dina meddelanden, din historik och kontakten är kvar precis som de är, och %1$s behöver inte göra någonting.\n\nGör det här om du tror att någon annan haft din telefon medan den var upplåst. Det gör inte det de redan hunnit läsa ogjort — och om telefonen verkligen togs är det säkraste ändå att parkoppla på nytt personligen och sedan radera kontakten.</string>
     <string name="contact_list_reset_button">Återställ</string>
     <string name="contact_list_reset_relay_success">Reläåtkomsten är återställd.</string>
     <string name="contact_list_reset_relay_failure">Kunde inte nå reläet. Rún slutför det här på egen hand.</string>
@@ -119,6 +119,15 @@
     <string name="contact_list_reset_relay_in_progress">Återställer reläåtkomst…</string>
     <string name="contact_list_reset_relay_button">Återställ reläåtkomst</string>
     <string name="contact_list_delete_contact_button">Radera kontakt</string>
+    <string name="contact_list_pairing_label">Parkoppling</string>
+    <string name="contact_list_pairing_current">Aktuell</string>
+    <string name="contact_list_pairing_current_note">Gjord när båda apparna var uppdaterade. Inget att göra.</string>
+    <string name="contact_list_pairing_older">Äldre parkoppling</string>
+    <string name="contact_list_pairing_older_note">Gjord med en äldre version av Rún. Att uppdatera appen ändrar inte det; att parkoppla på nytt gör det.</string>
+    <string name="contact_list_pair_again_button">Så parkopplar du på nytt</string>
+    <string name="contact_list_pair_again_why">Håll in en kontakt för att se vilken parkoppling den använder.\n\nMed en äldre parkoppling kan någon som har spelat in dina meddelanden på vägen och senare får den här parkopplingens nyckel — från någon av dina två telefoner eller, om ni parkopplade er personligen, från ett foto av båda koderna — läsa era första meddelanden till varandra (tills ni båda hade skrivit) och en del grupp- och introduktionsmeddelanden. Inspelade meddelanden räcker inte ensamma. Senare meddelanden skyddas på samma sätt som med en aktuell parkoppling.\n\nAtt parkoppla på nytt skyddar bara de meddelanden som skickas efteråt.</string>
+    <string name="contact_list_pair_again_steps">1. Ni uppdaterar båda Rún.\n2. Ni ses och parkopplar på nytt med Lägg till kontakt. Du får en ny kontakt, med nytt namn och utan minnesanteckning.\n3. Kontrollera att den nya kontakten visar ”Aktuell” i sin meny och att meddelanden kommer fram åt båda håll.\n4. Radera sedan den gamla kontakten, båda två. Läs dess nya meddelanden först: när du raderar en kontakt raderas också dess meddelanden som fortfarande väntar på reläet.</string>
+    <string name="contact_list_pair_again_groups">Grupper ni redan delar flyttas inte till den nya kontakten. Gruppens admin måste ta bort personen och lägga till den igen.</string>
 
     <!-- Dialog för personligt minne (minnesregel) -->
     <string name="contact_list_memory_dialog_subtitle">En privat påminnelse om vem kontakten är. Bara du kan se den.</string>
@@ -142,6 +151,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d kontakt behöver parkopplas om. Tryck för att lägga till den igen.</item>
         <item quantity="other">%1$d kontakter behöver parkopplas om. Tryck för att lägga till dem igen.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d kontakt använder en äldre parkoppling. Tryck för att se hur du parkopplar på nytt.</item>
+        <item quantity="other">%1$d kontakter använder en äldre parkoppling. Tryck för att se hur du parkopplar på nytt.</item>
     </plurals>
     <string name="connect_log_title">Anslutningslogg</string>
 

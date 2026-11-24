@@ -75,7 +75,7 @@
 
     <!-- Reset relay access -->
     <string name="contact_list_reset_relay_title">Nollataanko välityspalvelimen käyttöoikeus?</string>
-    <string name="contact_list_reset_relay_message">Rún hakee välityspalvelimelta uudet käyttöavaimet tälle keskustelulle. Viestisi, historiasi ja tämä kontakti pysyvät täsmälleen ennallaan, eikä %1$s joudu tekemään mitään.\n\nTee tämä, jos epäilet jonkun muun pitäneen puhelintasi hallussaan sen ollessa auki. Se ei peru mitään, mitä he ovat jo lukeneet — ja jos puhelin todella vietiin, turvallisin ratkaisu on silti poistaa tämä kontakti ja tehdä paritus uudelleen kasvokkain.</string>
+    <string name="contact_list_reset_relay_message">Rún hakee välityspalvelimelta uudet käyttöavaimet tälle keskustelulle. Viestisi, historiasi ja tämä kontakti pysyvät täsmälleen ennallaan, eikä %1$s joudu tekemään mitään.\n\nTee tämä, jos epäilet jonkun muun pitäneen puhelintasi hallussaan sen ollessa auki. Se ei peru mitään, mitä he ovat jo lukeneet — ja jos puhelin todella vietiin, turvallisin ratkaisu on silti tehdä paritus uudelleen kasvokkain ja poistaa sitten tämä kontakti.</string>
     <string name="contact_list_reset_button">Nollaa</string>
     <string name="contact_list_reset_relay_success">Välityspalvelimen käyttöoikeus nollattu.</string>
     <string name="contact_list_reset_relay_failure">Välityspalvelimeen ei saatu yhteyttä. Rún viimeistelee tämän itsekseen.</string>
@@ -107,6 +107,15 @@
     <string name="contact_list_reset_relay_in_progress">Nollataan välityspalvelimen käyttöoikeutta…</string>
     <string name="contact_list_reset_relay_button">Nollaa välityspalvelimen käyttöoikeus</string>
     <string name="contact_list_delete_contact_button">Poista kontakti</string>
+    <string name="contact_list_pairing_label">Paritus</string>
+    <string name="contact_list_pairing_current">Nykyinen</string>
+    <string name="contact_list_pairing_current_note">Tehty, kun molemmat sovellukset olivat ajan tasalla. Ei tehtävää.</string>
+    <string name="contact_list_pairing_older">Vanhempi paritus</string>
+    <string name="contact_list_pairing_older_note">Tehty Rún-sovelluksen vanhemmalla versiolla. Sovelluksen päivittäminen ei muuta tätä, mutta uusi paritus muuttaa.</string>
+    <string name="contact_list_pair_again_button">Näin teet parituksen uudelleen</string>
+    <string name="contact_list_pair_again_why">Paina kontaktia pitkään nähdäksesi, mitä paritusta se käyttää.\n\nVanhemmassa parituksessa joku, joka on tallentanut viestisi matkalla ja saa myöhemmin tämän parituksen avaimen — jommastakummasta puhelimestanne tai, jos teitte parituksen kasvokkain, kummankin koodin valokuvasta — voisi lukea ensimmäiset viestinne toisillenne (kunnes olitte molemmat kirjoittaneet) sekä joitakin ryhmä- ja esittelyviestejä. Pelkät tallennetut viestit eivät riitä. Myöhemmät viestit on suojattu samalla tavalla kuin nykyisessä parituksessa.\n\nUusi paritus suojaa vain sen jälkeen lähetetyt viestit.</string>
+    <string name="contact_list_pair_again_steps">1. Molemmat päivitätte Rún-sovelluksen.\n2. Tavatkaa ja tehkää paritus uudelleen Lisää kontakti -toiminnolla. Saat uuden kontaktin, jolla on uusi nimi eikä muistilappua.\n3. Tarkista, että uusi kontakti näyttää valikossaan ”Nykyinen” ja että viestit kulkevat molempiin suuntiin.\n4. Poistakaa sitten molemmat vanha kontakti. Lue sen uudet viestit ensin: kontaktin poistaminen poistaa myös sen välityspalvelimella vielä odottavat viestit.</string>
+    <string name="contact_list_pair_again_groups">Ryhmät, joissa jo olette yhdessä, eivät siirry uudelle kontaktille. Ryhmän ylläpitäjän täytyy poistaa tämä henkilö ja lisätä hänet uudelleen.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">Yksityinen muistutus siitä, kuka tämä kontakti on. Vain sinä näet tämän.</string>
@@ -130,6 +139,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d kontakti vaatii uuden parituksen. Lisää hänet uudelleen napauttamalla.</item>
         <item quantity="other">%1$d kontaktia vaatii uuden parituksen. Lisää heidät uudelleen napauttamalla.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d kontakti käyttää vanhempaa paritusta. Napauta nähdäksesi, miten teet parituksen uudelleen.</item>
+        <item quantity="other">%1$d kontaktia käyttää vanhempaa paritusta. Napauta nähdäksesi, miten teet parituksen uudelleen.</item>
     </plurals>
     <string name="connect_log_title">Yhteysloki</string>
 

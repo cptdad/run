@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">Etkö saa avattua? Käytä palautuskoodia</string>
     <string name="pin_orphaned_vault_notice">Tällä laitteella on holvi, mutta sille ei ole tallennettu PIN-koodia eikä salalausetta, joten mikään ei voi avata sitä. Sen sisältöä ei voi palauttaa.</string>
     <string name="pin_erase_start_over">Pyyhi ja aloita alusta</string>
+    <string name="pin_erase_finishing_title">Pyyhintä viimeistellään</string>
+    <string name="pin_setup_blocked_message">Käyttöönottoa ei voi vielä aloittaa. Avaa puhelimesi lukitus ja napauta Yritä uudelleen.</string>
+    <string name="pin_erase_finishing_message">Osa tämän puhelimen tiedoista ei ole vielä pyyhitty. Avaa puhelimesi lukitus ja napauta Yritä uudelleen. Käyttöönotto avautuu, kun pyyhintä on valmis.</string>
 
     <!-- Passphrase strength meter -->
     <string name="pin_strength_too_weak">Liian heikko</string>

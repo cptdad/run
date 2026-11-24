@@ -63,4 +63,6 @@
     <string name="move_error_import">Не удалось завершить перенос ваших данных. Повторите попытку.</string>
     <string name="move_error_already_imported">Этот телефон уже принял перенос данных.</string>
     <string name="move_import_skip_label">Продолжить без этого</string>
+    <string name="move_securing_pending">Ваши почтовые ящики переключаются на новые ключи доступа…</string>
+    <string name="move_securing_done">Ваши почтовые ящики теперь используют новые ключи доступа</string>
 </resources>

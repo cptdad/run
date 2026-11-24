@@ -34,6 +34,11 @@
     <string name="pin_use_recovery_code_prompt">Can’t unlock? Use recovery code</string>
     <string name="pin_orphaned_vault_notice">This device has a vault, but no PIN or passphrase is stored for it, so nothing can open it. Its contents cannot be recovered.</string>
     <string name="pin_erase_start_over">Erase and start over</string>
+    <!-- Shown in place of setup while a wipe has not been confirmed complete. The button reuses common_retry. -->
+    <string name="pin_erase_finishing_title">Finishing the erase</string>
+    <!-- Neutral blocked-setup message (no mention of erasing); title reuses pin_device_key_busy_title. -->
+    <string name="pin_setup_blocked_message">Setup can’t start yet. Unlock your phone, then tap Retry.</string>
+    <string name="pin_erase_finishing_message">Some data on this phone has not been erased yet. Unlock your phone, then tap Retry. Setup opens when the erase is complete.</string>
 
     <!-- Passphrase strength meter (shared by entry/setup/change) -->
     <string name="pin_strength_too_weak">Too weak</string>

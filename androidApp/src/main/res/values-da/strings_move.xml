@@ -63,4 +63,6 @@
     <string name="move_error_import">Kunne ikke fuldføre overførslen af dine data. Prøv igen.</string>
     <string name="move_error_already_imported">Denne telefon har allerede overtaget en flytning.</string>
     <string name="move_import_skip_label">Fortsæt uden den</string>
+    <string name="move_securing_pending">Skifter dine indbakker til nye adgangsnøgler…</string>
+    <string name="move_securing_done">Dine indbakker bruger nu nye adgangsnøgler</string>
 </resources>

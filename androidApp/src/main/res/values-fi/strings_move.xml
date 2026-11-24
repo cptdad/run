@@ -63,4 +63,6 @@
     <string name="move_error_import">Tietojesi siirtoa ei saatu vietyä loppuun. Yritä uudelleen.</string>
     <string name="move_error_already_imported">Tämä puhelin on jo vastaanottanut siirron.</string>
     <string name="move_import_skip_label">Jatka ilman sitä</string>
+    <string name="move_securing_pending">Vaihdetaan postilaatikkosi uusiin käyttöavaimiin…</string>
+    <string name="move_securing_done">Postilaatikkosi käyttävät nyt uusia käyttöavaimia</string>
 </resources>

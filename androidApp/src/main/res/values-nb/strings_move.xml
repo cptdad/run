@@ -63,4 +63,6 @@
     <string name="move_error_import">Kunne ikke fullføre overføringen av dataene dine. Prøv igjen.</string>
     <string name="move_error_already_imported">Denne telefonen har allerede tatt imot en flytting.</string>
     <string name="move_import_skip_label">Fortsett uten det</string>
+    <string name="move_securing_pending">Bytter innboksene dine til nye tilgangsnøkler …</string>
+    <string name="move_securing_done">Innboksene dine bruker nå nye tilgangsnøkler</string>
 </resources>

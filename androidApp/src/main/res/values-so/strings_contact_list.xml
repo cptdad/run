@@ -58,7 +58,7 @@
     <string name="contact_list_delete_contact_title">Tirtir xiriiriyaha</string>
     <string name="contact_list_delete_contact_message">Tani waxay si joogto ah u tirtiri doontaa xiriiriyahan iyo dhammaan fariimaha la xidhiidha.</string>
     <string name="contact_list_reset_relay_title">Dib u deji gelitaanka relay-ga?</string>
-    <string name="contact_list_reset_relay_message">Rún wuxuu relay-ga uga heli doonaa wada-hadalkan furayaal gelitaan oo cusub. Fariimahaaga, taariikhdaada iyo xiriiriyahan sidii ay ahaayeen ayay ahaan doonaan, %1$s-na waxba lagama rabo.\n\nTan samee haddii aad u malaynayso in qof kale haystay taleefankaaga intii uu furnaa. Ma burin karto wax ay hore u akhriyeen — haddiise taleefanka runtii la qaaday, xalka ugu ammaan badan weli waa in xiriiriyahan la tirtiro oo dib loola xidho si toos ah.</string>
+    <string name="contact_list_reset_relay_message">Rún wuxuu relay-ga uga heli doonaa wada-hadalkan furayaal gelitaan oo cusub. Fariimahaaga, taariikhdaada iyo xiriiriyahan sidii ay ahaayeen ayay ahaan doonaan, %1$s-na waxba lagama rabo.\n\nTan samee haddii aad u malaynayso in qof kale haystay taleefankaaga intii uu furnaa. Ma burin karto wax ay hore u akhriyeen — haddiise taleefanka runtii la qaaday, xalka ugu ammaan badan weli waa in lammaanaanta mar kale si toos ah loo sameeyo, kadibna xiriiriyahan la tirtiro.</string>
     <string name="contact_list_reset_button">Dib u deji</string>
     <string name="contact_list_reset_relay_success">Gelitaanka relay-ga dib ayaa loo dejiyay.</string>
     <string name="contact_list_reset_relay_failure">Lama gaari karin relay-ga. Rún ayaa iskeed u dhammaystiri doona tan.</string>
@@ -82,6 +82,15 @@
     <string name="contact_list_reset_relay_in_progress">Dib u dejinta gelitaanka relay-ga…</string>
     <string name="contact_list_reset_relay_button">Dib u deji gelitaanka relay-ga</string>
     <string name="contact_list_delete_contact_button">Tirtir xiriiriyaha</string>
+    <string name="contact_list_pairing_label">Lammaanaan</string>
+    <string name="contact_list_pairing_current">Casri ah</string>
+    <string name="contact_list_pairing_current_note">Waxaa la sameeyay iyadoo labada app-ba ay casri yihiin. Waxba lagama rabo.</string>
+    <string name="contact_list_pairing_older">Lammaanaan hore</string>
+    <string name="contact_list_pairing_older_note">Waxaa lagu sameeyay nooc hore oo Rún ah. Cusboonaysiinta app-ku tan ma beddesho; lammaanaanta oo mar kale la sameeyo ayaa beddesha.</string>
+    <string name="contact_list_pair_again_button">Sida lammaanaanta mar kale loo sameeyo</string>
+    <string name="contact_list_pair_again_why">Taabo oo hay xiriiriye si aad u aragto lammaanaanta uu isticmaalo.\n\nMarka lammaanaantu hore tahay, qof duubay fariimahaaga intay socdeen oo goor dambe hela furaha lammaanaantan — mid ka mid ah labadiinna taleefan ama, haddii aad si toos ah isu lammaaneen, sawir laga qaaday labada koodh — wuxuu akhrin karaa fariimihii ugu horreeyay ee aad isu dirteen (ilaa aad labadiinuba wax qorteen), iyo qaar ka mid ah fariimaha kooxda iyo isbarashada. Fariimaha la duubay oo keliya kuma filna. Fariimaha dambe waxaa loo ilaaliyaa si la mid ah lammaanaan casri ah.\n\nLammaanaanta mar kale la sameeyo waxay ilaalisaa oo keliya fariimaha la diro kadib.</string>
+    <string name="contact_list_pair_again_steps">1. Labadiinuba cusboonaysiiya Rún.\n2. Kulma oo lammaanaanta mar kale sameeya adigoo isticmaalaya “Ku dar xiriiriye”. Waxaad helaysaa xiriiriye cusub, oo leh magac cusub, aan lahayn xusuusin.\n3. Hubi in xiriiriyaha cusub liiskiisa lagu muujinayo “Casri ah” iyo in fariimuhu labada dhinac u gudbayaan.\n4. Kadib labadiinuba tirtira xiriiriyihii hore. Marka hore akhri fariimihiisa cusub: tirtiridda xiriiriye waxay sidoo kale tirtirtaa fariimihiisa weli ku sugaya relay-ga.</string>
+    <string name="contact_list_pair_again_groups">Kooxaha aad hore u wadaagteen uma guuraan xiriiriyaha cusub. Maamulaha kooxdu waa inuu qofkan ka saaro, kadibna mar kale ku daro.</string>
     <string name="contact_list_memory_dialog_subtitle">Xusuusin gaar ah oo ku saabsan cidda uu xiriiriyahani yahay. Adiga kaliya ayaa arki kara tan.</string>
     <string name="contact_list_memory_placeholder_android">tusaale: Kula kulmay shirka 2025</string>
     <string name="contact_list_memory_placeholder_ios">tusaale: Kula kulmay shirka 2025</string>
@@ -99,6 +108,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d xiriiriye ayaa u baahan in dib loo isku xidho. Taabo si aad mar kale ugu darto.</item>
         <item quantity="other">%1$d xiriiriye ayaa u baahan in dib loo isku xidho. Taabo si aad mar kale ugu darto.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d xiriiriye ayaa isticmaala lammaanaan hore. Taabo si aad u aragto sida lammaanaanta mar kale loo sameeyo.</item>
+        <item quantity="other">%1$d xiriiriye ayaa isticmaala lammaanaan hore. Taabo si aad u aragto sida lammaanaanta mar kale loo sameeyo.</item>
     </plurals>
     <string name="connect_log_title">Diiwaanka xidhiidhka</string>
     <string name="about_info_version_label">Nooca %1$s (%2$s)</string>

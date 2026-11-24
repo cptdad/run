@@ -26,6 +26,7 @@
     "appium": "^3.7.0",
     "appium-uiautomator2-driver": "^8.7.0",
     "appium-xcuitest-driver": "^12.12.4",
+    "sharp": "0.35.4",
     "typescript": "^7.0.2",
     "webdriverio": "^9.31.9"
   },

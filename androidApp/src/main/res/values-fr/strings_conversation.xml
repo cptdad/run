@@ -7,9 +7,9 @@
     <string name="conversation_alias_unknown">Inconnu</string>
     <string name="conversation_contact_fallback">Contact</string>
     <string name="conversation_fs_stalled_title">La confidentialité persistante n\'est pas encore active</string>
-    <string name="conversation_fs_stalled_body">Les messages destinés à ce contact restent chiffrés, mais ils ne bénéficient pas encore de la protection supplémentaire qui met les messages précédents à l\'abri si une clé venait à être exposée. Cela se résout généralement dès que le contact répond. Si le problème persiste, supprimez le contact, puis ajoutez-le de nouveau.</string>
-    <string name="conversation_ratchet_refused_body">Impossible d\'établir un canal sécurisé avec ce contact. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau.</string>
-    <string name="conversation_secure_channel_lost_body">Le canal sécurisé avec ce contact a été perdu. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau.</string>
+    <string name="conversation_fs_stalled_body">Les messages destinés à ce contact restent chiffrés, mais ils ne bénéficient pas encore de la protection supplémentaire qui met les messages précédents à l\'abri si une clé venait à être exposée. Cela se résout généralement dès que le contact répond. Si le problème persiste, appairez-vous à nouveau, puis supprimez l\'ancien contact.</string>
+    <string name="conversation_ratchet_refused_body">Impossible d\'établir un canal sécurisé avec ce contact. Les messages ne sont pas envoyés. Appairez-vous à nouveau, puis supprimez ce contact.</string>
+    <string name="conversation_secure_channel_lost_body">Le canal sécurisé avec ce contact a été perdu. Les messages ne sont pas envoyés. Appairez-vous à nouveau, puis supprimez ce contact.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">Signaler le contact</string>

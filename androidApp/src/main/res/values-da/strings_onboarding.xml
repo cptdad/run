@@ -24,6 +24,9 @@
     <string name="pin_use_recovery_code_prompt">Kan du ikke låse op? Brug gendannelseskoden</string>
     <string name="pin_orphaned_vault_notice">Denne enhed har en boks, men der er hverken en PIN eller en adgangssætning gemt til den, så intet kan åbne den. Indholdet kan ikke gendannes.</string>
     <string name="pin_erase_start_over">Slet, og start forfra</string>
+    <string name="pin_erase_finishing_title">Afslutter sletningen</string>
+    <string name="pin_setup_blocked_message">Opsætningen kan ikke starte endnu. Lås din telefon op, og tryk på Prøv igen.</string>
+    <string name="pin_erase_finishing_message">Nogle data på denne telefon er ikke slettet endnu. Lås din telefon op, og tryk på Prøv igen. Opsætningen åbner, når sletningen er fuldført.</string>
 
     <!-- Passphrase strength meter (shared by entry/setup/change) -->
     <string name="pin_strength_too_weak">For svag</string>

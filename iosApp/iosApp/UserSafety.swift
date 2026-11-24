@@ -25,7 +25,7 @@ import shared
 //                 network fetch, not just the display (best-effort; see BlockStore).
 //                 Block does NOT touch group membership: a blocked contact who
 //                 shares a group with the user stays a member of it. The group SEND fan-out
-//                 (GroupManager.kt's sendGroupMessage/sendGroupScreenshotNotice)
+//                 (GroupManager.kt's sendGroupMessage/sendScreenshotNotices)
 //                 also honors the block set — the same protection every group
 //                 RECEIVE path already had — but a blocked member obviously still
 //                 gets copies from every OTHER (non-blocking) member. ContactListView's
@@ -252,9 +252,10 @@ enum BlockStore {
     }
 
     /// Drops the entire block list — called from AppState.emergencyWipe so a
-    /// wipe leaves nothing behind.
+    /// wipe leaves nothing behind. Checked (RÚN-02): the same delete the Kotlin
+    /// wipe report runs as its BLOCK_LIST item; this belt ignores the outcome.
     static func clear() {
-        SecItemDelete(baseQuery() as CFDictionary)
+        _ = KeychainHelper.shared.deleteBlockListChecked()
     }
 
     private static func baseQuery() -> [String: Any] {

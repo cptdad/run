@@ -63,6 +63,18 @@ class KvTriStateGuardTest {
         }
         override fun kvRemove(key: String): Boolean { removedKeys.add(key); kv.remove(key); return true }
         override fun kvDeleteAll() { kv.clear() }
+        // RÚN-02 checked deletes (added to the interface after this fake was written).
+        override fun deleteKeyChecked(): KeychainDeleteResult {
+            val had = deviceKey != null
+            deviceKey = null
+            return KeychainDeleteResult(outcome = if (had) 0 else 1, status = if (had) 0 else -25300)
+        }
+        override fun kvDeleteAllChecked(): KeychainDeleteResult {
+            val had = kv.isNotEmpty()
+            kv.clear()
+            return KeychainDeleteResult(outcome = if (had) 0 else 1, status = if (had) 0 else -25300)
+        }
+        override fun deleteBlockListChecked(): KeychainDeleteResult = KeychainDeleteResult(outcome = 1, status = -25300)
     }
 
     private val defaults = NSUserDefaults.standardUserDefaults
@@ -70,6 +82,7 @@ class KvTriStateGuardTest {
     @AfterTest
     fun tearDown() {
         KeychainBridgeHolder.bridge = null
+        WipeEraseLatch.resetForTest()
         defaults.removeObjectForKey(LEGACY_TEST_KEY)
         defaults.synchronize()
     }
@@ -229,6 +242,28 @@ class KvTriStateGuardTest {
         // The change-PIN gate defers (benign false) and must not let the Kotlin
         // exception cross the non-@Throws Swift boundary.
         assertFalse(selector.verifyCredential("111111"))
+    }
+
+    /**
+     * RÚN-02: a write-ahead journal that survived a wipe's failed sweep must NOT be
+     * replayed while the erase is unresolved — every construction replays, and the
+     * replay would re-write the credential items the wipe is erasing. The journal
+     * item itself is left alone; once the erase resolves, replay works as before.
+     */
+    @Test
+    fun journalIsNotReplayed_whileAnEraseIsUnresolved() {
+        val bridge = FaultInjectingBridge()
+        bridge.kv[VaultStoreKeys.BATCH_JOURNAL] = "vlt_a\nVERIFIER\nvlt_c\nWRAPPED"
+        WipeEraseLatch.begin()
+        freshStore(bridge)
+        assertFalse("vlt_a" in bridge.kv, "no credential item re-written by a replay")
+        assertFalse("vlt_c" in bridge.kv)
+        assertTrue(VaultStoreKeys.BATCH_JOURNAL in bridge.kv, "the journal itself is untouched")
+
+        WipeEraseLatch.resetForTest()
+        freshStore(bridge)
+        assertEquals("VERIFIER", bridge.kv["vlt_a"], "an unlatched construction replays as before")
+        assertFalse(VaultStoreKeys.BATCH_JOURNAL in bridge.kv)
     }
 
     private companion object {

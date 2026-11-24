@@ -39,6 +39,7 @@
     <string name="group_info_leave_confirm_admin_message">Du bist Admin. Übertrage die Rolle zuerst, sonst kann niemand mehr die Mitgliederliste ändern.</string>
     <string name="group_info_leave_confirm_message">Den anderen Mitgliedern wird mitgeteilt, dass du die Gruppe verlassen hast.</string>
     <string name="group_info_leave_unread_warning">Alles, was du gesendet hast und die anderen noch nicht gelesen haben, wird ihnen womöglich nie angezeigt.</string>
+    <string name="group_info_leave_kept_note">Rún speichert in deinem verschlüsselten Tresor eine private Notiz mit der ID dieser Gruppe und ihrem Admin, um dich zu warnen, falls dich später jemand anderes wieder einlädt. Die Notiz zieht mit dir auf ein neues Telefon um und wird nur gelöscht, wenn Rún gelöscht wird.</string>
     <string name="group_info_leave_confirm_action">Verlassen</string>
     <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
     <string name="group_info_choose_admin_title">Neuen Admin wählen</string>

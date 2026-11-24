@@ -80,17 +80,21 @@ object WipeRoutine {
     /**
      * Destroy all persisted vault material.
      *
-     * Order matters: [CryptoManager.eraseMasterKey] is the FIRST destructive
+     * Order matters: the master-key erase ([CryptoManager.eraseMasterKeyChecked],
+     * through [WipeEraser], RÚN-02) is the FIRST destructive
      * step, so that even if the process is killed mid-wipe, the Keystore master
      * key is already gone and every CryptoProvider-encrypted blob (and therefore
      * the PIN-wrapped SQLCipher key, and therefore the DB files themselves) is
      * cryptographically unrecoverable. Database and prefs deletion is the
      * follow-up hygiene pass, not the security boundary.
      *
-     * Exactly one thing runs before it — `ProcessWipeLatch.latch()`, which
-     * performs NO I/O at all (it flips one in-RAM flag) and so cannot delay or
-     * interrupt the crypto-erasure; it has to precede it so a concurrent write
-     * racing the erasure is refused too. See the call site.
+     * Exactly two things run before it — `ProcessWipeLatch.latch()` and
+     * `WipeEraseLatch.begin()`, which perform NO I/O at all (each flips an in-RAM
+     * flag) and so cannot delay or interrupt the crypto-erasure; they have to
+     * precede it so a concurrent write or keyset creation racing the erasure is
+     * refused too. See the call site. Every deletion's outcome is recorded in
+     * [WipeEraseLatch] (RAM only); an unresolved one blocks setup until a retry
+     * proves it gone.
      */
     fun wipePersistentState(context: Context) {
         // FIRST of all — before any erasure, deletion or I/O. [ProcessWipeLatch]
@@ -110,11 +114,17 @@ object WipeRoutine {
         // orphaned-credential path routes straight to setup) works normally. See
         // the ProcessWipeLatch kdoc for what a NEW consumer must gate.
         ProcessWipeLatch.latch()
-        CryptoManager.eraseMasterKey(context)
-        // Lever B: crypto-erase the auth-bound DB-key (RSA) Keystore key too, so
-        // a wipe leaves no key that could unwrap a surviving DB-key blob. Erased
-        // alongside the Tink master key, before the file deletions.
-        AuthBoundKeyStore.deleteKey(context)
+        // RÚN-02: the RESOLVABLE erase latch, armed in the same breath (RAM only, no
+        // I/O): from here until every item below is proven gone, nothing may create a
+        // keyset or master key, open the old vault or start a fresh setup.
+        val wipeToken = WipeEraseLatch.begin()
+        val store = AndroidWipeKeyStore(context)
+        // Crypto-erase FIRST, checked: the Tink master key (alias read back; the
+        // keyset ciphertext is independently overwritten and deleted) and, for
+        // Lever B, the auth-bound DB-key (RSA) Keystore key, so a wipe leaves no key
+        // that could unwrap a surviving DB-key blob. Up to three immediate passes
+        // each; one failure never skips the other.
+        val keys = WipeEraser.run(store, WipeEraser.KEY_ITEMS)
         // LEGACY background-notification manifest key (the WEAKER, AfterFirstUnlock-
         // class key). The mirror it protected is REMOVED
         // and no code creates this alias any more, but an install
@@ -177,63 +187,12 @@ object WipeRoutine {
         UnifiedPushSupport.destroyLocalPushIdentity(context)
         UnifiedPushSupport.sweepLocalArtifacts(context)
 
-        try {
-            context.deleteDatabase("run.db")
-            context.deleteDatabase("run_b.db")
-            // Belt-and-braces: deleteDatabase() already unlinks
-            // -wal/-shm/-journal, but a wipe is forensic-critical, so explicitly
-            // remove any sidecar a partial/aborted delete or an unexpected journal
-            // mode could strand — even encrypted sidecars leak metadata (existence,
-            // size, last-write time).
-            listOf("run.db", "run_b.db").forEach { name ->
-                val base = context.getDatabasePath(name).path
-                listOf("", "-wal", "-shm", "-journal").forEach { sfx ->
-                    java.io.File(base + sfx).delete()
-                }
-            }
-            // …then remove databases/ WHOLESALE. The two names above are the only
-            // databases this app opens, but a DEPENDENCY can create one without a
-            // single line of our code running — androidx.work did exactly that via
-            // its merged androidx.startup provider, leaving androidx.work.workdb
-            // behind after every wipe. A named list cannot
-            // defend against a file we never knew was created.
-            //
-            // ONE operation, deliberately: an earlier revision did two passes —
-            // databaseList()+deleteDatabase() and then listFiles()+File.delete()
-            // over the same directory — which READ as exhaustive but was not.
-            // databaseList() only reports what the framework recognises as a
-            // database (so a stray journal/temp file it doesn't name is invisible
-            // to it), and File.delete() FAILS on a non-empty directory, so any
-            // nested artifact silently survived a sweep that looked total.
-            // deleteRecursively() on the directory is the single operation that
-            // actually means "nothing survives in databases/": files, -wal/-shm/
-            // -journal and -mj* master journals, subdirectories, and the
-            // directory's own mtime (which is itself evidence — an app that never
-            // opened a database has no databases/ dir at all). Android recreates
-            // it on demand (ContextImpl.getDatabasePath / openOrCreateDatabase
-            // mkdirs it), so removing it cannot break a later open — including
-            // the getDatabasePath() call on the very next line, which mkdirs it
-            // if missing and is then itself undone by the delete.
-            // Safe by construction: runs only in the wipe, after the crypto-erase,
-            // when nothing in databases/ may survive.
-            //
-            // The RESULT is checked, and a partial sweep is retried ONCE.
-            // deleteRecursively() walks top-down and then removes the directory
-            // itself, so a single file created by another thread between the walk
-            // and that final rmdir makes the whole call answer false and leaves a
-            // dated, app-attributable databases/ behind — silently, since the
-            // Boolean used to be discarded inside this best-effort catch. (The
-            // same class of race is REAL one directory over: Firebase's heartbeat
-            // datastore is re-created ~140 ms after its sweep, which is why
-            // VendorPush schedules bounded late passes for it.) One retry, still
-            // delete-only, still after the crypto-erase — never a write.
-            val databasesDir = context.getDatabasePath("run.db").parentFile
-            if (databasesDir != null && !databasesDir.deleteRecursively() && databasesDir.exists()) {
-                databasesDir.deleteRecursively()
-            }
-        } catch (_: Exception) { /* best-effort */ }
-
-        PREFS_FILES.forEach { context.deleteSharedPreferences(it) }
+        // The vault files (checked: every name and sidecar proven absent), then every
+        // prefs file holding vault-derived material — vault_selector_prefs carries
+        // vlt_a / vlt_c / vlt_rc, the offline grind material (checked: each file
+        // proven gone). Same order as before; see deleteVaultFiles / deletePrefsFiles.
+        val files = WipeEraser.run(store, listOf(WipeItem.VAULT_FILES))
+        val prefs = WipeEraser.run(store, listOf(WipeItem.KV_SWEEP))
         // Also disarms the push-dereg pending flag (secure_prefs /
         // push_dereg_pending, 2026-08-11): a wipe destroys the vault, so a flag
         // surviving it could never be cleared (no vault → no caps → the opt-out
@@ -241,6 +200,14 @@ object WipeRoutine {
         // (RunViewModel.unregisterPushBestEffort stays one-shot). Mirrors iOS
         // clearWipeResidue() removing PushDeregPending.storageKey.
         SecurePrefs.clear(context)
+        // RÚN-02: the outcome, RAM only. Unresolved ⇒ the retry triggers
+        // (MainActivity.onResume, the "finishing the erase" Retry) take over.
+        val report = keys.merge(files).merge(prefs)
+        WipeEraseLatch.finish(wipeToken, report)
+        // DEBUG builds only, and before LogBuffer.clear() further down.
+        if (BuildConfig.DEBUG && !report.complete) {
+            platformLogWarn("WipeRoutine", "wipe erase UNRESOLVED — retry pending: ${report.summary()}")
+        }
 
         // Local FCM/Firebase push identity.
         // VendorPush.destroyLocalPushIdentity fires the SDK's own async deleteToken() /
@@ -386,6 +353,134 @@ object WipeRoutine {
                     listOf(android.Manifest.permission.CAMERA, android.Manifest.permission.POST_NOTIFICATIONS)
                 )
             } catch (_: Exception) { /* best-effort residue removal, never gates the wipe */ }
+        }
+    }
+
+    /**
+     * RÚN-02: the Android [WipeKeyStore]. Every item is checked:
+     *  - DEVICE_KEY — [CryptoManager.eraseMasterKeyChecked] (alias read back);
+     *  - HARDWARE_KEY — [AuthBoundKeyStore.deleteKeyChecked] (Lever B alias read back);
+     *  - KV_SWEEP — [deletePrefsFiles] (every vault prefs file proven gone);
+     *  - VAULT_FILES — [deleteVaultFiles] (`run.db` / `run_b.db` + sidecars proven gone).
+     * There is no separate block-list item on Android (it lives in the vault).
+     * [protectedDataAvailable] is always true: a Keystore alias and an app-private
+     * file are visible whether or not the screen is locked, and this process only
+     * runs with credential-encrypted storage unlocked.
+     */
+    internal class AndroidWipeKeyStore(private val context: Context) : WipeKeyStore {
+        override fun protectedDataAvailable(): Boolean = true
+        override fun erase(item: WipeItem): EraseResult = when (item) {
+            WipeItem.DEVICE_KEY -> CryptoManager.eraseMasterKeyChecked(context)
+            WipeItem.HARDWARE_KEY -> AuthBoundKeyStore.deleteKeyChecked()
+            WipeItem.KV_SWEEP -> deletePrefsFiles(context)
+            WipeItem.VAULT_FILES -> deleteVaultFiles(context)
+            WipeItem.BLOCK_LIST -> EraseResult(EraseOutcome.ALREADY_ABSENT, EraseResult.STATUS_NONE)
+        }
+    }
+
+    private val VAULT_DB_NAMES = listOf("run.db", "run_b.db")
+    private val VAULT_DB_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
+
+    /**
+     * RÚN-02 R2/R3 input: true when no vault database (`run.db` / `run_b.db`) exists.
+     * Android has a single databases directory, and its absence is reliable.
+     */
+    fun vaultFilesConfirmedAbsent(context: Context): Boolean {
+        // Not getDatabasePath: it mkdirs databases/, a dated "this app ran" trace.
+        val dbDir = java.io.File(context.applicationInfo.dataDir, "databases")
+        return VAULT_DB_NAMES.none { java.io.File(dbDir, it).exists() }
+    }
+
+    /**
+     * RÚN-02: the event-driven retry (MainActivity.onResume, the Retry button).
+     * Re-attempts only what the last wipe left unresolved; a no-op otherwise, so it
+     * can never reach a key created after the erase resolved. [onResolved] must drop
+     * cached keysets. Returns true when nothing is pending.
+     */
+    fun retryPendingErase(context: Context, onResolved: () -> Unit): Boolean =
+        WipeEraseRetry.retryIfPending(AndroidWipeKeyStore(context), onResolved)
+
+    /** The prefs half of the erase: every [PREFS_FILES] entry, each proven gone. */
+    private fun deletePrefsFiles(context: Context): EraseResult {
+        PREFS_FILES.forEach { context.deleteSharedPreferences(it) }
+        // Read back: the XML file and its .bak must both be gone (what
+        // deleteSharedPreferences itself reports, re-checked on disk).
+        val prefsDir = java.io.File(context.applicationInfo.dataDir, "shared_prefs")
+        val survivor = PREFS_FILES.any { name ->
+            java.io.File(prefsDir, "$name.xml").exists() || java.io.File(prefsDir, "$name.xml.bak").exists()
+        }
+        return if (survivor) EraseResult.unresolved(EraseResult.STATUS_STILL_PRESENT)
+        else EraseResult(EraseOutcome.DELETED, EraseResult.STATUS_NONE)
+    }
+
+    /** The vault-file half of the erase; the verdict covers the vault files only. */
+    private fun deleteVaultFiles(context: Context): EraseResult {
+        val existedBefore = VAULT_DB_NAMES.any { name ->
+            VAULT_DB_SUFFIXES.any { java.io.File(context.getDatabasePath(name).path + it).exists() }
+        }
+        try {
+            context.deleteDatabase("run.db")
+            context.deleteDatabase("run_b.db")
+            // Belt-and-braces: deleteDatabase() already unlinks
+            // -wal/-shm/-journal, but a wipe is forensic-critical, so explicitly
+            // remove any sidecar a partial/aborted delete or an unexpected journal
+            // mode could strand — even encrypted sidecars leak metadata (existence,
+            // size, last-write time).
+            listOf("run.db", "run_b.db").forEach { name ->
+                val base = context.getDatabasePath(name).path
+                listOf("", "-wal", "-shm", "-journal").forEach { sfx ->
+                    java.io.File(base + sfx).delete()
+                }
+            }
+            // …then remove databases/ WHOLESALE. The two names above are the only
+            // databases this app opens, but a DEPENDENCY can create one without a
+            // single line of our code running — androidx.work did exactly that via
+            // its merged androidx.startup provider, leaving androidx.work.workdb
+            // behind after every wipe. A named list cannot
+            // defend against a file we never knew was created.
+            //
+            // ONE operation, deliberately: an earlier revision did two passes —
+            // databaseList()+deleteDatabase() and then listFiles()+File.delete()
+            // over the same directory — which READ as exhaustive but was not.
+            // databaseList() only reports what the framework recognises as a
+            // database (so a stray journal/temp file it doesn't name is invisible
+            // to it), and File.delete() FAILS on a non-empty directory, so any
+            // nested artifact silently survived a sweep that looked total.
+            // deleteRecursively() on the directory is the single operation that
+            // actually means "nothing survives in databases/": files, -wal/-shm/
+            // -journal and -mj* master journals, subdirectories, and the
+            // directory's own mtime (which is itself evidence — an app that never
+            // opened a database has no databases/ dir at all). Android recreates
+            // it on demand (ContextImpl.getDatabasePath / openOrCreateDatabase
+            // mkdirs it), so removing it cannot break a later open — including
+            // the getDatabasePath() call on the very next line, which mkdirs it
+            // if missing and is then itself undone by the delete.
+            // Safe by construction: runs only in the wipe, after the crypto-erase,
+            // when nothing in databases/ may survive.
+            //
+            // The RESULT is checked, and a partial sweep is retried ONCE.
+            // deleteRecursively() walks top-down and then removes the directory
+            // itself, so a single file created by another thread between the walk
+            // and that final rmdir makes the whole call answer false and leaves a
+            // dated, app-attributable databases/ behind — silently, since the
+            // Boolean used to be discarded inside this best-effort catch. (The
+            // same class of race is REAL one directory over: Firebase's heartbeat
+            // datastore is re-created ~140 ms after its sweep, which is why
+            // VendorPush schedules bounded late passes for it.) One retry, still
+            // delete-only, still after the crypto-erase — never a write.
+            val databasesDir = context.getDatabasePath("run.db").parentFile
+            if (databasesDir != null && !databasesDir.deleteRecursively() && databasesDir.exists()) {
+                databasesDir.deleteRecursively()
+            }
+        } catch (_: Exception) { /* best-effort — the verdict below is what counts */ }
+        // Read the result back WITHOUT getDatabasePath (it mkdirs databases/, which
+        // the wholesale delete above exists to remove).
+        val dbDir = java.io.File(context.applicationInfo.dataDir, "databases")
+        val survivor = VAULT_DB_NAMES.any { name -> VAULT_DB_SUFFIXES.any { java.io.File(dbDir, name + it).exists() } }
+        return when {
+            survivor -> EraseResult.unresolved(EraseResult.STATUS_STILL_PRESENT)
+            existedBefore -> EraseResult(EraseOutcome.DELETED, EraseResult.STATUS_NONE)
+            else -> EraseResult(EraseOutcome.ALREADY_ABSENT, EraseResult.STATUS_NONE)
         }
     }
 

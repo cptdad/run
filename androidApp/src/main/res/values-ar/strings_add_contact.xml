@@ -60,7 +60,8 @@
     <string name="add_contact_paste_not_ready">ما زال صندوق الوارد قيد التجهيز — حاول مجددًا بعد لحظات</string>
 
     <!-- vault-refused add (peer inbox id already owned by an existing contact) -->
-    <string name="add_contact_inbox_in_use">تعذّرت إضافة جهة الاتصال هذه — أحد صناديق الوارد في رمزها مستخدم هنا بالفعل. إذا كنت تعيد إضافة شخص لديك أصلًا، فاحذف جهة الاتصال القديمة أولًا ثم حاول مجددًا.</string>
+    <string name="add_contact_inbox_in_use">تعذّرت إضافة جهة الاتصال هذه — أحد صناديق الوارد في رمزها مستخدم هنا بالفعل. ابدأ من جديد، ليُظهر كلٌّ منكما رمزًا جديدًا.</string>
+    <string name="add_contact_older_pairing_note">إصدار Rún لديه أقدم، لذا هذا اقتران أقدم. اطلب منه تحديث Rún، ثم أعد الاقتران.</string>
     <string name="add_contact_pairing_failed">لم ينجح الاقتران: تعذّر إنشاء القناة الآمنة مع جهة الاتصال هذه. ابدأ من جديد للاقتران برمز جديد.</string>
     <string name="add_contact_pairing_failed_action">ابدأ من جديد</string>
     <string name="add_contact_start_again_error">تعذّر إكمال إضافة جهة الاتصال هذه ولم يُحفظ أي شيء. ابدأ من جديد للحصول على رمز جديد.</string>

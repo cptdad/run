@@ -78,7 +78,7 @@
 
     <!-- Reset relay access (identical wording both platforms) -->
     <string name="contact_list_reset_relay_title">Nulstil relæadgang?</string>
-    <string name="contact_list_reset_relay_message">Rún henter nye adgangsnøgler til denne samtale fra relæet. Dine beskeder, din historik og denne kontakt bliver præcis, som de er, og %1$s skal ikke gøre noget.\n\nGør det, hvis du tror, at en anden har haft din telefon, mens den var låst op. Det kan ikke ophæve det, de allerede har læst — og hvis telefonen virkelig blev taget, er det sikreste stadig at slette denne kontakt og parre jer igen ansigt til ansigt.</string>
+    <string name="contact_list_reset_relay_message">Rún henter nye adgangsnøgler til denne samtale fra relæet. Dine beskeder, din historik og denne kontakt bliver præcis, som de er, og %1$s skal ikke gøre noget.\n\nGør det, hvis du tror, at en anden har haft din telefon, mens den var låst op. Det kan ikke ophæve det, de allerede har læst — og hvis telefonen virkelig blev taget, er det sikreste stadig at parre jer igen ansigt til ansigt og derefter slette denne kontakt.</string>
     <string name="contact_list_reset_button">Nulstil</string>
     <string name="contact_list_reset_relay_success">Relæadgangen er nulstillet.</string>
     <string name="contact_list_reset_relay_failure">Kunne ikke nå relæet. Rún gør det færdigt af sig selv.</string>
@@ -110,6 +110,15 @@
     <string name="contact_list_reset_relay_in_progress">Nulstiller relæadgang…</string>
     <string name="contact_list_reset_relay_button">Nulstil relæadgang</string>
     <string name="contact_list_delete_contact_button">Slet kontakt</string>
+    <string name="contact_list_pairing_label">Parring</string>
+    <string name="contact_list_pairing_current">Aktuel</string>
+    <string name="contact_list_pairing_current_note">Oprettet, da begge apps var opdateret. Du skal ikke gøre noget.</string>
+    <string name="contact_list_pairing_older">Ældre parring</string>
+    <string name="contact_list_pairing_older_note">Oprettet med en ældre version af Rún. Det ændrer sig ikke, når du opdaterer appen; det gør en ny parring.</string>
+    <string name="contact_list_pair_again_button">Sådan parrer I igen</string>
+    <string name="contact_list_pair_again_why">Tryk og hold på en kontakt for at se, hvilken parring den bruger.\n\nMed en ældre parring kan en person, der har optaget dine beskeder undervejs og senere får fat i denne parrings nøgle — fra en af jeres to telefoner eller, hvis I parrede ansigt til ansigt, fra et foto af begge koder — læse jeres første beskeder til hinanden (indtil I begge havde skrevet) og nogle gruppe- og introduktionsbeskeder. Optagede beskeder alene er ikke nok. Senere beskeder er beskyttet på samme måde som med en aktuel parring.\n\nEn ny parring beskytter kun de beskeder, der sendes efter den.</string>
+    <string name="contact_list_pair_again_steps">1. I opdaterer begge Rún.\n2. Mød hinanden, og par jer igen med Tilføj kontakt. Du får en ny kontakt med et nyt navn og uden hukommelsesnote.\n3. Tjek, at den nye kontakt viser “Aktuel” i sin menu, og at beskeder kommer igennem begge veje.\n4. Slet derefter begge den gamle kontakt. Læs først dens nye beskeder: Når du sletter en kontakt, slettes også dens beskeder, der stadig venter på relæet.</string>
+    <string name="contact_list_pair_again_groups">Grupper, I allerede er sammen i, flytter ikke med til den nye kontakt. Gruppens admin skal fjerne denne person og tilføje vedkommende igen.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">En privat påmindelse om, hvem denne kontakt er. Kun du kan se den.</string>
@@ -133,6 +142,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d kontakt skal parres igen. Tryk for at tilføje dem igen.</item>
         <item quantity="other">%1$d kontakter skal parres igen. Tryk for at tilføje dem igen.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d kontakt bruger en ældre parring. Tryk for at se, hvordan I parrer igen.</item>
+        <item quantity="other">%1$d kontakter bruger en ældre parring. Tryk for at se, hvordan I parrer igen.</item>
     </plurals>
     <string name="connect_log_title">Forbindelseslog</string>
 

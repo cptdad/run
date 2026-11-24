@@ -23,3 +23,7 @@ prod-tester-cycles*.csv
 # test:dynamic_real_life run folders (scenario, actions, ledger, frames — pure artifacts)
 dynamic/runs/
 prod-tester-update/
+
+# Screenshot checks (helpers/visual/VisualCheck.ts): per-run pictures with the checked
+# elements outlined. The approved references are committed, under visual-reference/.
+screenshots/visual/

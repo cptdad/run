@@ -98,6 +98,14 @@ internal class AddContactSessionViewModel(
      */
     var pairingFailed by mutableStateOf(false)
 
+    /**
+     * RÚN-03: this session's save came out as an OLDER pairing (the other phone's code
+     * had no one-time key — its app is older). The Done step shows "ask them to update,
+     * then pair again". Survives a configuration change; reset by [endSession] /
+     * [restartPairing]. iOS sibling: `savedOlderPairing` in AddContactView.
+     */
+    var savedOlderPairing by mutableStateOf(false)
+
     private var scannedState by mutableStateOf<ScannedContact?>(null)
 
     /**
@@ -243,6 +251,7 @@ internal class AddContactSessionViewModel(
         showCancelPairing = false
         addError = null
         pairingFailed = false
+        savedOlderPairing = false
     }
 
     override fun onCleared() {

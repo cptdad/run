@@ -45,7 +45,7 @@ The two non-credential paths share one pure gate, `DbKeyRotationPolicy.strengthe
 **The invariant is `union {vlt_c, vlt_cn} always contains the key the file is encrypted with`** — the same shape as the read-capability rotation (below), and the reason no cross-storage-engine 2PC is needed. Batch A (one `putStringsSync`) writes the new verifier, `vlt_c` = the **OLD** key under the NEW KEK, and `vlt_cn` = the **NEW** key under the NEW KEK; only then, gated on `vlt_cn` reading back, does the re-key run. Four rules are load-bearing:
 
 - **Decide from probes, never from `rekey`'s return value.** `sqlite3_rekey_v2` returns `SQLITE_OK` on both its commit and its rollback branch. Exactly one of `probeKey(new)` / `probeKey(old)` answering `true` is the only actionable outcome; **both or neither ⇒ change nothing and keep both records**, because `probeKey` cannot distinguish "wrong key" from "could not tell", and keeping the old key over an already-rotated file is a brick.
-- **The promotion's read-back gate is mandatory.** Promotion is a pure byte copy of `vlt_cn` onto `vlt_c`, and `remove(vlt_cn)` may only follow a **proven** write: on iOS `kvPut` no-ops silently on a locked keybag while `remove` succeeds unconditionally, so a dropped copy plus a successful delete leaves `vlt_c` on the old key over a new-key file. Permanent brick.
+- **The promotion's read-back gate is mandatory.** Promotion is a pure byte copy of `vlt_cn` onto `vlt_c`, and `remove(vlt_cn)` may only follow a **proven** write: on iOS `kvPut` no-ops silently on a locked keybag while `remove` may still succeed (whether `SecItemDelete` works on a locked keybag is NOT measured — `KeychainHelper.kvRemove`'s comment claims the opposite; see "A wipe's deletions are CHECKED" below), so a dropped copy plus a successful delete leaves `vlt_c` on the old key over a new-key file. Permanent brick. The gate is right under either answer.
 - **`unlock()` reconciles before `migrateCredentialToCurrentKdf`**, gated on one cheap `contains` so the steady state is untouched. `vlt_c`'s key is tried first; if it opens, the rotation never landed and the record is dropped. Otherwise `vlt_cn`'s key is tried and promoted **strictly after** the confirmed open — the open is the only positive evidence about which key the file holds. Neither opening is the existing neutral `Error`: never `Denied`, never a wipe, and the records are never removed on an ambiguous path.
 - **Anything that re-wraps `vlt_c` under a fresh KEK must refuse while a record is pending** — the credential change, the KDF migration and the Lever-B enable all defer benignly, because a new KEK would make `vlt_cn` unreadable and collapse the union to one record. The Lever-B finalize refuses too (an `ab:` blob next to a plain `vlt_cn` could be overwritten by the reconcile's promotion).
 - **Probe `false` is never acted on alone.** On iOS (rollback journal since RUN-02) a probe can block on a concurrent commit and answer `false` on `SQLITE_BUSY`. The only new use of a lone probe is the enable's "does the rotated key open the file?" check, and its `false` only refuses to mint the code (no write, no delete).
@@ -240,7 +240,7 @@ The Keychain has no multi-item transaction, so coupled writes (verifier + wrappe
 
 That silence propagates upward, and the two fixes for it fail in OPPOSITE directions on purpose (2026-08-01):
 
-- **Deleting the recovery blob needs positive proof** (`plainDbKeyReadBackProves`, used by `recoverWithCode` and `setDbKeyAuthBinding(false)`). `putStringSync` returns `Unit` and may write nothing, while `remove` is a bare `SecItemDelete` that needs no class key and still succeeds — asymmetric failure that leaves an `ab:` blob wrapped by an already-dead hardware key with its only recovery path gone. So the plain blob must READ BACK before the `vlt_rc` delete. Ambiguity keeps the recovery blob (a stale one is a harmless orphan; a missing one is a brick), and `recoverWithCode` then returns the neutral `Error`, which both recovery screens roll back off the wipe budget.
+- **Deleting the recovery blob needs positive proof** (`plainDbKeyReadBackProves`, used by `recoverWithCode` and `setDbKeyAuthBinding(false)`). `putStringSync` returns `Unit` and may write nothing, while `remove` is a bare `SecItemDelete` that may still succeed (unmeasured on a locked keybag, see "A wipe's deletions are CHECKED" below; the rule holds either way) — asymmetric failure that leaves an `ab:` blob wrapped by an already-dead hardware key with its only recovery path gone. So the plain blob must READ BACK before the `vlt_rc` delete. Ambiguity keeps the recovery blob (a stale one is a harmless orphan; a missing one is a brick), and `recoverWithCode` then returns the neutral `Error`, which both recovery screens roll back off the wipe budget.
 - **Reporting a change-PIN as FAILED needs positive proof** (`credentialWriteRefuted`). Both wrong answers are destructive here — a false SUCCESS leaves the user entering a PIN that was never set, a false FAILURE leaves them entering one that no longer works, and either way those attempts count toward a wipe. So an ambiguous read refutes nothing, and only the credential PAIR (`vlt_a` + `vlt_c`) is verified: a torn write that dropped only the trailing `vlt_m` really did rotate the credential, and the journal replay repairs the marker. On Android the read-back sees the in-memory map `commit()` already updated, so it catches nothing there — accepted, and not a false positive.
 
 Related: `isConfigured()` **fails toward `true`** on any transient store error — deliberately, because a false "not configured" routes a real vault into provision-over-itself. New callers must not treat `configured == true` as proof a vault exists.
@@ -269,11 +269,26 @@ The guard above stops a provision from destroying a vault. It said nothing about
 Four rules now, and each is load-bearing:
 
 - **All four values land in ONE `putStringsSync` batch, then READ BACK.** Android becomes atomic (one editor `commit()` instead of four); iOS becomes journalled and replayable. `storeWriteProven` is the gate and is the **deliberate inverse** of `credentialWriteRefuted`: there both wrong answers are destructive so ambiguity refutes nothing, while here nothing depends on the write yet, so ambiguity is **not proof** and the provision fails. Do not harmonise their fail directions. Read its `true` as **iOS-proof / Android-residual**: on iOS it is a real Keychain round-trip, on Android it reads the in-memory map `commit()` already updated, so a failed disk commit still reads back (covered instead by the single atomic commit and the loud `commit() == false` log). `false` is trustworthy on both.
-- **A failed provision ROLLS ITSELF BACK, including the `run.db` it just created — but the unlink is CONDITIONAL.** This is the only legal vault-file delete outside a wipe (`VaultFactory.deleteVaultFileAfterFailedProvision`, one caller). It is safe *only* because the guard proved no file existed at the top of the same invocation, so the file is one this call created seconds earlier under a key that never left its locals — zero user data. Order: **journal FIRST**, then the credential pair (crypto-erase before the file), then the metadata (`PROVISION_ROLLBACK_KEYS`, pinned — anything added to the batch must be added to it). The unlink then runs **only if `mayDeleteVaultFileAfterRollback` proves every `PROVISION_FILE_DELETE_BLOCKERS` key (journal, `vlt_a`, `vlt_c`) confirmed absent.** `kvRemove` discards its `OSStatus`, so a silently-failed removal is possible, and the state a wrong bet produces is the **inverse** of the orphan and the one dead end nothing escapes: a surviving credential record — or a surviving journal that `recoverPendingBatch` replays back at the next construction — over a DELETED `run.db` means `isConfigured()` true with no database, i.e. a permanent non-counting `UnlockResult.Error` on every unlock, while `orphanedVaultFile()` (`vaultFileExists && !isConfigured`) is exactly the opposite test and never fires. Keeping the file is always the safe side: it holds nothing, and the state degrades to a working vault (full journal replay) or to `orphanedVaultFile()` and its confirmed erase.
+- **A failed provision ROLLS ITSELF BACK, including the `run.db` it just created — but the unlink is CONDITIONAL.** This is the only legal vault-file delete outside a wipe (`VaultFactory.deleteVaultFileAfterFailedProvision`, one caller). It is safe *only* because the guard proved no file existed at the top of the same invocation, so the file is one this call created seconds earlier under a key that never left its locals — zero user data. Order: **journal FIRST**, then the credential pair (crypto-erase before the file), then the metadata (`PROVISION_ROLLBACK_KEYS`, pinned — anything added to the batch must be added to it). The unlink then runs **only if `mayDeleteVaultFileAfterRollback` proves every `PROVISION_FILE_DELETE_BLOCKERS` key (journal, `vlt_a`, `vlt_c`) confirmed absent.** `kvRemove` discards its `OSStatus`, so a silently-failed removal is possible, and the state a wrong bet produces is the **inverse** of the orphan and the one dead end nothing escapes: a surviving credential record — or a surviving journal that `recoverPendingBatch` replays back at the next construction — over a DELETED `run.db` means `isConfigured()` true with no database, i.e. a permanent non-counting `UnlockResult.Error` on every unlock, while `orphanedVaultFile()` (`vaultFileExists && !isConfigured`) is exactly the opposite test and never fires. Keeping the file is always the safe side: it holds nothing, and the state degrades to a working vault (full journal replay) or to `orphanedVaultFile()` and its confirmed erase. (Since RÚN-02 the inverse state — credential pair PROVEN present, no `run.db` in any directory, no journal — is no longer a dead end: the launch-time post-wipe-residue rule erases it; see the next section. The rollback rule above is unchanged.)
 - **This is what keeps honest users off the orphan screen.** Routing is an OR-gate (`isConfigured() || vaultFileExists()`), so a leftover `run.db` with no credential sends the user to an unlock prompt that rejects every entry. `orphanedVaultFile()`'s confirmed "Erase and start over" is the right backstop for a *genuinely ambiguous* file — both torn halves reach it — but landing there because our own write failed was the bug.
 - **`setProtectionLevel` returns `false` on an unproven write.** Every shipped caller already aborts its apply on `false`, so nothing changed at the call sites; what changed is that a dropped tier is now reported instead of looping. `writeSelectorMeta` (encrypt-then-`putString`, verify nothing) is **deleted** — no selector value may be persisted again without riding the provision batch or gating on `storeWriteProven`.
 
 `putStringsSync` still returns `Unit` on a torn apply, and deliberately: it keeps its journal, so the write may yet land, and throwing would report change-PIN / the KDF migration / the Lever-B finalize as FAILED over a write that succeeds later — the false-FAILURE hazard. Each caller decides for itself, with the fail direction that suits it; both actuals now log the torn apply loudly (and Android logs `commit() == false`, the only drop signal it has, since `getString` there reads the in-memory map the editor already updated).
+
+### A wipe's deletions are CHECKED; an unresolved erase blocks setup (RÚN-02, 2026-11-23)
+
+Every wipe path deleted its keys without looking at the result: iOS discarded the `OSStatus` of `SecItemDelete` on the device key, the Secure Enclave key and the bulk kv sweep (and a null bridge holder skipped the call silently); Android discarded `eraseMasterKey`'s Boolean and swallowed the Lever B `deleteEntry`. Worse than not knowing: `getOrCreateKey` then **reused a surviving device key** for the next setup, so an archived pre-wipe `vlt_c` / `vlt_rc` + `run.db` image stayed decryptable with the old PIN or code. `WipeErase.kt` (commonMain) is the fix, on both platforms.
+
+- **Three outcomes per item** (`EraseOutcome`): `DELETED` (delete succeeded AND a read-back proves it gone), `ALREADY_ABSENT` (read-back: nothing there), `UNRESOLVED` (anything else: refused delete, still visible, a throw, a missing bridge). Items, in crypto-erase-first order (`WipeItem`): device key, hardware key (Secure Enclave / Android auth-bound RSA), the kv sweep (iOS: `com.vg.run.kv` + `com.vg.run.diag`; Android: every `WipeRoutine.PREFS_FILES` file — this is where `vlt_a` / `vlt_c` / `vlt_rc` and the iOS journal live), the iOS block list, the vault files (`run.db` / `run_b.db` + sidecars, in Application Support AND Caches). Swift probes with attribute-only queries (never `kSecReturnData`, never a key reference — no use, no prompt). Android reads aliases back with `containsAlias`; the master key is `UNRESOLVED` while its **alias** survives even if the keyset ciphertext was destroyed (a pre-wipe image of `run_keyset_prefs` would unwrap under it).
+- **"Absent" is trusted only while protected data is available.** Whether a locked keybag lets `SecItemDelete` / the probe see a `WhenPasscodeSet` item is not established (the doc said `remove` "needs no class key"; `KeychainHelper.kvRemove`'s comment says the delete does not happen), and `errSecItemNotFound` under a locked keybag could be a lie. So while `isProtectedDataAvailable` is false (Swift's snapshot; Android always true) `ALREADY_ABSENT` becomes `UNRESOLVED`, and so does the bulk sweep's "verified empty". The RÚN-02 device procedure measures the real behaviour per key class; until it has run on hardware this stays the conservative rule.
+- **Independent, bounded, idempotent.** Each item is attempted on its own (one failure never skips another), three immediate passes over what is unresolved (owner decision D6), then one pass per trigger: device unlock (`protectedDataDidBecomeAvailable`), app activation / `onResume`, and the Retry button. No timers. A retry touches only unresolved items and costs nothing once complete.
+- **The unresolved state is RAM only** (`WipeEraseLatch`; owner decision D4 — a persistent marker would itself prove use and a wipe). It arms before the first delete: `begin()` hands the wipe a token, and only `finish(token, report)` from that wipe clears the in-flight guard; a retry or the fresh-setup purge records through `recordOutcome`, which is refused while a wipe is in flight (so nothing can drop a running wipe's guard and allow a mint mid-wipe). While unresolved, `WipeErasePolicy` refuses: minting a device key (iOS `getOrCreateKey`, Android `CryptoManager` init — no keyset, no master key), replaying the iOS write journal (`recoverPendingBatch`), opening the old vault (`VaultSelector.unlock` / `recoverWithCode` answer the neutral, never-counted `Error`), and any provision. Distinct from Android's one-way `ProcessWipeLatch` and from the deniable black cover.
+- **UI and deniability** (D1/D2): the explicit "Finishing the erase" screen (`finishing_erase`, Retry = `erase_retry_button`; strings `pin_erase_finishing_title` / `_message`) appears ONLY when a NON-deniable, user-requested wipe ("Erase and start over", the post-move wipe) ran in THIS process (iOS `AppState.userRequestedEraseThisProcess`, Android `RunViewModel.userRequestedErase`). Every other unresolved state — leftovers found at launch after a relaunch, the unattended launch wipes (inactivity, reinstall over a surviving Keychain, orphaned credentials), a refused fresh-setup purge — shows a NEUTRAL blocked setup (`setup_blocked`, Retry = `setup_retry_button`; title `pin_device_key_busy_title` "Couldn't finish setup", message `pin_setup_blocked_message`) whose text, icon and ids never mention erasing: on a phone that must look never configured, an erase screen would itself prove the wipe. A DENIABLE panic wipe keeps its black cover and retries silently. Both buttons use `common_retry`. No detail about which item failed is ever shown. Every log line naming the wipe or an item class exists in DEBUG builds only (`wipeEraseDebugLog`, Swift `#if DEBUG`, Android `BuildConfig.DEBUG`), and the Kotlin wipe appends nothing after its `LogBuffer.clear()`; the old unconditional "all data destroyed" line is gone.
+- **Why a retry can never delete a newly provisioned key — the ordering** (pinned by `WipeRetryNeverTargetsNewKeyTest`): in-process, deletions run only while the latch is unresolved, and an unresolved latch refuses every mint and provision. Across a relaunch the latch is gone; deletions then run only (a) in the launch-time wipe checks, before setup is reachable, and (b) in `FreshProvisionGate.prepare`, the FIRST step of a fresh setup, strictly before the first seal (iOS `pinAttempts.establishVerified()`, Android `VaultSelector.setRealCredential`) — the first point a key can exist for the new vault. The gate purges a leftover device / hardware key only on a provably empty install (pair CONFIRMED absent — never the fail-toward-true `isConfigured` — no vault file in any directory, both resolved, no journal), refuses the setup if that purge stays unresolved — latching ONLY when it actually deleted a key (positive evidence a leftover existed; on an install that never wiped, an unconfirmable delete is a plain retryable setup failure with no erase state) — and always drops the cached key (iOS also `inactivityCrypto`) so the provision seals under the key actually persisted.
+- **Post-wipe residue at launch** (R2, owner decision D3): credential pair PROVEN present + no `run.db` in any directory + no journal ⇒ the checked erase runs (`postWipeResidueDetected` in `runLaunchSecurityChecks`, after the orphan check and before the inactivity check; Android in `MainActivity.selfHealOrphanedCredentials`, same unlocked-device gate). Nothing can be opened without the file. A healthy vault always has its file (the provision creates it before any credential is written).
+- **Mint refusal = the same rule on both platforms**: only CREATING a device key is refused (iOS `getOrCreateKey`'s mint branch; Android `CryptoManager` when the master-key alias or the wrapped keyset is missing — a fresh keyset under a surviving alias is a creation too); a key that fully exists still loads. Chosen because it adds the fewest new failure points (loads already had to survive the locked-keybag defer) while still preventing every new key. Every pre-unlock / background consumer absorbs the refusal (`KeyUnavailableException`, the existing defer type): DebugMode, the external-proxy setting, the push-consent proof, the PIN-attempt counters' non-`@Throws` entry points, the VaultSelector readers, the inactivity record (Swift `try`/`try?`, Android `catch KeyUnavailableException`), the block list — pinned by `WipeEraseRefusalConsumersTest` (commonTest), `WipeEraseVaultSelectorGateTest` (androidUnitTest), `IosWipeEraseConsumersTest` (iosTest, real CryptoProvider) and source guards (no `try!` in the Swift consumers; every controller `reloadKey` inside a `try`). The iOS app has no extension or widget target.
+- **Debug probe** (device procedure only, compiled out of release): `--test-wipe-probe` logs `dk / se / kv count / diag count / bl / db / pending / report` (flags, counts and OSStatus numbers — never key material) to LogBuffer and the `wipe_probe` element; `--test-wipe-after-ms=<n>` (≤ 25 000) arms one wipe inside a background task so it can run on a locked phone — deniable, or NON-deniable with `--test-wipe-nondeniable`.
+- **Residuals, stated plainly.** (a) A wipe whose key deletes AND file unlink fail, followed by process death before any retry, leaves the old vault openable after relaunch — accepted under D4 (no marker); the orphan / residue rules and the wrong-PIN retrigger cover the partial cases. (b) A sweep that failed with the journal surviving is replayed at the next launch's first `KeyValueStore()` (before the launch checks), after which the orphan / residue rules see the credentials and erase them. (c) OS-managed copies (Keychain DB pages, SE metadata, freed flash blocks) are outside app control. (d) The locked-keybag `SecItemDelete` behaviour is unmeasured until the device procedure runs.
 
 > Note: Rún previously shipped a second "decoy" vault for plausible deniability. That feature was **removed**. `VaultSelector` retains a one-time purge of leftover decoy credential/DB-key blobs and the wipe paths still delete a stale `run_b.db`, so installs provisioned before the removal are cleaned up — don't reintroduce decoy code paths.
 
@@ -495,6 +510,45 @@ Two consequences to know:
   variable-suffix predicate into an exact-key list would either miss every row (exact match never
   hits) or require enumerating the vault twice for one contact — one classifier per residue SHAPE,
   not one list for all of them.
+- **What a deleted group leaves behind — the retention table (RÚN-06, 2026-11-23).** All rows live
+  in the vault's `_meta`. "App expiry" is when the app stops using a row; "physical delete" is the
+  next code path that actually deletes it.
+
+  | Record | Group deletion (leave / removed) | Contact deletion | Expiry | Phone move | Full wipe |
+  |---|---|---|---|---|---|
+  | **Admin record** `group_admin:<G>` → contactId \| `self` \| `gone` | **Kept** (in neither residue classifier) | **Kept, rewritten**: a value naming the deleted contact becomes `gone` inside the delete transaction (`groupAdminTombstoneNamesContact`, both actuals + `InMemoryVault`) | **None** (owner decision: no TTL — a patient attacker would wait it out). Overwritten only by `transferAdmin` / a roster while the group is live | **Carried** (`group_admin:` allow prefix) | Erased |
+  | **Screenshot notices** `ssn:<conv>:<sender>:<recvMs>` → `taken\|isGroup\|seen` | **Purged** (`isScreenshotNoticeResidueForGroup`) | **Purged**, both id positions | App expiry 24 h after the LOCAL receive time. Physical delete: that conversation's `record`/`list`/`markSeen`, **every session start** (`GroupManager` init, no transport), and the control sweep | **Not carried** (`ssn:` denied at all four filter sites, older bundles included) | Erased |
+  | **Group unread markers** `grp-unread/<C>` → `v1;<G>=ms…;*=ms` | Row kept, this group's units **detached** (`*`) by `leaveGroup` / the removal; the next session's restore detaches what a failed write left | **Purged** (`ratchetMetaKeysForContact`) | App expiry 24 h; physical delete at `record` for that contact and at every session start (`restore`) | **Not carried** (denied) | Erased |
+  | **Leave obligations** `grp_ctl_pend:<G>:<C>` (kind `leave`) | **Created** by the leave AFTER the local delete (one per member the leave did not reach), naming the left group and that member | **Purged** (`isGroupMetaResidueForContact`) | Removed on an accepted send, on a send-404 GONE verdict, on re-accepting that group, or at the 7-day ceiling — all through the control sweep, so only in a session with a live transport | **Carried** (`grp_`) | Erased |
+  | **Decline tokens** `grp_declined` (singleton, ≤ 128) | Kept | Kept | None; oldest evicted past 128 | **Carried** (`grp_`) | Erased |
+
+  Decided and pinned (`GroupDeletionResidueTest.kt`, commonTest; `GroupAdminTombstoneParityTest`,
+  androidUnitTest source guard over both actuals + the test double):
+  - **The admin record is kept as is** (owner decision; a keyed/HMAC record was evaluated and NOT
+    built: whoever opens the vault also holds the key, so it buys nothing once any copy of the groupId
+    is in hand, and it adds silent-disarm modes — a downgrade, a new→old move, key loss — on a warning
+    whose only failure signal is "no warning"). Why `gone` changes no outcome: contact ids are never
+    reused, so a deleted contact can never invite again, and every later inviter already compared
+    unequal to the dead id with no alias to show — exactly what `gone` gives. It removes the deleted
+    contact's id (the referral-derived ids are identical on both peers' phones) and the "the same
+    deleted person ran G1 and G2" link.
+  - **Old records** (a contact deleted under an older build): `GroupManager.retireTombstonesOfDeletedContacts`
+    rewrites them to `gone` once per session at `init`, because nothing ever writes a deleted group's
+    record again (migrate-on-write would never reach it). Positive evidence only: the full contact list
+    answers NON-EMPTY without the id (a closed vault and an iOS query error both answer empty) AND the
+    per-id lookup agrees; each write is re-checked against the value read, in one transaction. A wrong
+    rewrite could only add a warning (never remove one); an all-contacts-deleted vault keeps its old
+    records until a contact exists again.
+  - **Residual exposure, stated plainly.** Whoever opens the vault (compelled credential, AFU capture,
+    recovery code) reads, for every group the user ever held, its raw id and which still-paired contact
+    ran it (or that the user did), until a wipe — and it follows the user to a new phone. The groupId is
+    identical on every member's phone, so records on two seized phones can be matched even after the
+    group was deleted on both. Leave obligations name the left group and the members a leave did not
+    reach for ≤ 7 days; decline tokens are unkeyed truncated SHA-256 hashes over invite fields, testable
+    only by someone holding those exact fields (e.g. from a member's phone where the group is live).
+    The leave dialogs on both platforms (`group_info_leave_kept_note`, including the choose-new-admin
+    picker, which leaves on tap), `docs/PRIVACY_POLICY.md` "Data Deletion" and
+    `docs/SECURITY_OVERVIEW.md` §8 say this in plain words.
 - **The data outlives the code.** `NotificationPollStore.purgeLegacyCapabilityMirror`, called
   synchronously from `RunApplication.onCreate`, destroys the Keystore alias `run_manifest_master_key`
   first, then `run_manifest_keyset_prefs`, then the `manifest_enc` entry — unconditionally,
@@ -1282,11 +1336,15 @@ vault/relay code.
   `groupUnreadCounts` is `max(groupUnread[g], ownUntaken(g)) + unseenScreenshotNotices(g) + presenceBump(g)`
   — `max` not `+` because a buffered text and its own notice describe the SAME message. `ownUntaken(g)` counts only
   the OWN items left in group g's screen buffer (an orphaned poll); PRIVATE / GROUP_ECHO items never count.
-  **NO-PARK (2026-10-06):** nothing a poll fetches is held for another conversation any more — a 1:1
+  **NO-PARK (2026-10-06):** nothing a screen poll FETCHES is held for another conversation — a 1:1
   text found by a group poll is shown in that group screen as a PRIVATE item (reply goes over the normal 1:1 send),
   a group text found by a 1:1 poll (or another group's poll) is shown there as a GROUP_ECHO item, and showing an echo
   gives its group's `groupUnread` unit back. The old `pendingGroup`/`pendingDirect` cross-conversation buffers lost
-  every parked message on lock/relaunch, the relay having burned it at fetch.
+  every parked message on lock/relaunch, the relay having burned it at fetch. (Owner decision 2026-11-23, RÚN-07:
+  these inline foreign rows STAY, with their full text, on both platforms, and accessibility services can read them;
+  the screenshot notice covers them instead — see "A screenshot notice goes to every conversation on the captured
+  screen".) What IS still held — texts whose sender is not confirmed yet, and their hand-over — and when it burns:
+  "What a conversation buffer holds and when it burns" below.
   **A group we are only INVITED to (2026-11-16)** follows the same rule: a text for a group whose invite is still
   parked, sent by its INVITER, is shown as a GROUP_ECHO (named after the invite, `groupJoined = false`, so the UI offers
   no "Open group") in whichever screen fetched it — the inviter's 1:1, or another group shared with the inviter. (A
@@ -1379,7 +1437,8 @@ vault/relay code.
     `MoveMetaPolicyPinTest` exempts by name. A ≤ 24 h display hint; the new phone re-derives the depth on its first
     peek and falls back to the bump until the first open/drain.
   - **Known residuals.** (a) An opened vault image now yields, per contact, "N group texts in group G, minute T" for the
-    last ≤ 24 h — metadata, no content; the same class the `ssn:` rows already hold. (b) Physical removal: both actuals
+    last ≤ 24 h — metadata, no content; the same class the `ssn:` rows already hold (which, since RÚN-06,
+    do not travel with a move either). (b) Physical removal: both actuals
     run `PRAGMA secure_delete = ON` (Android `DatabaseManager` init; iOS `IosVaultDatabase` init), so a cleared or
     rewritten row's cell is zeroed inside the page at free/overwrite time and does not linger in SQLite free pages;
     the rollback journal (Android DELETE, iOS TRUNCATE since RUN-02) holds the encrypted page pre-image only during
@@ -1409,6 +1468,126 @@ vault/relay code.
   definitional; it does not reveal which group, group size beyond the already-visible fan-out, membership or content.
   It is not mitigable within this design — anything the receiver can determine from routing before a decrypt, the
   relay can determine too, and that is the price of making the contact dot correct before a decrypt.
+
+### What a conversation buffer holds and when it burns (RÚN-05, 2026-11-23)
+
+The implemented guarantee, in the words the policy uses: an opened message is erased when you leave its chat or the
+app locks; a message still waiting (its sender not yet confirmed) stays in memory until it is shown or the app locks,
+is never shown more than ten minutes after it was parked, and is lost unseen if the app locks first. The code behind each half (`ConversationBuffers.kt`,
+`GroupManager.kt`, both iOS conversation views):
+
+- **Displayed text.** Owner: the screen instance — Android's composition-scoped `remember` list (cleared in
+  `onDispose`), iOS's view `@State messages` (cleared in `onDisappear`). End of life: screen close (back, replace,
+  Android Group Info — a separate destination, so the group list burns; iOS Group Info is a sheet and does not) or the
+  session end. Nothing may append after it: Android's poll is a `LaunchedEffect` whose IO hops cannot resume a
+  cancelled coroutine; iOS's poll task captures `appState.conversationPollToken` at loop start and checks
+  `isConversationPollCurrent(session)` (cancelled / locked / new session generation) after EVERY `await` before it
+  touches the list (`ConversationRefillGuardSourceTest` pins it; before this the screenshot-notice drain's await was
+  followed by unchecked appends). A send task deliberately outlives its screen; the group send writes nothing back once
+  its row is gone (no "did not reach N" note into a closed screen).
+- **Waiting text, sender not confirmed.** `pendingUnresolvedGroupText` (resolution in flight) and
+  `pendingUninvitedGroupText` (no invite yet). TTL `PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS` (10 min) from the park:
+  enforced on every READ (the flush and the invite take skip an expired entry) and PHYSICALLY pruned
+  (`ConversationBuffers.pruneExpired`, also the parked activity notices) at the top of every
+  `GroupManager.pollAllControls` (before its transport check) and of `pollDirectPending` / `pollGroupPending`.
+  NOT a timer, and the callers do not run all the time: the Android control-poll job runs from
+  `wireRelayTransport` until the transport teardown / move quiesce, the iOS loop until move quiesce or lock, the
+  screen polls only while a conversation is open. In a gap where none runs, an expired text stays in RAM (every read
+  refuses it) until the next of them or the lock scrub.
+- **Waiting text, confirmed sender.** A resolved member's parked text (`flushResolvedGroupTexts` →
+  `groupScreenItems[gid]`, lights that group's dot through `ownGroupCounts`) and a text handed over when its invite
+  arrived (`deliverTextsHeldForInvite` → the screen that fetched it): kept until a screen of that key shows it AND
+  commits, or the session ends. No TTL (owner decision: a TTL would add loss for a user who reads on).
+- **Session end seals.** `ConversationBuffers.scrub` (from `GroupManager.scrubInMemory`, both platforms' lock / wipe)
+  clears every buffer and sets `sealed`: every later write (`toGroupScreen`, `toDirectScreen`, both holds, the
+  activity-notice writers, the screenshot-notice buffer) is refused (one count-free log line). This closes the iOS
+  path where a detached poll that captured the old `GroupManager` ran `ingest` after the scrub — a closed iOS vault
+  reads "no rows", so `acceptGroupText` parked the text "awaiting its invite" in the orphaned instance. Safe because a
+  `GroupManager` is built per unlocked session and dropped right after its scrub (Android `lockSession` /
+  `performEmergencyWipe`, iOS `endSessionRam`); a same-session Tor reconnect does not rebuild it.
+- **A re-delivered blob is held once.** A hold is written at decrypt time, before the screen's drain commits; an
+  abandoned drain (screen closed mid-poll, ratchet rules 2/4/5) is not acked, so the relay hands the blob back, and a
+  ratchet re-decrypt gets a FRESH `dr-<n>` id — the screens' id dedupe cannot see the second copy. The stable key is
+  `ReceivedMessage.blobKey`: ratchet = first 16 bytes of SHA-256 over the wire bytes (`ratchetBlobKey`; a re-delivered
+  blob is byte-identical and the relay cannot mint a second valid wire for one message); legacy = channel tag + the
+  sender's sealed epoch + counter (`legacyBlobKey`; the epoch is derived from the pairing secret, so even a reused
+  contactId after a re-pair could not collide). Carried into `GroupMessage` / `DirectItem` (RAM only, never shown,
+  logged or persisted). A hold that already has the (sender, key) is REFRESHED, never skipped: the entry is replaced
+  by the new decrypt's — new stamp, and for an awaiting-invite text the newest screen that fetched it — because that
+  later decrypt may be the one whose drain commits and acks the relay copy (skipping it once let the abandoned first
+  decrypt's stamp expire the only remaining copy, and handed an invited text to a closed screen). And
+  `forgetHeldCopies` drops every held copy (holds and screen buffers) the moment the same blob is accepted fresh.
+  Loss-safe: a fresh copy exists only while the relay still holds the blob (a committed blob is deleted, and a
+  re-served one no longer decrypts), so if the fresh copy is not shown either, the relay hands it out again. Limits:
+  an empty key (control items, test/system messages) never dedupes; a legacy key compares only within one sender.
+- **Lock.** Every waiting text is discarded; no count is saved (owner decision: a "N messages were lost" marker
+  would be new forensic metadata). A waiting text whose drain committed is gone for good (the relay deleted it); one
+  whose drain never committed comes back from the relay next session.
+- **Dots.** A resolved member's parked text lights its group's dot (`ownGroupCounts`). Not lit: an unconfirmed
+  sender's held text (opening the group could not show it, so the dot would stick for up to 10 min), and an
+  invited-only group text handed to a closed screen (its group does not exist yet and a group text must never light a
+  contact dot) — the invite itself is surfaced by the consent prompt.
+- **Still unknown (not measured).** OS-managed copies: Compose / UIKit text layout and drawing caches, the
+  accessibility tree (`AccessibilityNodeInfo`, the iOS AX tree), Kotlin/Native → NSString bridge copies, ART / K/N
+  garbage-collection timing for a dropped list or an orphaned `GroupManager`, and whether SwiftUI runs `onDisappear`
+  while backgrounded or only at the next foreground render. Only a RAM-forensics run can measure how long a synthetic
+  marker survives close and lock.
+- **Residual: the seal covers the TEXT buffers only.** A poll that finishes after the scrub can still write ids and
+  counts into the ended GroupManager's other RAM state — `GroupUnreadTally`, `UnconvergedMembers`, `GroupFastAnchor`,
+  the parked-invites map (group name, inviter alias, memberIds). Pre-existing; social-graph metadata, no message text;
+  it dies with the orphaned instance at garbage collection.
+- **Tests.** `ConversationBufferLifetimeTest` (seal, iOS closed-vault path, close/reopen/lock, expiry by the sweep with
+  no transport, expiry on read, re-delivery dedupe for unresolved and invited texts, the newest screen + refreshed TTL
+  for an invited text, no cross-sender dedupe), `HeldReDeliveryTest` (leasing relay: a committed re-delivery restarts
+  the TTL; a fresh copy in an abandoned drain loses nothing), `ReceivedBlobKeyTest` (the key survives a re-decrypt on
+  both paths), `ConversationRefillGuardSourceTest`.
+
+### A screenshot notice goes to every conversation on the captured screen (RÚN-07, 2026-11-23)
+
+Owner decision: the inline rows from other conversations stay (NO-PARK; see the third-inbox-pair section), and a
+screenshot taken on iOS notifies EVERY conversation whose text is in the open screen's list — the open conversation
+plus the origin of each foreign row. Android sends no notice at all (release builds set FLAG_SECURE; no build has an
+observer); it only receives. No wire change: only the two existing notice kinds are sent.
+
+- **Origins** (iOS `screenshotOrigins()` in `ConversationView` / `GroupConversationView`, read from the screen's own
+  `messages` at the moment of the screenshot): the open conversation; a PRIVATE row (received, or our own "Reply
+  privately") → that 1:1; a GROUP_ECHO row → its group plus the contact it came from (in a 1:1 screen that is always
+  the screen's contact). "Visible" = present in the list, NOT "scrolled into view": row-level on-screen state
+  (LazyVStack `onAppear`/`onDisappear`) is not reliable, and this errs toward telling a conversation, never toward
+  missing one. A sheet over the screen (Group Info, the 1:1 actions sheet) keeps it registered.
+- **Routing** (`ScreenshotNoticeRouting.kt` `planScreenshotNotices`, executed by `GroupManager.sendScreenshotNotices`):
+  one notice per distinct conversation — 1:1 by contactId → `MessageManager.sendScreenshotNotice`; a group on this
+  phone → the `KIND_SCREENSHOT` fan-out to its resolved members; a group NOT on this phone whose invite FROM THAT ROW'S
+  SENDER is still parked (an unanswered invite, so only its inviter can have sent the row) → one `KIND_SCREENSHOT`
+  group control to that sender, with an EMPTY `"h"`. A group not on this phone with no such invite (left, declined)
+  gets nothing.
+  On the inviter's phone the group exists and we are a resolved member (createGroup / addMember record the invitee's
+  contactId), so `handleScreenshotNotice` stores it under that group; an empty hash makes `noteMembershipView` return
+  at once (no false invite ack, no re-roster). B's other members are not told (unaddressable before the join).
+  Blocked contacts are excluded from all three (the 1:1 and invited copies are newly filtered). Conversations go out
+  in CSPRNG order with the inter-send jitter between them; `noPush` on every copy.
+- **Receiver attribution.** Unchanged code: a 1:1 notice is stored under the 1:1, a group notice under the groupId
+  it carries — i.e. under the conversation whose text was captured, never under the screen the capturer had open.
+  Old receivers handle both kinds exactly as before; a build older than the notice drops the unknown kind silently.
+- **Best effort, no re-attribution.** The origins are a by-value snapshot handed to one call; each conversation is
+  tried once (the in-call transient retry aside); nothing is queued, retried or persisted. A failed screenshot cannot
+  attach to a later one or to another screen.
+- **One observer.** `AppState` owns the only `userDidTakeScreenshotNotification` observer; screens register a scope
+  provider in `onAppear` and unregister it in `onDisappear` (cleared on lock / wipe; inert while locked). A screenshot
+  sends the UNION of the registered scopes in ONE deduplicated call — so the undocumented `onAppear` / `onDisappear`
+  order during an "Open group" replace can no longer notify a conversation twice (before: two per-view observers, the
+  1:1 sending {C, B} and the new group screen {B}). At most ONE dispatch runs at a time (one can take N conversations
+  × M members × 0.25–2 s of jitter); screenshots taken meanwhile are merged into ONE pending follow-up (same session
+  only, deduplicated, RAM only, dropped at lock / wipe or if the session changed).
+- **Residuals.** Two conversations notified at the same instant let a member of both infer that one's text was shown
+  inside the other. An invited group's other members never learn of a capture of the inviter's text. A conversation
+  whose row was scrolled off screen is still told.
+- **Tests.** `ScreenshotNoticePlanTest` (dedupe, the three mixed views, blocked, gone/unknown, no parked invite),
+  `ScreenshotNoticeRoutingE2eTest` (real envelopes over a local relay stub: each receiver stores each notice under the
+  captured conversation; a real invite from X → the notice lands in that group on X and leaves X's invite obligation
+  and not-in-sync set untouched; a left/declined group gets nothing; a blocked contact gets nothing; a failed
+  screenshot is neither retried nor attached to the next one; the old single-group entry point). The Swift
+  coalescing has no unit test (no Swift host).
 
 ### The two narrowings that turned the slower idle cadence into a convergence stall (2026-09-17)
 
@@ -1746,8 +1925,25 @@ serialization, unchanged — it already serializes both v3 initial states) and N
   a missing column as legacy, `0`/`1` as such, and any other value as an unreadable row (dropped — never "legacy").
   Deliberately NOT a `_meta` marker: iOS `getMeta` answers null on a read error, which would fail toward legacy, i.e.
   toward the static envelope. Every row written before v11 reads false: **existing contacts keep the legacy rules for
-  life** — nothing migrates, no existing ratchet blob changes, re-pairing is the only way to move a contact to v3. No
-  screen shows the flag (owner decision D3); `MessageManager.isRatchetBootstrapV3` is the reader.
+  life** — nothing migrates, no existing ratchet blob changes, re-pairing is the only way to move a contact to v3.
+- **What the UI shows (RÚN-03, owner decision 2026-11-23; replaces the earlier "no screen shows the flag", D3).**
+  Both contact menus show "Current" / "Older pairing" with one line of explanation, and "How to pair again" (a generic
+  guide) for an older one; the contact list shows ONE dismissible banner while at least one listed contact is older;
+  no per-row marker. The label is a projection of the record the list already loaded, through the shared rule
+  `ContactPairing.kindOf` (`ContactPairingKind.kt`) into `ContactListItem.pairingKind` (Android) / `ContactItem
+  .olderPairing` (iOS) — NOT `MessageManager.isRatchetBootstrapV3`, which needs a live transport on Android and
+  answers false on a read error (a current contact would read "older"). The banner's dismissal is the vault
+  singleton `older_pairing_banner_v1` (`OlderPairingBanner`): no contact/group id, so no purge classifier matches it;
+  explicitly denied by `MoveMetaPolicy` (a new phone shows the banner again); erased by the wipe. Re-pairing is
+  delete + add again, in the guide's order (pair again → check the new contact both ways → delete the old one), and
+  makes a NEW contact (new id, alias, empty memory, no vouch provenance). A `SAVED_LEGACY` outcome on the
+  add-contact screen shows "ask them to update, then pair again" (`ContactPairing.savedAsOlder`). Groups: the
+  re-paired person stays unresolved in existing groups (join tags were bound to the old secret and nothing re-sends
+  a join) until the admin removes and re-adds them; if they were the admin, a re-invite to the same group id meets the
+  `group_admin:` tombstone (rewritten to "gone" by the delete) and shows the different-admin warning. Pinned by
+  `ContactPairingKindTest`, `PairAgainFlowTest` (cancelled / completed / older peer / lost state / member-side
+  group drop-out), `IosContactV3FlagTest`, the instrumented `ContactPairingKindUpgradeTest` and the move pins
+  (`MoveMetaPolicyPinTest`, `MigrationBundleTest`). The group consequence is not device-tested.
 - **The derivation** (one private function, `RatchetBootstrapV3.derive`, used by both entry points):
 
   ```
@@ -1992,16 +2188,148 @@ Design: `docs/device-move.md`. Contract: `MoveContracts.kt`. What every future r
   and is POSTed RAW — never through `padMessage`/the envelope (that lands 28 bytes over the
   relay's 64 KiB `maxBlobBytes`). `?ttl=1800`, `X-No-Push`, drained by a bare `GET`, then
   `DELETE` under the read cap.
+- **Plaintext buffer lifetimes (RÚN-04 part a, 2026-11-23).** `MoveManager.uploadBundle` draws the code before the
+  encode and zeroes the serialized bundle (`plaintext`) in a `finally` around `MigrationSeal.seal`, so it is zero
+  before the first upload and before any failure-path inbox `DELETE`, handle write or `Ready`. `importFromHandle`
+  zeroes the transfer code and the drained chunks in a `finally` around `MigrationSeal.open`, and the opened
+  plaintext in a `finally` around `MigrationBundleCodec.decode`, before the import transaction, the transfer
+  `DELETE` and the read-cap rotations. `encode`/`seal`/`open`/`decode` do not suspend, so a cancel cannot land
+  between a buffer's creation and its wipe; the function-level `finally` wipes stay as backstops. The snapshot's
+  `sharedSecret` arrays are still not wiped (rows read from the live vault; undecided). `MoveTransferBufferLifetimeTest`
+  observes the owned arrays through the internal `bundleEncoder`/`bundleOpener` constructor seams; it proves
+  the lifetime of those arrays only, not of GC/JIT copies, Strings, platform crypto or HTTP buffers, or swap.
+- **Byte-oriented bundle codec (RÚN-04 part b, 2026-11-23).** `MigrationBundleCodec.encode` writes the document
+  piece by piece into a `WipingByteSink` (growth doubles; every outgrown backing array and the final working
+  array are zeroed; a throw mid-encode zeroes the partial document), and `decode` scans the bytes
+  (`MigJson.parseBundleDocument(ByteArray)`), decoding each string token on its own. Neither side builds a
+  `String` or `StringBuilder` of the whole bundle any more. **Wire format unchanged, byte for byte**, and so are
+  the accept/reject decisions, values and `FormatException` messages: `MigrationBundleGoldenTest` pins the bytes
+  the String-based codec wrote (generated from it before the rewrite and passing against it: schema 8/9/10/11
+  layouts, v3 contacts and `ref_p` with `bv`, control chars, quotes/backslashes, `/`, U+2028, non-BMP text,
+  empty and long fields, empty collections, optional fields present/absent, an 11.9 MB bundle with 8192 rows in
+  every array, the 8192 / 200 000 limits, and 86 hand-made decode documents incl. Unicode whitespace,
+  duplicates, unknown fields, escapes, malformed input); `MigrationBundleDifferentialTest` compares 3000 seeded
+  random bundles + ~4700 byte mutations against a frozen copy of the old codec (`LegacyMigrationBundleCodec`,
+  commonTest), on the JVM and on Kotlin/Native. Kept as it was, deliberately (D4): each platform's own UTF-8
+  replacement — a lone surrogate encodes as `?` on the JVM and EF BF BD on Kotlin/Native, malformed UTF-8 decodes
+  to each platform's U+FFFD sequence — and its own `Char.isWhitespace()` between tokens. Also kept, as found:
+  `Long.MIN_VALUE` encodes but does not decode (`strictLong`), trailing bytes after the closing `}` are ignored, and
+  an empty identity field encodes but is refused on decode. **What remains (D2, by design):** the per-field Strings
+  — the `VaultSnapshot` model is String-typed, so capabilities, ratchet state (`dr/*`), aliases, meta values and
+  the base64 of each `sharedSecret` exist as immutable Strings on both sides, plus the escaped copy of each value
+  on export (`jsonEscapeString`; its UTF-8 temporary is zeroed). Removing those needs a byte-typed snapshot and
+  `VaultDatabase` changes. Proof limits: `MigrationBundleBufferHygieneTest` observes the sink's retired arrays
+  through its `onRetired` seam; "no whole-document String" is a SOURCE guard (`MigrationBundleSourceGuardTest`),
+  because an unreachable String cannot be observed; GC/JIT copies (ART's moving collector), allocator reuse,
+  platform buffers and swap are outside what any test here can show. `encodeToString`/`decodeFromString` remain
+  as test-only text wrappers over the byte paths; production never calls them (also source-guarded).
 - **`Moved` is a hint, not proof**: an expired transfer inbox also answers 404. The UI tells the
   user to confirm the new phone shows contacts before wiping; the keep button never disappears.
   `cancelExport` needs `peek >= chunkCount` and refuses on an unreachable relay (no unfreeze
   without proof: two live copies is the fork hazard).
-- **Read-cap rotation on the new phone** goes through the crash-safe `rotateReadCap`/`cap-pend`
-  path. The rotation list (`mig_rotate_pending`) is written right after the import commits (before
-  any network call), filtered by the referral-protected set (pending `ref_*` inboxes are skipped),
-  and shrinks per successful rotation; the control-sweep retry applies the same referral filter, and
-  a failed referral scan rotates nothing. Its `onRotationCommitted` also evicts whatever push
-  token the old phone left. Full re-mint + announce is deliberately deferred (phase 3).
+- **Read-cap rotation on the new phone (RÚN-01, 2026-11-23)** goes through the crash-safe
+  `rotateReadCap`/`cap-pend` path, unchanged (`MessageManager.rotateOwnedInboxReadCap`); its
+  `onRotationCommitted` also evicts whatever push token the old phone left. What changed is how the
+  OBLIGATION survives. Code: `MoveRotationObligations.kt`.
+  - **Committed with the import.** `moveRotationObligations(snapshot)` is a pure function of the
+    bundle: every inbox row in `OWNED_READ_DIRECTIONS` (superseded rows included, classified later)
+    plus the main/control/group inboxes every pending introduction (`ref_p`) minted — those have no
+    `inbox_ids` row until the introduction finalizes, so before this they were never rotated and the
+    old vault copy kept working caps for them. `VaultSnapshotIo.import` writes the list
+    (`mig_rotate_pending`) and the marker `mig_rot_v` = `"2"` INSIDE the import transaction, before
+    `mig_imported`. Reopening the store therefore shows either no committed import or a committed import
+    with every obligation; a failed obligation write rolls the whole import back (`IMPORT_FAILED` —
+    the bundle is already drained, so the old phone re-issues, as for any import failure).
+  - **No cap on the list; bounded work instead.** The old writer kept only 256 entries (≈ 85 contacts),
+    silently losing the tail on any interruption. The list is now uncapped (bounded by the bundle) and
+    keeps the old comma grammar, so a list an older build left reads unchanged. The background pass
+    right after the import works through the WHOLE list in batches of `IMPORT_BUDGET` (16), trying
+    each entry once, and stops when only unconfirmed / deferred / ambiguous entries remain (so the old
+    copy's caps die during that session, as before this change, not over tens of minutes of sweeps);
+    each control sweep then spends at most `SWEEP_BUDGET` (4) rotations and looks at no more than
+    `MAX_CLASSIFY_PER_PASS` (64) entries. An unconfirmed entry, a referral-deferred one and an
+    ambiguous one go to the BACK, so a failing head never starves the tail.
+  - **One writer view.** At most one pass runs per process (`MoveRotation.tryBeginPass`; the sweep skips
+    while the import-side pass runs), and every list mutation is a re-read-modify-write under a
+    process lock held only for that read and one write (never across relay I/O), so neither can
+    overwrite the other's copy.
+  - **Never across an export (review 2026-11-23).** The rotation primitive is deliberately not
+    freeze-gated (it is the new phone's step), so a phone that imported and then starts its OWN move
+    could otherwise rotate during or after that export: a PUT landing between the snapshot's `_meta`
+    and inbox reads ships the old cap while the relay holds the new one, and a pass still running
+    after the next phone imported rotates caps that phone now owns — a dead inbox, pair again. So
+    `runExport` calls `MoveRotation.claimForExport` before it writes `mig_frozen`: it asks the running
+    pass to stop, waits for the rotation in flight (≤ 300 s, else the export fails retryably with
+    nothing frozen), holds the pass slot across the freeze write, and every pass (background and
+    sweep) re-checks that request and `mig_frozen` before EACH rotation. `persistRotatedCap` is
+    compare-and-set (it writes only over the cap the rotation started from).
+  - **Verdicts, each counted separately (`MoveRotationVerdict`).** `ROTATE`; `DEFER_REFERRAL` (named by
+    any live `ref_*` value — kept, rotated once the record resolves; the old sweep DROPPED these);
+    `KEEP_UNKNOWN` (an ambiguous read — kept); and the documented exclusions `DROP_INVALID`,
+    `DROP_NOT_OWNED` (outbound rows hold the peer's write cap), `DROP_NO_CAP`, `DROP_SUPERSEDED`
+    (an older row of the same contact and direction: the rotation path can only rotate the operational
+    row; whether such an inbox is still alive on the relay is not established) and `DROP_NO_ROW` (the
+    contact was deleted, or a referral expired before finalize). An absent row is dropped only on
+    positive evidence: a second read agrees, the vault is open, it still answers `mig_imported`, AND a
+    different query agrees (the full row set answers and lacks the id; for a vault with no row at all,
+    the contact table answers empty too) — a closed iOS vault reads as "no rows" and the iOS bridge
+    answers an EMPTY result on a query error. A null operational lookup falls back to the shared
+    chooser over the full row set. A failed referral scan rotates nothing that pass.
+    **Superseded owned rows**, from the code: our own inbound rows are superseded only by the
+    group-inbox self-heal (`backfillMintAndAnnounce`), which replaces an inbox the relay answered 404
+    for, under our own cap, for the whole streak, and then DELETEs it best effort. The old copy holds
+    that same cap, so in the code's model it is not a usable inbox; but the relay collapses
+    NOT_FOUND / UNAUTHORIZED / LOCKED into one 404, so a lockout that later lifts (or a relay restored
+    from older state) is not excluded by code. Hence the UI wording claims only what is done.
+  - **The import does not hold the screen.** `importFromHandle` returns `Success` once committed (it
+    no longer reports `SECURING`); the platform then starts `MoveManager.secureImportedInboxes` in the
+    background on the session scope (Android `RunViewModel.startMoveSecuring`, iOS
+    `IosAppController.moveImportFromHandle` after `onDone`), and the control sweep
+    (`retryPendingMoveRotations`) finishes the rest. A lock/wipe cancels the pass; an entry in flight
+    stays listed (a second rotation of a cap this device owns is harmless).
+  - **Securing state + UI.** `moveSecuringState(db)`: `NotMoved` / `Pending(n)` / `Complete` / `Unknown`.
+    `Complete` needs `mig_imported`, the marker AND an empty list, and a missing list counts as empty
+    only when the key is positively absent (the key scan answers and does not list it) — a null read
+    of an existing key is `Unknown`. Both settings menus show a non-interactive row
+    (`move_securing_status`): "Switching your inboxes to new access keys…" while pending, "Your
+    inboxes now use new access keys" only after THIS session saw it pending and then finish
+    (`MoveSecuringRowLatch`); nothing otherwise. Android reads it on IO; iOS off the main thread,
+    re-read every 5 s while the settings sheet is open. The old phone's own copy (wipe it once the new phone
+    works) stays the primary instruction: rotation revokes the old copy's OWNER capabilities on our
+    inboxes (drain, delete, rotate, push), not its `sharedSecret`s or the peers' write caps.
+  - **Phones that imported on an older build** get ONE re-rotation of every owned inbox
+    (`MoveRotation.maybeReseedPreFixImport`, run at the top of the sweep): when `mig_imported` is
+    present and `mig_rot_v` absent, one transaction writes list := (whatever the old build left listed)
+    ∪ every owned inbox row ∪ the inboxes named by live `ref_p` records, plus the marker. Idempotent
+    (marker-gated, re-checked inside the transaction), nothing lands on a death before the commit, any
+    ambiguous read does nothing that sweep — because the marker makes it one-time, every input must be
+    believable: the key scan must list `mig_imported`, an existing list or `ref_p` record must not read
+    empty, two owned-row reads must agree, and no owned row while contacts exist defers — never on a
+    frozen vault; the same bounded sweep drains it,
+    and nothing records "done" — `Complete` is derived from the empty list. It covers every phone that
+    ran an import on a build before this change and is now on this build, whatever its old list held
+    (lost at the post-commit window, truncated at 256, or emptied by a lock): all their operational
+    owned inboxes are re-rotated, including ones the old build already rotated (indistinguishable), and
+    an introduction pending at the old move that has since finalized is now an ordinary owned row and
+    is covered. What it cannot repair: anything an old-vault copy did before the rotation lands
+    (messages it drained, a push token it registered until eviction, an inbox it rotated away from us —
+    that entry can then never be confirmed and keeps the row on "revoking", retried within the sweep
+    budget), and superseded rows (excluded, as above). Until the re-rotation drains, such a phone shows
+    the "switching" line, never the "done" one. Residual: a vault whose inbox AND contact tables both
+    answer empty from errors at the same sweep would seed a short list once.
+  - **Residual — downgrade then upgrade (Android sideload; the stores offer no downgrade).** A vault
+    imported on this build carries `mig_rot_v`. If an OLDER build then runs, its sweep rewrites
+    `mig_rotate_pending` truncated to 256, drops referral-referenced entries and never knew the
+    referral-minted ones; upgrading again finds the marker present, so the one-time re-rotation does
+    NOT re-run and those lost obligations stay lost (the state may read `Complete`). Not handled in
+    code.
+  - Full re-mint + announce is still deliberately deferred (phase 3). Tests: `MoveRotationBoundaryTest`
+    (rollback-capable vault on each side of the commit, > 256 inboxes, a realistic pending
+    introduction, the pre-fix re-rotation, transient failure), `MoveRotationObligationsTest`
+    (verdicts, closed-vault absence, bounded pass, concurrent pass + sweep, state + row latch, seed
+    atomicity), `MoveRotationReviewTest` (an export started mid-rotation waits and ships the relay's
+    caps, a freeze mid-pass stops further rotations, the pass drains the list, EMPTY-answer reads,
+    compare-and-set cap persist), `MoveManagerTest`.
 - **Residue:** every `mig_*` key lives in `_meta`, survives `deleteContact`/`deleteGroup`
   (a contact delete must never unfreeze a mid-move phone) and dies with `wipeAllTables`.
   `mig_handle` holds `inboxId|readCap|bundleId|chunkCount`; the code is RAM-only.

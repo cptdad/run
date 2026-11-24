@@ -80,7 +80,7 @@
 
     <!-- Reset relay access -->
     <string name="contact_list_reset_relay_title">Relay-Zugang zurücksetzen?</string>
-    <string name="contact_list_reset_relay_message">Rún holt sich für diese Unterhaltung neue Zugangsschlüssel vom Relay. Deine Nachrichten, dein Verlauf und dieser Kontakt bleiben genau so, wie sie sind, und %1$s muss nichts tun.\n\nMach das, wenn du glaubst, dass jemand anderes dein Telefon in der Hand hatte, während es entsperrt war. Das macht nicht rückgängig, was diese Person bereits gelesen hat — und wenn das Telefon wirklich in fremden Händen war, bleibt der sicherste Weg, diesen Kontakt zu löschen und euch persönlich neu zu koppeln.</string>
+    <string name="contact_list_reset_relay_message">Rún holt sich für diese Unterhaltung neue Zugangsschlüssel vom Relay. Deine Nachrichten, dein Verlauf und dieser Kontakt bleiben genau so, wie sie sind, und %1$s muss nichts tun.\n\nMach das, wenn du glaubst, dass jemand anderes dein Telefon in der Hand hatte, während es entsperrt war. Das macht nicht rückgängig, was diese Person bereits gelesen hat — und wenn das Telefon wirklich in fremden Händen war, bleibt der sicherste Weg, euch persönlich neu zu koppeln und dann diesen Kontakt zu löschen.</string>
     <string name="contact_list_reset_button">Zurücksetzen</string>
     <string name="contact_list_reset_relay_success">Relay-Zugang zurückgesetzt.</string>
     <string name="contact_list_reset_relay_failure">Das Relay war nicht erreichbar. Rún schließt das von selbst ab.</string>
@@ -112,6 +112,15 @@
     <string name="contact_list_reset_relay_in_progress">Relay-Zugang wird zurückgesetzt…</string>
     <string name="contact_list_reset_relay_button">Relay-Zugang zurücksetzen</string>
     <string name="contact_list_delete_contact_button">Kontakt löschen</string>
+    <string name="contact_list_pairing_label">Kopplung</string>
+    <string name="contact_list_pairing_current">Aktuell</string>
+    <string name="contact_list_pairing_current_note">Mit beiden Apps auf dem neuesten Stand erstellt. Nichts zu tun.</string>
+    <string name="contact_list_pairing_older">Ältere Kopplung</string>
+    <string name="contact_list_pairing_older_note">Mit einer älteren Version von Rún erstellt. Eine Aktualisierung der App ändert daran nichts, eine neue Kopplung schon.</string>
+    <string name="contact_list_pair_again_button">So koppelt ihr euch erneut</string>
+    <string name="contact_list_pair_again_why">Halte einen Kontakt gedrückt, um zu sehen, welche Kopplung er nutzt.\n\nBei einer älteren Kopplung könnte jemand, der deine Nachrichten auf ihrem Weg aufgezeichnet hat und später den Schlüssel dieser Kopplung erhält — von einem eurer beiden Telefone oder, wenn ihr euch persönlich gekoppelt habt, von einem Foto beider Codes —, eure ersten Nachrichten aneinander lesen (bis ihr beide geschrieben hattet) sowie einige Gruppen- und Vorstellungsnachrichten. Aufgezeichnete Nachrichten allein reichen nicht aus. Spätere Nachrichten sind genauso geschützt wie bei einer aktuellen Kopplung.\n\nEine neue Kopplung schützt nur die Nachrichten, die danach gesendet werden.</string>
+    <string name="contact_list_pair_again_steps">1. Ihr aktualisiert beide Rún.\n2. Trefft euch und koppelt euch mit „Kontakt hinzufügen“ erneut. Du erhältst einen neuen Kontakt, mit neuem Namen und ohne Gedächtnisstütze.\n3. Prüfe, ob der neue Kontakt in seinem Menü „Aktuell“ anzeigt und Nachrichten in beide Richtungen ankommen.\n4. Löscht dann beide den alten Kontakt. Lies zuerst seine neuen Nachrichten: Beim Löschen eines Kontakts werden auch seine noch auf dem Relay wartenden Nachrichten gelöscht.</string>
+    <string name="contact_list_pair_again_groups">Gruppen, die ihr bereits teilt, ziehen nicht zum neuen Kontakt um. Der Admin der Gruppe muss diese Person entfernen und erneut hinzufügen.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">Eine private Notiz dazu, wer dieser Kontakt ist. Nur du kannst sie sehen.</string>
@@ -135,6 +144,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d Kontakt muss neu gekoppelt werden. Tippe, um ihn erneut hinzuzufügen.</item>
         <item quantity="other">%1$d Kontakte müssen neu gekoppelt werden. Tippe, um sie erneut hinzuzufügen.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d Kontakt nutzt eine ältere Kopplung. Tippe, um zu sehen, wie ihr euch erneut koppelt.</item>
+        <item quantity="other">%1$d Kontakte nutzen eine ältere Kopplung. Tippe, um zu sehen, wie ihr euch erneut koppelt.</item>
     </plurals>
     <string name="connect_log_title">Verbindungsprotokoll</string>
 

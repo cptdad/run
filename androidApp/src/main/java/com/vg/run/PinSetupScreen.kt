@@ -3,6 +3,7 @@ package com.vg.run
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -112,6 +113,16 @@ fun PinSetupScreen(
         // or a failed enable can never leave "PRIVATE persisted + plain key". Every
         // failure below settles in the under-claiming (safe) direction.
         val baseLevel = honestPersistedLevel(level, leverBEnabled = false)
+        // RÚN-02: the fresh-provision gate FIRST — before setRealCredential's first
+        // seal, the first point a new keyset can be created. Refused (a wipe's erase
+        // is unresolved, or a leftover key could not be purged): nothing was written,
+        // and MainActivity now shows "finishing the erase" in place of this screen.
+        if (!withContext(Dispatchers.IO) { viewModel.prepareFreshProvision() }) {
+            LogBuffer.append("W", "Setup", "provision refused — setup blocked (retryable)")
+            enteredPin = ""; chosenPin = ""; enteredPhrase = ""; chosenPhrase = ""
+            phase = SetupPhase.ENTER_CRED
+            return
+        }
         val opened = withContext(Dispatchers.IO) {
             val ok = viewModel.vaultSelector.setRealCredential(credential, level.usesPassphrase, baseLevel)
             if (!ok) null else viewModel.vaultSelector.unlock(credential)
@@ -436,6 +447,94 @@ private fun PassphraseSetupBody(
                 )
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/**
+ * RÚN-02 (owner decision D1): shown in place of setup AND unlock while a wipe's
+ * erase is not confirmed (some key, vault prefs file or vault file could not be
+ * proven gone). Deliberately says nothing about which item failed. Retry runs one
+ * erase pass; the screen goes away by itself once the erase is confirmed. A
+ * deniable wipe never shows this (its black cover is checked first). iOS sibling:
+ * ContentView's `finishing_erase` gate with the same `erase_retry_button` id.
+ */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+@Composable
+fun FinishingEraseScreen(onRetry: () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().semantics { testTagsAsResourceId = BuildConfig.DEBUG }
+            .background(RunBlack).testTag("finishing_erase"),
+    ) {
+        Column(
+            Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.pin_erase_finishing_title),
+                style = MaterialTheme.typography.headlineSmall,
+                color = RunWhite,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.pin_erase_finishing_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = RunGrey,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(28.dp))
+            Button(
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth().testTag("erase_retry_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = RunWhite, contentColor = RunBlack),
+            ) {
+                Text(stringResource(R.string.common_retry), maxLines = 1, softWrap = false)
+            }
+        }
+    }
+}
+
+/**
+ * RÚN-02 deniability rule: the NEUTRAL blocked state — shown for every unresolved
+ * case except a user-requested wipe in this process (leftovers found at launch, the
+ * unattended launch wipes, a refused fresh-setup purge). Nothing here — text or
+ * test tag — may mention erasing. iOS sibling: ContentView's `setup_blocked` gate.
+ */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+@Composable
+fun SetupBlockedScreen(onRetry: () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().semantics { testTagsAsResourceId = BuildConfig.DEBUG }
+            .background(RunBlack).testTag("setup_blocked"),
+    ) {
+        Column(
+            Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.pin_device_key_busy_title),
+                style = MaterialTheme.typography.headlineSmall,
+                color = RunWhite,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.pin_setup_blocked_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = RunGrey,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(28.dp))
+            Button(
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth().testTag("setup_retry_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = RunWhite, contentColor = RunBlack),
+            ) {
+                Text(stringResource(R.string.common_retry), maxLines = 1, softWrap = false)
+            }
         }
     }
 }

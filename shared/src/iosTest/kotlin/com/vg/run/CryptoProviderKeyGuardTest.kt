@@ -47,10 +47,20 @@ class CryptoProviderKeyGuardTest {
         override fun kvPut(key: String, value: String) { kv[key] = value }
         override fun kvRemove(key: String): Boolean { kv.remove(key); return true }
         override fun kvDeleteAll() { kv.clear() }
+        // RÚN-02 checked deletes (added to the interface after this fake was written).
+        override fun deleteKeyChecked(): KeychainDeleteResult {
+            deleteCalls++
+            return KeychainDeleteResult(outcome = 0, status = 0)
+        }
+        override fun kvDeleteAllChecked(): KeychainDeleteResult { kv.clear(); return KeychainDeleteResult(outcome = 0, status = 0) }
+        override fun deleteBlockListChecked(): KeychainDeleteResult = KeychainDeleteResult(outcome = 1, status = -25300)
     }
 
     @AfterTest
-    fun tearDown() { KeychainBridgeHolder.bridge = null }
+    fun tearDown() {
+        KeychainBridgeHolder.bridge = null
+        WipeEraseLatch.resetForTest()
+    }
 
     // Security framework status codes: errSecItemNotFound = -25300,
     // errSecInteractionNotAllowed (device locked) = -25308.
@@ -149,5 +159,28 @@ class CryptoProviderKeyGuardTest {
         } finally {
             store.remove(PinAttemptsStore.STORAGE_KEY)
         }
+    }
+
+    /**
+     * RÚN-02: while a wipe's erase is unresolved, a genuinely missing device key is
+     * NOT re-created — such a key would be the one a pending retry deletes, or a
+     * fresh key next to a surviving pre-wipe one. Same deferrable type as the
+     * locked path; nothing stored, nothing deleted.
+     */
+    @Test
+    fun missingKey_isNotMinted_whileAnEraseIsUnresolved() {
+        val fake = FakeKeychainBridge(
+            KeychainLoadResult(data = null, keyMissing = true, status = -25300)
+        )
+        KeychainBridgeHolder.bridge = fake
+        val token = WipeEraseLatch.begin()
+
+        assertFailsWith<KeyUnavailableException> { getOrCreateKey() }
+        assertEquals(0, fake.storeCalls, "no key may be minted while the erase is unresolved")
+        assertEquals(0, fake.deleteCalls, "and the orphan delete must not run either")
+
+        WipeEraseLatch.finish(token, WipeEraseReport(mapOf(WipeItem.DEVICE_KEY to EraseResult(EraseOutcome.DELETED, 0))))
+        assertEquals(32, getOrCreateKey().size, "minting resumes once the erase is confirmed")
+        assertEquals(1, fake.storeCalls)
     }
 }

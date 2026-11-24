@@ -67,6 +67,18 @@ class IosDbKeyRotationTest {
         override fun kvPut(key: String, value: String) { if (key !in putFailing) kv[key] = value }
         override fun kvRemove(key: String): Boolean { kv.remove(key); return true }
         override fun kvDeleteAll() { kv.clear() }
+        // RÚN-02 checked deletes (added to the interface after this fake was written).
+        override fun deleteKeyChecked(): KeychainDeleteResult {
+            val had = deviceKey != null
+            deviceKey = null
+            return KeychainDeleteResult(outcome = if (had) 0 else 1, status = if (had) 0 else -25300)
+        }
+        override fun kvDeleteAllChecked(): KeychainDeleteResult {
+            val had = kv.isNotEmpty()
+            kv.clear()
+            return KeychainDeleteResult(outcome = if (had) 0 else 1, status = if (had) 0 else -25300)
+        }
+        override fun deleteBlockListChecked(): KeychainDeleteResult = KeychainDeleteResult(outcome = 1, status = -25300)
     }
 
     /**

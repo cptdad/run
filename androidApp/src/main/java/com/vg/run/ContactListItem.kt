@@ -20,6 +20,12 @@ data class ContactListItem(
     val alias: String,
     val mnemonic: String,
     val vouchedByContactId: String?,
+    /**
+     * RÚN-03: "Current" / "Older pairing" in the contact menu — projected from the
+     * row flag of the record being projected ([ContactPairing.kindOf]), so "New name"
+     * (which re-projects through [toListItem]) keeps it. Not a secret.
+     */
+    val pairingKind: ContactPairingKind,
 )
 
 /**
@@ -34,4 +40,5 @@ fun ContactRecord.toListItem(): ContactListItem = ContactListItem(
     alias = alias,
     mnemonic = mnemonic,
     vouchedByContactId = vouchedByContactId,
+    pairingKind = ContactPairing.kindOf(this),
 )

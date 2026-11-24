@@ -1,1 +1,5 @@
-• If the app closes while a group invitation, membership change or departure is still being sent, the members it missed get it the next time you open the app.
+• Each contact shows whether it uses the current or an older pairing.
+• After a phone move, the menu shows when your inboxes have switched to new access keys.
+• A wipe confirms every deletion; deleted groups and contacts leave fewer traces.
+• Group changes cut short by closing the app reach the members who missed them next time.
+• Layout fixes, including the passphrase field and right-to-left languages.

@@ -97,4 +97,29 @@ class IosContactV3FlagTest {
         fake.contactRows = row(null)
         assertNull(db.getContact("c1"), "NULL is an unreadable row, never 'legacy'")
     }
+
+    /**
+     * RÚN-03: the contact menu's label on iOS, through the same strict mapper. An app
+     * update alone changes nothing: the open only ADDS the column with DEFAULT 0
+     * (every pre-v11 row reads "Older pairing"), and a stored 1 stays "Current".
+     * Scripted bridge: there is no SQLCipher in the iOS test host, so this pins the
+     * statement and the row mapping, not a file on disk.
+     */
+    @Test
+    fun theLabel_survivesTheUpgradeOpen_andFollowsTheRowFlag() = withDb { db, fake ->
+        assertTrue(
+            fake.executed.any { it.first == "ALTER TABLE contacts ADD COLUMN ratchet_v3 INTEGER NOT NULL DEFAULT 0" },
+            "the open adds the v11 column additively, DEFAULT 0",
+        )
+        assertTrue(
+            fake.executed.none { it.first.startsWith("UPDATE contacts") && "ratchet_v3" in it.first },
+            "the open never rewrites the flag of an existing row",
+        )
+        fake.contactRows = row(null, includeColumn = false)
+        assertEquals(ContactPairingKind.OLDER, ContactPairing.kindOf(db.getContact("c1")!!), "a pre-v11 row")
+        fake.contactRows = row(NSNumber.numberWithLongLong(0))
+        assertEquals(ContactPairingKind.OLDER, ContactPairing.kindOf(db.getContact("c1")!!))
+        fake.contactRows = row(NSNumber.numberWithLongLong(1))
+        assertEquals(ContactPairingKind.CURRENT, ContactPairing.kindOf(db.getContact("c1")!!))
+    }
 }

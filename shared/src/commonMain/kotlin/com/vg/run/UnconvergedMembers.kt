@@ -39,6 +39,9 @@ internal class UnconvergedMembers(private val clock: () -> Long) {
         unconverged[key] = clock()
     }
 
+    /** Read-only probe (tests): is (groupId, contactId) marked not-in-sync? */
+    fun isMarked(groupId: String, contactId: String): Boolean = lock.withLock { key(groupId, contactId) in unconverged }
+
     fun clear(groupId: String, contactId: String) = lock.withLock {
         unconverged.remove(key(groupId, contactId))
     }

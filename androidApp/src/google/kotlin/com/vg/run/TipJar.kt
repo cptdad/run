@@ -96,8 +96,11 @@ class TipBillingManager(context: Context) {
 
     // Stored (not just a constructor param) so the member functions below —
     // reached from Billing callbacks, not composable context — can resolve
-    // localized error copy via getString.
-    private val appContext = context.applicationContext
+    // localized error copy via getString. Wrapped in the app's OWN language: below
+    // API 33 the application context speaks the PHONE's language, so on a Swedish
+    // phone with Rún set to English these messages came out in Swedish (seen on
+    // the Samsung A20e, 2026-11-24, by the screenshot check of the Support screen).
+    private val appContext = AppLocale.wrap(context.applicationContext)
 
     private val _state = MutableStateFlow(TipState())
     val state: StateFlow<TipState> = _state.asStateFlow()
@@ -324,14 +327,26 @@ private fun TipTierRow(product: TipProduct, onTip: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(tierLabel(product.productId), color = RunWhite, fontSize = 15.sp)
+        // The LABEL takes what the price leaves, never the other way round: a Row measures
+        // its unweighted children first, so the price gets its whole width and stays on ONE
+        // line. Without the weight the label was measured first and a longer price was
+        // broken mid-amount ("125,00 k / r" on a Pixel 7 and a Samsung A13, 2026-11-24).
+        // iOS sibling: SupportView.swift's tier row.
+        Text(
+            tierLabel(product.productId), color = RunWhite, fontSize = 15.sp,
+            modifier = Modifier.weight(1f).padding(end = 12.dp),
+        )
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .background(RunWhite)
                 .padding(horizontal = 18.dp, vertical = 8.dp),
         ) {
-            Text(product.formattedPrice, color = RunBlack, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Text(
+                product.formattedPrice, color = RunBlack, fontWeight = FontWeight.SemiBold, fontSize = 14.sp,
+                maxLines = 1, softWrap = false,
+                modifier = Modifier.testTag("tip_price_${product.productId}"),
+            )
         }
     }
 }

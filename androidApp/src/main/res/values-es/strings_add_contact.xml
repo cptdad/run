@@ -60,7 +60,8 @@
     <string name="add_contact_paste_not_ready">Todavía se está preparando el buzón; inténtalo dentro de un momento</string>
 
     <!-- vault-refused add -->
-    <string name="add_contact_inbox_in_use">No se ha podido añadir este contacto: uno de los buzones de su código ya está en uso aquí. Si estás volviendo a añadir a alguien que ya tienes, elimina primero el contacto antiguo y vuelve a intentarlo.</string>
+    <string name="add_contact_inbox_in_use">No se ha podido añadir este contacto: uno de los buzones de su código ya está en uso aquí. Empezad de nuevo para que los dos mostréis códigos nuevos.</string>
+    <string name="add_contact_older_pairing_note">Su versión de Rún es más antigua, así que este es un emparejamiento antiguo. Pídele que actualice Rún y volved a emparejaros.</string>
     <string name="add_contact_pairing_failed">El emparejamiento no funcionó: no se pudo establecer el canal seguro con este contacto. Empieza de nuevo para emparejarte con un código nuevo.</string>
     <string name="add_contact_pairing_failed_action">Empezar de nuevo</string>
     <string name="add_contact_start_again_error">No se pudo terminar de añadir este contacto y no se guardó nada. Empieza de nuevo para obtener un código nuevo.</string>

@@ -181,6 +181,11 @@ actual class KeyValueStore {
     }
 
     private fun recoverPendingBatch(kc: KeychainBridge) {
+        // RÚN-02: a journal that survived a wipe's failed sweep would RE-WRITE the
+        // credential items the wipe is erasing — and every construction replays (some
+        // stores are built per call). Not while the erase is unresolved; the journal
+        // item itself is untouched, and the retry's sweep deletes it.
+        if (!WipeErasePolicy.mayReplayJournal()) return
         // .value collapses a transient read error to "no journal" — construction
         // must never throw; an unread journal simply defers recovery to the next
         // launch (the journal item itself is untouched).

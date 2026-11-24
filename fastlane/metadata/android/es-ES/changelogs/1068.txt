@@ -1,1 +1,5 @@
-• Si la app se cierra mientras aún se envía una invitación de grupo, un cambio de miembros o una salida, los miembros que no lo recibieron lo reciben la próxima vez que abras la app.
+• Cada contacto muestra si usa el emparejamiento actual o uno antiguo.
+• Tras cambiar de teléfono, el menú muestra cuándo tus buzones han pasado a claves de acceso nuevas.
+• Un borrado confirma cada eliminación; los grupos y contactos eliminados dejan menos rastro.
+• Los cambios de grupo interrumpidos al cerrar la app llegan la próxima vez a los miembros que no los recibieron.
+• Correcciones de diseño, entre ellas el campo de la frase de contraseña y los idiomas de derecha a izquierda.

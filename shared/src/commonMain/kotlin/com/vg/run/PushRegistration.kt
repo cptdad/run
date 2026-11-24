@@ -610,8 +610,8 @@ fun allInboundTextInboxes(vault: VaultDatabase): List<InboundInboxRef> =
  * | `ref-accept` | `ReferralManager` accept + relay-forward + both redrives | YES | 7 d |
  * | `invite` | `GroupManager.createGroup` / `addMember` | YES | 7 d |
  * | `inbox` (announce) | `MessageManager.sendInboxAnnounce` | no (forced) | 7 d |
- * | `screenshot` (1:1) | `MessageManager.sendScreenshotNotice` | no | 7 d |
- * | `screenshot` (group) | `GroupManager.sendGroupScreenshotNotice` | no | 7 d |
+ * | `screenshot` (1:1) | `MessageManager.sendScreenshotNotice` (via `GroupManager.sendScreenshotNotices`) | no | 7 d |
+ * | `screenshot` (group) | `GroupManager.sendScreenshotNotices` (also the invited-only copy to the inviter) | no | 7 d |
  * | `plvl` (1:1) | `MessageManager.sendMaximumAnnouncement` | no | 7 d |
  * | `act` (activity) | `GroupManager.sendGroupMessage` | no (the text already woke) | 7 d |
  * | `join` | `GroupManager.acceptInvite` / `sendSelfJoinToNewAdmin` | no | 7 d |

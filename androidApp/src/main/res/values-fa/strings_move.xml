@@ -63,4 +63,6 @@
     <string name="move_error_import">آوردن داده‌های شما به پایان نرسید. دوباره تلاش کنید.</string>
     <string name="move_error_already_imported">این گوشی قبلاً یک انتقال را تحویل گرفته است.</string>
     <string name="move_import_skip_label">ادامه بدون آن</string>
+    <string name="move_securing_pending">در حال تغییر صندوق‌های ورودی شما به کلیدهای دسترسی تازه…</string>
+    <string name="move_securing_done">صندوق‌های ورودی شما اکنون از کلیدهای دسترسی تازه استفاده می‌کنند</string>
 </resources>

@@ -34,7 +34,10 @@ class WipePermissionRevokeSourceTest {
             body.lastIndexOf("VERSION_CODES.TIRAMISU", revokeAt) >= 0,
         )
         for (earlier in listOf(
-            "PREFS_FILES.forEach { context.deleteSharedPreferences(it) }",
+            // RÚN-02: the prefs and vault-file deletions run CHECKED through the
+            // eraser (WipeRoutine.deletePrefsFiles / deleteVaultFiles).
+            "WipeEraser.run(store, listOf(WipeItem.KV_SWEEP))",
+            "WipeEraser.run(store, listOf(WipeItem.VAULT_FILES))",
             "VendorPush.sweepLocalArtifacts(app)",
             """java.io.File(context.filesDir, "tor_direct").deleteRecursively()""",
             "NotificationHelper.deleteChannel(context)",
@@ -46,7 +49,9 @@ class WipePermissionRevokeSourceTest {
         }
         // The crypto-erase is the very first part of the routine; the revocation
         // must follow every key deletion it makes.
-        for (erase in listOf("CryptoManager.eraseMasterKey(context)", "AuthBoundKeyStore.deleteKey(context)")) {
+        // RÚN-02: both keys go through the checked eraser (eraseMasterKeyChecked +
+        // AuthBoundKeyStore.deleteKeyChecked, see WipeEraseCheckedSourceTest).
+        for (erase in listOf("WipeEraser.run(store, WipeEraser.KEY_ITEMS)")) {
             val at = body.indexOf(erase)
             assertTrue("precondition: `$erase` must be in the routine", at >= 0)
             assertTrue("the revocation must follow `$erase`", at < revokeAt)

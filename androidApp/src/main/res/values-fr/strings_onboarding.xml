@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">Impossible de déverrouiller ? Utilisez le code de récupération</string>
     <string name="pin_orphaned_vault_notice">Cet appareil contient un coffre-fort, mais aucun code PIN ni phrase secrète n\'est enregistré pour lui : rien ne peut l\'ouvrir. Son contenu est irrécupérable.</string>
     <string name="pin_erase_start_over">Effacer et recommencer</string>
+    <string name="pin_erase_finishing_title">Fin de l\'effacement</string>
+    <string name="pin_setup_blocked_message">La configuration ne peut pas encore démarrer. Déverrouillez votre téléphone, puis touchez Réessayer.</string>
+    <string name="pin_erase_finishing_message">Certaines données de ce téléphone n\'ont pas encore été effacées. Déverrouillez votre téléphone, puis touchez Réessayer. La configuration s\'ouvre une fois l\'effacement terminé.</string>
 
     <!-- Passphrase strength meter -->
     <string name="pin_strength_too_weak">Trop faible</string>

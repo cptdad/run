@@ -92,7 +92,7 @@
 
     <!-- Reset relay access (identical wording both platforms) -->
     <string name="contact_list_reset_relay_title">Reset relay access?</string>
-    <string name="contact_list_reset_relay_message">Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$s doesn\'t have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can\'t undo anything they already read — and if the phone really was taken, the safest fix is still to delete this contact and pair again in person.</string>
+    <string name="contact_list_reset_relay_message">Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$s doesn\'t have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can\'t undo anything they already read — and if the phone really was taken, the safest fix is still to pair again in person and then delete this contact.</string>
     <string name="contact_list_reset_button">Reset</string>
     <string name="contact_list_reset_relay_success">Relay access reset.</string>
     <string name="contact_list_reset_relay_failure">Couldn\'t reach the relay. Rún will finish this on its own.</string>
@@ -127,6 +127,20 @@
     <string name="contact_list_reset_relay_button">Reset relay access</string>
     <string name="contact_list_delete_contact_button">Delete contact</string>
 
+    <!-- RÚN-03: which pairing a contact uses (contact menu, ContactListScreen.kt /
+         ContactListView.swift) and the "How to pair again" guide. "Current" and
+         "Older pairing" are labels: the guide's step 3 quotes "Current" byte-identically.
+         Plain words only: no "legacy", "v3", "forward secrecy" or version numbers. -->
+    <string name="contact_list_pairing_label">Pairing</string>
+    <string name="contact_list_pairing_current">Current</string>
+    <string name="contact_list_pairing_current_note">Made with both apps up to date. Nothing to do.</string>
+    <string name="contact_list_pairing_older">Older pairing</string>
+    <string name="contact_list_pairing_older_note">Made with an older version of Rún. Updating the app doesn\'t change this; pairing again does.</string>
+    <string name="contact_list_pair_again_button">How to pair again</string>
+    <string name="contact_list_pair_again_why">Press and hold a contact to see which pairing it uses.\n\nWith an older pairing, someone who has recorded your messages on their way and later gets this pairing\'s key — from one of your two phones or, if you paired in person, from a photo of both codes — could read your first messages to each other (until you had both written), and some group and introduction messages. Recorded messages alone are not enough. Later messages are protected the same way as with a current pairing.\n\nPairing again protects only the messages sent after it.</string>
+    <string name="contact_list_pair_again_steps">1. Both of you update Rún.\n2. Meet and pair again with Add contact. You get a new contact, with a new name and no memory note.\n3. Check that the new contact shows “Current” in its menu and that messages get through both ways.\n4. Then both of you delete the old contact. Read its new messages first: deleting a contact also deletes its messages still waiting on the relay.</string>
+    <string name="contact_list_pair_again_groups">Groups you already share don\'t move to the new contact. The group\'s admin needs to remove this person and add them again.</string>
+
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">A private reminder of who this contact is. Only you can see this.</string>
     <string name="contact_list_memory_placeholder_android">e.g. Met at the conference in 2025</string>
@@ -149,6 +163,13 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d contact needs re-pairing. Tap to add them again.</item>
         <item quantity="other">%1$d contacts need re-pairing. Tap to add them again.</item>
+    </plurals>
+
+    <!-- RÚN-03: dismissible banner while at least one contact uses an older pairing.
+         Tap opens the "How to pair again" guide; the close control reuses common_close. -->
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d contact uses an older pairing. Tap to see how to pair again.</item>
+        <item quantity="other">%1$d contacts use an older pairing. Tap to see how to pair again.</item>
     </plurals>
 
     <!-- Live connection-log panel (triple-tap the "Connecting to…" caption) — ConnectionLogPanel.kt / ConnectionLogPanel.swift -->

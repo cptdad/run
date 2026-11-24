@@ -19,6 +19,9 @@
     <string name="pin_use_recovery_code_prompt">Не можете да отклучите? Користете код за обновување</string>
     <string name="pin_orphaned_vault_notice">Овој уред има трезор, но за него не е зачуван PIN или тајна фраза, па ништо не може да го отклучи. Неговата содржина не може да се обнови.</string>
     <string name="pin_erase_start_over">Избриши и започни одново</string>
+    <string name="pin_erase_finishing_title">Довршување на бришењето</string>
+    <string name="pin_setup_blocked_message">Поставувањето сè уште не може да започне. Отклучете го телефонот, а потоа допрете „Обиди се повторно“.</string>
+    <string name="pin_erase_finishing_message">Некои податоци на овој телефон сè уште не се избришани. Отклучете го телефонот, а потоа допрете „Обиди се повторно“. Поставувањето се отвора кога бришењето ќе заврши.</string>
     <string name="pin_strength_too_weak">Премногу слабо</string>
     <string name="pin_strength_still_weak">Сè уште премногу слабо — додадете зборови</string>
     <string name="pin_strength_strong">Силно</string>

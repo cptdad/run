@@ -4406,79 +4406,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تعذّرت إضافة جهة الاتصال هذه — أحد صناديق الوارد في رمزها مستخدم هنا بالفعل. إذا كنت تعيد إضافة شخص لديك أصلًا، فاحذف جهة الاتصال القديمة أولًا ثم حاول مجددًا."
+            "value": "تعذّرت إضافة جهة الاتصال هذه — أحد صناديق الوارد في رمزها مستخدم هنا بالفعل. ابدأ من جديد، ليُظهر كلٌّ منكما رمزًا جديدًا."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke tilføje denne kontakt — en af indbakkerne i deres kode er allerede i brug her. Hvis du tilføjer en, du allerede har, så slet den gamle kontakt først, og prøv igen."
+            "value": "Kunne ikke tilføje denne kontakt — en af indbakkerne i deres kode er allerede i brug her. Start forfra, så I begge viser nye koder."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dieser Kontakt konnte nicht hinzugefügt werden — eines der Postfächer in seinem Code ist hier schon in Gebrauch. Wenn du jemanden erneut hinzufügst, den du bereits hast, lösche zuerst den alten Kontakt und versuch es dann noch einmal."
+            "value": "Dieser Kontakt konnte nicht hinzugefügt werden — eines der Postfächer in seinem Code ist hier schon in Gebrauch. Fangt neu an, damit ihr beide neue Codes anzeigt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couldn't add this contact — one of the inboxes in their code is already in use here. If you're re-adding someone you already have, delete the old contact first, then try again."
+            "value": "Couldn't add this contact — one of the inboxes in their code is already in use here. Start again, so you both show new codes."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se ha podido añadir este contacto: uno de los buzones de su código ya está en uso aquí. Si estás volviendo a añadir a alguien que ya tienes, elimina primero el contacto antiguo y vuelve a intentarlo."
+            "value": "No se ha podido añadir este contacto: uno de los buzones de su código ya está en uso aquí. Empezad de nuevo para que los dos mostréis códigos nuevos."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "این مخاطب اضافه نشد — یکی از صندوق‌های ورودی در کد او همین حالا اینجا در استفاده است. اگر کسی را که از قبل دارید دوباره اضافه می‌کنید، اول مخاطب قدیمی را حذف کنید و بعد دوباره تلاش کنید."
+            "value": "این مخاطب اضافه نشد — یکی از صندوق‌های ورودی در کد او همین حالا اینجا در استفاده است. از نو شروع کنید تا هر دوی شما کدهای تازه نشان دهید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kontaktia ei voitu lisätä — yksi hänen koodinsa postilaatikoista on jo käytössä täällä. Jos lisäät uudelleen jonkun, joka sinulla jo on, poista ensin vanha kontakti ja yritä sitten uudelleen."
+            "value": "Kontaktia ei voitu lisätä — yksi hänen koodinsa postilaatikoista on jo käytössä täällä. Aloita alusta, jotta kumpikin näyttää uudet koodit."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impossible d'ajouter ce contact — l'une des boîtes de réception de son code est déjà utilisée ici. Si vous rajoutez quelqu'un que vous avez déjà, supprimez d'abord l'ancien contact, puis réessayez."
+            "value": "Impossible d'ajouter ce contact — l'une des boîtes de réception de son code est déjà utilisée ici. Recommencez, pour que vous affichiez tous les deux de nouveaux codes."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Контактот не можеше да се додаде — едно од сандачињата во нивниот код веќе се користи тука. Ако повторно додавате некого што веќе го имате, прво избришете го стариот контакт, па обидете се повторно."
+            "value": "Контактот не можеше да се додаде — едно од сандачињата во нивниот код веќе се користи тука. Започнете одново, за двајцата да прикажете нови кодови."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke legge til denne kontakten – en av innboksene i koden deres er allerede i bruk her. Hvis du legger til noen du allerede har på nytt, slett den gamle kontakten først, og prøv så igjen."
+            "value": "Kunne ikke legge til denne kontakten – en av innboksene i koden deres er allerede i bruk her. Start på nytt, så dere begge viser nye koder."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось добавить этот контакт — один из почтовых ящиков в коде этого контакта уже используется здесь. Если вы повторно добавляете уже существующий контакт, сначала удалите старый контакт, а затем попробуйте снова."
+            "value": "Не удалось добавить этот контакт — один из почтовых ящиков в его коде уже используется здесь. Начните заново, чтобы у вас обоих появились новые коды."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Xiriiriyahan lama darin karin — mid ka mid ah sanduuqyada ku jira koodhkooda ayaa hore loogu isticmaalayaa halkan. Haddii aad dib u darayso qof aad hore u haysay, marka hore tirtir xiriiriyihii hore, kadibna isku day mar kale."
+            "value": "Xiriiriyahan lama darin karin — mid ka mid ah sanduuqyada ku jira koodhkooda ayaa hore loogu isticmaalayaa halkan. Mar kale bilow, si labadiinuba aad u muujisaan koodhad cusub."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunde inte lägga till kontakten — en av inkorgarna i deras kod används redan här. Om du lägger till någon du redan har på nytt, radera den gamla kontakten först och försök sedan igen."
+            "value": "Kunde inte lägga till kontakten — en av inkorgarna i deras kod används redan här. Börja om, så att ni båda visar nya koder."
           }
         }
       }
@@ -5309,6 +5309,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nästa"
+          }
+        }
+      }
+    },
+    "add_contact_older_pairing_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إصدار Rún لديه أقدم، لذا هذا اقتران أقدم. اطلب منه تحديث Rún، ثم أعد الاقتران."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deres version af Rún er ældre, så det er en ældre parring. Bed dem opdatere Rún, og par jer derefter igen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seine Version von Rún ist älter, daher ist das eine ältere Kopplung. Bitte ihn, Rún zu aktualisieren, und koppelt euch dann erneut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Their version of Rún is older, so this is an older pairing. Ask them to update Rún, then pair again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su versión de Rún es más antigua, así que este es un emparejamiento antiguo. Pídele que actualice Rún y volved a emparejaros."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نسخهٔ Rún او قدیمی‌تر است، پس این یک جفت‌سازی قدیمی‌تر است. از او بخواهید Rún را به‌روزرسانی کند، سپس دوباره جفت‌سازی کنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hänen Rún-versionsa on vanhempi, joten tämä on vanhempi paritus. Pyydä häntä päivittämään Rún ja tee sitten paritus uudelleen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sa version de Rún est plus ancienne : il s'agit donc d'un ancien appairage. Demandez à ce contact de mettre à jour Rún, puis appairez-vous à nouveau."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нивната верзија на Rún е постара, па ова е постаро спарување. Замолете ги да го ажурираат Rún, а потоа спарете се повторно."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versjonen deres av Rún er eldre, så dette er en eldre parkobling. Be dem oppdatere Rún, og parkoble så på nytt."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Версия Rún у этого контакта более старая, поэтому это старое сопряжение. Попросите его обновить Rún, а затем выполните сопряжение заново."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nooca Rún ee ay haystaan waa ka duugsan yahay, sidaas darteed tani waa lammaanaan hore. Weydii inay cusboonaysiiyaan Rún, kadibna lammaanaanta mar kale samee."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deras version av Rún är äldre, så det här är en äldre parkoppling. Be dem uppdatera Rún och parkoppla sedan på nytt."
           }
         }
       }
@@ -13696,6 +13779,1028 @@
         }
       }
     },
+    "contact_list_older_pairing_banner": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld جهات اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld جهة اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "جهة اتصال واحدة تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld جهة اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              },
+              "two": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "جهتا اتصال تستخدمان اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              },
+              "zero": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "لا توجد جهات اتصال تستخدم اقترانًا أقدم. اضغط لترى كيف تعيد الاقتران."
+                }
+              }
+            }
+          }
+        },
+        "da": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakt bruger en ældre parring. Tryk for at se, hvordan I parrer igen."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakter bruger en ældre parring. Tryk for at se, hvordan I parrer igen."
+                }
+              }
+            }
+          }
+        },
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld Kontakt nutzt eine ältere Kopplung. Tippe, um zu sehen, wie ihr euch erneut koppelt."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld Kontakte nutzen eine ältere Kopplung. Tippe, um zu sehen, wie ihr euch erneut koppelt."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contact uses an older pairing. Tap to see how to pair again."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contacts use an older pairing. Tap to see how to pair again."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contacto usa un emparejamiento antiguo. Toca para ver cómo volver a emparejar."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contactos usan un emparejamiento antiguo. Toca para ver cómo volver a emparejar."
+                }
+              }
+            }
+          }
+        },
+        "fa": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld مخاطب از جفت‌سازی قدیمی‌تر استفاده می‌کند. برای دیدن نحوهٔ جفت‌سازی دوباره ضربه بزنید."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld مخاطب از جفت‌سازی قدیمی‌تر استفاده می‌کنند. برای دیدن نحوهٔ جفت‌سازی دوباره ضربه بزنید."
+                }
+              }
+            }
+          }
+        },
+        "fi": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakti käyttää vanhempaa paritusta. Napauta nähdäksesi, miten teet parituksen uudelleen."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontaktia käyttää vanhempaa paritusta. Napauta nähdäksesi, miten teet parituksen uudelleen."
+                }
+              }
+            }
+          }
+        },
+        "fr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contact utilise un ancien appairage. Touchez pour voir comment s'appairer à nouveau."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld contacts utilisent un ancien appairage. Touchez pour voir comment s'appairer à nouveau."
+                }
+              }
+            }
+          }
+        },
+        "mk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контакт користи постаро спарување. Допрете за да видите како да се спарите повторно."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контакти користат постаро спарување. Допрете за да видите како да се спарите повторно."
+                }
+              }
+            }
+          }
+        },
+        "nb": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakt bruker en eldre parkobling. Trykk for å se hvordan du parkobler på nytt."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakter bruker en eldre parkobling. Trykk for å se hvordan du parkobler på nytt."
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контакта используют старое сопряжение. Нажмите, чтобы узнать, как выполнить сопряжение заново."
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контактов используют старое сопряжение. Нажмите, чтобы узнать, как выполнить сопряжение заново."
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контакт использует старое сопряжение. Нажмите, чтобы узнать, как выполнить сопряжение заново."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld контактов используют старое сопряжение. Нажмите, чтобы узнать, как выполнить сопряжение заново."
+                }
+              }
+            }
+          }
+        },
+        "so": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld xiriiriye ayaa isticmaala lammaanaan hore. Taabo si aad u aragto sida lammaanaanta mar kale loo sameeyo."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld xiriiriye ayaa isticmaala lammaanaan hore. Taabo si aad u aragto sida lammaanaanta mar kale loo sameeyo."
+                }
+              }
+            }
+          }
+        },
+        "sv": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakt använder en äldre parkoppling. Tryck för att se hur du parkopplar på nytt."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld kontakter använder en äldre parkoppling. Tryck för att se hur du parkopplar på nytt."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "contact_list_pair_again_button": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كيف تعيد الاقتران"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sådan parrer I igen"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So koppelt ihr euch erneut"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How to pair again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo volver a emparejar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نحوهٔ جفت‌سازی دوباره"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näin teet parituksen uudelleen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comment s'appairer à nouveau"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Како да се спарите повторно"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slik parkobler du på nytt"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как выполнить сопряжение заново"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sida lammaanaanta mar kale loo sameeyo"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Så parkopplar du på nytt"
+          }
+        }
+      }
+    },
+    "contact_list_pair_again_groups": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المجموعات التي تشتركان فيها بالفعل لا تنتقل إلى جهة الاتصال الجديدة. يجب على مشرف المجموعة إزالة هذا الشخص ثم إضافته من جديد."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupper, I allerede er sammen i, flytter ikke med til den nye kontakt. Gruppens admin skal fjerne denne person og tilføje vedkommende igen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppen, die ihr bereits teilt, ziehen nicht zum neuen Kontakt um. Der Admin der Gruppe muss diese Person entfernen und erneut hinzufügen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groups you already share don't move to the new contact. The group's admin needs to remove this person and add them again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los grupos que ya compartís no pasan al contacto nuevo. El administrador del grupo tiene que expulsar a esta persona y volver a añadirla."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "گروه‌هایی که از قبل با هم دارید به مخاطب تازه منتقل نمی‌شوند. مدیر گروه باید این شخص را حذف کند و دوباره اضافه کند."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ryhmät, joissa jo olette yhdessä, eivät siirry uudelle kontaktille. Ryhmän ylläpitäjän täytyy poistaa tämä henkilö ja lisätä hänet uudelleen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les groupes que vous partagez déjà ne passent pas au nouveau contact. L'admin du groupe doit retirer cette personne, puis l'ajouter de nouveau."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Групите што веќе ги споделувате не се преместуваат на новиот контакт. Администраторот на групата треба да го отстрани ова лице и повторно да го додаде."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupper dere allerede er med i, flyttes ikke til den nye kontakten. Administratoren i gruppen må fjerne denne personen og legge dem til igjen."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Группы, в которых вы уже вместе состоите, не переходят к новому контакту. Администратору группы нужно удалить этого человека и добавить его снова."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kooxaha aad hore u wadaagteen uma guuraan xiriiriyaha cusub. Maamulaha kooxdu waa inuu qofkan ka saaro, kadibna mar kale ku daro."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupper ni redan delar flyttas inte till den nya kontakten. Gruppens admin måste ta bort personen och lägga till den igen."
+          }
+        }
+      }
+    },
+    "contact_list_pair_again_steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. حدِّثا Rún كلاكما.\n2. التقيا وأعيدا الاقتران عبر «إضافة جهة اتصال». ستحصل على جهة اتصال جديدة، باسم جديد ومن دون ملاحظة تذكير.\n3. تحقّق من أن جهة الاتصال الجديدة تُظهر «حديث» في قائمتها وأن الرسائل تصل في الاتجاهين.\n4. بعد ذلك يحذف كلٌّ منكما جهة الاتصال القديمة. اقرأ رسائلها الجديدة أولًا: حذف جهة اتصال يحذف أيضًا رسائلها التي لا تزال تنتظر على المُرحّل."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. I opdaterer begge Rún.\n2. Mød hinanden, og par jer igen med Tilføj kontakt. Du får en ny kontakt med et nyt navn og uden hukommelsesnote.\n3. Tjek, at den nye kontakt viser “Aktuel” i sin menu, og at beskeder kommer igennem begge veje.\n4. Slet derefter begge den gamle kontakt. Læs først dens nye beskeder: Når du sletter en kontakt, slettes også dens beskeder, der stadig venter på relæet."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Ihr aktualisiert beide Rún.\n2. Trefft euch und koppelt euch mit „Kontakt hinzufügen“ erneut. Du erhältst einen neuen Kontakt, mit neuem Namen und ohne Gedächtnisstütze.\n3. Prüfe, ob der neue Kontakt in seinem Menü „Aktuell“ anzeigt und Nachrichten in beide Richtungen ankommen.\n4. Löscht dann beide den alten Kontakt. Lies zuerst seine neuen Nachrichten: Beim Löschen eines Kontakts werden auch seine noch auf dem Relay wartenden Nachrichten gelöscht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Both of you update Rún.\n2. Meet and pair again with Add contact. You get a new contact, with a new name and no memory note.\n3. Check that the new contact shows “Current” in its menu and that messages get through both ways.\n4. Then both of you delete the old contact. Read its new messages first: deleting a contact also deletes its messages still waiting on the relay."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Los dos actualizáis Rún.\n2. Quedáis y os emparejáis de nuevo con Añadir contacto. Obtienes un contacto nuevo, con otro nombre y sin nota de recordatorio.\n3. Comprueba que el contacto nuevo muestra “Actual” en su menú y que los mensajes llegan en ambos sentidos.\n4. Después, los dos eliminad el contacto antiguo. Lee antes sus mensajes nuevos: al eliminar un contacto también se eliminan sus mensajes que aún esperan en el relay."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "۱. هر دوی شما Rún را به‌روزرسانی کنید.\n۲. همدیگر را ببینید و با «افزودن مخاطب» دوباره جفت‌سازی کنید. مخاطب تازه‌ای می‌گیرید، با نامی تازه و بدون یادداشت یادآوری.\n۳. بررسی کنید که مخاطب تازه در منوی خود «به‌روز» را نشان دهد و پیام‌ها در هر دو جهت برسند.\n۴. سپس هر دوی شما مخاطب قدیمی را حذف کنید. اول پیام‌های تازهٔ آن را بخوانید: حذف یک مخاطب، پیام‌های او را هم که هنوز روی رله منتظرند حذف می‌کند."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Molemmat päivitätte Rún-sovelluksen.\n2. Tavatkaa ja tehkää paritus uudelleen Lisää kontakti -toiminnolla. Saat uuden kontaktin, jolla on uusi nimi eikä muistilappua.\n3. Tarkista, että uusi kontakti näyttää valikossaan ”Nykyinen” ja että viestit kulkevat molempiin suuntiin.\n4. Poistakaa sitten molemmat vanha kontakti. Lue sen uudet viestit ensin: kontaktin poistaminen poistaa myös sen välityspalvelimella vielä odottavat viestit."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Mettez tous les deux Rún à jour.\n2. Retrouvez-vous et appairez-vous à nouveau avec Ajouter un contact. Vous obtenez un nouveau contact, avec un nouveau nom et sans note de mémoire.\n3. Vérifiez que le nouveau contact affiche « Actuel » dans son menu et que les messages passent dans les deux sens.\n4. Ensuite, supprimez tous les deux l'ancien contact. Lisez d'abord ses nouveaux messages : supprimer un contact supprime aussi ses messages encore en attente sur le relais."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. И двајцата ажурирајте го Rún.\n2. Сретнете се и спарете се повторно со „Додај контакт“. Добивате нов контакт, со ново име и без лична белешка.\n3. Проверете дали новиот контакт покажува „Ажурно“ во своето мени и дали пораките стигнуваат во двата правца.\n4. Потоа и двајцата избришете го стариот контакт. Прво прочитајте ги неговите нови пораки: со бришењето на контактот се бришат и неговите пораки што сè уште чекаат на релето."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Dere oppdaterer begge Rún.\n2. Møtes og parkobler på nytt med Legg til kontakt. Du får en ny kontakt, med nytt navn og uten minnenotat.\n3. Sjekk at den nye kontakten viser «Oppdatert» i menyen sin, og at meldinger kommer fram begge veier.\n4. Slett deretter den gamle kontakten, begge to. Les de nye meldingene først: når du sletter en kontakt, slettes også meldingene som fortsatt venter på relayet."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Вы оба обновляете Rún.\n2. Встретьтесь и снова выполните сопряжение через «Добавить контакт». Вы получите новый контакт с новым именем и без заметки на память.\n3. Убедитесь, что в меню нового контакта указано «Актуальное» и что сообщения доходят в обе стороны.\n4. Затем вы оба удаляете старый контакт. Сначала прочитайте его новые сообщения: при удалении контакта также удаляются его сообщения, ещё ожидающие на ретрансляторе."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Labadiinuba cusboonaysiiya Rún.\n2. Kulma oo lammaanaanta mar kale sameeya adigoo isticmaalaya “Ku dar xiriiriye”. Waxaad helaysaa xiriiriye cusub, oo leh magac cusub, aan lahayn xusuusin.\n3. Hubi in xiriiriyaha cusub liiskiisa lagu muujinayo “Casri ah” iyo in fariimuhu labada dhinac u gudbayaan.\n4. Kadib labadiinuba tirtira xiriiriyihii hore. Marka hore akhri fariimihiisa cusub: tirtiridda xiriiriye waxay sidoo kale tirtirtaa fariimihiisa weli ku sugaya relay-ga."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Ni uppdaterar båda Rún.\n2. Ni ses och parkopplar på nytt med Lägg till kontakt. Du får en ny kontakt, med nytt namn och utan minnesanteckning.\n3. Kontrollera att den nya kontakten visar ”Aktuell” i sin meny och att meddelanden kommer fram åt båda håll.\n4. Radera sedan den gamla kontakten, båda två. Läs dess nya meddelanden först: när du raderar en kontakt raderas också dess meddelanden som fortfarande väntar på reläet."
+          }
+        }
+      }
+    },
+    "contact_list_pair_again_why": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط مطولًا على جهة اتصال لترى أي اقتران تستخدم.\n\nمع اقتران أقدم، فإن من سجّل رسائلك في طريقها ثم حصل لاحقًا على مفتاح هذا الاقتران — من أحد هاتفيكما أو، إذا اقترنتما شخصيًا، من صورة للرمزين معًا — قد يتمكن من قراءة رسائلكما الأولى المتبادلة (إلى أن يكون كلاكما قد كتب)، وبعض رسائل المجموعات والتقديم. الرسائل المسجّلة وحدها لا تكفي. أما الرسائل اللاحقة فمحمية بالطريقة نفسها كما في الاقتران الحديث.\n\nإعادة الاقتران لا تحمي إلا الرسائل المُرسَلة بعدها."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryk og hold på en kontakt for at se, hvilken parring den bruger.\n\nMed en ældre parring kan en person, der har optaget dine beskeder undervejs og senere får fat i denne parrings nøgle — fra en af jeres to telefoner eller, hvis I parrede ansigt til ansigt, fra et foto af begge koder — læse jeres første beskeder til hinanden (indtil I begge havde skrevet) og nogle gruppe- og introduktionsbeskeder. Optagede beskeder alene er ikke nok. Senere beskeder er beskyttet på samme måde som med en aktuel parring.\n\nEn ny parring beskytter kun de beskeder, der sendes efter den."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte einen Kontakt gedrückt, um zu sehen, welche Kopplung er nutzt.\n\nBei einer älteren Kopplung könnte jemand, der deine Nachrichten auf ihrem Weg aufgezeichnet hat und später den Schlüssel dieser Kopplung erhält — von einem eurer beiden Telefone oder, wenn ihr euch persönlich gekoppelt habt, von einem Foto beider Codes —, eure ersten Nachrichten aneinander lesen (bis ihr beide geschrieben hattet) sowie einige Gruppen- und Vorstellungsnachrichten. Aufgezeichnete Nachrichten allein reichen nicht aus. Spätere Nachrichten sind genauso geschützt wie bei einer aktuellen Kopplung.\n\nEine neue Kopplung schützt nur die Nachrichten, die danach gesendet werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press and hold a contact to see which pairing it uses.\n\nWith an older pairing, someone who has recorded your messages on their way and later gets this pairing's key — from one of your two phones or, if you paired in person, from a photo of both codes — could read your first messages to each other (until you had both written), and some group and introduction messages. Recorded messages alone are not enough. Later messages are protected the same way as with a current pairing.\n\nPairing again protects only the messages sent after it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén pulsado un contacto para ver qué emparejamiento usa.\n\nCon un emparejamiento antiguo, quien haya grabado tus mensajes por el camino y consiga después la clave de este emparejamiento (de uno de vuestros dos teléfonos o, si os emparejasteis en persona, de una foto de los dos códigos) podría leer vuestros primeros mensajes (hasta que los dos hubierais escrito) y algunos mensajes de grupo y de presentación. Los mensajes grabados por sí solos no bastan. Los mensajes posteriores están protegidos igual que con un emparejamiento actual.\n\nVolver a emparejar solo protege los mensajes enviados después."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مخاطبی را لمس کنید و نگه دارید تا ببینید از کدام جفت‌سازی استفاده می‌کند.\n\nدر جفت‌سازی قدیمی‌تر، کسی که پیام‌های شما را در مسیرشان ضبط کرده و بعداً کلید این جفت‌سازی را به دست می‌آورد — از یکی از دو گوشی شما یا، اگر حضوری جفت‌سازی کرده‌اید، از عکسی از هر دو کد — می‌تواند نخستین پیام‌هایتان به یکدیگر (تا زمانی که هر دو پیامی نوشته باشید) و برخی پیام‌های گروهی و معرفی را بخواند. پیام‌های ضبط‌شده به‌تنهایی کافی نیستند. پیام‌های بعدی همان‌طور محافظت می‌شوند که در جفت‌سازی به‌روز.\n\nجفت‌سازی دوباره فقط از پیام‌هایی محافظت می‌کند که پس از آن فرستاده می‌شوند."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paina kontaktia pitkään nähdäksesi, mitä paritusta se käyttää.\n\nVanhemmassa parituksessa joku, joka on tallentanut viestisi matkalla ja saa myöhemmin tämän parituksen avaimen — jommastakummasta puhelimestanne tai, jos teitte parituksen kasvokkain, kummankin koodin valokuvasta — voisi lukea ensimmäiset viestinne toisillenne (kunnes olitte molemmat kirjoittaneet) sekä joitakin ryhmä- ja esittelyviestejä. Pelkät tallennetut viestit eivät riitä. Myöhemmät viestit on suojattu samalla tavalla kuin nykyisessä parituksessa.\n\nUusi paritus suojaa vain sen jälkeen lähetetyt viestit."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maintenez un contact appuyé pour voir quel appairage il utilise.\n\nAvec un ancien appairage, quelqu'un qui a enregistré vos messages pendant leur trajet et obtient plus tard la clé de cet appairage — depuis l'un de vos deux téléphones ou, si vous vous êtes appairés en personne, depuis une photo des deux codes — pourrait lire vos premiers messages échangés (jusqu'à ce que vous ayez tous deux écrit), ainsi que certains messages de groupe et de présentation. Des messages enregistrés ne suffisent pas à eux seuls. Les messages suivants sont protégés de la même façon qu'avec un appairage actuel.\n\nS'appairer à nouveau ne protège que les messages envoyés après."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Притиснете и задржете контакт за да видите кое спарување го користи.\n\nКај постаро спарување, некој што ги снимил вашите пораки на нивниот пат и подоцна ќе дојде до клучот на ова спарување — од еден од вашите два телефона или, ако сте се спариле лично, од фотографија на двата кода — би можел да ги прочита вашите први пораки еден до друг (додека и двајцата не сте напишале порака), како и некои групни пораки и пораки за претставување. Само снимените пораки не се доволни. Подоцнежните пораки се заштитени исто како и кај ажурно спарување.\n\nПовторното спарување ги штити само пораките испратени по него."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trykk og hold på en kontakt for å se hvilken parkobling den bruker.\n\nMed en eldre parkobling kan noen som har tatt opp meldingene dine underveis og senere får tak i nøkkelen til denne parkoblingen – fra en av de to telefonene deres eller, hvis dere parkoblet ansikt til ansikt, fra et bilde av begge kodene – lese de første meldingene dere sendte hverandre (til dere begge hadde skrevet), og noen gruppemeldinger og introduksjonsmeldinger. Opptakene alene er ikke nok. Senere meldinger er beskyttet på samme måte som med en oppdatert parkobling.\n\nÅ parkoble på nytt beskytter bare meldingene som sendes etterpå."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите на контакт и удерживайте, чтобы увидеть, какое у него сопряжение.\n\nПри старом сопряжении тот, кто записал ваши сообщения по пути и позже получил ключ этого сопряжения — с одного из ваших двух телефонов или, если вы выполняли сопряжение лично, по фотографии обоих кодов, — сможет прочитать ваши первые сообщения друг другу (пока вы оба не написали) и некоторые сообщения групп и знакомств. Одних записанных сообщений для этого недостаточно. Последующие сообщения защищены так же, как при актуальном сопряжении.\n\nПовторное сопряжение защищает только сообщения, отправленные после него."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taabo oo hay xiriiriye si aad u aragto lammaanaanta uu isticmaalo.\n\nMarka lammaanaantu hore tahay, qof duubay fariimahaaga intay socdeen oo goor dambe hela furaha lammaanaantan — mid ka mid ah labadiinna taleefan ama, haddii aad si toos ah isu lammaaneen, sawir laga qaaday labada koodh — wuxuu akhrin karaa fariimihii ugu horreeyay ee aad isu dirteen (ilaa aad labadiinuba wax qorteen), iyo qaar ka mid ah fariimaha kooxda iyo isbarashada. Fariimaha la duubay oo keliya kuma filna. Fariimaha dambe waxaa loo ilaaliyaa si la mid ah lammaanaan casri ah.\n\nLammaanaanta mar kale la sameeyo waxay ilaalisaa oo keliya fariimaha la diro kadib."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Håll in en kontakt för att se vilken parkoppling den använder.\n\nMed en äldre parkoppling kan någon som har spelat in dina meddelanden på vägen och senare får den här parkopplingens nyckel — från någon av dina två telefoner eller, om ni parkopplade er personligen, från ett foto av båda koderna — läsa era första meddelanden till varandra (tills ni båda hade skrivit) och en del grupp- och introduktionsmeddelanden. Inspelade meddelanden räcker inte ensamma. Senare meddelanden skyddas på samma sätt som med en aktuell parkoppling.\n\nAtt parkoppla på nytt skyddar bara de meddelanden som skickas efteråt."
+          }
+        }
+      }
+    },
+    "contact_list_pairing_current": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حديث"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuel"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuell"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actual"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "به‌روز"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nykyinen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actuel"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ажурно"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oppdatert"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Актуальное"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casri ah"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuell"
+          }
+        }
+      }
+    },
+    "contact_list_pairing_current_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أُنشئ والتطبيقان كلاهما محدَّثان. لا شيء عليك فعله."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oprettet, da begge apps var opdateret. Du skal ikke gøre noget."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit beiden Apps auf dem neuesten Stand erstellt. Nichts zu tun."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made with both apps up to date. Nothing to do."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho con las dos apps actualizadas. No hay nada que hacer."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقتی هر دو برنامه به‌روز بودند انجام شده است. نیازی به کاری نیست."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tehty, kun molemmat sovellukset olivat ajan tasalla. Ei tehtävää."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Établi avec les deux applis à jour. Rien à faire."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Направено кога двете апликации беа ажурирани. Не треба ништо да правите."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laget med begge appene oppdatert. Ingenting å gjøre."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выполнено при обновлённых приложениях у обоих. Делать ничего не нужно."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waxaa la sameeyay iyadoo labada app-ba ay casri yihiin. Waxba lagama rabo."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gjord när båda apparna var uppdaterade. Inget att göra."
+          }
+        }
+      }
+    },
+    "contact_list_pairing_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاقتران"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parring"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopplung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pairing"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emparejamiento"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جفت‌سازی"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paritus"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appairage"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спарување"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parkobling"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сопряжение"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lammaanaan"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parkoppling"
+          }
+        }
+      }
+    },
+    "contact_list_pairing_older": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اقتران أقدم"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ældre parring"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ältere Kopplung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Older pairing"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emparejamiento antiguo"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جفت‌سازی قدیمی‌تر"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vanhempi paritus"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancien appairage"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Постаро спарување"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eldre parkobling"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Старое сопряжение"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lammaanaan hore"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Äldre parkoppling"
+          }
+        }
+      }
+    },
+    "contact_list_pairing_older_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أُنشئ بإصدار أقدم من Rún. تحديث التطبيق لا يغيّر ذلك، أما إعادة الاقتران فتغيّره."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oprettet med en ældre version af Rún. Det ændrer sig ikke, når du opdaterer appen; det gør en ny parring."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit einer älteren Version von Rún erstellt. Eine Aktualisierung der App ändert daran nichts, eine neue Kopplung schon."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made with an older version of Rún. Updating the app doesn't change this; pairing again does."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho con una versión anterior de Rún. Actualizar la app no lo cambia; volver a emparejaros, sí."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "با نسخهٔ قدیمی‌تری از Rún انجام شده است. به‌روزرسانی برنامه این را تغییر نمی‌دهد؛ جفت‌سازی دوباره تغییرش می‌دهد."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tehty Rún-sovelluksen vanhemmalla versiolla. Sovelluksen päivittäminen ei muuta tätä, mutta uusi paritus muuttaa."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Établi avec une ancienne version de Rún. Mettre l'appli à jour n'y change rien ; s'appairer à nouveau, si."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Направено со постара верзија на Rún. Ажурирањето на апликацијата не го менува ова; повторното спарување го менува."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laget med en eldre versjon av Rún. Å oppdatere appen endrer ikke dette, men å parkoble på nytt gjør det."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выполнено в более старой версии Rún. Обновление приложения этого не меняет, а повторное сопряжение меняет."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waxaa lagu sameeyay nooc hore oo Rún ah. Cusboonaysiinta app-ku tan ma beddesho; lammaanaanta oo mar kale la sameeyo ayaa beddesha."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gjord med en äldre version av Rún. Att uppdatera appen ändrar inte det; att parkoppla på nytt gör det."
+          }
+        }
+      }
+    },
     "contact_list_pending_row_hint": {
       "extractionState": "manual",
       "localizations": {
@@ -14973,79 +16078,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "سيحصل Rún على مفاتيح وصول جديدة لهذه المحادثة من المُرحّل. تبقى رسائلك وسجلّك وجهة الاتصال هذه كما هي تمامًا، ولا يحتاج %1$@ إلى فعل أي شيء.\n\nافعل هذا إذا كنت تعتقد أن شخصًا آخر أمسك بهاتفك وهو غير مقفل. لا يُلغي هذا أي شيء قرأه ذلك الشخص بالفعل — وإذا كان الهاتف قد أُخذ فعلًا، فالحل الأسلم يبقى حذف جهة الاتصال هذه والاقتران من جديد شخصيًا."
+            "value": "سيحصل Rún على مفاتيح وصول جديدة لهذه المحادثة من المُرحّل. تبقى رسائلك وسجلّك وجهة الاتصال هذه كما هي تمامًا، ولا يحتاج %1$@ إلى فعل أي شيء.\n\nافعل هذا إذا كنت تعتقد أن شخصًا آخر أمسك بهاتفك وهو غير مقفل. لا يُلغي هذا أي شيء قرأه ذلك الشخص بالفعل — وإذا كان الهاتف قد أُخذ فعلًا، فالحل الأسلم يبقى الاقتران من جديد شخصيًا ثم حذف جهة الاتصال هذه."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún henter nye adgangsnøgler til denne samtale fra relæet. Dine beskeder, din historik og denne kontakt bliver præcis, som de er, og %1$@ skal ikke gøre noget.\n\nGør det, hvis du tror, at en anden har haft din telefon, mens den var låst op. Det kan ikke ophæve det, de allerede har læst — og hvis telefonen virkelig blev taget, er det sikreste stadig at slette denne kontakt og parre jer igen ansigt til ansigt."
+            "value": "Rún henter nye adgangsnøgler til denne samtale fra relæet. Dine beskeder, din historik og denne kontakt bliver præcis, som de er, og %1$@ skal ikke gøre noget.\n\nGør det, hvis du tror, at en anden har haft din telefon, mens den var låst op. Det kan ikke ophæve det, de allerede har læst — og hvis telefonen virkelig blev taget, er det sikreste stadig at parre jer igen ansigt til ansigt og derefter slette denne kontakt."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún holt sich für diese Unterhaltung neue Zugangsschlüssel vom Relay. Deine Nachrichten, dein Verlauf und dieser Kontakt bleiben genau so, wie sie sind, und %1$@ muss nichts tun.\n\nMach das, wenn du glaubst, dass jemand anderes dein Telefon in der Hand hatte, während es entsperrt war. Das macht nicht rückgängig, was diese Person bereits gelesen hat — und wenn das Telefon wirklich in fremden Händen war, bleibt der sicherste Weg, diesen Kontakt zu löschen und euch persönlich neu zu koppeln."
+            "value": "Rún holt sich für diese Unterhaltung neue Zugangsschlüssel vom Relay. Deine Nachrichten, dein Verlauf und dieser Kontakt bleiben genau so, wie sie sind, und %1$@ muss nichts tun.\n\nMach das, wenn du glaubst, dass jemand anderes dein Telefon in der Hand hatte, während es entsperrt war. Das macht nicht rückgängig, was diese Person bereits gelesen hat — und wenn das Telefon wirklich in fremden Händen war, bleibt der sicherste Weg, euch persönlich neu zu koppeln und dann diesen Kontakt zu löschen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$@ doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to delete this contact and pair again in person."
+            "value": "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$@ doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to pair again in person and then delete this contact."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún pedirá al relay claves de acceso nuevas para esta conversación. Tus mensajes, tu historial y este contacto se quedan exactamente como están, y %1$@ no tiene que hacer nada.\n\nHazlo si crees que otra persona tuvo tu teléfono mientras estaba desbloqueado. No puede deshacer lo que ya hayan leído; y si el teléfono estuvo de verdad en otras manos, lo más seguro sigue siendo eliminar este contacto y volver a emparejaros en persona."
+            "value": "Rún pedirá al relay claves de acceso nuevas para esta conversación. Tus mensajes, tu historial y este contacto se quedan exactamente como están, y %1$@ no tiene que hacer nada.\n\nHazlo si crees que otra persona tuvo tu teléfono mientras estaba desbloqueado. No puede deshacer lo que ya hayan leído; y si el teléfono estuvo de verdad en otras manos, lo más seguro sigue siendo volver a emparejaros en persona y eliminar después este contacto."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún برای این گفتگو کلیدهای دسترسی تازه‌ای از رله می‌گیرد. پیام‌ها، تاریخچه و این مخاطب دقیقاً همان‌طور که هستند می‌مانند و %1$@ لازم نیست کاری بکند.\n\nاگر فکر می‌کنید کس دیگری در حالی که قفل گوشی باز بوده آن را در دست داشته، این کار را انجام دهید. این کار چیزی را که او قبلاً خوانده پس نمی‌گیرد — و اگر گوشی واقعاً دست کسی بوده، امن‌ترین راه همچنان این است که این مخاطب را حذف کنید و دوباره حضوری جفت‌سازی کنید."
+            "value": "Rún برای این گفتگو کلیدهای دسترسی تازه‌ای از رله می‌گیرد. پیام‌ها، تاریخچه و این مخاطب دقیقاً همان‌طور که هستند می‌مانند و %1$@ لازم نیست کاری بکند.\n\nاگر فکر می‌کنید کس دیگری در حالی که قفل گوشی باز بوده آن را در دست داشته، این کار را انجام دهید. این کار چیزی را که او قبلاً خوانده پس نمی‌گیرد — و اگر گوشی واقعاً دست کسی بوده، امن‌ترین راه همچنان این است که دوباره حضوری جفت‌سازی کنید و سپس این مخاطب را حذف کنید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún hakee välityspalvelimelta uudet käyttöavaimet tälle keskustelulle. Viestisi, historiasi ja tämä kontakti pysyvät täsmälleen ennallaan, eikä %1$@ joudu tekemään mitään.\n\nTee tämä, jos epäilet jonkun muun pitäneen puhelintasi hallussaan sen ollessa auki. Se ei peru mitään, mitä he ovat jo lukeneet — ja jos puhelin todella vietiin, turvallisin ratkaisu on silti poistaa tämä kontakti ja tehdä paritus uudelleen kasvokkain."
+            "value": "Rún hakee välityspalvelimelta uudet käyttöavaimet tälle keskustelulle. Viestisi, historiasi ja tämä kontakti pysyvät täsmälleen ennallaan, eikä %1$@ joudu tekemään mitään.\n\nTee tämä, jos epäilet jonkun muun pitäneen puhelintasi hallussaan sen ollessa auki. Se ei peru mitään, mitä he ovat jo lukeneet — ja jos puhelin todella vietiin, turvallisin ratkaisu on silti tehdä paritus uudelleen kasvokkain ja poistaa sitten tämä kontakti."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún obtiendra du relais de nouvelles clés d'accès pour cette conversation. Vos messages, votre historique et ce contact restent exactement tels quels, et %1$@ n'a rien à faire.\n\nFaites-le si vous pensez que quelqu'un d'autre a eu votre téléphone alors qu'il était déverrouillé. Cela n'annule pas ce qu'il a déjà pu lire — et si le téléphone a réellement été pris, la solution la plus sûre reste de supprimer ce contact et de vous appairer à nouveau en personne."
+            "value": "Rún obtiendra du relais de nouvelles clés d'accès pour cette conversation. Vos messages, votre historique et ce contact restent exactement tels quels, et %1$@ n'a rien à faire.\n\nFaites-le si vous pensez que quelqu'un d'autre a eu votre téléphone alors qu'il était déverrouillé. Cela n'annule pas ce qu'il a déjà pu lire — et si le téléphone a réellement été pris, la solution la plus sûre reste de vous appairer à nouveau en personne, puis de supprimer ce contact."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún ќе добие нови клучеви за пристап до овој разговор од релето. Вашите пораки, вашата историја и овој контакт остануваат целосно исти, а %1$@ не треба да прави ништо.\n\nНаправете го ова ако мислите дека некој друг го држел вашиот телефон додека бил отклучен. Ова не може да поништи ништо што веќе е прочитано — а ако телефонот навистина бил земен, најбезбедното решение сепак е да го избришете овој контакт и повторно да се спарите лично."
+            "value": "Rún ќе добие нови клучеви за пристап до овој разговор од релето. Вашите пораки, вашата историја и овој контакт остануваат целосно исти, а %1$@ не треба да прави ништо.\n\nНаправете го ова ако мислите дека некој друг го држел вашиот телефон додека бил отклучен. Ова не може да поништи ништо што веќе е прочитано — а ако телефонот навистина бил земен, најбезбедното решение сепак е повторно да се спарите лично, а потоа да го избришете овој контакт."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún henter nye tilgangsnøkler for denne samtalen fra relayet. Meldingene dine, historikken din og denne kontakten blir akkurat som før, og %1$@ trenger ikke gjøre noe.\n\nGjør dette hvis du tror noen andre har hatt telefonen din mens den var ulåst. Det kan ikke gjøre om på noe de allerede har lest – og hvis telefonen faktisk ble tatt, er det tryggeste fortsatt å slette denne kontakten og parkoble på nytt ansikt til ansikt."
+            "value": "Rún henter nye tilgangsnøkler for denne samtalen fra relayet. Meldingene dine, historikken din og denne kontakten blir akkurat som før, og %1$@ trenger ikke gjøre noe.\n\nGjør dette hvis du tror noen andre har hatt telefonen din mens den var ulåst. Det kan ikke gjøre om på noe de allerede har lest – og hvis telefonen faktisk ble tatt, er det tryggeste fortsatt å parkoble på nytt ansikt til ansikt og deretter slette denne kontakten."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún получит от ретранслятора новые ключи доступа для этой беседы. Ваши сообщения, история переписки и этот контакт останутся без изменений, а %1$@ не нужно ничего делать.\n\nСделайте это, если думаете, что кто-то ещё держал ваш телефон, пока он был разблокирован. Это не отменит то, что уже было прочитано — и если телефон действительно оказался в чужих руках, самый надёжный способ — удалить этот контакт и провести повторное сопряжение лично."
+            "value": "Rún получит от ретранслятора новые ключи доступа для этой беседы. Ваши сообщения, история переписки и этот контакт останутся без изменений, а %1$@ не нужно ничего делать.\n\nСделайте это, если думаете, что кто-то ещё держал ваш телефон, пока он был разблокирован. Это не отменит то, что уже было прочитано — и если телефон действительно оказался в чужих руках, самый надёжный способ — выполнить повторное сопряжение лично, а затем удалить этот контакт."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún wuxuu relay-ga uga heli doonaa wada-hadalkan furayaal gelitaan oo cusub. Fariimahaaga, taariikhdaada iyo xiriiriyahan sidii ay ahaayeen ayay ahaan doonaan, %1$@-na waxba lagama rabo.\n\nTan samee haddii aad u malaynayso in qof kale haystay taleefankaaga intii uu furnaa. Ma burin karto wax ay hore u akhriyeen — haddiise taleefanka runtii la qaaday, xalka ugu ammaan badan weli waa in xiriiriyahan la tirtiro oo dib loola xidho si toos ah."
+            "value": "Rún wuxuu relay-ga uga heli doonaa wada-hadalkan furayaal gelitaan oo cusub. Fariimahaaga, taariikhdaada iyo xiriiriyahan sidii ay ahaayeen ayay ahaan doonaan, %1$@-na waxba lagama rabo.\n\nTan samee haddii aad u malaynayso in qof kale haystay taleefankaaga intii uu furnaa. Ma burin karto wax ay hore u akhriyeen — haddiise taleefanka runtii la qaaday, xalka ugu ammaan badan weli waa in lammaanaanta mar kale si toos ah loo sameeyo, kadibna xiriiriyahan la tirtiro."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rún hämtar nya åtkomstnycklar för den här konversationen från reläet. Dina meddelanden, din historik och kontakten är kvar precis som de är, och %1$@ behöver inte göra någonting.\n\nGör det här om du tror att någon annan haft din telefon medan den var upplåst. Det gör inte det de redan hunnit läsa ogjort — och om telefonen verkligen togs är det säkraste ändå att radera kontakten och parkoppla på nytt personligen."
+            "value": "Rún hämtar nya åtkomstnycklar för den här konversationen från reläet. Dina meddelanden, din historik och kontakten är kvar precis som de är, och %1$@ behöver inte göra någonting.\n\nGör det här om du tror att någon annan haft din telefon medan den var upplåst. Det gör inte det de redan hunnit läsa ogjort — och om telefonen verkligen togs är det säkraste ändå att parkoppla på nytt personligen och sedan radera kontakten."
           }
         }
       }
@@ -15803,79 +16908,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "لا تزال الرسائل المُرسَلة إلى جهة الاتصال هذه مشفّرة، لكنها لا تحصل بعد على الحماية الإضافية التي تُبقي الرسائل السابقة آمنة إذا انكشف أحد المفاتيح لاحقًا. يزول هذا عادةً بمجرّد أن يرد الطرف الآخر. وإذا استمر، فاحذف جهة الاتصال ثم أضفها من جديد."
+            "value": "لا تزال الرسائل المُرسَلة إلى جهة الاتصال هذه مشفّرة، لكنها لا تحصل بعد على الحماية الإضافية التي تُبقي الرسائل السابقة آمنة إذا انكشف أحد المفاتيح لاحقًا. يزول هذا عادةً بمجرّد أن يرد الطرف الآخر. وإذا استمر، فأعد الاقتران ثم احذف جهة الاتصال القديمة."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Beskeder til denne kontakt er stadig krypteret, men de får endnu ikke den ekstra beskyttelse, der holder tidligere beskeder sikre, hvis en nøgle senere bliver kompromitteret. Det klarer sig som regel, når kontakten svarer. Hvis det fortsætter, skal du fjerne kontakten og tilføje den igen."
+            "value": "Beskeder til denne kontakt er stadig krypteret, men de får endnu ikke den ekstra beskyttelse, der holder tidligere beskeder sikre, hvis en nøgle senere bliver kompromitteret. Det klarer sig som regel, når kontakten svarer. Hvis det fortsætter, skal I parre jer igen og derefter slette den gamle kontakt."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nachrichten an diesen Kontakt sind weiterhin verschlüsselt, aber sie erhalten noch nicht den zusätzlichen Schutz, der frühere Nachrichten schützt, falls später ein Schlüssel offengelegt wird. Das klärt sich normalerweise, sobald der Kontakt antwortet. Besteht das Problem weiterhin, entferne den Kontakt und füge ihn erneut hinzu."
+            "value": "Nachrichten an diesen Kontakt sind weiterhin verschlüsselt, aber sie erhalten noch nicht den zusätzlichen Schutz, der frühere Nachrichten schützt, falls später ein Schlüssel offengelegt wird. Das klärt sich normalerweise, sobald der Kontakt antwortet. Besteht das Problem weiterhin, führe die Kopplung erneut durch und lösche dann den alten Kontakt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, remove and re-add the contact."
+            "value": "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, pair again, then delete the old contact."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los mensajes a este contacto siguen cifrados, pero todavía no cuentan con la protección adicional que mantiene a salvo los mensajes anteriores si una clave se expone más adelante. Esto suele resolverse en cuanto responda. Si persiste, elimina el contacto y vuelve a añadirlo."
+            "value": "Los mensajes a este contacto siguen cifrados, pero todavía no cuentan con la protección adicional que mantiene a salvo los mensajes anteriores si una clave se expone más adelante. Esto suele resolverse en cuanto responda. Si persiste, vuelve a emparejarlo y elimina después el contacto antiguo."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "پیام‌هایی که به این مخاطب می‌فرستید همچنان رمزگذاری می‌شوند، اما هنوز از آن حفاظت اضافی برخوردار نیستند که اگر بعداً کلیدی لو برود، پیام‌های گذشته را ایمن نگه می‌دارد. معمولاً به‌محض اینکه مخاطب پاسخ بدهد، این وضعیت برطرف می‌شود. اگر ادامه داشت، مخاطب را حذف کنید و دوباره اضافه کنید."
+            "value": "پیام‌هایی که به این مخاطب می‌فرستید همچنان رمزگذاری می‌شوند، اما هنوز از آن حفاظت اضافی برخوردار نیستند که اگر بعداً کلیدی لو برود، پیام‌های گذشته را ایمن نگه می‌دارد. معمولاً به‌محض اینکه مخاطب پاسخ بدهد، این وضعیت برطرف می‌شود. اگر ادامه داشت، دوباره جفت‌سازی کنید و سپس مخاطب قدیمی را حذف کنید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Viestit tälle kontaktille ovat yhä salattuja, mutta ne eivät vielä saa lisäsuojaa, joka pitää aiemmat viestit turvassa, jos avain paljastuu myöhemmin. Tämä yleensä korjaantuu, kun kontakti vastaa. Jos ongelma jatkuu, poista kontakti ja lisää se uudelleen."
+            "value": "Viestit tälle kontaktille ovat yhä salattuja, mutta ne eivät vielä saa lisäsuojaa, joka pitää aiemmat viestit turvassa, jos avain paljastuu myöhemmin. Tämä yleensä korjaantuu, kun kontakti vastaa. Jos ongelma jatkuu, tee paritus uudelleen ja poista sitten vanha kontakti."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les messages destinés à ce contact restent chiffrés, mais ils ne bénéficient pas encore de la protection supplémentaire qui met les messages précédents à l'abri si une clé venait à être exposée. Cela se résout généralement dès que le contact répond. Si le problème persiste, supprimez le contact, puis ajoutez-le de nouveau."
+            "value": "Les messages destinés à ce contact restent chiffrés, mais ils ne bénéficient pas encore de la protection supplémentaire qui met les messages précédents à l'abri si une clé venait à être exposée. Cela se résout généralement dès que le contact répond. Si le problème persiste, appairez-vous à nouveau, puis supprimez l'ancien contact."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Пораките до овој контакт и понатаму се шифрирани, но сè уште ја немаат дополнителната заштита што ги чува безбедни претходните пораки ако подоцна се открие некој клуч. Ова обично се решава штом контактот ќе одговори. Ако состојбата продолжи, избришете го контактот и додајте го повторно."
+            "value": "Пораките до овој контакт и понатаму се шифрирани, но сè уште ја немаат дополнителната заштита што ги чува безбедни претходните пораки ако подоцна се открие некој клуч. Ова обично се решава штом контактот ќе одговори. Ако состојбата продолжи, спарете се повторно, а потоа избришете го стариот контакт."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meldinger til denne kontakten er fremdeles kryptert, men de får ennå ikke den ekstra beskyttelsen som holder tidligere meldinger trygge hvis en nøkkel skulle bli eksponert senere. Dette ordner seg som regel når kontakten svarer. Hvis det vedvarer, fjern kontakten og legg den til på nytt."
+            "value": "Meldinger til denne kontakten er fremdeles kryptert, men de får ennå ikke den ekstra beskyttelsen som holder tidligere meldinger trygge hvis en nøkkel skulle bli eksponert senere. Dette ordner seg som regel når kontakten svarer. Hvis det vedvarer, parkoble på nytt og slett deretter den gamle kontakten."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сообщения этому контакту по-прежнему зашифрованы, но они пока не получают дополнительную защиту, которая сохраняет прежние сообщения в безопасности, если ключ будет раскрыт позже. Обычно это проходит само, как только контакт ответит. Если проблема сохраняется, удалите контакт и добавьте его заново."
+            "value": "Сообщения этому контакту по-прежнему зашифрованы, но они пока не получают дополнительную защиту, которая сохраняет прежние сообщения в безопасности, если ключ будет раскрыт позже. Обычно это проходит само, как только контакт ответит. Если проблема сохраняется, выполните сопряжение заново, а затем удалите старый контакт."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fariimaha aad u dirto xiriiriyahan weli waa sirsan yihiin, laakiin weli ma helayaan ilaalinta dheeraadka ah ee fariimihii hore badbaado ku haysa haddii fure goor dambe la ogaado. Inta badan arrintani way dhammaataa marka xiriiriyuhu jawaabo. Haddii ay sii jirto, xiriiriyaha tirtir, kadibna mar kale ku dar."
+            "value": "Fariimaha aad u dirto xiriiriyahan weli waa sirsan yihiin, laakiin weli ma helayaan ilaalinta dheeraadka ah ee fariimihii hore badbaado ku haysa haddii fure goor dambe la ogaado. Inta badan arrintani way dhammaataa marka xiriiriyuhu jawaabo. Haddii ay sii jirto, lammaanaanta mar kale samee, kadibna tirtir xiriiriyihii hore."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meddelanden till den här kontakten är fortfarande krypterade, men de får ännu inte det extra skydd som håller tidigare meddelanden säkra om en nyckel avslöjas senare. Det brukar lösa sig när kontakten svarar. Om problemet kvarstår, ta bort kontakten och lägg till den igen."
+            "value": "Meddelanden till den här kontakten är fortfarande krypterade, men de får ännu inte det extra skydd som håller tidigare meddelanden säkra om en nyckel avslöjas senare. Det brukar lösa sig när kontakten svarar. Om problemet kvarstår, parkoppla på nytt och radera sedan den gamla kontakten."
           }
         }
       }
@@ -16218,79 +17323,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تعذّر إنشاء قناة آمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. احذف جهة الاتصال وأعد الاقتران."
+            "value": "تعذّر إنشاء قناة آمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. أعد الاقتران، ثم احذف جهة الاتصال هذه."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der kunne ikke oprettes en sikker kanal med denne kontakt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen."
+            "value": "Der kunne ikke oprettes en sikker kanal med denne kontakt. Beskeder bliver ikke sendt. Par jer igen, og slet derefter denne kontakt."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mit diesem Kontakt konnte kein sicherer Kanal aufgebaut werden. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch."
+            "value": "Mit diesem Kontakt konnte kein sicherer Kanal aufgebaut werden. Nachrichten werden nicht gesendet. Führe die Kopplung erneut durch und lösche dann diesen Kontakt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Secure channel could not be established with this contact. Messages are not being sent. Remove the contact and pair again."
+            "value": "Secure channel could not be established with this contact. Messages are not being sent. Pair again, then delete this contact."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se ha podido establecer un canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo."
+            "value": "No se ha podido establecer un canal seguro con este contacto. Los mensajes no se están enviando. Vuelve a emparejarlo y elimina después este contacto."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "برقراری کانال امن با این مخاطب ممکن نشد. پیام‌ها ارسال نمی‌شوند. مخاطب را حذف کنید و دوباره جفت‌سازی کنید."
+            "value": "برقراری کانال امن با این مخاطب ممکن نشد. پیام‌ها ارسال نمی‌شوند. دوباره جفت‌سازی کنید و سپس این مخاطب را حذف کنید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Suojattua kanavaa ei voitu muodostaa tämän kontaktin kanssa. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen."
+            "value": "Suojattua kanavaa ei voitu muodostaa tämän kontaktin kanssa. Viestejä ei lähetetä. Tee paritus uudelleen ja poista sitten tämä kontakti."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impossible d'établir un canal sécurisé avec ce contact. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau."
+            "value": "Impossible d'établir un canal sécurisé avec ce contact. Les messages ne sont pas envoyés. Appairez-vous à nouveau, puis supprimez ce contact."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не можеше да се воспостави безбеден канал со овој контакт. Пораките не се испраќаат. Избришете го контактот и спарете се повторно."
+            "value": "Не можеше да се воспостави безбеден канал со овој контакт. Пораките не се испраќаат. Спарете се повторно, а потоа избришете го овој контакт."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke opprette en sikker kanal med denne kontakten. Meldinger blir ikke sendt. Fjern kontakten og parkoble på nytt."
+            "value": "Kunne ikke opprette en sikker kanal med denne kontakten. Meldinger blir ikke sendt. Parkoble på nytt, og slett deretter denne kontakten."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось установить защищённый канал с этим контактом. Сообщения не отправляются. Удалите контакт и выполните сопряжение заново."
+            "value": "Не удалось установить защищённый канал с этим контактом. Сообщения не отправляются. Выполните сопряжение заново, а затем удалите этот контакт."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lama samayn karin kanaal ammaan ah oo aad xiriiriyahan la leedahay. Fariimaha lama dirayo. Xiriiriyaha tirtir, kadibna lammaanaanta mar kale samee."
+            "value": "Lama samayn karin kanaal ammaan ah oo aad xiriiriyahan la leedahay. Fariimaha lama dirayo. Lammaanaanta mar kale samee, kadibna xiriiriyahan tirtir."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det gick inte att upprätta en säker kanal med den här kontakten. Meddelanden skickas inte. Ta bort kontakten och parkoppla på nytt."
+            "value": "Det gick inte att upprätta en säker kanal med den här kontakten. Meddelanden skickas inte. Parkoppla på nytt och radera sedan kontakten."
           }
         }
       }
@@ -16716,79 +17821,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "فُقدت القناة الآمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. أزل جهة الاتصال ثم أعد الاقتران."
+            "value": "فُقدت القناة الآمنة مع جهة الاتصال هذه. لا يتم إرسال الرسائل. أعد الاقتران، ثم احذف جهة الاتصال هذه."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Den sikre kanal med denne kontakt er gået tabt. Beskeder bliver ikke sendt. Fjern kontakten, og par jer igen."
+            "value": "Den sikre kanal med denne kontakt er gået tabt. Beskeder bliver ikke sendt. Par jer igen, og slet derefter denne kontakt."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der sichere Kanal mit diesem Kontakt ging verloren. Nachrichten werden nicht gesendet. Entferne den Kontakt und führe die Kopplung erneut durch."
+            "value": "Der sichere Kanal mit diesem Kontakt ging verloren. Nachrichten werden nicht gesendet. Führe die Kopplung erneut durch und lösche dann diesen Kontakt."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again."
+            "value": "The secure channel with this contact was lost. Messages are not being sent. Pair again, then delete this contact."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se perdió el canal seguro con este contacto. Los mensajes no se están enviando. Elimina el contacto y vuelve a emparejarlo."
+            "value": "Se perdió el canal seguro con este contacto. Los mensajes no se están enviando. Vuelve a emparejarlo y elimina después este contacto."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "کانال امن با این مخاطب از دست رفته است. پیام‌ها ارسال نمی‌شوند. مخاطب را بردارید و دوباره جفت‌سازی کنید."
+            "value": "کانال امن با این مخاطب از دست رفته است. پیام‌ها ارسال نمی‌شوند. دوباره جفت‌سازی کنید و سپس این مخاطب را حذف کنید."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Suojattu kanava tämän kontaktin kanssa katkesi. Viestejä ei lähetetä. Poista kontakti ja tee paritus uudelleen."
+            "value": "Suojattu kanava tämän kontaktin kanssa katkesi. Viestejä ei lähetetä. Tee paritus uudelleen ja poista sitten tämä kontakti."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le canal sécurisé avec ce contact a été perdu. Les messages ne sont pas envoyés. Supprimez le contact et appairez-vous à nouveau."
+            "value": "Le canal sécurisé avec ce contact a été perdu. Les messages ne sont pas envoyés. Appairez-vous à nouveau, puis supprimez ce contact."
           }
         },
         "mk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Безбедниот канал со овој контакт е изгубен. Пораките не се испраќаат. Отстранете го контактот и спарете се повторно."
+            "value": "Безбедниот канал со овој контакт е изгубен. Пораките не се испраќаат. Спарете се повторно, а потоа избришете го овој контакт."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Den sikre kanalen med denne kontakten gikk tapt. Meldinger sendes ikke. Fjern kontakten og parkoble på nytt."
+            "value": "Den sikre kanalen med denne kontakten gikk tapt. Meldinger sendes ikke. Parkoble på nytt, og slett deretter denne kontakten."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Защищённый канал с этим контактом потерян. Сообщения не отправляются. Удалите контакт и выполните сопряжение заново."
+            "value": "Защищённый канал с этим контактом потерян. Сообщения не отправляются. Выполните сопряжение заново, а затем удалите этот контакт."
           }
         },
         "so": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kanaalka ammaanka ah ee xiriiriyahan waa la waayay. Fariimaha lama dirayo. Xiriiriyaha ka saar, kadibna lammaanaanta mar kale samee."
+            "value": "Kanaalka ammaanka ah ee xiriiriyahan waa la waayay. Fariimaha lama dirayo. Lammaanaanta mar kale samee, kadibna xiriiriyahan tirtir."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Den säkra kanalen med den här kontakten har gått förlorad. Meddelanden skickas inte. Ta bort kontakten och parkoppla på nytt."
+            "value": "Den säkra kanalen med den här kontakten har gått förlorad. Meddelanden skickas inte. Parkoppla på nytt och radera sedan kontakten."
           }
         }
       }
@@ -22682,6 +23787,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lämna gruppen"
+          }
+        }
+      }
+    },
+    "group_info_leave_kept_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحتفظ Rún في خزنتك المشفّرة بملاحظة خاصة بمعرّف هذه المجموعة وبمن كان مشرفها، ليتمكن من تحذيرك إذا دعاك شخص آخر إليها لاحقًا؛ تنتقل الملاحظة معك إلى هاتف جديد ولا تُمحى إلا عند محو Rún."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún gemmer en privat note med gruppens ID og navnet på dens admin i din krypterede boks, så den kan advare dig, hvis en anden senere inviterer dig tilbage; noten flytter med dig til en ny telefon og slettes først, når alt i Rún slettes."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún speichert in deinem verschlüsselten Tresor eine private Notiz mit der ID dieser Gruppe und ihrem Admin, um dich zu warnen, falls dich später jemand anderes wieder einlädt. Die Notiz zieht mit dir auf ein neues Telefon um und wird nur gelöscht, wenn Rún gelöscht wird."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún keeps a private note of this group's ID and who its admin was in your encrypted vault, so it can warn you if someone else later invites you back; the note moves with you to a new phone and is erased only when Rún is wiped."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún guarda en tu caja fuerte cifrada una nota privada con el ID de este grupo y quién era su administrador, para poder avisarte si alguien te invita de nuevo más adelante; la nota se traslada contigo a un teléfono nuevo y solo se borra cuando se borra Rún."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún یادداشتی خصوصی از شناسهٔ این گروه و اینکه مدیرش چه کسی بود در گاوصندوق رمزگذاری‌شدهٔ شما نگه می‌دارد تا اگر بعداً کس دیگری دوباره شما را دعوت کرد، به شما هشدار دهد؛ این یادداشت همراه شما به گوشی تازه منتقل می‌شود و فقط وقتی Rún پاک‌سازی شود از بین می‌رود."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún säilyttää salatussa holvissasi yksityisen muistiinpanon tämän ryhmän tunnuksesta ja siitä, kuka sen ylläpitäjä oli, jotta se voi varoittaa sinua, jos joku muu kutsuu sinut myöhemmin takaisin. Muistiinpano siirtyy mukanasi uuteen puhelimeen, ja se poistetaan vain, kun Rún pyyhitään."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún conserve dans votre coffre-fort chiffré une note privée avec l'identifiant de ce groupe et le nom de son admin, afin de pouvoir vous avertir si quelqu'un d'autre vous y invite plus tard ; la note vous suit sur un nouveau téléphone et n'est effacée que lorsque Rún est effacé."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún чува приватна белешка за идентификаторот на оваа група и за тоа кој беше нејзиниот администратор во вашиот шифриран трезор, за да може да ве предупреди ако некој друг подоцна повторно ве покани; белешката се преместува со вас на нов телефон и се брише само кога ќе се избрише Rún."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún beholder et privat notat om gruppens ID og hvem som var administrator, i det krypterte hvelvet ditt, slik at du kan bli varslet hvis noen andre senere inviterer deg tilbake. Notatet følger deg til en ny telefon og slettes først når Rún slettes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún хранит в вашем зашифрованном хранилище личную заметку об ID этой группы и о том, кто был её администратором, чтобы предупредить вас, если кто-то другой позже пригласит вас обратно; заметка переезжает с вами на новый телефон и стирается только при стирании данных Rún."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún wuxuu khasnaddaada sirsiiman ku hayaa qoraal gaar ah oo ku saabsan aqoonsiga kooxdan iyo cidda maamulaheedu ahaa, si uu kuugu digo haddii qof kale goor dambe mar kale kugu casuumo; qoraalku wuxuu kula guuraa taleefan cusub, waxaana la tirtiraa oo keliya marka Rún la tirtiro."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rún sparar en privat anteckning om gruppens ID och vem som var admin i ditt krypterade valv, så att appen kan varna dig om någon annan senare bjuder in dig igen. Anteckningen följer med dig till en ny telefon och raderas först när Rún raderas."
           }
         }
       }
@@ -29269,6 +30457,172 @@
         }
       }
     },
+    "move_securing_done": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تستخدم صناديق الوارد لديك الآن مفاتيح وصول جديدة"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dine indbakker bruger nu nye adgangsnøgler"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Postfächer nutzen jetzt neue Zugangsschlüssel"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your inboxes now use new access keys"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus buzones ya usan claves de acceso nuevas"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صندوق‌های ورودی شما اکنون از کلیدهای دسترسی تازه استفاده می‌کنند"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postilaatikkosi käyttävät nyt uusia käyttöavaimia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos boîtes de réception utilisent maintenant de nouvelles clés d'accès"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вашите сандачиња сега користат нови клучеви за пристап"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Innboksene dine bruker nå nye tilgangsnøkler"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваши почтовые ящики теперь используют новые ключи доступа"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sanduuqyadaadu hadda waxay isticmaalaan furayaal gelitaan oo cusub"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dina inkorgar använder nu nya åtkomstnycklar"
+          }
+        }
+      }
+    },
+    "move_securing_pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارٍ تحويل صناديق الوارد لديك إلى مفاتيح وصول جديدة…"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skifter dine indbakker til nye adgangsnøgler…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Postfächer werden auf neue Zugangsschlüssel umgestellt…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switching your inboxes to new access keys…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiando tus buzones a claves de acceso nuevas…"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "در حال تغییر صندوق‌های ورودی شما به کلیدهای دسترسی تازه…"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaihdetaan postilaatikkosi uusiin käyttöavaimiin…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passage de vos boîtes de réception à de nouvelles clés d'accès…"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вашите сандачиња се префрлаат на нови клучеви за пристап…"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bytter innboksene dine til nye tilgangsnøkler …"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваши почтовые ящики переключаются на новые ключи доступа…"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sanduuqyadaada waxaa loo beddelayaa furayaal gelitaan oo cusub…"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Byter dina inkorgar till nya åtkomstnycklar…"
+          }
+        }
+      }
+    },
     "move_show_text_label": {
       "extractionState": "manual",
       "localizations": {
@@ -34000,6 +35354,172 @@
         }
       }
     },
+    "pin_erase_finishing_message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم تُمحَ بعض البيانات على هذا الهاتف بعد. افتح قفل هاتفك، ثم اضغط «إعادة المحاولة». يُفتح الإعداد عند اكتمال المحو."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nogle data på denne telefon er ikke slettet endnu. Lås din telefon op, og tryk på Prøv igen. Opsætningen åbner, når sletningen er fuldført."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einige Daten auf diesem Telefon wurden noch nicht gelöscht. Entsperre dein Telefon und tippe dann auf „Wiederholen“. Die Einrichtung öffnet sich, sobald das Löschen abgeschlossen ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some data on this phone has not been erased yet. Unlock your phone, then tap Retry. Setup opens when the erase is complete."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no se han borrado algunos datos de este teléfono. Desbloquea el teléfono y toca Reintentar. La configuración se abrirá cuando termine el borrado."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برخی داده‌های این گوشی هنوز پاک نشده‌اند. قفل گوشی را باز کنید، سپس روی «تلاش دوباره» بزنید. وقتی پاک‌سازی کامل شود، راه‌اندازی باز می‌شود."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Osa tämän puhelimen tiedoista ei ole vielä pyyhitty. Avaa puhelimesi lukitus ja napauta Yritä uudelleen. Käyttöönotto avautuu, kun pyyhintä on valmis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certaines données de ce téléphone n'ont pas encore été effacées. Déverrouillez votre téléphone, puis touchez Réessayer. La configuration s'ouvre une fois l'effacement terminé."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некои податоци на овој телефон сè уште не се избришани. Отклучете го телефонот, а потоа допрете „Обиди се повторно“. Поставувањето се отвора кога бришењето ќе заврши."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noen data på denne telefonen er ikke slettet ennå. Lås opp telefonen, og trykk på Prøv igjen. Oppsettet åpnes når slettingen er fullført."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Часть данных на этом телефоне ещё не стёрта. Разблокируйте телефон и нажмите «Повторить». Настройка откроется, когда стирание завершится."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xog ku jirta taleefankan weli lama tirtirin. Fur taleefankaaga, kadibna taabo Isku day mar kale. Diyaarintu waxay furmaysaa marka tirtiriddu dhammaato."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vissa data på den här telefonen har inte raderats än. Lås upp telefonen och tryck sedan på Försök igen. Konfigurationen öppnas när raderingen är klar."
+          }
+        }
+      }
+    },
+    "pin_erase_finishing_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إكمال المحو"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afslutter sletningen"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen wird abgeschlossen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finishing the erase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminando el borrado"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تکمیل پاک‌سازی"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pyyhintä viimeistellään"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fin de l'effacement"
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Довршување на бришењето"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fullfører slettingen"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершение стирания"
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tirtiridda waa la dhammaystirayaa"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slutför raderingen"
+          }
+        }
+      }
+    },
     "pin_erase_start_over": {
       "extractionState": "manual",
       "localizations": {
@@ -35158,6 +36678,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ange lösenfras"
+          }
+        }
+      }
+    },
+    "pin_setup_blocked_message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يمكن بدء الإعداد بعد. افتح قفل هاتفك، ثم اضغط «إعادة المحاولة»."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opsætningen kan ikke starte endnu. Lås din telefon op, og tryk på Prøv igen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Einrichtung kann noch nicht starten. Entsperre dein Telefon und tippe dann auf „Wiederholen“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup can’t start yet. Unlock your phone, then tap Retry."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La configuración aún no puede empezar. Desbloquea el teléfono y toca Reintentar."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "راه‌اندازی هنوز نمی‌تواند شروع شود. قفل گوشی را باز کنید، سپس روی «تلاش دوباره» بزنید."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käyttöönottoa ei voi vielä aloittaa. Avaa puhelimesi lukitus ja napauta Yritä uudelleen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La configuration ne peut pas encore démarrer. Déverrouillez votre téléphone, puis touchez Réessayer."
+          }
+        },
+        "mk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поставувањето сè уште не може да започне. Отклучете го телефонот, а потоа допрете „Обиди се повторно“."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oppsettet kan ikke starte ennå. Lås opp telefonen, og trykk på Prøv igjen."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройка пока не может начаться. Разблокируйте телефон и нажмите «Повторить»."
+          }
+        },
+        "so": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diyaarintu weli ma bilaabmi karto. Fur taleefankaaga, kadibna taabo Isku day mar kale."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konfigurationen kan inte starta än. Lås upp telefonen och tryck sedan på Försök igen."
           }
         }
       }

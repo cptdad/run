@@ -486,7 +486,16 @@ class IosAppController {
 
     fun setRealCredential(credential: String) {
         platformLog("App", "setting credential")
+        lastProvisionBlockedByPendingErase = false
         try {
+            // RÚN-02: the fresh-provision gate FIRST — before the counter
+            // establishment below, which is the provision's first seal and therefore
+            // the first point a device key can be minted. See [prepareFreshProvision].
+            if (!prepareFreshProvision()) {
+                lastProvisionBlockedByPendingErase = true
+                wipeEraseDebugLog("App", "setRealCredential refused — a wipe's erase is unresolved (retryable)")
+                return
+            }
             // VERIFIED counter establishment FIRST — before
             // ANY provision state, and in particular before
             // provisionCredentialAndVault persists the DB-key wrap (its last
@@ -677,11 +686,135 @@ class IosAppController {
      *  [setRealCredentialWithLevel] returns `false`. */
     fun lastProvisionWasDeviceKeyUnavailable(): Boolean = lastProvisionDeviceKeyUnavailable
 
+    // -----------------------------------------------------------------------
+    // RÚN-02 — checked wipe erase (WipeErase.kt). Swift-facing, never throws.
+    // -----------------------------------------------------------------------
+
+    /** Set when the most recent provision call returned `false` because a wipe's
+     *  erase is unresolved (or the fresh-provision purge could not finish). RAM-only,
+     *  reset at the top of every provision call. */
+    private var lastProvisionBlockedByPendingErase = false
+
+    /** See [lastProvisionBlockedByPendingErase]. Swift routes to the
+     *  "finishing the erase" screen on `true`. */
+    fun lastProvisionBlockedByPendingErase(): Boolean = lastProvisionBlockedByPendingErase
+
+    /**
+     * The fresh-provision gate ([FreshProvisionGate.prepare]): refuses while an
+     * erase is unresolved; on a provably empty install deletes any leftover device /
+     * Secure Enclave key, checked; always drops [crypto]'s cached key so the
+     * provision seals under the key actually in the Keychain. Every input is a
+     * positive-evidence read: the credential pair CONFIRMED absent (not the
+     * fail-toward-true isConfigured), no `run.db` in Application Support OR Caches
+     * (both resolved), no write journal. Never throws (the inputs never do).
+     */
+    private fun prepareFreshProvision(): Boolean = FreshProvisionGate.prepare(
+        store = IosWipeKeyStore(),
+        credentialPair = vaultSelector.credentialPairPresence(),
+        vaultFileAbsentAllDirs = iosVaultFilesPresence() == false,
+        journalConfirmedAbsent = vaultSelector.batchJournalConfirmedAbsent(),
+        dropCachedKeys = { crypto.wipeKey() },
+    )
+
+    /**
+     * Swift reports `UIApplication.isProtectedDataAvailable` (main thread) at launch,
+     * on both protected-data notifications and before every wipe / retry. The erase
+     * trusts an "already absent" answer only while this is true.
+     */
+    fun noteProtectedDataAvailable(available: Boolean) {
+        IosProtectedData.available = available
+    }
+
+    /** Device key + Secure Enclave key of the in-session wipe, kept for [emergencyWipe]. */
+    private var keyFirstReport: WipeEraseReport? = null
+
+    /**
+     * CRYPTO-ERASE FIRST, checked: `AppState.emergencyWipe`'s very first act. Arms
+     * the erase latch (nothing can mint from here on), deletes the device key and the
+     * Secure Enclave key with up to [WipeEraser.IMMEDIATE_PASSES] passes each, and
+     * keeps the outcome for [emergencyWipe], which re-attempts whatever is still
+     * unresolved and reports the whole wipe. Returns whether both keys are proven gone.
+     */
+    fun eraseKeyMaterialFirst(protectedDataAvailable: Boolean): Boolean = try {
+        IosProtectedData.available = protectedDataAvailable
+        // The wipe's token; controller.emergencyWipe() JOINS it (same main thread)
+        // and is the only one that finishes it.
+        WipeEraseLatch.begin()
+        val r = WipeEraser.run(IosWipeKeyStore(), WipeEraser.KEY_ITEMS)
+        keyFirstReport = r
+        r.complete
+    } catch (e: Exception) {
+        wipeEraseDebugLog("App", "key erase threw: ${e::class.simpleName}")
+        false
+    }
+
+    /**
+     * True when no erase is pending: the last wipe proved every key, credential item,
+     * the block list and the vault files gone. The ONLY basis on which Swift may log
+     * or show that the wipe completed.
+     */
+    fun wipeEraseComplete(): Boolean = !WipeEraseLatch.unresolved
+
+    /**
+     * The event-driven retry (device unlock, app activation, the Retry button):
+     * re-attempts only what the last wipe left unresolved, once. On success it drops
+     * [crypto]'s cached key; Swift drops `inactivityCrypto`'s. Returns
+     * [wipeEraseComplete]. A no-op when nothing is pending — so it can never reach a
+     * key provisioned after the erase resolved.
+     */
+    fun retryPendingErase(protectedDataAvailable: Boolean): Boolean = try {
+        IosProtectedData.available = protectedDataAvailable
+        if (!WipeEraseLatch.unresolved) true
+        else WipeEraseRetry.retryIfPending(IosWipeKeyStore()) { crypto.wipeKey() }
+    } catch (e: Exception) {
+        wipeEraseDebugLog("App", "erase retry threw: ${e::class.simpleName}")
+        false
+    }
+
+    /**
+     * R2 (owner decision D3), for `AppState.runLaunchSecurityChecks`: the credential
+     * pair PROVEN present, no `run.db` in any directory (both resolved), no write
+     * journal — the residue of a wipe that removed the file but not the keys. Nothing
+     * can be opened without the file, so the caller erases it. Every ambiguous read
+     * answers `false`. Never throws.
+     */
+    fun postWipeResidueDetected(): Boolean = try {
+        WipeErasePolicy.postWipeResidue(
+            credentialPair = vaultSelector.credentialPairPresence(),
+            vaultFileAbsentAllDirs = iosVaultFilesPresence() == false,
+            journalConfirmedAbsent = vaultSelector.batchJournalConfirmedAbsent(),
+        )
+    } catch (_: Exception) {
+        false
+    }
+
+    /**
+     * DEBUG-ONLY probe (`--test-wipe-probe`, the RÚN-02 device procedure): vault-file
+     * presence, the latch and the last erase report as item → outcome(OSStatus).
+     * Never any key material. Empty in a release framework.
+     */
+    fun wipeProbeSummary(): String {
+        if (!isDebugBuild) return ""
+        val db = when (iosVaultFilesPresence()) { true -> "present"; false -> "absent"; null -> "unknown" }
+        val report = WipeEraseLatch.lastReport()?.summary()?.ifEmpty { null } ?: "none"
+        return "db=$db pending=${WipeEraseLatch.unresolved} report=[$report]"
+    }
+
     /** Provision with a chosen level + credential mode (onboarding slider).
      *  False = entropy floor / transient provision failure (never throws across
      *  the bridge — PinSetupView already treats false as a retryable failure). */
     fun setRealCredentialWithLevel(credential: String, passphraseMode: Boolean, level: String): Boolean = try {
         lastProvisionDeviceKeyUnavailable = false
+        lastProvisionBlockedByPendingErase = false
+        // RÚN-02: the fresh-provision gate runs FIRST, before the counter
+        // establishment below — that establishment is the provision's first seal,
+        // i.e. the first point at which a device key can be minted for the new
+        // vault. So a leftover key is deleted strictly before any new key exists,
+        // and while a wipe's erase is unresolved nothing is minted at all.
+        if (!prepareFreshProvision()) {
+            wipeEraseDebugLog("App", "provision refused — a wipe's erase is unresolved (retryable)")
+            lastProvisionBlockedByPendingErase = true
+            false
         // VERIFIED counter establishment BEFORE the DB-key wrap can be
         // persisted — see setRealCredential above for the full kill/outage
         // interleaving enumeration. The old best-effort `if (ok) reset()` could
@@ -690,7 +823,7 @@ class IosAppController {
         // honest vault. Establishment failure = provision failure (false),
         // consistent with the retryable failure paths PinSetupView already
         // handles; nothing is persisted, so partial state self-heals as before.
-        if (!pinAttempts.establishVerified()) {
+        } else if (!pinAttempts.establishVerified()) {
             platformLogError("App", "provision aborted — counter establishment unverified (retryable)")
             // See lastProvisionDeviceKeyUnavailable's kdoc — at a first-run
             // provision this has no realistic cause besides the device key.
@@ -894,6 +1027,9 @@ class IosAppController {
      */
     fun recoverWithCode(recoveryCode: String, credential: String): Int {
         return try {
+            // RÚN-02: the old vault stays closed while a wipe's erase is unresolved
+            // (VaultSelector refuses too); checked before any key is touched.
+            if (!WipeErasePolicy.mayOpenVault()) return UNLOCK_ERROR
             if (crypto.isWiped()) crypto.reloadKey()
             when (val result = vaultSelector.recoverWithCode(recoveryCode, credential)) {
                 is VaultSelector.UnlockResult.Opened -> {
@@ -982,6 +1118,12 @@ class IosAppController {
      */
     fun unlock(credential: String): Int {
         return try {
+            // RÚN-02: while a wipe's erase is unresolved the old vault stays closed —
+            // the neutral, never-counted Error, before any key is reloaded.
+            if (!WipeErasePolicy.mayOpenVault()) {
+                wipeEraseDebugLog("App", "unlock refused — a wipe's erase is unresolved")
+                return UNLOCK_ERROR
+            }
             val wasWiped = crypto.isWiped()
             platformLog("App", "unlock attempt (cryptoWiped=$wasWiped)")
             if (wasWiped) {
@@ -2101,7 +2243,38 @@ class IosAppController {
             try { onDone(ok, error) } catch (e: Throwable) {
                 platformLogWarn("Move", "import onDone threw: ${e::class.simpleName}")
             }
+            // Imported is not secured (RÚN-01): run one bounded pass over the read-cap
+            // rotations the import committed, in the background, AFTER the screen has
+            // been told the import is done. Same scope, so lock() / emergencyWipe()
+            // cancel it; what it does not confirm stays listed for the control sweep.
+            // Android sibling: RunViewModel.startMoveSecuring.
+            if (ok) {
+                try {
+                    moveManager.secureImportedInboxes()
+                } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                    platformLogWarn("Move", "securing pass cancelled (lock/wipe)")
+                } catch (e: Throwable) {
+                    platformLogWarn("Move", "securing pass ended early: ${e::class.simpleName}")
+                }
+            }
         }
+    }
+
+    /**
+     * The settings-sheet status row for the post-move securing: "pending" while
+     * read-cap rotations are still owed, "done" once this session saw them pending and
+     * then finish, "" otherwise (show nothing). Cheap vault reads; never throws across
+     * the bridge. Android sibling: RunViewModel.refreshMoveSecuringRow.
+     */
+    fun moveSecuringRowKind(): String = try {
+        if (vault == null) "" else when (moveManager.securingRow()) {
+            MoveSecuringRow.PENDING -> "pending"
+            MoveSecuringRow.DONE -> "done"
+            MoveSecuringRow.HIDDEN -> ""
+        }
+    } catch (e: Throwable) {
+        platformLogWarn("Move", "securing status read failed: ${e::class.simpleName}")
+        ""
     }
 
     // --- Swift-readable projection of MoveExportState (no sealed class crosses) ---
@@ -2247,8 +2420,10 @@ class IosAppController {
 
     // Kotlin half of a wipe: crypto-erase first, KV + defaults sweep, table wipe,
     // DB files, Tor dir, RAM logs, key + vault close, scopes, move code, session
-    // RAM ([endSessionRam]). Callers: AppState.emergencyWipe (after it erased the
-    // keys and stopped Tor) and the launch-time wipes (which call only this).
+    // RAM ([endSessionRam]). Callers: AppState.emergencyWipe (after
+    // [eraseKeyMaterialFirst] and the Tor stop) and the launch-time wipes (which
+    // call only this). Every deletion is CHECKED (RÚN-02): the outcome lands in
+    // [WipeEraseLatch]; read it with [wipeEraseComplete].
     fun emergencyWipe() {
         platformLogWarn("App", "emergency wipe triggered")
 
@@ -2260,13 +2435,17 @@ class IosAppController {
         // SQLCipher handle stays valid for the best-effort table wipe further
         // down (corrected 2026-07-30: it must run BEFORE the DB file is
         // unlinked — see that call site for why).
-        // AppState.emergencyWipe already ran both deleteKey()s before calling this
-        // (idempotent); they are repeated here for the launch-time wipes that call
-        // ONLY this method.
-        KeychainBridgeHolder.bridge?.deleteKey()
-        // Lever B: also destroy the Secure-Enclave auth-bound key so no key
-        // survives that could unwrap a leftover auth-bound DB-key blob.
-        SecureEnclaveBridgeHolder.bridge?.deleteKey()
+        //
+        // RÚN-02: checked, and the latch arms FIRST so nothing can mint from here
+        // on. The in-session path already erased both keys in
+        // [eraseKeyMaterialFirst]; only what it left unresolved is re-attempted
+        // here. The launch-time wipes call only this method, so they erase both
+        // keys here. A missing bridge holder is UNRESOLVED, never a silent skip.
+        val wipeToken = WipeEraseLatch.begin()
+        val eraseStore = IosWipeKeyStore()
+        val keys = keyFirstReport?.let { WipeEraser.retryUnresolved(eraseStore, it) }
+            ?: WipeEraser.run(eraseStore, WipeEraser.KEY_ITEMS)
+        keyFirstReport = null
         // Stop the skipped-key sweep before the table wipe and the file unlink below:
         // it is the one session job that WRITES the vault. RAM only (an O(1) cancel,
         // no I/O), so it cannot delay the erase above. The rest of the session scope
@@ -2281,7 +2460,10 @@ class IosAppController {
         // the Keychain (KeyValueStore → KeychainBridge); kvDeleteAll() clears
         // them there, and the UserDefaults sweep still removes any legacy copies
         // not yet migrated plus the non-KV keys (inactivity ts, legacy device key).
-        KeychainBridgeHolder.bridge?.kvDeleteAll()
+        // RÚN-02: the sweep (kv + diag services) and the block list are checked —
+        // vlt_a / vlt_c / vlt_rc are the offline grind material, and a surviving
+        // vlt_txn_journal could re-write them.
+        val credentials = WipeEraser.run(eraseStore, listOf(WipeItem.KV_SWEEP, WipeItem.BLOCK_LIST))
         val defaults = platform.Foundation.NSUserDefaults.standardUserDefaults
         IosUserDefaultsKeys.all.forEach { defaults.removeObjectForKey(it) }
         defaults.synchronize()
@@ -2307,25 +2489,22 @@ class IosAppController {
         //       claimed otherwise);
         //   (2) it MUST stay wrapped in try/catch — a throw from execChecked
         //       must never be able to gate or abort the deletions that follow.
-        // By the time this runs the device key is already erased (deleteKey()
-        // above), so even a failed/partial table wipe leaves nothing but
+        // By the time this runs the device key erase has run (checked, above), so
+        // even a failed/partial table wipe leaves nothing but
         // undecryptable ciphertext on disk — the DB file deletion and
         // close()+wipeKey() further down still finish the job regardless.
         try { vault?.wipeAllTables() } catch (_: Exception) { /* best-effort — see above */ }
 
-        // Delete encrypted database files from disk (Application Support + legacy Caches)
-        val fm = platform.Foundation.NSFileManager.defaultManager
-        for (dir in listOf(platform.Foundation.NSApplicationSupportDirectory, platform.Foundation.NSCachesDirectory)) {
-            val path = platform.Foundation.NSSearchPathForDirectoriesInDomains(
-                dir, platform.Foundation.NSUserDomainMask, true
-            ).firstOrNull() as? String ?: continue
-            for (name in VAULT_DB_FILE_NAMES) {
-                fm.removeItemAtPath("$path/$name", null)
-                for (suffix in SQLITE_SIDECAR_SUFFIXES) {
-                    fm.removeItemAtPath("$path/$name$suffix", null)
-                }
-            }
-        }
+        // Delete encrypted database files from disk (Application Support + legacy
+        // Caches), every name × sidecar, each one proven gone (RÚN-02).
+        val files = WipeEraser.run(eraseStore, listOf(WipeItem.VAULT_FILES))
+
+        // RÚN-02: the outcome. Per-item detail is logged in DEBUG builds only and
+        // BEFORE the LogBuffer clear below — nothing about the wipe may be appended
+        // after it (a release build with Debug mode on keeps the deniably wiped
+        // process alive with LogBuffer live).
+        val report = keys.merge(credentials).merge(files)
+        wipeEraseDebugLog("App", "wipe erase ${if (report.complete) "confirmed" else "UNRESOLVED — retry pending"}: ${report.summary()}")
 
         // Delete Tor data directory
         deleteTorData()
@@ -2341,7 +2520,7 @@ class IosAppController {
         // Swift clears the same ring again as AppState.emergencyWipe's LAST step
         // (after Tor's stop lines); both are needed, see there.
 
-        // Zero the in-memory device key too — deleteKey() above erases the
+        // Zero the in-memory device key too — the erase above removes the
         // persisted Keychain copy, but the live 32-byte AES key would otherwise
         // linger in CryptoProvider until process exit (RAM-capture residue).
         crypto.wipeKey()
@@ -2376,6 +2555,13 @@ class IosAppController {
         // (no I/O, no write), so it cannot delay the crypto-erase above or leave
         // residue after it.
         endSessionRam()
+
+        // RÚN-02: the outcome, RAM only — recorded LAST, by the token that began
+        // this wipe, so nothing can mint while any step above is still running.
+        // While it is unresolved nothing mints a key, replays the journal, opens the
+        // old vault or starts a fresh setup; the device-unlock / activation / Retry
+        // triggers re-attempt the rest ([retryPendingErase]). No log line here.
+        WipeEraseLatch.finish(wipeToken, report)
     }
 
     /**
@@ -2440,22 +2626,8 @@ class IosAppController {
          */
         const val UNLOCK_RECOVERY_REQUIRED = 3
 
-        /**
-         * Vault database files [emergencyWipe] unlinks from every searched
-         * directory. `run_b.db` is the removed decoy file; still deleted to clean
-         * up installs provisioned before the decoy feature was removed.
-         */
-        private val VAULT_DB_FILE_NAMES = listOf("run.db", "run_b.db")
-
-        /**
-         * SQLite sidecars deleted after each base file, in this order. SQLCipher
-         * runs in WAL mode (so -wal/-shm are the usual sidecars), but a
-         * journal_mode fallback or an interrupted transaction can leave a
-         * "-journal" holding pre-image ciphertext pages. Crypto-erase (deleteKey
-         * in [emergencyWipe]) is the primary control; the file is deleted too for
-         * parity with Android WipeRoutine (which removes -journal).
-         */
-        private val SQLITE_SIDECAR_SUFFIXES = listOf("-wal", "-shm", "-journal")
+        // The vault file names and sidecar suffixes the wipe deletes live in
+        // IosWipeKeyStore.kt (VAULT_DB_FILE_NAMES / SQLITE_SIDECAR_SUFFIXES).
 
         /**
          * Budget for [awaitMoveTransport] — the new phone's wait for Tor + an open

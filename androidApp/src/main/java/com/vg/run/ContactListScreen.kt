@@ -94,6 +94,7 @@ import com.vg.run.ui.theme.RunError
 import com.vg.run.ui.theme.RunSurfaceAlt
 import com.vg.run.ui.theme.RuneDanger
 import com.vg.run.ui.theme.RuneGold
+import com.vg.run.ui.theme.RuneParchment
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -162,6 +163,9 @@ fun ContactListScreen(
     val lostContactIds = snapshot?.lostIds ?: emptySet()
     // Contacts that reported Maximum while this device is at MAXIMUM (empty otherwise).
     val maximumContactIds = snapshot?.maximumIds ?: emptySet()
+    // RÚN-03: the dismissible older-pairing banner (one global flag, in the snapshot).
+    val showOlderPairingBanner = snapshot?.showOlderPairingBanner == true
+    val olderPairingCount = snapshot?.olderPairingCount ?: 0
 
     // The one user-initiated overlay on screen (contact menu, confirms, the
     // memory editor, the introduce picker, the settings modals). They are
@@ -177,6 +181,12 @@ fun ContactListScreen(
     var resetRelayBusy by remember { mutableStateOf(false) }
     var resetRelayResult by remember { mutableStateOf<String?>(null) }
     var settingsMenuExpanded by remember { mutableStateOf(false) }
+    // Post-move securing status (RÚN-01): re-read each time the menu opens, so the
+    // row is only ever as current as the vault says (never a promise of its own).
+    val moveSecuringRow by viewModel.moveSecuringRow.collectAsState()
+    LaunchedEffect(settingsMenuExpanded) {
+        if (settingsMenuExpanded) viewModel.refreshMoveSecuringRow()
+    }
     // Anonymous "Report bug" (BugReportSender.kt, commonMain): the text-entry
     // modal is ContactListDialog.ReportBug (its draft lives in ReportBugDialog),
     // then a separate one-shot thanks modal on success.
@@ -707,6 +717,17 @@ fun ContactListScreen(
                                 )
                             }
                         }
+                        // RÚN-03: while at least one contact uses an older pairing and the
+                        // user has not closed it. Tap = the "How to pair again" guide.
+                        if (showOlderPairingBanner) {
+                            item(key = "older_pairing_banner_item") {
+                                OlderPairingBannerRow(
+                                    count = olderPairingCount,
+                                    onTap = { dialog = ContactListDialog.PairAgainGuide },
+                                    onClose = { viewModel.dismissOlderPairingBannerInBackground() },
+                                )
+                            }
+                        }
                         // Pending invitations closed with "Later": one row each, ahead of
                         // the joined groups. Not a conversation: tapping reopens the dialog.
                         // Same for referral offers closed with "Later" (declined-in-flight ones excluded).
@@ -993,6 +1014,25 @@ fun ContactListScreen(
                     enabled = contactsReady,
                     modifier = Modifier.testTag("move_to_new_device_button")
                 )
+                // New phone after a move: a non-interactive status line. "Revoked" is
+                // shown only once every owed rotation is confirmed (MoveSecuringRow.DONE).
+                if (moveSecuringRow != MoveSecuringRow.HIDDEN) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(
+                                    if (moveSecuringRow == MoveSecuringRow.PENDING) R.string.move_securing_pending
+                                    else R.string.move_securing_done
+                                ),
+                                color = RunGrey,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier.testTag("move_securing_status")
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.contact_list_notifications), color = if (contactsReady) RunWhite else RunGrey) },
                     onClick = {
@@ -1499,7 +1539,13 @@ fun ContactListScreen(
                 onIntroduce = { dialog = ContactListDialog.Introduce(c) },
                 onResetRelay = { dialog = ContactListDialog.ResetRelayConfirm(c) },
                 onDelete = { dialog = ContactListDialog.DeleteContact(c) },
+                onPairAgainHelp = { dialog = ContactListDialog.PairAgainGuide },
             )
+        }
+
+        // RÚN-03: "How to pair again" — from an older contact's menu or the banner.
+        if (dialog == ContactListDialog.PairAgainGuide) {
+            PairAgainGuideDialog(onDismiss = { dialog = null })
         }
 
         // Personal-memory (mnemonic) view/edit dialog. The memory is the
@@ -1619,6 +1665,8 @@ private sealed interface ContactListDialog {
     data object Language : ContactListDialog
     data object Notifications : ContactListDialog
     data object ExtProxy : ContactListDialog
+    /** RÚN-03: the "How to pair again" guide (holds no contact data). */
+    data object PairAgainGuide : ContactListDialog
 }
 
 /**
@@ -1794,6 +1842,7 @@ private fun LeaveGroupDialog(g: GroupRecord, onDismiss: () -> Unit, onConfirm: (
                 else
                     stringResource(R.string.group_info_leave_confirm_message))
                     + "\n\n" + stringResource(R.string.group_info_leave_unread_warning)
+                    + "\n\n" + stringResource(R.string.group_info_leave_kept_note)
             )
         }
         // Destructive LAST (safety rule, RuneDialog.kt).
@@ -1811,8 +1860,9 @@ private fun LeaveGroupDialog(g: GroupRecord, onDismiss: () -> Unit, onConfirm: (
 
 /**
  * Long-press context menu (in-tree scrim, untagged; the rows carry the menu_* ids).
- * The memory, shown directly with Edit and Remove to its right, then New name,
- * Introduce, Reset relay access and Delete (destructive last).
+ * The memory, shown directly with Edit and Remove to its right, the pairing kind
+ * (and, for an older pairing, "How to pair again"), then New name, Introduce, Reset
+ * relay access and Delete (destructive last).
  */
 @Composable
 private fun ContactMenuDialog(
@@ -1826,6 +1876,7 @@ private fun ContactMenuDialog(
     onIntroduce: () -> Unit,
     onResetRelay: () -> Unit,
     onDelete: () -> Unit,
+    onPairAgainHelp: () -> Unit,
 ) {
     RuneScrimOverlay(
         onDismiss = onDismiss,
@@ -1887,6 +1938,43 @@ private fun ContactMenuDialog(
                 ) {
                     Text(stringResource(R.string.contact_list_remove_memory_button), color = RuneDanger)
                 }
+            }
+        }
+        // RÚN-03: which pairing this contact uses, from its row flag (an app update
+        // never changes it). iOS sibling: contactMenuPairingSection.
+        val older = c.pairingKind == ContactPairingKind.OLDER
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.contact_list_pairing_label),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                color = RunGrey,
+            )
+            Text(
+                text = stringResource(if (older) R.string.contact_list_pairing_older else R.string.contact_list_pairing_current),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp),
+                color = RunWhite,
+                modifier = Modifier.testTag("menu_pairing_kind"),
+            )
+            Text(
+                text = stringResource(if (older) R.string.contact_list_pairing_older_note else R.string.contact_list_pairing_current_note),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                color = RunGrey,
+            )
+        }
+        if (older) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("menu_pair_again_help")
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(onClick = onPairAgainHelp)
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Text(stringResource(R.string.contact_list_pair_again_button), color = RunWhite)
             }
         }
         // Re-roll the vault-local pseudonym. Stays open and updates
@@ -2499,6 +2587,90 @@ private fun RepairBanner(staleCount: Int, onTap: () -> Unit) {
             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 13.sp),
             color = RunWhite,
         )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// RÚN-03: OlderPairingBannerRow — shown above the list while at least one contact
+// uses an older pairing, until closed (one global flag, OlderPairingBanner in
+// commonMain). Tap opens the "How to pair again" guide. iOS sibling:
+// ContactListView.swift's OlderPairingBannerRow.
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun OlderPairingBannerRow(count: Int, onTap: () -> Unit, onClose: () -> Unit) {
+    val closeLabel = stringResource(R.string.common_close)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(RunSurface),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clickable(onClick = onTap)
+                .testTag("older_pairing_banner")
+                .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+        ) {
+            Text(
+                text = pluralStringResource(R.plurals.contact_list_older_pairing_banner, count, count),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 13.sp),
+                color = RunWhite,
+            )
+        }
+        Box(
+            modifier = Modifier
+                .testTag("older_pairing_banner_close")
+                .semantics { contentDescription = closeLabel }
+                .clickable(onClick = onClose)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = "\u2715", color = RunGrey, fontSize = 14.sp)
+        }
+    }
+}
+
+/**
+ * RÚN-03: "How to pair again" (in-tree scrim, `pair_again_guide`). Generic: it names
+ * no contact. Order is the safe one — pair again, check the new contact, then delete
+ * the old one — so a cancelled or failed pairing never costs the existing contact.
+ * Same text on iOS (ContactListView.swift, pairAgainGuideOverlay).
+ */
+@Composable
+private fun PairAgainGuideDialog(onDismiss: () -> Unit) {
+    RuneScrimOverlay(
+        onDismiss = onDismiss,
+        testTag = "pair_again_guide",
+        cardModifier = Modifier.padding(28.dp),
+    ) {
+        RuneCardBody {
+            RuneDialogTitle(stringResource(R.string.contact_list_pair_again_button))
+            for (id in listOf(
+                R.string.contact_list_pair_again_why,
+                R.string.contact_list_pair_again_steps,
+                R.string.contact_list_pair_again_groups,
+            )) {
+                Text(
+                    text = stringResource(id),
+                    color = RuneParchment,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        RuneActionRow(listOf(
+            RuneDialogAction(
+                label = stringResource(R.string.common_close),
+                testTag = "pair_again_guide_close",
+                onClick = onDismiss,
+            ),
+        ))
     }
 }
 

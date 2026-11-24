@@ -391,10 +391,36 @@ object AuthBoundKeyStore {
         true
     }
 
-    /** Cryptographic erasure of the auth-bound key (called from the wipe path). */
+    /** Cryptographic erasure of the auth-bound key, outcome ignored. Every wipe path
+     *  uses [deleteKeyChecked]; this stays for callers that only need the attempt. */
     fun deleteKey(context: Context) {
-        try {
-            KeyStore.getInstance(KEYSTORE).apply { load(null) }.deleteEntry(ALIAS)
-        } catch (_: Exception) { /* alias absent or keystore unavailable */ }
+        deleteKeyChecked()
+    }
+
+    /**
+     * RÚN-02: cryptographic erasure of the auth-bound key, CHECKED — the delete is
+     * read back with `containsAlias` (up to three tries) and the outcome reported:
+     * DELETED / ALREADY_ABSENT only when the read-back proves the alias gone,
+     * UNRESOLVED otherwise (a swallowed `deleteEntry` failure used to look exactly
+     * like success, and the surviving alias was then reused by the next enable).
+     */
+    fun deleteKeyChecked(): EraseResult {
+        var everPresent = false
+        var goneAfter: Boolean? = null
+        for (attempt in 1..3) {
+            try {
+                val ks = KeyStore.getInstance(KEYSTORE).apply { load(null) }
+                if (ks.containsAlias(ALIAS)) {
+                    everPresent = true
+                    ks.deleteEntry(ALIAS)
+                }
+                goneAfter = !ks.containsAlias(ALIAS)
+                if (goneAfter == true) break
+            } catch (e: Exception) {
+                goneAfter = null
+                platformLogWarn("AuthBoundKeyStore", "auth-bound key delete attempt $attempt failed: ${e::class.simpleName}")
+            }
+        }
+        return EraseResult(WipeErasePolicy.aliasDeleteOutcome(everPresent, goneAfter), EraseResult.STATUS_NONE)
     }
 }

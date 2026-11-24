@@ -84,6 +84,23 @@ class SessionStateClearSourceTest {
         )
     }
 
+    /**
+     * RÚN-01 review: the background securing pass is started from the import
+     * coroutine's tail, which a teardown's `sessionJobs.cancelAll()` may already have
+     * cancelled — it must not launch a fresh job into a dead session.
+     */
+    @Test
+    fun theSecuringPassIsOnlyStartedWhileTheSessionIsLive() {
+        val body = vm.bodyOf("    fun startPendingMoveImport() {")
+        assertTrue(
+            "startMoveSecuring must be gated on the import job still being active and the vault open. Body was:\n$body",
+            body.contains("isActive && vault != null) startMoveSecuring()"),
+        )
+        val start = vm.bodyOf("    private fun startMoveSecuring() {")
+        assertTrue("startMoveSecuring re-checks the vault", start.contains("if (vault == null) return"))
+        assertTrue("…and runs in its own session-job slot", vm.contains("private var moveSecureJob: Job? by sessionJobs.slot()"))
+    }
+
     private fun String.bodyOf(signature: String): String {
         val start = indexOf(signature)
         assertTrue("precondition: `$signature` must exist", start >= 0)

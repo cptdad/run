@@ -38,6 +38,7 @@
     <string name="group_info_leave_confirm_admin_message">Du er admin. Overdrag rollen først, ellers kan ingen ændre medlemslisten.</string>
     <string name="group_info_leave_confirm_message">De andre medlemmer får besked om, at du har forladt gruppen.</string>
     <string name="group_info_leave_unread_warning">Det, du har sendt, og som de andre ikke har læst endnu, bliver måske aldrig vist for dem.</string>
+    <string name="group_info_leave_kept_note">Rún gemmer en privat note med gruppens ID og navnet på dens admin i din krypterede boks, så den kan advare dig, hvis en anden senere inviterer dig tilbage; noten flytter med dig til en ny telefon og slettes først, når alt i Rún slettes.</string>
     <string name="group_info_leave_confirm_action">Forlad</string>
     <!-- Choose-new-admin picker: Android title + subtitle, iOS one sentence -->
     <string name="group_info_choose_admin_title">Vælg ny admin</string>

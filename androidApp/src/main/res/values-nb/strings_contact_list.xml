@@ -75,7 +75,7 @@
 
     <!-- Nullstill tilgangen til relayet -->
     <string name="contact_list_reset_relay_title">Nullstille tilgangen til relayet?</string>
-    <string name="contact_list_reset_relay_message">Rún henter nye tilgangsnøkler for denne samtalen fra relayet. Meldingene dine, historikken din og denne kontakten blir akkurat som før, og %1$s trenger ikke gjøre noe.\n\nGjør dette hvis du tror noen andre har hatt telefonen din mens den var ulåst. Det kan ikke gjøre om på noe de allerede har lest – og hvis telefonen faktisk ble tatt, er det tryggeste fortsatt å slette denne kontakten og parkoble på nytt ansikt til ansikt.</string>
+    <string name="contact_list_reset_relay_message">Rún henter nye tilgangsnøkler for denne samtalen fra relayet. Meldingene dine, historikken din og denne kontakten blir akkurat som før, og %1$s trenger ikke gjøre noe.\n\nGjør dette hvis du tror noen andre har hatt telefonen din mens den var ulåst. Det kan ikke gjøre om på noe de allerede har lest – og hvis telefonen faktisk ble tatt, er det tryggeste fortsatt å parkoble på nytt ansikt til ansikt og deretter slette denne kontakten.</string>
     <string name="contact_list_reset_button">Nullstill</string>
     <string name="contact_list_reset_relay_success">Tilgangen til relayet er nullstilt.</string>
     <string name="contact_list_reset_relay_failure">Fikk ikke kontakt med relayet. Rún fullfører dette på egen hånd.</string>
@@ -107,6 +107,15 @@
     <string name="contact_list_reset_relay_in_progress">Nullstiller tilgangen til relayet…</string>
     <string name="contact_list_reset_relay_button">Nullstill relaytilgang</string>
     <string name="contact_list_delete_contact_button">Slett kontakt</string>
+    <string name="contact_list_pairing_label">Parkobling</string>
+    <string name="contact_list_pairing_current">Oppdatert</string>
+    <string name="contact_list_pairing_current_note">Laget med begge appene oppdatert. Ingenting å gjøre.</string>
+    <string name="contact_list_pairing_older">Eldre parkobling</string>
+    <string name="contact_list_pairing_older_note">Laget med en eldre versjon av Rún. Å oppdatere appen endrer ikke dette, men å parkoble på nytt gjør det.</string>
+    <string name="contact_list_pair_again_button">Slik parkobler du på nytt</string>
+    <string name="contact_list_pair_again_why">Trykk og hold på en kontakt for å se hvilken parkobling den bruker.\n\nMed en eldre parkobling kan noen som har tatt opp meldingene dine underveis og senere får tak i nøkkelen til denne parkoblingen – fra en av de to telefonene deres eller, hvis dere parkoblet ansikt til ansikt, fra et bilde av begge kodene – lese de første meldingene dere sendte hverandre (til dere begge hadde skrevet), og noen gruppemeldinger og introduksjonsmeldinger. Opptakene alene er ikke nok. Senere meldinger er beskyttet på samme måte som med en oppdatert parkobling.\n\nÅ parkoble på nytt beskytter bare meldingene som sendes etterpå.</string>
+    <string name="contact_list_pair_again_steps">1. Dere oppdaterer begge Rún.\n2. Møtes og parkobler på nytt med Legg til kontakt. Du får en ny kontakt, med nytt navn og uten minnenotat.\n3. Sjekk at den nye kontakten viser «Oppdatert» i menyen sin, og at meldinger kommer fram begge veier.\n4. Slett deretter den gamle kontakten, begge to. Les de nye meldingene først: når du sletter en kontakt, slettes også meldingene som fortsatt venter på relayet.</string>
+    <string name="contact_list_pair_again_groups">Grupper dere allerede er med i, flyttes ikke til den nye kontakten. Administratoren i gruppen må fjerne denne personen og legge dem til igjen.</string>
 
     <!-- Dialog for personlig minne -->
     <string name="contact_list_memory_dialog_subtitle">En privat påminnelse om hvem denne kontakten er. Bare du kan se dette.</string>
@@ -130,6 +139,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d kontakt må parkobles på nytt. Trykk for å legge den til igjen.</item>
         <item quantity="other">%1$d kontakter må parkobles på nytt. Trykk for å legge dem til igjen.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d kontakt bruker en eldre parkobling. Trykk for å se hvordan du parkobler på nytt.</item>
+        <item quantity="other">%1$d kontakter bruker en eldre parkobling. Trykk for å se hvordan du parkobler på nytt.</item>
     </plurals>
     <string name="connect_log_title">Tilkoblingslogg</string>
 

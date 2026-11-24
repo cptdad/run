@@ -50,6 +50,10 @@
          actually leave: a member who has not yet read the leaver's texts drops them on
          arrival once the leave notice has removed the sender from their roster -->
     <string name="group_info_leave_unread_warning">Anything you sent that the others have not read yet may never be shown to them.</string>
+    <!-- Appended (new paragraph, added in code) to every confirmation that leaves a group,
+         including the choose-new-admin picker (tapping a member there hands over and leaves).
+         Describes the admin-of-record record GroupManager keeps after a leave (RÚN-06). -->
+    <string name="group_info_leave_kept_note">Rún keeps a private note of this group\'s ID and who its admin was in your encrypted vault, so it can warn you if someone else later invites you back; the note moves with you to a new phone and is erased only when Rún is wiped.</string>
     <string name="group_info_leave_confirm_action">Leave</string>
     <!-- Choose-new-admin picker: Android uses a separate title + subtitle;
          iOS combines them into one sentence and uses a different nav title.

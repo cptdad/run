@@ -133,6 +133,10 @@ struct AddContactView: View {
     // NOT terminal: the 1 Hz poll keeps running and clears it again if the pairing
     // completes after all; only the user's "Start again" tap deletes anything.
     @State private var pairingFailed = false
+    // RÚN-03: this session's save came out as an OLDER pairing (the other phone's code
+    // had no one-time key — its app is older): the done step says "ask them to update,
+    // then pair again". Android sibling: AddContactSessionViewModel.savedOlderPairing.
+    @State private var savedOlderPairing = false
 
     // Hidden 5-taps-within-3s gesture that reveals the no-camera paste exchange.
     @State private var pasteTapCount = 0
@@ -726,6 +730,20 @@ struct AddContactView: View {
                         .font(.runeFootnote)
                         .foregroundColor(Color.runTextPrimary.opacity(0.85))
                         .accessibilityIdentifier("add_done_alias")
+                }
+                if savedOlderPairing {
+                    // RÚN-03: a NEW pairing that came out as an older one. Shown in both
+                    // done states; the contact itself works. Android sibling: DoneStep.
+                    Text(L10n.addContactOlderPairingNote)
+                        .font(.runeFootnote)
+                        .foregroundColor(Color.runTextPrimary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Color.runSurface)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .accessibilityIdentifier("add_contact_older_pairing_note")
                 }
                 if scanBackNeeded {
                     // Scan-first role: we scanned their secret-only code, so
@@ -1442,6 +1460,8 @@ struct AddContactView: View {
         }
         // savedV3 / savedLegacy: the success path.
         LogBuffer.shared.append(level: "D", tag: "Contacts", message: "contact added")
+        // RÚN-03: an older pairing again (their app is older) — the done-step note.
+        savedOlderPairing = ContactPairing.shared.savedAsOlder(outcome: outcome)
 
         // We scanned their FULL code, so we have a send channel — deliver our
         // own inbox in-band (they only saw our secret-only QR). Idempotent on
@@ -1578,6 +1598,7 @@ struct AddContactView: View {
         pairing = nil
         peerScan = nil
         pairingFailed = false
+        savedOlderPairing = false
         mintState = .waitingForRelay
         mintProgress = 0.06
         step = .choice

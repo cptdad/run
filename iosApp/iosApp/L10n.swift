@@ -106,8 +106,8 @@ enum L10n {
     static var addContactCopiedBang: String { NSLocalizedString("add_contact_copied_bang", value: "Copied!", comment: "") }
     /// en: "✓ Contact added"
     static var addContactDoneHeading: String { NSLocalizedString("add_contact_done_heading", value: "✓ Contact added", comment: "") }
-    /// en: "Couldn't add this contact — one of the inboxes in their code is already in use here. If you're re-adding someone you already have, delete the old contact first, then try again."
-    static var addContactInboxInUse: String { NSLocalizedString("add_contact_inbox_in_use", value: "Couldn't add this contact — one of the inboxes in their code is already in use here. If you're re-adding someone you already have, delete the old contact first, then try again.", comment: "") }
+    /// en: "Couldn't add this contact — one of the inboxes in their code is already in use here. Start again, so you both show new codes."
+    static var addContactInboxInUse: String { NSLocalizedString("add_contact_inbox_in_use", value: "Couldn't add this contact — one of the inboxes in their code is already in use here. Start again, so you both show new codes.", comment: "") }
     /// en: "Invalid code"
     static var addContactInvalidCode: String { NSLocalizedString("add_contact_invalid_code", value: "Invalid code", comment: "") }
     /// en: "Invalid QR code format"
@@ -128,6 +128,8 @@ enum L10n {
     static var addContactNavTitle: String { NSLocalizedString("add_contact_nav_title", value: "Add Contact", comment: "") }
     /// en: "Next"
     static var addContactNext: String { NSLocalizedString("add_contact_next", value: "Next", comment: "") }
+    /// en: "Their version of Rún is older, so this is an older pairing. Ask them to update Rún, then pair again."
+    static var addContactOlderPairingNote: String { NSLocalizedString("add_contact_older_pairing_note", value: "Their version of Rún is older, so this is an older pairing. Ask them to update Rún, then pair again.", comment: "") }
     /// en: "Pairing didn't work: the secure channel with this contact could not be set up. Start again to pair with a new code."
     static var addContactPairingFailed: String { NSLocalizedString("add_contact_pairing_failed", value: "Pairing didn't work: the secure channel with this contact could not be set up. Start again to pair with a new code.", comment: "") }
     /// en: "Start again"
@@ -332,6 +334,26 @@ enum L10n {
     static var contactListNoMemoryYet: String { NSLocalizedString("contact_list_no_memory_yet", value: "No memory yet", comment: "") }
     /// en: "Notifications"
     static var contactListNotifications: String { NSLocalizedString("contact_list_notifications", value: "Notifications", comment: "") }
+    /// en (other): "%1$d contacts use an older pairing. Tap to see how to pair again."
+    static func contactListOlderPairingBanner(_ n: Int) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_older_pairing_banner", comment: ""), n) }
+    /// en: "How to pair again"
+    static var contactListPairAgainButton: String { NSLocalizedString("contact_list_pair_again_button", value: "How to pair again", comment: "") }
+    /// en: "Groups you already share don't move to the new contact. The group's admin needs to remove this person and add them again."
+    static var contactListPairAgainGroups: String { NSLocalizedString("contact_list_pair_again_groups", value: "Groups you already share don't move to the new contact. The group's admin needs to remove this person and add them again.", comment: "") }
+    /// en: "1. Both of you update Rún.\n2. Meet and pair again with Add contact. You get a new contact, with a new name and no memory note.\n3. Check that the new contact shows “Current” in its menu and that messages get through both ways.\n4. Then both of you delete the old contact. Read its new messages first: deleting a contact also deletes its messages still waiting on the relay."
+    static var contactListPairAgainSteps: String { NSLocalizedString("contact_list_pair_again_steps", value: "1. Both of you update Rún.\n2. Meet and pair again with Add contact. You get a new contact, with a new name and no memory note.\n3. Check that the new contact shows “Current” in its menu and that messages get through both ways.\n4. Then both of you delete the old contact. Read its new messages first: deleting a contact also deletes its messages still waiting on the relay.", comment: "") }
+    /// en: "Press and hold a contact to see which pairing it uses.\n\nWith an older pairing, someone who has recorded your messages on their way and later gets this pairing's key — from one of your two phones or, if you paired in person, from a photo of both codes — could read your first messages to each other (until you had both written), and some group and introduction messages. Recorded messages alone are not enough. Later messages are protected the same way as with a current pairing.\n\nPairing again protects only the messages sent after it."
+    static var contactListPairAgainWhy: String { NSLocalizedString("contact_list_pair_again_why", value: "Press and hold a contact to see which pairing it uses.\n\nWith an older pairing, someone who has recorded your messages on their way and later gets this pairing's key — from one of your two phones or, if you paired in person, from a photo of both codes — could read your first messages to each other (until you had both written), and some group and introduction messages. Recorded messages alone are not enough. Later messages are protected the same way as with a current pairing.\n\nPairing again protects only the messages sent after it.", comment: "") }
+    /// en: "Current"
+    static var contactListPairingCurrent: String { NSLocalizedString("contact_list_pairing_current", value: "Current", comment: "") }
+    /// en: "Made with both apps up to date. Nothing to do."
+    static var contactListPairingCurrentNote: String { NSLocalizedString("contact_list_pairing_current_note", value: "Made with both apps up to date. Nothing to do.", comment: "") }
+    /// en: "Pairing"
+    static var contactListPairingLabel: String { NSLocalizedString("contact_list_pairing_label", value: "Pairing", comment: "") }
+    /// en: "Older pairing"
+    static var contactListPairingOlder: String { NSLocalizedString("contact_list_pairing_older", value: "Older pairing", comment: "") }
+    /// en: "Made with an older version of Rún. Updating the app doesn't change this; pairing again does."
+    static var contactListPairingOlderNote: String { NSLocalizedString("contact_list_pairing_older_note", value: "Made with an older version of Rún. Updating the app doesn't change this; pairing again does.", comment: "") }
     /// en: "Tap to answer"
     static var contactListPendingRowHint: String { NSLocalizedString("contact_list_pending_row_hint", value: "Tap to answer", comment: "") }
     /// en: "Would you like to report this contact for objectionable content or abuse? Reports are reviewed and acted on within 24 hours. Your report is sent from your own email app, so it will show us your email address — and the draft is stored by that app, outside Rún, where it won't be erased if you wipe Rún."
@@ -358,8 +380,8 @@ enum L10n {
     static var contactListResetRelayFailure: String { NSLocalizedString("contact_list_reset_relay_failure", value: "Couldn't reach the relay. Rún will finish this on its own.", comment: "") }
     /// en: "Resetting relay access…"
     static var contactListResetRelayInProgress: String { NSLocalizedString("contact_list_reset_relay_in_progress", value: "Resetting relay access…", comment: "") }
-    /// en: "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$s doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to delete this contact and pair again in person."
-    static func contactListResetRelayMessage(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_reset_relay_message", value: "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$@ doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to delete this contact and pair again in person.", comment: ""), p1) }
+    /// en: "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$s doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to pair again in person and then delete this contact."
+    static func contactListResetRelayMessage(_ p1: String) -> String { String.localizedStringWithFormat(NSLocalizedString("contact_list_reset_relay_message", value: "Rún will get new access keys for this conversation from the relay. Your messages, your history and this contact stay exactly as they are, and %1$@ doesn't have to do anything.\n\nDo this if you think someone else had your phone while it was unlocked. It can't undo anything they already read — and if the phone really was taken, the safest fix is still to pair again in person and then delete this contact.", comment: ""), p1) }
     /// en: "Relay access reset."
     static var contactListResetRelaySuccess: String { NSLocalizedString("contact_list_reset_relay_success", value: "Relay access reset.", comment: "") }
     /// en: "Reset relay access?"
@@ -378,8 +400,8 @@ enum L10n {
     static var conversationBlockAction: String { NSLocalizedString("conversation_block_action", value: "Block", comment: "") }
     /// en: "Contact"
     static var conversationContactFallback: String { NSLocalizedString("conversation_contact_fallback", value: "Contact", comment: "") }
-    /// en: "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, remove and re-add the contact."
-    static var conversationFsStalledBody: String { NSLocalizedString("conversation_fs_stalled_body", value: "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, remove and re-add the contact.", comment: "") }
+    /// en: "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, pair again, then delete the old contact."
+    static var conversationFsStalledBody: String { NSLocalizedString("conversation_fs_stalled_body", value: "Messages to this contact are still encrypted, but they don't yet get the extra protection that keeps past messages safe if a key is later exposed. This usually clears once they reply. If it persists, pair again, then delete the old contact.", comment: "") }
     /// en: "Forward secrecy hasn't engaged"
     static var conversationFsStalledTitle: String { NSLocalizedString("conversation_fs_stalled_title", value: "Forward secrecy hasn't engaged", comment: "") }
     /// en: "Group message in %1$s"
@@ -388,8 +410,8 @@ enum L10n {
     static var conversationGroupEchoOpen: String { NSLocalizedString("conversation_group_echo_open", value: "Open group", comment: "") }
     /// en: "Waiting for this contact's inbox — you'll be able to send in a moment."
     static var conversationPendingBanner: String { NSLocalizedString("conversation_pending_banner", value: "Waiting for this contact's inbox — you'll be able to send in a moment.", comment: "") }
-    /// en: "Secure channel could not be established with this contact. Messages are not being sent. Remove the contact and pair again."
-    static var conversationRatchetRefusedBody: String { NSLocalizedString("conversation_ratchet_refused_body", value: "Secure channel could not be established with this contact. Messages are not being sent. Remove the contact and pair again.", comment: "") }
+    /// en: "Secure channel could not be established with this contact. Messages are not being sent. Pair again, then delete this contact."
+    static var conversationRatchetRefusedBody: String { NSLocalizedString("conversation_ratchet_refused_body", value: "Secure channel could not be established with this contact. Messages are not being sent. Pair again, then delete this contact.", comment: "") }
     /// en: "Report"
     static var conversationReportAction: String { NSLocalizedString("conversation_report_action", value: "Report", comment: "") }
     /// en: "Report to Rún"
@@ -400,8 +422,8 @@ enum L10n {
     static var conversationReportConfirmTitle: String { NSLocalizedString("conversation_report_confirm_title", value: "Report Contact", comment: "") }
     /// en: "⚠ Screenshot saved to Photos — that image is NOT encrypted and can sync to iCloud."
     static var conversationScreenshotWarningBanner: String { NSLocalizedString("conversation_screenshot_warning_banner", value: "⚠ Screenshot saved to Photos — that image is NOT encrypted and can sync to iCloud.", comment: "") }
-    /// en: "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again."
-    static var conversationSecureChannelLostBody: String { NSLocalizedString("conversation_secure_channel_lost_body", value: "The secure channel with this contact was lost. Messages are not being sent. Remove the contact and pair again.", comment: "") }
+    /// en: "The secure channel with this contact was lost. Messages are not being sent. Pair again, then delete this contact."
+    static var conversationSecureChannelLostBody: String { NSLocalizedString("conversation_secure_channel_lost_body", value: "The secure channel with this contact was lost. Messages are not being sent. Pair again, then delete this contact.", comment: "") }
     /// en: "Create group (%1$d)"
     static func createGroupButtonLabel(_ p1: Int) -> String { String.localizedStringWithFormat(NSLocalizedString("create_group_button_label", value: "Create group (%1$lld)", comment: ""), p1) }
     /// en: "Creating…"
@@ -544,6 +566,8 @@ enum L10n {
     static var groupInfoLeaveConfirmTitleIos: String { NSLocalizedString("group_info_leave_confirm_title_ios", value: "Leave Group", comment: "") }
     /// en: "Leave group"
     static var groupInfoLeaveGroup: String { NSLocalizedString("group_info_leave_group", value: "Leave group", comment: "") }
+    /// en: "Rún keeps a private note of this group's ID and who its admin was in your encrypted vault, so it can warn you if someone else later invites you back; the note moves with you to a new phone and is erased only when Rún is wiped."
+    static var groupInfoLeaveKeptNote: String { NSLocalizedString("group_info_leave_kept_note", value: "Rún keeps a private note of this group's ID and who its admin was in your encrypted vault, so it can warn you if someone else later invites you back; the note moves with you to a new phone and is erased only when Rún is wiped.", comment: "") }
     /// en: "Anything you sent that the others have not read yet may never be shown to them."
     static var groupInfoLeaveUnreadWarning: String { NSLocalizedString("group_info_leave_unread_warning", value: "Anything you sent that the others have not read yet may never be shown to them.", comment: "") }
     /// en: "Make admin"
@@ -698,6 +722,10 @@ enum L10n {
     static var moveQrTitle: String { NSLocalizedString("move_qr_title", value: "Scan this on the new phone", comment: "") }
     /// en: "Anyone who photographs this code can take the transfer. Show it only to the new phone."
     static var moveQrWarning: String { NSLocalizedString("move_qr_warning", value: "Anyone who photographs this code can take the transfer. Show it only to the new phone.", comment: "") }
+    /// en: "Your inboxes now use new access keys"
+    static var moveSecuringDone: String { NSLocalizedString("move_securing_done", value: "Your inboxes now use new access keys", comment: "") }
+    /// en: "Switching your inboxes to new access keys…"
+    static var moveSecuringPending: String { NSLocalizedString("move_securing_pending", value: "Switching your inboxes to new access keys…", comment: "") }
     /// en: "Show as text"
     static var moveShowTextLabel: String { NSLocalizedString("move_show_text_label", value: "Show as text", comment: "") }
     /// en: "Stopping this phone…"
@@ -812,6 +840,10 @@ enum L10n {
     static var pinDeviceKeyBusyMessage: String { NSLocalizedString("pin_device_key_busy_message", value: "Your phone’s secure hardware is busy. Lock your phone, unlock it, and try again.", comment: "") }
     /// en: "Couldn’t finish setup"
     static var pinDeviceKeyBusyTitle: String { NSLocalizedString("pin_device_key_busy_title", value: "Couldn’t finish setup", comment: "") }
+    /// en: "Some data on this phone has not been erased yet. Unlock your phone, then tap Retry. Setup opens when the erase is complete."
+    static var pinEraseFinishingMessage: String { NSLocalizedString("pin_erase_finishing_message", value: "Some data on this phone has not been erased yet. Unlock your phone, then tap Retry. Setup opens when the erase is complete.", comment: "") }
+    /// en: "Finishing the erase"
+    static var pinEraseFinishingTitle: String { NSLocalizedString("pin_erase_finishing_title", value: "Finishing the erase", comment: "") }
     /// en: "Erase and start over"
     static var pinEraseStartOver: String { NSLocalizedString("pin_erase_start_over", value: "Erase and start over", comment: "") }
     /// en: "Erase"
@@ -840,6 +872,8 @@ enum L10n {
     static var pinPermanentKeyLossPasscodeNoRecovery: String { NSLocalizedString("pin_permanent_key_loss_passcode_no_recovery", value: "Your device passcode changed, so the hardware key protecting this vault is gone. Without a recovery code this vault cannot be opened.", comment: "") }
     /// en: "Enter passphrase"
     static var pinPromptPassphrase: String { NSLocalizedString("pin_prompt_passphrase", value: "Enter passphrase", comment: "") }
+    /// en: "Setup can’t start yet. Unlock your phone, then tap Retry."
+    static var pinSetupBlockedMessage: String { NSLocalizedString("pin_setup_blocked_message", value: "Setup can’t start yet. Unlock your phone, then tap Retry.", comment: "") }
     /// en: "Choose a passphrase"
     static var pinSetupChoosePassphrase: String { NSLocalizedString("pin_setup_choose_passphrase", value: "Choose a passphrase", comment: "") }
     /// en: "Choose your PIN"

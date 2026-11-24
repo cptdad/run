@@ -116,17 +116,24 @@ struct SupportView: View {
             Task { await store.purchase(product) }
         } label: {
             HStack {
+                // Wraps instead of being cut: "Spendier mir einen Kaf…" in German (2026-11-24).
                 Text(tierLabel(product.id))
                     .font(.runeBody)
                     .foregroundColor(Color.runTextPrimary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer()
                 if store.purchasing == product.id {
                     ProgressView().tint(Color.runBackground)
                         .frame(width: 64)
                 } else {
+                    // ONE line at its own width: the label gives way, the price never
+                    // breaks mid-amount. Android sibling: TipJar.kt's TipTierRow.
                     Text(product.displayPrice)
                         .font(.runeSubheadline).fontWeight(.semibold)
                         .foregroundColor(Color.runBackground)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 8)
                         .background(Color.runTextPrimary)

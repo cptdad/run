@@ -80,6 +80,14 @@ class MoveManager(
      * unit tests pass an explicit pre-granted gate.
      */
     val exportAuthGate: MoveExportAuthGate = MoveExportAuthGate(),
+    /**
+     * Test seam only: production always uses [MigrationBundleCodec.encode] (both
+     * construction sites leave it defaulted). A test wraps it to capture the owned
+     * plaintext array and check that it is already zero at the transport boundary.
+     */
+    internal val bundleEncoder: (MigrationBundle) -> ByteArray = MigrationBundleCodec::encode,
+    /** Test seam only, the import twin of [bundleEncoder]: production uses [MigrationSeal.open]. */
+    internal val bundleOpener: (List<ByteArray>, ByteArray, String, String) -> ByteArray = MigrationSeal::open,
     private val nowMs: () -> Long = { currentTimeMillis() },
 ) : MoveManagerApi {
 
@@ -89,20 +97,18 @@ class MoveManager(
         /**
          * `_meta` key (the `mig_` namespace, so [MoveMetaPolicy] already denies it
          * from every export) holding the comma-separated inbox ids whose post-import
-         * read-cap rotation has NOT landed yet. Written in full right after the import
-         * commits (before the first rotation) and pruned per success, so an
-         * interrupted securing pass leaves its tail here. Retried by the control sweep
-         * ([retryPendingMoveRotations]). Hardening of D4, never a correctness
-         * requirement of the import, so it is bounded and a failed write is only
-         * logged.
+         * read-cap rotation has NOT been confirmed yet. Written in full INSIDE the
+         * import transaction ([VaultSnapshotIo.import]), with no length cap, and
+         * shrunk per confirmed rotation by the bounded passes in
+         * MoveRotationObligations.kt. Alias of [MoveMetaKeys.ROTATE_PENDING].
          *
          * NOT per-contact/per-group state: no residue classifier may match it, and
          * `wipeAllTables` is what erases it (like every other `mig_*` key).
          */
-        const val META_ROTATE_PENDING = "mig_rotate_pending"
+        const val META_ROTATE_PENDING = MoveMetaKeys.ROTATE_PENDING
 
-        /** Bound on [META_ROTATE_PENDING] so a pathological vault cannot grow one unbounded `_meta` row. */
-        internal const val MAX_ROTATE_PENDING = 256
+        /** Safety bound on [secureImportedInboxes]'s batch loop (it ends far sooner: each batch needs a new entry). */
+        internal const val MAX_SECURING_BATCHES = 10_000
 
         /**
          * Ceiling on the best-effort push unregistration (docs/device-move.md 2a:
@@ -164,6 +170,8 @@ class MoveManager(
     private val opLock = SyncLock()
     private var opInFlight = false
 
+    private val securingRowLatch = MoveSecuringRowLatch()
+
     init {
         refreshFrozenState()
     }
@@ -199,6 +207,8 @@ class MoveManager(
      */
     fun scrubInMemory() {
         exportAuthGate.clear()
+        // The "this session saw securing pending" latch is session RAM like the rest.
+        securingRowLatch.reset()
         when (_exportState.value) {
             is MoveExportState.Ready -> _exportState.value = MoveExportState.FrozenNoCode
             // The platform CANCELS the export job on the
@@ -309,6 +319,16 @@ class MoveManager(
             unregisterPushBestEffort()
 
             _exportState.value = MoveExportState.Preparing(MoveExportStep.FREEZE)
+            // RÚN-01: no read-cap rotation (this phone's own post-import securing) may
+            // be in flight across the freeze and the snapshot below — a rotation landing
+            // between the snapshot's `_meta` and inbox reads would ship a cap the relay
+            // no longer honours, and the new phone's inbox would be dead. Stop the pass,
+            // wait out the rotation in flight, and hold its slot until the freeze is on
+            // disk; every later pass re-checks the freeze before each rotation.
+            if (!MoveRotation.claimForExport()) {
+                fail(MoveError.RELAY_UNREACHABLE, retryable = true, why = "a read-cap rotation is still in flight")
+                return
+            }
             try {
                 db.putMeta(MoveMetaKeys.FROZEN, "1")
             } catch (e: Throwable) {
@@ -316,6 +336,8 @@ class MoveManager(
                 // the one failure that leaves the device exactly as it was.
                 fail(MoveError.NOT_UNLOCKED, retryable = true, why = "freeze write failed: ${e::class.simpleName}")
                 return
+            } finally {
+                MoveRotation.endPass()
             }
 
             val transport = takeTransport()
@@ -371,8 +393,11 @@ class MoveManager(
                 return
             }
 
+            // The code is drawn BEFORE the encode so that nothing at all runs between
+            // the plaintext coming into existence and the seal that consumes it.
+            code = MigrationSeal.newCode()
             plaintext = try {
-                MigrationBundleCodec.encode(
+                bundleEncoder(
                     MigrationBundle(
                         // D4: the new schema only when a v3 contact is in the vault, so a
                         // move to an older build keeps working until the first v3 pairing.
@@ -389,9 +414,20 @@ class MoveManager(
                 return
             }
 
-            code = MigrationSeal.newCode()
             chunks = try {
-                MigrationSeal.seal(plaintext, code, minted.inboxId, bundleId)
+                // The serialized bundle is the whole vault in the clear. Its last
+                // consumer is the seal, so it is zeroed the moment the seal returns or
+                // throws: the inner `finally` runs before the catch handlers below, so
+                // it is already zero at the failure-path DELETE, and on success it is
+                // zero before the first upload. `encode`/`seal` do not suspend, so no
+                // cancellation can land between the encode and this wipe.
+                val pt = plaintext
+                try {
+                    MigrationSeal.seal(pt, code, minted.inboxId, bundleId)
+                } finally {
+                    pt.secureWipe()
+                    plaintext = null
+                }
             } catch (e: MigrationSeal.TooLargeException) {
                 deleteTransferInbox(relay, minted.inboxId, minted.readCapability)
                 fail(MoveError.TOO_LARGE, retryable = false, why = "bundle too large: ${e::class.simpleName}")
@@ -461,8 +497,10 @@ class MoveManager(
             _exportState.value = MoveExportState.Ready(handle, chunks.size)
         } finally {
             // The code and the serialized bundle are the two pieces of key/plaintext
-            // material this function creates. The SNAPSHOT's shared secrets are
-            // deliberately NOT wiped: they are rows read out of the live vault, and a
+            // material this function creates. The bundle is normally already zero
+            // and nulled right after the seal (above); the wipe here is the backstop
+            // for anything thrown between the encode and the seal. The SNAPSHOT's
+            // shared secrets are deliberately NOT wiped: they are rows read out of the live vault, and a
             // future actual that returned a cached record would have its in-RAM copy
             // zeroed by that "hygiene" — a much worse failure than their lifetime here.
             code?.secureWipe()
@@ -613,19 +651,22 @@ class MoveManager(
     // -----------------------------------------------------------------------
 
     /**
-     * Fetch → import → secure, on a freshly provisioned and unlocked vault
+     * Fetch → import (securing follows in the background), on a freshly provisioned and unlocked vault
      * (docs/device-move.md §Protocol, phone B).
      *
      * The drain is DESTRUCTIVE, so the whole bundle is authenticated, parsed and
      * validated in RAM before a single row is written, and the import itself is one
-     * [VaultSnapshotIo.import] transaction that writes [MoveMetaKeys.IMPORTED] last.
-     * A crash before that point loses the bundle (the old phone re-issues); a crash
-     * after it leaves a complete vault.
+     * [VaultSnapshotIo.import] transaction that writes the read-cap rotation
+     * obligations and then [MoveMetaKeys.IMPORTED] last. A crash before that point
+     * loses the bundle (the old phone re-issues); a crash after it leaves a complete
+     * vault WITH every rotation obligation, so nothing after the commit can lose one.
+     * A failed obligation write fails the import (rolled back, `IMPORT_FAILED`).
      *
-     * `SECURING` is best-effort by construction: a rotation failure is recorded for
-     * the control sweep to retry and NEVER fails the import — the user has their
-     * identity at that point, and refusing it over a hardening step would be the
-     * worse outcome by far.
+     * `Success` means IMPORTED, not secured: the rotations themselves run after this
+     * returns, off the import screen — the platform starts [secureImportedInboxes] in
+     * the background and the control sweep finishes whatever is left
+     * ([retryPendingMoveRotations]). [securingState] says where that stands.
+     * [MoveImportStep.SECURING] is therefore no longer reported by this function.
      */
     override suspend fun importFromHandle(
         handle: MoveHandle,
@@ -690,7 +731,18 @@ class MoveManager(
                     ?: return MoveImportResult.Failure(MoveError.BAD_CODE)
 
                 plaintext = try {
-                    MigrationSeal.open(unique, code, handle.inboxId, handle.bundleId)
+                    // The code and the sealed chunks together are as good as the
+                    // plaintext, and `open` is their last consumer (a retry re-drains
+                    // from the relay), so both are zeroed the moment it returns or
+                    // throws. `unique` holds the very arrays of `blobs`.
+                    val c = code
+                    try {
+                        bundleOpener(unique, c, handle.inboxId, handle.bundleId)
+                    } finally {
+                        c.secureWipe()
+                        code = null
+                        blobs.forEach { it.secureWipe() }
+                    }
                 } catch (e: MigrationSeal.SealException) {
                     // Wrong code, tampered chunk, foreign bundle and a truncated set are
                     // cryptographically indistinguishable here (that is the AEAD doing
@@ -705,7 +757,17 @@ class MoveManager(
                 }
 
                 val bundle = try {
-                    MigrationBundleCodec.decode(plaintext)
+                    // `decode` is the opened plaintext's last consumer and returns a
+                    // model that does not alias it (Strings and fresh base64-decoded
+                    // arrays), so it is zeroed right here: long before the import
+                    // transaction, the transfer DELETE and the read-cap rotations.
+                    val pt = plaintext
+                    try {
+                        MigrationBundleCodec.decode(pt)
+                    } finally {
+                        pt.secureWipe()
+                        plaintext = null
+                    }
                 } catch (e: Exception) {
                     platformLogWarn(TAG, "bundle decode failed: ${e::class.simpleName}")
                     return MoveImportResult.Failure(MoveError.BUNDLE_CORRUPT)
@@ -732,15 +794,11 @@ class MoveManager(
                     return MoveImportResult.Failure(MoveError.IMPORT_FAILED)
                 }
 
-                // The rotation obligation is made durable IMMEDIATELY after the
-                // commit, before any network call, so nothing below can lose it.
-                val seed = seedRotatePending(db, bundle.snapshot)
+                // The rotation obligations committed inside the import transaction
+                // above, so there is nothing left to make durable here.
 
                 // The bundle is committed: the relay copy is now pure liability.
                 deleteTransferInbox(relay, handle.inboxId, handle.readCap)
-
-                onProgress(MoveImportStep.SECURING)
-                rotateImportedReadCaps(db, relay, seed)
 
                 platformLog(
                     TAG,
@@ -760,114 +818,106 @@ class MoveManager(
         }
     }
 
+    // -----------------------------------------------------------------------
+    // New phone — securing (the read-cap rotations the import committed)
+    // -----------------------------------------------------------------------
+
     /**
-     * Rotate the READ (owner) capability of every inbound / inbound-ctl inbox
-     * this device just imported, so a copy of the old phone's vault cannot drain,
-     * delete, re-key or push-register on them. Peers are untouched (their WRITE
-     * caps are unaffected), so there is no announce and no ratchet step.
+     * The background pass over the rotation obligations, started by the platform
+     * right after a successful import (off the import screen, so it never holds the
+     * user's identity behind Tor round trips). Works through the WHOLE list in
+     * batches of [budget], trying each entry at most once per call, and stops when
+     * only unconfirmed / deferred / ambiguous entries remain — those go to the
+     * bounded control sweep. Rotates the READ (owner) capability of owned inboxes
+     * through [MoveTransport.rotateReadCap]
+     * — production: the crash-safe `rotateReadCap` / `cap-pend` path — so a copy of
+     * the old phone's vault can no longer drain, delete, re-key or push-register on
+     * them. Peers are untouched (their write caps are unaffected).
      *
-     * TWO exclusions, both deliberate:
+     * Exclusions, referral deferral and the per-entry bookkeeping are the shared
+     * pass in MoveRotationObligations.kt, so this and the control sweep can never
+     * disagree. Skips when another pass (the sweep) is running. Not a move
+     * operation (it does not take the export/import slot), but an export takes the
+     * PASS slot before it freezes ([MoveRotation.claimForExport]): before EVERY
+     * rotation this re-checks for that request and for the freeze, so no rotation
+     * runs across an export.
      *
-     *  - **outbound rows** — their `cap` is the PEER's write capability, not ours;
-     *  - **inboxes referenced by a `ref_*` record.** A pending referral handshake
-     *    embeds a freshly minted inbox PAIR (ids AND caps) inside its `_meta` value,
-     *    and finalizing it writes those rows into `inbox_ids` verbatim. Rotating one
-     *    now would leave the record holding a dead cap that the finalize then writes
-     *    back OVER the rotated one — an inbox the new phone can no longer read. The
-     *    match is deliberately crude and conservative: any `ref_`-prefixed `_meta`
-     *    VALUE that CONTAINS the 32-character inbox id as a substring protects it.
-     *    It over-matches at worst (a skipped rotation, which the wipe of the old
-     *    phone covers anyway) and it needs no knowledge of the referral record
-     *    layout, so a future field carrying an inbox id is covered automatically.
-     *
-     * Failures are never fatal. The whole to-rotate list was already written to
-     * [META_ROTATE_PENDING] by [seedRotatePending]; each entry is pruned only once
-     * its rotation lands, so whatever is left is retried by the control sweep
-     * ([retryPendingMoveRotations]).
+     * A cancel (lock / wipe) ends the pass; the entry in flight simply stays listed
+     * and is retried (a second rotation of a cap this device owns is harmless).
+     * Never throws anything but that cancellation.
      */
-    private suspend fun rotateImportedReadCaps(
-        db: VaultDatabase,
-        relay: MoveTransport,
-        seed: RotateSeed,
-    ) {
-        if (!seed.referralScanOk) {
-            // The referral scan failed. Fail toward NOT rotating: a rotation we
-            // cannot prove is safe (it might belong to a pending referral) is worse
-            // than one we defer. The UNFILTERED list is already durable, and
-            // [retryPendingMoveRotations] re-runs the same referral filter before
-            // it rotates anything, so nothing is lost and nothing unsafe is rotated.
-            platformLogWarn(TAG, "securing: deferred — the referral scan failed")
-            return
+    suspend fun secureImportedInboxes(budget: Int = MoveRotation.IMPORT_BUDGET): MoveSecuringState {
+        val db = vault() ?: return MoveSecuringState.Unknown
+        // The status row says "done" only after this session saw the rotations owed.
+        // That must not depend on a SCREEN having looked in time: the pass can finish
+        // within a second of the import, and iOS reads the row only while its settings
+        // sheet is open, so there the row never appeared at all (seen on an iPhone,
+        // 2026-11-23). The pass itself tells the latch what it started from and what
+        // it left, on both platforms.
+        securingRowLatch.observe(moveSecuringState(db))
+        try {
+            return runSecuringPass(db, budget)
+        } finally {
+            securingRowLatch.observe(moveSecuringState(db))
         }
-        val remaining = seed.ids.toMutableList()
-        var rotated = 0
-        for (inboxId in seed.ids) {
-            // Read the LIVE row rather than trusting the snapshot: the import has
-            // landed, and the cap that must authenticate the rotation is whatever the
-            // vault holds now.
-            val live = try {
-                db.getInboxId(inboxId)
-            } catch (e: Throwable) {
-                // Ambiguous (a lock can close the vault under this loop): the entry
-                // STAYS listed for the control sweep.
-                platformLogWarn(TAG, "securing: inbox read failed: ${e::class.simpleName}")
-                continue
-            }
-            val cap = live?.cap
-            if (live == null || cap.isNullOrEmpty()) {
-                // No row or no cap: nothing to rotate, now or later.
-                remaining.remove(inboxId)
-                writeRotatePending(db, remaining)
-                continue
-            }
-            val newCap = try {
-                relay.rotateReadCap(live.inboxId, cap)
-            } catch (e: Exception) {
-                // NOT rethrown on a cancel: the import has committed, so a cancellation
-                // here defers the rest to the control sweep (the tail stays listed in
-                // `mig_rotate_pending`) and the import still returns Success.
-                platformLogWarn(TAG, "securing: rotation failed: ${e::class.simpleName}")
-                continue
-            }
-            persistRotatedCap(db, live.inboxId, newCap)
-            rotated++
-            // Pruned per success, so a process death mid-loop leaves exactly the
-            // un-rotated tail listed (a re-rotation of an entry whose prune did not
-            // land is harmless: it only rotates a cap this device already owns).
-            remaining.remove(inboxId)
-            writeRotatePending(db, remaining)
-        }
-        platformLog(TAG, "securing: rotated $rotated read cap(s), ${remaining.size} deferred")
     }
 
-    private class RotateSeed(val ids: List<String>, val referralScanOk: Boolean)
-
-    // Writes the COMPLETE to-rotate list into [META_ROTATE_PENDING] BEFORE the first
-    // rotation, so no interruption (a failed referral scan, a vault closed by a lock
-    // mid-loop, a process death during the minutes of Tor round trips) can lose the
-    // rotation obligation: whatever is not pruned on success stays listed for the
-    // control sweep ([retryPendingMoveRotations]).
-    //
-    // The list is every imported inbox this device OWNS the read side of
-    // ([MessageManager.OWNED_READ_DIRECTIONS]) minus the referral-referenced ones.
-    // When the referral scan fails the list is written UNFILTERED and nothing is
-    // rotated now; the sweep applies the same filter before any rotation.
-    private fun seedRotatePending(db: VaultDatabase, snapshot: VaultSnapshot): RotateSeed {
-        val protectedIds = referralReferencedInboxIds(db)
-        val ids = mutableListOf<String>()
-        for (record in snapshot.inboxes) {
-            if (record.direction !in MessageManager.OWNED_READ_DIRECTIONS) continue
-            if (!isValidInboxId(record.inboxId)) continue
-            if (record.inboxId in ids) continue
-            if (protectedIds != null && record.inboxId in protectedIds) {
-                platformLog(TAG, "securing: a referral-referenced inbox is not rotated")
-                continue
+    private suspend fun runSecuringPass(db: VaultDatabase, budget: Int): MoveSecuringState {
+        // `rotateOwnedInboxReadCap` is deliberately NOT freeze-gated (it is the new
+        // phone's step). A vault that has since become the OLD phone of a later move
+        // must never rotate: the phone that imported from it holds these caps now.
+        if (isMoveFrozen(db)) return moveSecuringState(db)
+        val relay = takeTransport() ?: return moveSecuringState(db)
+        if (!MoveRotation.tryBeginPass()) return moveSecuringState(db)
+        val report = MoveRotationPassReport()
+        val tried = HashSet<String>()
+        try {
+            var batches = 0
+            batches@ while (batches++ < MAX_SECURING_BATCHES) {
+                // Entries already tried in this call were moved to the back (failed) or
+                // removed (confirmed); meeting one again means the fresh ones are done.
+                val batch = MoveRotation.plan(db, budget, report).filter { it.inboxId !in tried }
+                if (batch.isEmpty()) break
+                for (c in batch) {
+                    if (MoveRotation.mustStop(db)) break@batches
+                    tried.add(c.inboxId)
+                    report.attempted++
+                    val newCap = try {
+                        relay.rotateReadCap(c.inboxId, c.cap)
+                    } catch (e: Exception) {
+                        rethrowIfCancelled()
+                        platformLogWarn(TAG, "securing: rotation not confirmed: ${e::class.simpleName}")
+                        null
+                    }
+                    if (newCap.isNullOrEmpty()) {
+                        report.failed++
+                        MoveRotation.settleFailed(db, c.inboxId)
+                    } else {
+                        persistRotatedCap(db, c.inboxId, expectedOldCap = c.cap, newCap = newCap)
+                        report.rotated++
+                        MoveRotation.settleConfirmed(db, c.inboxId)
+                    }
+                }
             }
-            ids.add(record.inboxId)
+        } finally {
+            MoveRotation.endPass()
         }
-        writeRotatePending(db, ids)
-        return RotateSeed(ids, referralScanOk = protectedIds != null)
+        MoveRotation.logReport("securing", report)
+        return moveSecuringState(db)
     }
+
+    /** Where securing stands on this vault ([MoveSecuringState]); Unknown while locked. */
+    fun securingState(): MoveSecuringState {
+        val db = vault() ?: return MoveSecuringState.Unknown
+        return moveSecuringState(db)
+    }
+
+    /**
+     * The settings-menu status row for both UIs: PENDING while rotations are owed;
+     * DONE only once this session saw them pending and then finish. Reads the vault —
+     * call it off the main thread on Android.
+     */
+    fun securingRow(): MoveSecuringRow = securingRowLatch.observe(securingState())
 
     // -----------------------------------------------------------------------
     // Internals
@@ -890,8 +940,9 @@ class MoveManager(
      * The EXPORT calls it everywhere. The IMPORT rethrows BEFORE its commit only
      * (the transfer drain): after the commit the identity and the pending rotations
      * are saved, so a cancel there is swallowed and the import still returns
-     * Success. The cancel and refresh paths still map a cancel to their no-op
-     * result (both fail toward "state unchanged").
+     * Success. [secureImportedInboxes] rethrows (its entries stay listed). The cancel
+     * and refresh paths still map a cancel to their no-op result (both fail toward
+     * "state unchanged").
      */
     private suspend fun rethrowIfCancelled() = currentCoroutineContext().ensureActive()
 
@@ -998,26 +1049,24 @@ class MoveManager(
         }
     }
 
-    private fun persistRotatedCap(db: VaultDatabase, inboxId: String, newCap: String) {
+    private fun persistRotatedCap(db: VaultDatabase, inboxId: String, expectedOldCap: String, newCap: String) {
         // The production transport (RelayMoveTransport → the read-cap rotate) has already
         // committed this cap onto the row, so the common case is a no-op read. The
         // write is here so the manager is correct against ANY MoveTransport, and it
-        // re-reads live to avoid resurrecting a row deleted meanwhile.
+        // re-reads live to avoid resurrecting a row deleted meanwhile. Compare-and-set:
+        // only over the cap this rotation started from — a cap someone else committed
+        // meanwhile (a concurrent "Reset relay access") is what the relay now holds and
+        // must never be overwritten with this rotation's stale answer.
         try {
             val live = db.getInboxId(inboxId) ?: return
             if (live.cap == newCap) return
+            if (live.cap != expectedOldCap) {
+                platformLogWarn(TAG, "securing: the cap changed under the rotation — not overwritten")
+                return
+            }
             db.insertInboxId(live.copy(cap = newCap))
         } catch (e: Throwable) {
             platformLogWarn(TAG, "securing: cap persist failed: ${e::class.simpleName}")
-        }
-    }
-
-    private fun writeRotatePending(db: VaultDatabase, ids: List<String>) {
-        try {
-            if (ids.isEmpty()) db.deleteMeta(META_ROTATE_PENDING)
-            else db.putMeta(META_ROTATE_PENDING, ids.take(MAX_ROTATE_PENDING).joinToString(","))
-        } catch (e: Throwable) {
-            platformLogWarn(TAG, "securing: pending-rotation list write failed: ${e::class.simpleName}")
         }
     }
 
@@ -1054,84 +1103,4 @@ internal fun isMoveFrozen(db: VaultDatabase): Boolean = try {
     // after lockSession closed it) is not a fault; still frozen, just quiet.
     if (db.isOpen) platformLogWarn("MoveManager", "frozen probe failed — treating as frozen: ${e::class.simpleName}")
     true
-}
-
-// See [MoveManager]'s `rotateImportedReadCaps` — a conservative substring match over
-// every `ref_*` `_meta` VALUE. Returns null when the scan could not be completed,
-// which every caller reads as "rotate nothing this pass". Shared by the import pass
-// and [retryPendingMoveRotations], so a listed inbox is filtered identically on both.
-internal fun referralReferencedInboxIds(db: VaultDatabase): Set<String>? {
-    val values = mutableListOf<String>()
-    try {
-        for (key in db.metaKeys()) {
-            if (!key.startsWith(ReferralMetaKeys.PREFIX)) continue
-            db.getMeta(key)?.let { values.add(it) }
-        }
-    } catch (e: Throwable) {
-        platformLogWarn("MoveManager", "securing: referral scan failed: ${e::class.simpleName}")
-        return null
-    }
-    if (values.isEmpty()) return emptySet()
-    val inboxes = try {
-        db.getAllInboxIds()
-    } catch (e: Throwable) {
-        platformLogWarn("MoveManager", "securing: inbox enumeration failed: ${e::class.simpleName}")
-        return null
-    }
-    val out = mutableSetOf<String>()
-    for (record in inboxes) {
-        if (values.any { it.contains(record.inboxId) }) out.add(record.inboxId)
-    }
-    return out
-}
-
-/**
- * Control-sweep retry of the post-import read-cap rotations that did not land
- * ([MoveManager.META_ROTATE_PENDING]). Cheap-gated: one `_meta` read in the steady
- * state, zero network calls, and it returns immediately without a transport.
- *
- * The list may have been written UNFILTERED (the import's referral scan failed), so
- * the same [referralReferencedInboxIds] filter runs here before any rotation: a
- * referral-referenced entry is dropped (never rotated, exactly as at import), and a
- * failed scan rotates NOTHING and leaves the list untouched for the next sweep.
- *
- * Blocking (vault + relay I/O) — it rides the control sweep, which already runs on a
- * background dispatcher with a live transport. Never throws: this is hardening, and
- * an exception escaping here would break the sweep that carries the referral redrives
- * and the group-membership redrive with it.
- */
-internal fun retryPendingMoveRotations(vault: VaultDatabase, messageManager: MessageManager?) {
-    val raw = try {
-        vault.getMeta(MoveManager.META_ROTATE_PENDING)
-    } catch (_: Throwable) { null }
-    if (raw.isNullOrEmpty()) return
-    val mm = messageManager ?: return
-    val protectedIds = referralReferencedInboxIds(vault) ?: return   // fail toward NOT rotating
-    val remaining = mutableListOf<String>()
-    for (inboxId in raw.split(',')) {
-        if (inboxId.isEmpty()) continue
-        if (!isValidInboxId(inboxId)) continue          // drop unusable entries
-        if (inboxId in protectedIds) continue           // referral-referenced — never rotated
-        val cap = try {
-            vault.getInboxId(inboxId)?.cap
-        } catch (_: Throwable) {
-            // Ambiguous read (vault closing): keep the entry for a later sweep.
-            if (remaining.size < MoveManager.MAX_ROTATE_PENDING) remaining.add(inboxId)
-            continue
-        }
-        if (cap.isNullOrEmpty()) continue               // row gone (contact deleted) — nothing to rotate
-        val rotated = try {
-            mm.rotateOwnedInboxReadCap(inboxId, cap)
-        } catch (e: Exception) {
-            platformLogWarn("MoveManager", "pending rotation threw: ${e::class.simpleName}")
-            null
-        }
-        if (rotated == null && remaining.size < MoveManager.MAX_ROTATE_PENDING) remaining.add(inboxId)
-    }
-    try {
-        if (remaining.isEmpty()) vault.deleteMeta(MoveManager.META_ROTATE_PENDING)
-        else vault.putMeta(MoveManager.META_ROTATE_PENDING, remaining.joinToString(","))
-    } catch (e: Throwable) {
-        platformLogWarn("MoveManager", "pending-rotation list update failed: ${e::class.simpleName}")
-    }
 }

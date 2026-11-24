@@ -439,6 +439,11 @@ struct ContactListView: View {
     // (memory on the left, Add/Edit + Remove buttons on the right, Delete
     // below) rather than the native iOS context menu.
     @State private var menuContact: ContactItem? = nil
+    // RÚN-03: the "How to pair again" guide (from an older contact's menu or the
+    // banner) and the banner's one global dismissal flag, read from the vault on
+    // every loadContacts. Android sibling: ContactListSnapshot.olderPairingBannerDismissed.
+    @State private var showPairAgainGuide = false
+    @State private var olderPairingBannerDismissed = false
     // About modals (cogwheel menu). Static, vault-agnostic.
     @State private var showAbout  = false
     @State private var showAboutInfo = false
@@ -532,6 +537,11 @@ struct ContactListView: View {
     // it after the export has started lands on ContentView's frozen screen, since
     // the vault now carries `mig_frozen`.
     @State private var showMoveToNewDevice = false
+    // Post-move securing status row in the settings sheet (RÚN-01): "pending" /
+    // "done" / "" (hidden), re-read from the vault each time the sheet appears via
+    // IosAppController.moveSecuringRowKind. Android sibling: ContactListScreen's
+    // move_securing_status DropdownMenuItem.
+    @State private var moveSecuringKind = ""
     // In-app language picker (parity with Android's LanguagePickerModal) —
     // see LanguagePickerView below.
     @State private var showLanguagePicker = false
@@ -705,6 +715,10 @@ struct ContactListView: View {
         var introducerAlias: String? = nil
         // Maximum shield: the contact reported Maximum and THIS device is at MAXIMUM.
         var maximumShield: Bool = false
+        // RÚN-03: made with an OLDER pairing (no one-time key exchange), projected from
+        // the row flag by the shared rule (ContactPairing). Drives the menu label and
+        // the banner count; never a row marker.
+        var olderPairing: Bool = false
     }
 
     struct GroupItem: Identifiable {
@@ -848,6 +862,9 @@ struct ContactListView: View {
         }
         .overlay {
             contactMenuOverlay
+        }
+        .overlay {
+            pairAgainGuideOverlay
         }
         // Feeds the pacer the REAL state once a second, across the WHOLE
         // pre-connect window — the previous tick only ran once Tor was already
@@ -1083,7 +1100,8 @@ struct ContactListView: View {
         .runeDialog(isPresented: $showLeaveGroupAlert, title: L10n.groupInfoLeaveConfirmTitleIos,
                     message: pendingLeaveGroupIsAdmin
                         ? L10n.contactListLeaveGroupAdminMessageIos
-                        : L10n.groupInfoLeaveConfirmMessage + "\n\n" + L10n.groupInfoLeaveUnreadWarning,
+                        : L10n.groupInfoLeaveConfirmMessage + "\n\n" + L10n.groupInfoLeaveUnreadWarning
+                            + "\n\n" + L10n.groupInfoLeaveKeptNote,
                     actions: pendingLeaveGroupIsAdmin
                         ? [
                             // The admin must hand the role to a chosen member before
@@ -1292,7 +1310,11 @@ struct ContactListView: View {
               let updated = ContactEdits.shared.rollAlias(vault: vault, contactId: contactId) else { return }
         // Refresh the open menu's title in place.
         if let m = menuContact, m.id == contactId {
-            menuContact = ContactItem(id: m.id, alias: updated.alias, mnemonic: m.mnemonic, stale: m.stale, pending: m.pending)
+            // Every projected field is carried over (RÚN-03: the pairing label must not
+            // flip to "Current" just because the name changed).
+            menuContact = ContactItem(id: m.id, alias: updated.alias, mnemonic: m.mnemonic, stale: m.stale, pending: m.pending,
+                                      channelLost: m.channelLost, referred: m.referred, introducerAlias: m.introducerAlias,
+                                      maximumShield: m.maximumShield, olderPairing: m.olderPairing)
         }
         // `updated` is a full ContactRecord (rollAlias
         // preserves every field, including sharedSecret) — only `.alias` is read
@@ -1503,6 +1525,16 @@ struct ContactListView: View {
                     // relay for its upload.
                     settingsRow(L10n.moveMenuItem, "iphone.and.arrow.forward", "move_to_new_device_button",
                                 disabled: !rowsEnabled) { pick(.moveToNewDevice) }
+                    // New phone after a move: a non-interactive status line. "Revoked"
+                    // is shown only once every owed rotation is confirmed ("done").
+                    if !moveSecuringKind.isEmpty {
+                        Label(moveSecuringKind == "pending" ? L10n.moveSecuringPending : L10n.moveSecuringDone,
+                              systemImage: moveSecuringKind == "pending" ? "arrow.triangle.2.circlepath" : "checkmark.shield")
+                            .font(.runeFootnote)
+                            .foregroundColor(Color.runTextSecondary)
+                            .listRowBackground(Color.runSurface)
+                            .accessibilityIdentifier("move_securing_status")
+                    }
                     // Notification settings register the push token with (and
                     // the opt-out DELETEs to) the relay, so gate it the same way.
                     settingsRow(L10n.contactListPushNotifications, "bell", "push_settings_menu_button",
@@ -1555,6 +1587,21 @@ struct ContactListView: View {
                 }
                 .scrollContentBackground(.hidden)
                 .listStyle(.insetGrouped)
+                // Post-move securing row: the vault reads run OFF the main thread
+                // (Android reads it on IO too), and the row re-reads every few seconds
+                // while the sheet is open, so a background pass that finishes meanwhile
+                // flips it to "done". `.task` is cancelled when the sheet goes away.
+                .task {
+                    let controller = appState.controller
+                    while !Task.isCancelled {
+                        let kind = await Task.detached(priority: .utility) {
+                            controller.moveSecuringRowKind()
+                        }.value
+                        if Task.isCancelled { break }
+                        moveSecuringKind = kind
+                        try? await Task.sleep(nanoseconds: 5_000_000_000)
+                    }
+                }
             }
             .navigationTitle(L10n.commonSettings)
             .navigationBarTitleDisplayMode(.inline)
@@ -1652,6 +1699,8 @@ struct ContactListView: View {
 
                     contactMenuMemorySection(c)
 
+                    contactMenuPairingSection(c)
+
                     contactMenuActions(c)
                 }
                 .padding(.vertical, 8)
@@ -1692,9 +1741,14 @@ struct ContactListView: View {
                 menuContact = nil
                 showEditMnemonic = true
             } label: {
+                // Alone in the row ("Add"), the button keeps its own width and the memory
+                // text gives way: in German it read "Hinzufüg…" (2026-11-24). Beside
+                // "Remove" the two share the row and may shrink a little instead.
                 Text(c.mnemonic.isEmpty ? L10n.contactListAddMemoryButton : L10n.contactListEditMemoryButton)
                     .foregroundColor(.runTextPrimary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: c.mnemonic.isEmpty, vertical: false)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(Color.runBackground)
@@ -1721,6 +1775,108 @@ struct ContactListView: View {
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    /// RÚN-03: which pairing this contact uses, from its row flag (an app update never
+    /// changes it), and — for an older pairing — "How to pair again". Android sibling:
+    /// the pairing block in ContactMenuDialog (ContactListScreen.kt).
+    @ViewBuilder
+    private func contactMenuPairingSection(_ c: ContactItem) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(L10n.contactListPairingLabel)
+                .font(.runeCaption2)
+                .foregroundColor(.runTextSecondary)
+            Text(c.olderPairing ? L10n.contactListPairingOlder : L10n.contactListPairingCurrent)
+                .font(.runeSubheadline)
+                .foregroundColor(.runTextPrimary)
+                .accessibilityIdentifier("menu_pairing_kind")
+            Text(c.olderPairing ? L10n.contactListPairingOlderNote : L10n.contactListPairingCurrentNote)
+                .font(.runeCaption2)
+                .foregroundColor(.runTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 4)
+
+        if c.olderPairing {
+            Button {
+                menuContact = nil
+                showPairAgainGuide = true
+            } label: {
+                Text(L10n.contactListPairAgainButton)
+                    .foregroundColor(.runTextPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+            }
+            .accessibilityIdentifier("menu_pair_again_help")
+        }
+    }
+
+    /// RÚN-03: "How to pair again" — generic (names no contact), same card chrome as
+    /// the contact menu. The order is the safe one: pair again, check the new contact,
+    /// then delete the old one. Android sibling: PairAgainGuideDialog.
+    @ViewBuilder
+    private var pairAgainGuideOverlay: some View {
+        if showPairAgainGuide {
+            ZStack {
+                Color.runBackground.opacity(0.8)
+                    .ignoresSafeArea()
+                    .onTapGesture { showPairAgainGuide = false }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(L10n.contactListPairAgainButton)
+                        .font(.runeHeadline)
+                        .foregroundColor(.runTextPrimary)
+                        .padding(.top, 12)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach([L10n.contactListPairAgainWhy,
+                                     L10n.contactListPairAgainSteps,
+                                     L10n.contactListPairAgainGroups], id: \.self) { paragraph in
+                                Text(paragraph)
+                                    .font(.runeFootnote)
+                                    .foregroundColor(.runTextPrimary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    Button {
+                        showPairAgainGuide = false
+                    } label: {
+                        Text(L10n.commonClose)
+                            .foregroundColor(.runTextPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .accessibilityIdentifier("pair_again_guide_close")
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .background(Color.runeCardFill)
+                .clipShape(RoundedRectangle(cornerRadius: 22))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .strokeBorder(
+                            LinearGradient(colors: [.runeBorderBright, .runeBorderDim],
+                                           startPoint: .top, endPoint: .bottom),
+                            lineWidth: 2
+                        )
+                )
+                .padding(28)
+                .containerA11yId("pair_again_guide")
+            }
+        }
+    }
+
+    /// RÚN-03: the banner's close control. Records the one global dismissal flag
+    /// (OlderPairingBanner — not carried by a move, erased by a wipe). A failed write
+    /// leaves the banner up, as on Android (which re-reads the flag after the write).
+    private func dismissOlderPairingBanner() {
+        guard let vault = appState.vault else { return }
+        olderPairingBannerDismissed = OlderPairingBanner.shared.dismiss(vault: vault)
     }
 
     /// The contact menu's action rows, top to bottom: introduce, new name, reset
@@ -2199,6 +2355,9 @@ struct ContactListView: View {
         max(88, topSafeAreaInset + 44, containerSafeTop)
     }
 
+    /// RÚN-03: how many listed contacts use an older pairing (the banner's count).
+    private var olderPairingCount: Int { contacts.filter { $0.olderPairing }.count }
+
     private var contactsList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -2208,6 +2367,13 @@ struct ContactListView: View {
                 if contacts.contains(where: { $0.stale }) {
                     RepairBanner(staleCount: contacts.filter { $0.stale }.count,
                                  onTap: onAddContact)
+                }
+                // RÚN-03: while at least one contact uses an older pairing, until closed.
+                if OlderPairingBanner.shared.shouldShow(olderCount: Int32(olderPairingCount),
+                                                        dismissed: olderPairingBannerDismissed) {
+                    OlderPairingBannerRow(count: olderPairingCount,
+                                          onTap: { showPairAgainGuide = true },
+                                          onClose: dismissOlderPairingBanner)
                 }
                 // Pending invitations closed with "Later": not a conversation;
                 // tapping reopens the invitation dialog (Join / Later / Decline).
@@ -2488,9 +2654,13 @@ struct ContactListView: View {
                 channelLost: appState.controller.messageManager?.secureChannelLost(contactId: contact.contactId) ?? false,
                 referred: contact.vouchedByContactId != nil,
                 introducerAlias: introducerAlias,
-                maximumShield: maximumIds.contains(contact.contactId)
+                maximumShield: maximumIds.contains(contact.contactId),
+                // RÚN-03: from the row flag, by the shared rule — never a live
+                // MessageManager read (false on error would mislabel a current contact).
+                olderPairing: ContactPairing.shared.isOlder(record: contact)
             )
         }
+        olderPairingBannerDismissed = OlderPairingBanner.shared.isDismissed(vault: vault)
         // getAllContacts() returns full ContactRecords,
         // each carrying a live 32-byte sharedSecret (the legacy-envelope key
         // pre-image). Only the secret-free ContactItem projection above is
@@ -2993,6 +3163,44 @@ private struct RepairBanner: View {
     }
 }
 
+// MARK: - Older-pairing banner (RÚN-03)
+
+/// Shown while at least one contact uses an older pairing, until closed. Tap opens the
+/// "How to pair again" guide. Android sibling: OlderPairingBannerRow (ContactListScreen.kt).
+private struct OlderPairingBannerRow: View {
+    let count: Int
+    let onTap: () -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: onTap) {
+                Text(L10n.contactListOlderPairingBanner(count))
+                    .font(.runeFootnote)
+                    .foregroundColor(Color.runTextPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 14)
+                    .padding(.trailing, 4)
+                    .padding(.vertical, 12)
+            }
+            .accessibilityIdentifier("older_pairing_banner")
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.runeFootnote)
+                    .foregroundColor(Color.runTextSecondary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+            }
+            .accessibilityLabel(L10n.commonClose)
+            .accessibilityIdentifier("older_pairing_banner_close")
+        }
+        .background(Color.runSurface)
+        .cornerRadius(10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+}
+
 // MARK: - Edit Mnemonic Sheet
 
 private struct EditMnemonicView: View {
@@ -3298,6 +3506,11 @@ struct LicencesView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+                // ENGLISH legal text in every app language: laid out right-to-left
+                // (Arabic) its lines were right-aligned and the closing punctuation
+                // jumped to the start. The title row keeps the app's direction.
+                // Android sibling: LicencesScreen.kt.
+                .environment(\.layoutDirection, .leftToRight)
             }
         }
         .background(Color.runBackground.ignoresSafeArea())

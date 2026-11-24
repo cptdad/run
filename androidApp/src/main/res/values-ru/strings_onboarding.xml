@@ -19,6 +19,9 @@
     <string name="pin_use_recovery_code_prompt">Не удаётся разблокировать? Используйте код восстановления</string>
     <string name="pin_orphaned_vault_notice">На этом устройстве есть хранилище, но для него не сохранён ни PIN, ни парольная фраза, поэтому открыть его нечем. Его содержимое невозможно восстановить.</string>
     <string name="pin_erase_start_over">Удалить и начать заново</string>
+    <string name="pin_erase_finishing_title">Завершение стирания</string>
+    <string name="pin_setup_blocked_message">Настройка пока не может начаться. Разблокируйте телефон и нажмите «Повторить».</string>
+    <string name="pin_erase_finishing_message">Часть данных на этом телефоне ещё не стёрта. Разблокируйте телефон и нажмите «Повторить». Настройка откроется, когда стирание завершится.</string>
     <string name="pin_strength_too_weak">Слишком слабая</string>
     <string name="pin_strength_still_weak">Всё ещё слишком слабая — добавьте слов</string>
     <string name="pin_strength_strong">Надёжная</string>

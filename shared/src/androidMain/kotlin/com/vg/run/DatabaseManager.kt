@@ -1019,7 +1019,7 @@ class DatabaseManager(
             // exactly which local contacts were members, with timestamps. Purge every
             // matching key via the shared classifier so Android + iOS stay identical.
             // `group_admin:<groupId>` is deliberately RETAINED (anti-eclipse
-            // tombstone) — the classifier excludes it.
+            // tombstone, owner decision RÚN-06) — the classifier excludes it.
             //
             // SCREENSHOT NOTICES (same rule, same loop): `ssn:<groupId>:<sender>:<ms>`
             // rows name exactly who screenshotted this group and when. Purged by the
@@ -1068,7 +1068,8 @@ class DatabaseManager(
      * throttles keyed by this contactId), its persisted REFERRAL handshake records
      * ([isReferralMetaResidueForContact]), its persisted SCREENSHOT NOTICES in both id
      * positions ([isScreenshotNoticeResidueForContact]), its durable PARKED GROUP
-     * INVITES ([isGroupInviteResidueForContact]), and it unresolves the contact
+     * INVITES ([isGroupInviteResidueForContact]), it rewrites every admin-of-record
+     * tombstone naming it to "gone" ([groupAdminTombstoneNamesContact]), and it unresolves the contact
      * from any group memberships (the membership itself is the group admin's to
      * change, not ours).
      *
@@ -1107,10 +1108,22 @@ class DatabaseManager(
             // is the durable copy of an invite from THIS contact that the user never
             // answered (GroupInviteStore). It names a group the user is not in and
             // cannot act on any more, so it must go with them.
+            //
+            // ADMIN-OF-RECORD TOMBSTONES (value-keyed, REWRITTEN not purged, RÚN-06):
+            // `group_admin:<groupId>` = this contactId becomes "gone", so no group
+            // record keeps naming the deleted contact while the changed-administrator
+            // warning keeps its exact outcome (see GroupAdminTombstone). Inside this
+            // transaction: a failed write rolls the whole delete back.
             for (key in metaKeys()) {
                 if (isGroupMetaResidueForContact(key, contactId)) { deleteMeta(key); continue }
                 if (isScreenshotNoticeResidueForContact(key, contactId)) { deleteMeta(key); continue }
                 if (isGroupInviteResidueForContact(key, contactId)) { deleteMeta(key); continue }
+                if (key.startsWith(GroupAdminTombstone.PREFIX)) {
+                    if (groupAdminTombstoneNamesContact(key, getMeta(key), contactId)) {
+                        putMeta(key, GroupAdminTombstone.DELETED_ADMIN)
+                    }
+                    continue
+                }
                 if (isReferralMetaKey(key) &&
                     isReferralMetaResidueForContact(key, getMeta(key), contactId)
                 ) deleteMeta(key)

@@ -45,6 +45,7 @@
     <string name="group_info_leave_confirm_admin_message">أنت المشرف. انقل الدور أولًا، وإلا فلن يستطيع أحد تغيير قائمة الأعضاء.</string>
     <string name="group_info_leave_confirm_message">سيُبلَّغ بقية الأعضاء بأنك غادرت.</string>
     <string name="group_info_leave_unread_warning">ما أرسلته ولم يقرأه الآخرون بعد قد لا يُعرض عليهم أبدًا.</string>
+    <string name="group_info_leave_kept_note">يحتفظ Rún في خزنتك المشفّرة بملاحظة خاصة بمعرّف هذه المجموعة وبمن كان مشرفها، ليتمكن من تحذيرك إذا دعاك شخص آخر إليها لاحقًا؛ تنتقل الملاحظة معك إلى هاتف جديد ولا تُمحى إلا عند محو Rún.</string>
     <string name="group_info_leave_confirm_action">مغادرة</string>
     <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
     <string name="group_info_choose_admin_title">اختر مشرفًا جديدًا</string>

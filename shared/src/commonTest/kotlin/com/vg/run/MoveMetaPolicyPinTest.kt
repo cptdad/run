@@ -38,6 +38,19 @@ class MoveMetaPolicyPinTest {
     }
 
     /**
+     * RÚN-06 (owner decision): persisted screenshot notices do not travel, by the
+     * same rule as the unread markers — denied explicitly, so a future broad allow
+     * prefix cannot pick them up and a bundle from an older build is filtered too.
+     */
+    @Test
+    fun screenshotNoticesAreNeverCarried() {
+        for (k in listOf("ssn:g-pin:c-pin:1700000000000", "ssn:c-pin:c-pin:1")) {
+            assertFalse(MoveMetaPolicy.isAllowedKey(k), "must not travel: $k")
+        }
+        assertTrue(ScreenshotNoticeMetaKeys.PREFIX in MoveMetaPolicy.deniedPrefixes)
+    }
+
+    /**
      * The two role-collision keys by name. The generic pin above already
      * covers them through `ratchetMetaKeysForContact`, but they are the newest members
      * of that list and the failure mode is silent (a bundle that quietly drops the
@@ -153,13 +166,28 @@ class MoveMetaPolicyPinTest {
     @Test
     fun moveOwnKeysAndSelectorKeysNeverTravel() {
         listOf(
-            MoveMetaKeys.FROZEN, MoveMetaKeys.HANDLE, MoveMetaKeys.IMPORTED, "mig_rotate_pending",
+            MoveMetaKeys.FROZEN, MoveMetaKeys.HANDLE, MoveMetaKeys.IMPORTED, "mig_rotate_pending", "mig_rot_v",
             "vlt_a", "vlt_c", "vlt_rc", "pin_failed_attempts_v2", "inactivity_armed_v1",
             "review_prompt_v1", "update_nudge_v1", "onboard_push_prompt_v1",
             // The one-time push-consent migration latch. It must NOT
             // travel — the new phone has no legacy plaintext level to migrate,
             // so carrying the latch would only stop it establishing its own.
             NotificationLevelStore.VAULT_MARKER_KEY,
+            // RÚN-03: the older-pairing banner's dismissal. A new phone shows the
+            // banner again (owner decision).
+            OlderPairingBanner.META_KEY,
         ).forEach { assertFalse(MoveMetaPolicy.isAllowedKey(it), "must not travel: $it") }
+    }
+
+    /**
+     * RÚN-03 (owner decision): the older-pairing banner's ONE global dismissal flag is
+     * not carried to a new phone. Denied explicitly (not merely un-allowed), the same
+     * rule as the screenshot notices, so a future broad allow prefix cannot pick it up
+     * and all four filter sites drop it.
+     */
+    @Test
+    fun theOlderPairingBannerDismissalIsNeverCarried() {
+        assertTrue(MoveMetaPolicy.deniedPrefixes.any { OlderPairingBanner.META_KEY.startsWith(it) })
+        assertFalse(MoveMetaPolicy.isAllowedKey(OlderPairingBanner.META_KEY))
     }
 }

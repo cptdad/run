@@ -158,6 +158,15 @@ internal fun getOrCreateKey(): ByteArray {
             )
         }
 
+        // RÚN-02: never mint while a wipe's erase is unresolved. Such a key would be
+        // the very key a pending retry deletes (bricking whatever was sealed under
+        // it), or a fresh key next to a pre-wipe one that is still on the device.
+        // The same KeyUnavailableException as the locked path: every caller defers.
+        if (!WipeErasePolicy.mayMintDeviceKey()) {
+            // Neutral message: exception text can reach a log line.
+            throw KeyUnavailableException("device key not available (not created)")
+        }
+
         platformLogWarn("CryptoProvider", "no key in Keychain (first run), generating new")
 
         // Genuinely first run — generate a new key. First delete any orphan.

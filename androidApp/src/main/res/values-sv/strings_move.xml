@@ -63,4 +63,6 @@
     <string name="move_error_import">Det gick inte att slutföra överföringen av dina data. Försök igen.</string>
     <string name="move_error_already_imported">Den här telefonen har redan tagit emot en flytt.</string>
     <string name="move_import_skip_label">Fortsätt utan den</string>
+    <string name="move_securing_pending">Byter dina inkorgar till nya åtkomstnycklar…</string>
+    <string name="move_securing_done">Dina inkorgar använder nu nya åtkomstnycklar</string>
 </resources>

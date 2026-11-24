@@ -200,7 +200,8 @@ class TransportFailedSendsLockWiringSourceTest {
         val body = iosController.functionBody("fun emergencyWipe() {")
         body.assertUnconditionalTopLevelCalls(IOS_END_RAM, "IosAppController.emergencyWipe", expected = 1)
         assertTrue("the wipe ends the session RAM after the crypto-erase",
-            body.indexOf("KeychainBridgeHolder.bridge?.deleteKey()") in 0 until body.indexOf(IOS_END_RAM))
+            // RÚN-02: the crypto-erase is the checked key erase now.
+            body.indexOf("WipeEraser.run(eraseStore, WipeEraser.KEY_ITEMS)") in 0 until body.indexOf(IOS_END_RAM))
     }
 
     @Test

@@ -60,7 +60,8 @@
     <string name="add_contact_paste_not_ready">Opretter stadig indbakke — prøv igen om et øjeblik</string>
 
     <!-- vault-refused add (peer inbox id already owned by an existing contact) -->
-    <string name="add_contact_inbox_in_use">Kunne ikke tilføje denne kontakt — en af indbakkerne i deres kode er allerede i brug her. Hvis du tilføjer en, du allerede har, så slet den gamle kontakt først, og prøv igen.</string>
+    <string name="add_contact_inbox_in_use">Kunne ikke tilføje denne kontakt — en af indbakkerne i deres kode er allerede i brug her. Start forfra, så I begge viser nye koder.</string>
+    <string name="add_contact_older_pairing_note">Deres version af Rún er ældre, så det er en ældre parring. Bed dem opdatere Rún, og par jer derefter igen.</string>
     <string name="add_contact_pairing_failed">Parringen virkede ikke: den sikre kanal med denne kontakt kunne ikke oprettes. Start forfra for at parre med en ny kode.</string>
     <string name="add_contact_pairing_failed_action">Start forfra</string>
     <string name="add_contact_start_again_error">Det lykkedes ikke at færdiggøre tilføjelsen af denne kontakt, og intet blev gemt. Start forfra for at få en ny kode.</string>

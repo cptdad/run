@@ -1,0 +1,5 @@
+• Varje kontakt visar om den använder en aktuell eller en äldre parkoppling.
+• Efter en flytt till ny telefon visar menyn när dina inkorgar har bytt till nya åtkomstnycklar.
+• En radering bekräftar varje borttagning; borttagna grupper och kontakter lämnar färre spår.
+• Gruppändringar som avbröts när appen stängdes når de medlemmar som missade dem nästa gång.
+• Layoutfixar, bland annat fältet för lösenfras och språk som skrivs från höger till vänster.

@@ -140,8 +140,9 @@ class VaultSnapshotIoTest {
         vault.putMeta("dr/c1/text", "ratchet-state")
         vault.putMeta("grp_roster_rl:g1:c2", "123")
         vault.putMeta("ref_p:abc", "pending-referral")
-        vault.putMeta("ssn:conv1:c1:999", "notice")
         // Denied meta — must never appear in the snapshot.
+        // RÚN-06: persisted screenshot notices no longer travel (like grp-unread/).
+        vault.putMeta("ssn:conv1:c1:999", "notice")
         vault.putMeta("vlt_c", "wrapped-db-key")
         vault.putMeta("pin_attempts", "3")
         vault.putMeta("run.crypto.provider.key", "keyset")
@@ -166,7 +167,6 @@ class VaultSnapshotIoTest {
                 "dr/c1/text" to "ratchet-state",
                 "grp_roster_rl:g1:c2" to "123",
                 "ref_p:abc" to "pending-referral",
-                "ssn:conv1:c1:999" to "notice",
             ),
             snapshot.meta,
         )

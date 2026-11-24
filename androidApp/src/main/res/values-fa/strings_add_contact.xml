@@ -60,7 +60,8 @@
     <string name="add_contact_paste_not_ready">صندوق ورودی هنوز در حال راه‌اندازی است — چند لحظهٔ دیگر دوباره تلاش کنید</string>
 
     <!-- vault-refused add (peer inbox id already owned by an existing contact) -->
-    <string name="add_contact_inbox_in_use">این مخاطب اضافه نشد — یکی از صندوق‌های ورودی در کد او همین حالا اینجا در استفاده است. اگر کسی را که از قبل دارید دوباره اضافه می‌کنید، اول مخاطب قدیمی را حذف کنید و بعد دوباره تلاش کنید.</string>
+    <string name="add_contact_inbox_in_use">این مخاطب اضافه نشد — یکی از صندوق‌های ورودی در کد او همین حالا اینجا در استفاده است. از نو شروع کنید تا هر دوی شما کدهای تازه نشان دهید.</string>
+    <string name="add_contact_older_pairing_note">نسخهٔ Rún او قدیمی‌تر است، پس این یک جفت‌سازی قدیمی‌تر است. از او بخواهید Rún را به‌روزرسانی کند، سپس دوباره جفت‌سازی کنید.</string>
     <string name="add_contact_pairing_failed">جفت‌سازی انجام نشد: کانال امن با این مخاطب برقرار نشد. برای جفت‌سازی با یک کد تازه، از نو شروع کنید.</string>
     <string name="add_contact_pairing_failed_action">از نو شروع کنید</string>
     <string name="add_contact_start_again_error">افزودن این مخاطب کامل نشد و چیزی ذخیره نشد. برای گرفتن کد تازه، از نو شروع کنید.</string>

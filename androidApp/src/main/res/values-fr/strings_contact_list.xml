@@ -75,7 +75,7 @@
 
     <!-- Reset relay access -->
     <string name="contact_list_reset_relay_title">Réinitialiser l\'accès au relais ?</string>
-    <string name="contact_list_reset_relay_message">Rún obtiendra du relais de nouvelles clés d\'accès pour cette conversation. Vos messages, votre historique et ce contact restent exactement tels quels, et %1$s n\'a rien à faire.\n\nFaites-le si vous pensez que quelqu\'un d\'autre a eu votre téléphone alors qu\'il était déverrouillé. Cela n\'annule pas ce qu\'il a déjà pu lire — et si le téléphone a réellement été pris, la solution la plus sûre reste de supprimer ce contact et de vous appairer à nouveau en personne.</string>
+    <string name="contact_list_reset_relay_message">Rún obtiendra du relais de nouvelles clés d\'accès pour cette conversation. Vos messages, votre historique et ce contact restent exactement tels quels, et %1$s n\'a rien à faire.\n\nFaites-le si vous pensez que quelqu\'un d\'autre a eu votre téléphone alors qu\'il était déverrouillé. Cela n\'annule pas ce qu\'il a déjà pu lire — et si le téléphone a réellement été pris, la solution la plus sûre reste de vous appairer à nouveau en personne, puis de supprimer ce contact.</string>
     <string name="contact_list_reset_button">Réinitialiser</string>
     <string name="contact_list_reset_relay_success">Accès au relais réinitialisé.</string>
     <string name="contact_list_reset_relay_failure">Impossible de joindre le relais. Rún terminera l\'opération toute seule.</string>
@@ -107,6 +107,15 @@
     <string name="contact_list_reset_relay_in_progress">Réinitialisation de l\'accès au relais…</string>
     <string name="contact_list_reset_relay_button">Réinitialiser l\'accès au relais</string>
     <string name="contact_list_delete_contact_button">Supprimer le contact</string>
+    <string name="contact_list_pairing_label">Appairage</string>
+    <string name="contact_list_pairing_current">Actuel</string>
+    <string name="contact_list_pairing_current_note">Établi avec les deux applis à jour. Rien à faire.</string>
+    <string name="contact_list_pairing_older">Ancien appairage</string>
+    <string name="contact_list_pairing_older_note">Établi avec une ancienne version de Rún. Mettre l\'appli à jour n\'y change rien ; s\'appairer à nouveau, si.</string>
+    <string name="contact_list_pair_again_button">Comment s\'appairer à nouveau</string>
+    <string name="contact_list_pair_again_why">Maintenez un contact appuyé pour voir quel appairage il utilise.\n\nAvec un ancien appairage, quelqu\'un qui a enregistré vos messages pendant leur trajet et obtient plus tard la clé de cet appairage — depuis l\'un de vos deux téléphones ou, si vous vous êtes appairés en personne, depuis une photo des deux codes — pourrait lire vos premiers messages échangés (jusqu\'à ce que vous ayez tous deux écrit), ainsi que certains messages de groupe et de présentation. Des messages enregistrés ne suffisent pas à eux seuls. Les messages suivants sont protégés de la même façon qu\'avec un appairage actuel.\n\nS\'appairer à nouveau ne protège que les messages envoyés après.</string>
+    <string name="contact_list_pair_again_steps">1. Mettez tous les deux Rún à jour.\n2. Retrouvez-vous et appairez-vous à nouveau avec Ajouter un contact. Vous obtenez un nouveau contact, avec un nouveau nom et sans note de mémoire.\n3. Vérifiez que le nouveau contact affiche « Actuel » dans son menu et que les messages passent dans les deux sens.\n4. Ensuite, supprimez tous les deux l\'ancien contact. Lisez d\'abord ses nouveaux messages : supprimer un contact supprime aussi ses messages encore en attente sur le relais.</string>
+    <string name="contact_list_pair_again_groups">Les groupes que vous partagez déjà ne passent pas au nouveau contact. L\'admin du groupe doit retirer cette personne, puis l\'ajouter de nouveau.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">Un rappel privé de qui est ce contact. Vous seul pouvez le voir.</string>
@@ -130,6 +139,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d contact doit être réappairé. Touchez pour l\'ajouter à nouveau.</item>
         <item quantity="other">%1$d contacts doivent être réappairés. Touchez pour les ajouter à nouveau.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d contact utilise un ancien appairage. Touchez pour voir comment s\'appairer à nouveau.</item>
+        <item quantity="other">%1$d contacts utilisent un ancien appairage. Touchez pour voir comment s\'appairer à nouveau.</item>
     </plurals>
     <string name="connect_log_title">Journal de connexion</string>
 

@@ -36,6 +36,9 @@ class ContactListDialogRoutingSourceTest {
         "settings_ext_proxy", "settings_debug_mode", "report_bug_menu_item", "add_contact_button",
         "create_group_menu_button", "move_to_new_device_button", "menu_notifications", "menu_language",
         "menu_about", "menu_about_info", "menu_donate", "change_pin_button", "protection_level_menu_button",
+        // RÚN-03: the pairing-kind row, the guide and the older-pairing banner.
+        "menu_pairing_kind", "menu_pair_again_help", "pair_again_guide", "pair_again_guide_close",
+        "older_pairing_banner", "older_pairing_banner_close",
     ).associateWith { 1 } + mapOf(
         // Both nudge variants (Play: Later; sideload: OK) reuse one e2e selector.
         "update_nudge_later_button" to 2,
@@ -79,6 +82,7 @@ class ContactListDialogRoutingSourceTest {
             "onIntroduce = { dialog = ContactListDialog.Introduce(c) }",
             "onResetRelay = { dialog = ContactListDialog.ResetRelayConfirm(c) }",
             "onDelete = { dialog = ContactListDialog.DeleteContact(c) }",
+            "onPairAgainHelp = { dialog = ContactListDialog.PairAgainGuide }",
             "viewModel.rollContactAliasInBackground(c) { updated ->",
             "dialog = ContactListDialog.ContactMenu(updated)",
         )) {
@@ -92,6 +96,7 @@ class ContactListDialogRoutingSourceTest {
             "menu_new_name" to "onClick = onRollAlias",
             "menu_introduce" to "onClick = onIntroduce",
             "menu_reset_relay_access" to "onClick = onResetRelay",
+            "menu_pair_again_help" to "onClick = onPairAgainHelp",
         )) {
             val at = menu.indexOf(".testTag(\"$tag\")")
             assertTrue("$tag row must exist", at >= 0)
@@ -106,7 +111,7 @@ class ContactListDialogRoutingSourceTest {
 
     @Test
     fun theTaggedScrims_keepTheTagOnTheScrimBeforeItsBackground() {
-        for (tag in listOf("delete_alert", "leave_group_alert", "mnemonic_alert")) {
+        for (tag in listOf("delete_alert", "leave_group_alert", "mnemonic_alert", "pair_again_guide")) {
             val tagAt = screen.indexOf("testTag = \"$tag\"")
             assertTrue("$tag must exist", tagAt >= 0)
             val callAt = screen.lastIndexOf("RuneScrimOverlay(", tagAt)

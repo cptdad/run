@@ -17,17 +17,31 @@ import com.vg.run.GroupManager.Companion.PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS
 // companion (tests address them as `GroupManager.X`); logs keep the
 // "GroupManager" tag.
 //
-// NO-PARK: the screen buffers hold ONLY what the keyed screen's own poll fetched
-// (plus locally generated system notices for a group), between that poll and
-// the screen's synchronous take. A 1:1 text fetched by a group poll is a PRIVATE
-// item of THAT group screen; a group text fetched by a 1:1 (or another group's)
-// poll is a GROUP_ECHO item of THAT screen. Nothing is ever held for ANOTHER
-// conversation: a parked copy dies on lock/relaunch, and the drain has already
-// consumed the relay copy.
+// NO-PARK: a conversation screen's poll RETURNS what it fetched (PendingDrain);
+// nothing it fetches is parked for ANOTHER conversation. A 1:1 text fetched by a
+// group poll is a PRIVATE item of THAT group screen; a group text fetched by a 1:1
+// (or another group's) poll is a GROUP_ECHO item of THAT screen.
 //
-// Known limitation: a poll whose screen is torn down mid-drain (lock, Android
-// Group Info navigation) still leaves its items here until that same screen's
-// next take; [scrub] (GroupManager.scrubInMemory) clears them on lock/wipe.
+// What IS held here, and when it burns (RÚN-05; docs/vault-relay-internals.md
+// "What a conversation buffer holds and when it burns"):
+//  - a text whose sender is not confirmed yet (an unresolved group member, or a
+//    group whose invite has not arrived): until it is handed on, or
+//    PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS after it was parked — enforced on every
+//    read, and physically pruned by [pruneExpired] on each control sweep and each
+//    conversation-screen poll (not on a timer: in a gap where neither runs it stays
+//    in RAM until the next one or the scrub);
+//  - a confirmed sender's text handed to a screen buffer (a resolved member, an
+//    invite that arrived, system notices): until a screen of that key shows it AND
+//    commits (`parked*Only` → commit), or the session ends;
+//  - EVERYTHING ends at [scrub] (lock / background / wipe), which also SEALS the
+//    instance: every later write is refused, so a poll or callback that finishes
+//    after the session ended cannot park plaintext in it. A GroupManager — and so
+//    this instance — is built per unlocked session and never reused after its scrub.
+// A text the relay hands out twice (an abandoned screen poll, then the re-delivery)
+// is held ONCE: holds dedupe on (sender, [ReceivedMessage.blobKey]) by REFRESHING the
+// held entry (its stamp and, for an awaiting-invite text, its screen become the newest
+// fetch's — that fetch's drain may be the one that acks the relay copy), and a held
+// copy is dropped the moment the same blob is shown fresh ([forgetHeldCopies]).
 // ---------------------------------------------------------------------------
 internal class ConversationBuffers(
     private val clock: () -> Long,
@@ -50,6 +64,21 @@ internal class ConversationBuffers(
     private val lock = SyncLock()
     private val groupScreenItems  = mutableMapOf<String, MutableList<GroupMessage>>() // group screen's groupId →
     private val directScreenItems = mutableMapOf<String, MutableList<DirectItem>>()   // 1:1 screen's contactId →
+
+    // Set by [scrub] and never cleared: the session this instance belongs to has
+    // ended, and every write is refused from then on (RÚN-05). Guarded by [lock].
+    private var sealed = false
+    private var sealedWriteLogged = false
+
+    /** True (and logs once, count-free) when the session has ended. Under [lock]. */
+    private fun refusedLocked(): Boolean {
+        if (!sealed) return false
+        if (!sealedWriteLogged) {
+            sealedWriteLogged = true
+            platformLog(TAG, "conversation buffer write refused — the session has ended")
+        }
+        return true
+    }
 
     // Log the buffer-capacity warning at most once per overflow episode (a
     // flood can trip the cap thousands of times a second) — reset in
@@ -172,6 +201,7 @@ internal class ConversationBuffers(
 
     /** Hands [gm] to the GROUP screen [screenGroupId] (POLL-HANDOFF-1). */
     fun toGroupScreen(screenGroupId: String, gm: GroupMessage) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val evicted = evictForCapacityLocked(groupScreenItems, screenGroupId)
         groupScreenItems.getValue(screenGroupId).add(gm)
         noteScreenOverflowLocked(evicted)
@@ -179,9 +209,67 @@ internal class ConversationBuffers(
 
     /** Hands [item] to the 1:1 screen [screenContactId] (POLL-HANDOFF-1). */
     fun toDirectScreen(screenContactId: String, item: DirectItem) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val evicted = evictForCapacityLocked(directScreenItems, screenContactId)
         directScreenItems.getValue(screenContactId).add(item)
         noteScreenOverflowLocked(evicted)
+    }
+
+    /**
+     * The blob [blobKey] from [senderContactId] was just decrypted again and is being
+     * shown FRESH (the relay re-delivered it after a poll that was never committed):
+     * drop every copy of it still held here, so it is shown once. Safe against loss:
+     * a fresh copy exists only because the relay still holds that blob (a committed
+     * blob is deleted on the relay and a re-served one no longer decrypts), so if this
+     * new copy is not shown either, the relay hands it out again. An empty key matches
+     * nothing.
+     */
+    fun forgetHeldCopies(senderContactId: String, blobKey: String) {
+        if (blobKey.isEmpty()) return
+        lock.withLock {
+            removeHeldLocked(pendingUnresolvedGroupText, senderContactId) { it.rm.blobKey == blobKey }
+            removeHeldLocked(pendingUninvitedGroupText, senderContactId) { it.rm.blobKey == blobKey }
+            for (list in groupScreenItems.values) {
+                list.removeAll { it.senderContactId == senderContactId && it.blobKey == blobKey }
+            }
+            groupScreenItems.entries.removeAll { it.value.isEmpty() }
+            for (list in directScreenItems.values) {
+                list.removeAll { it.contactId == senderContactId && it.blobKey == blobKey }
+            }
+            directScreenItems.entries.removeAll { it.value.isEmpty() }
+        }
+    }
+
+    /** Removes the entries matching [drop] from every "groupId<NUL>[senderContactId]"
+     *  key of [map] (an empty key goes too). Must be called under [lock]. */
+    private fun <T> removeHeldLocked(
+        map: MutableMap<String, MutableList<T>>, senderContactId: String, drop: (T) -> Boolean,
+    ) {
+        val entries = map.entries.iterator()
+        while (entries.hasNext()) {
+            val e = entries.next()
+            if (splitUnresolvedKey(e.key).second != senderContactId) continue
+            e.value.removeAll(drop)
+            if (e.value.isEmpty()) entries.remove()
+        }
+    }
+
+    /**
+     * When [map]'s [key] already holds a text with this non-empty blob identity, REPLACE
+     * that entry in place with [fresh] (new stamp, new screen) and return true; else
+     * false. Replaced, not mutated: a flush that snapshotted the old entry finds it gone
+     * and treats the new one as a later arrival, so neither copy is delivered twice.
+     * Must be called under [lock].
+     */
+    private fun <T> refreshHeldLocked(
+        map: MutableMap<String, MutableList<T>>, key: String, blobKey: String, keyOf: (T) -> String, fresh: () -> T,
+    ): Boolean {
+        if (blobKey.isEmpty()) return false
+        val list = map[key] ?: return false
+        val i = list.indexOfFirst { keyOf(it) == blobKey }
+        if (i < 0) return false
+        list[i] = fresh()
+        return true
     }
 
     private fun noteScreenOverflowLocked(evicted: Boolean) {
@@ -207,6 +295,7 @@ internal class ConversationBuffers(
     }
 
     fun bufferScreenshotNotice(notice: ScreenshotNotice) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val list = pendingScreenshotNotices.getOrPut(notice.conversationId) { mutableListOf() }
         if (list.size >= MAX_PENDING_SCREENSHOT_NOTICES_PER_CONVERSATION) {
             platformLogWarn(TAG, "screenshot-notice buffer full for a conversation — dropping")
@@ -233,8 +322,17 @@ internal class ConversationBuffers(
             .filterValues { it > 0 }
     }
 
-    // Session end (GroupManager.scrubInMemory).
+    /** How many decrypted TEXTS this instance holds right now, in every buffer
+     *  (screen buffers, unresolved-sender, awaiting-invite). Count only — tests. */
+    fun heldTextCount(): Int = lock.withLock {
+        groupScreenItems.values.sumOf { it.size } + directScreenItems.values.sumOf { it.size } +
+            pendingUnresolvedGroupText.values.sumOf { it.size } + pendingUninvitedGroupText.values.sumOf { it.size }
+    }
+
+    // Session end (GroupManager.scrubInMemory): empties every buffer AND seals the
+    // instance — no write is accepted afterwards (see the header).
     fun scrub() = lock.withLock {
+        sealed = true
         groupScreenItems.clear(); directScreenItems.clear(); pendingUnresolvedGroupText.clear()
         pendingActivityNotices.clear()
         pendingUninvitedGroupText.clear()
@@ -297,7 +395,15 @@ internal class ConversationBuffers(
      * message.
      */
     fun bufferUnresolvedGroupText(groupId: String, contactId: String, rm: ReceivedMessage) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val key = unresolvedKey(groupId, contactId)
+        // The same blob again (the relay re-delivered what an abandoned poll decrypted):
+        // held once — but REFRESHED, never skipped. This decrypt may be the one whose
+        // drain commits (acks the relay copy), so from now on the held copy is the only
+        // one and its TTL must run from now, not from the abandoned first decrypt.
+        if (refreshHeldLocked(pendingUnresolvedGroupText, key, rm.blobKey, { it.rm.blobKey }) { PendingGroupText(rm, clock()) }) {
+            return@withLock
+        }
         val evicted = evictForCapacityLocked(
             pendingUnresolvedGroupText, key,
             perKeyMax = MAX_PENDING_UNRESOLVED_PER_SENDER,
@@ -372,20 +478,56 @@ internal class ConversationBuffers(
      * Never rejects the arrival (same eviction as [bufferUnresolvedGroupText]).
      */
     fun bufferTextAwaitingInvite(groupId: String, contactId: String, rm: ReceivedMessage, screenGroupId: String?) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val now = clock()
-        val entries = pendingUninvitedGroupText.entries.iterator()
-        while (entries.hasNext()) {
-            val e = entries.next()
-            e.value.removeAll { p -> now - p.bufferedAt > PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS }
-            if (e.value.isEmpty()) entries.remove()
-        }
+        pruneExpiredLocked(pendingUninvitedGroupText, now) { it.bufferedAt }
         val key = unresolvedKey(groupId, contactId)
+        // Same blob again: refresh, don't skip — the stamp AND the screen become this
+        // (newest) fetch's, so the text goes to the screen the user is in now, with a
+        // TTL that runs from the decrypt whose drain may be the one that commits.
+        if (refreshHeldLocked(pendingUninvitedGroupText, key, rm.blobKey, { it.rm.blobKey }) { PendingUninvited(rm, screenGroupId, now) }) {
+            return@withLock
+        }
         evictForCapacityLocked(
             pendingUninvitedGroupText, key,
             perKeyMax = MAX_PENDING_UNRESOLVED_PER_SENDER,
             totalMax = MAX_PENDING_UNRESOLVED_GROUP_TEXTS,
         )
         pendingUninvitedGroupText.getValue(key).add(PendingUninvited(rm, screenGroupId, now))
+    }
+
+    /**
+     * Drops every expired entry of the three TTL-bound buffers (unresolved-sender
+     * texts, awaiting-invite texts, parked activity notices) across ALL keys. The reads
+     * already refuse an expired entry; this is the physical removal, run by the
+     * control sweep and the conversation-screen polls (GroupManager.pruneExpiredPending)
+     * so an expired text does not wait for an unrelated event (a roster, the next
+     * arrival). Not a timer. RAM only, no vault; returns how many were dropped.
+     */
+    fun pruneExpired(): Int = lock.withLock {
+        // The common case holds nothing: no clock read, no walk.
+        if (pendingUnresolvedGroupText.isEmpty() && pendingUninvitedGroupText.isEmpty() && pendingActivityNotices.isEmpty()) {
+            return@withLock 0
+        }
+        val now = clock()
+        pruneExpiredLocked(pendingUnresolvedGroupText, now) { it.bufferedAt } +
+            pruneExpiredLocked(pendingUninvitedGroupText, now) { it.bufferedAt } +
+            pruneExpiredLocked(pendingActivityNotices, now) { it.bufferedAt }
+    }
+
+    /** Drops [map] entries older than the TTL (strictly `>`, like every read), across
+     *  all keys. Must be called under [lock]; returns how many went. */
+    private fun <T> pruneExpiredLocked(map: MutableMap<String, MutableList<T>>, now: Long, bufferedAt: (T) -> Long): Int {
+        var dropped = 0
+        val entries = map.entries.iterator()
+        while (entries.hasNext()) {
+            val e = entries.next()
+            val before = e.value.size
+            e.value.removeAll { now - bufferedAt(it) > PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS }
+            dropped += before - e.value.size
+            if (e.value.isEmpty()) entries.remove()
+        }
+        return dropped
     }
 
     /**
@@ -410,6 +552,7 @@ internal class ConversationBuffers(
      * one is owed, and [bufferActivityNotice] spends the next arrival against it.
      */
     fun spendActivityNoticeForShownText(groupId: String, senderContactId: String) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val key = unresolvedKey(groupId, senderContactId)
         val list = pendingActivityNotices[key]
         if (list != null && list.isNotEmpty()) {
@@ -429,6 +572,7 @@ internal class ConversationBuffers(
      * only ever destroy its own parked notices and never starve an honest one.
      */
     fun bufferActivityNotice(groupId: String, senderContactId: String, onGroupInbox: Boolean, noticeAtMs: Long) = lock.withLock {
+        if (refusedLocked()) return@withLock
         val key = unresolvedKey(groupId, senderContactId)
         // The text this notice announces was already shown ([spendActivityNoticeForShownText]).
         val owed = shownAheadOfNotice[key] ?: 0

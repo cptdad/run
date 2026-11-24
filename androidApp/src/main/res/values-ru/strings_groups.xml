@@ -32,6 +32,7 @@
     <string name="group_info_leave_confirm_admin_message">Вы администратор. Сначала передайте эту роль, иначе никто не сможет изменять список участников.</string>
     <string name="group_info_leave_confirm_message">Остальные участники узнают, что вы покинули группу.</string>
     <string name="group_info_leave_unread_warning">Всё, что вы отправили и что остальные ещё не прочитали, может так и не быть им показано.</string>
+    <string name="group_info_leave_kept_note">Rún хранит в вашем зашифрованном хранилище личную заметку об ID этой группы и о том, кто был её администратором, чтобы предупредить вас, если кто-то другой позже пригласит вас обратно; заметка переезжает с вами на новый телефон и стирается только при стирании данных Rún.</string>
     <string name="group_info_leave_confirm_action">Покинуть</string>
     <string name="group_info_choose_admin_title">Выберите нового администратора</string>
     <string name="group_info_choose_admin_subtitle_android">Новый администратор сможет добавлять и удалять участников после того, как вы покинете группу.</string>

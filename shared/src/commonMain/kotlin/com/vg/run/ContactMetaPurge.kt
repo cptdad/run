@@ -90,9 +90,11 @@ internal fun ratchetMetaKeysForContact(contactId: String): List<String> = listOf
  * list.
  *
  * Deliberately absent: `group_admin:<groupId>` — the anti-eclipse tombstone
- * (`GroupManager.adminMetaKey`) that must SURVIVE a leave/delete so a later
- * different-admin re-invite to the same groupId is flagged. Purging it would
- * silently disarm that defense; see the classifiers.
+ * (`GroupManager.adminMetaKey`, [GroupAdminTombstone]) that must SURVIVE a
+ * leave/delete so a later different-admin re-invite to the same groupId is flagged.
+ * Purging it would silently disarm that defense; see the classifiers. A CONTACT
+ * delete does not purge it either: it REWRITES a record naming that contact to
+ * [GroupAdminTombstone.DELETED_ADMIN] ([groupAdminTombstoneNamesContact]).
  *
  * Also deliberately absent: `grp_declined` — the per-offer decline
  * tombstone (`GroupManager.DECLINED_INVITE_META`), a vault SINGLETON holding only
@@ -154,6 +156,56 @@ internal fun isGroupMetaResidueForContact(key: String, contactId: String): Boole
     key == GroupMetaKeys.INVITE_RL_PREFIX + contactId ||
         (key.startsWith(GroupMetaKeys.ROSTER_RL_PREFIX) && key.endsWith(":" + contactId)) ||
         (key.startsWith(GroupMetaKeys.CTL_PEND_PREFIX) && key.endsWith(":" + contactId))
+
+/**
+ * The admin-of-record tombstone (RÚN-06): key `group_admin:<groupId>`, value the
+ * admin's local contactId, [GroupManager.SELF_ADMIN_MARKER] (this device ran it), or
+ * [DELETED_ADMIN] (the contact it named has been deleted). Kept after a leave, a
+ * removal and a contact delete (owner decision): it is the only thing that lets the
+ * changed-administrator warning fire when a group the user already left comes back.
+ * Travels with a device move (`MoveMetaPolicy`); erased only by a wipe.
+ *
+ * Read by exactly one place, `GroupManager.adminEclipseCheck`:
+ * `mismatch = recorded != null && recorded != inviterContactId`.
+ */
+internal object GroupAdminTombstone {
+    const val PREFIX = "group_admin:"
+
+    /**
+     * Written over a record whose contact was deleted. Contact ids are never reused
+     * (direct pairing mints a fresh UUID, a referral derives one from a fresh intro),
+     * so a deleted contact can never send an invite again and EVERY later inviter
+     * already compared unequal to the deleted id, with no alias to show. "gone" gives
+     * the identical outcome (it can never equal a 36-char UUID, a 24-char referral id
+     * or "self") while no longer naming who the deleted contact was.
+     */
+    const val DELETED_ADMIN = "gone"
+
+    fun keyFor(groupId: String): String = PREFIX + groupId
+
+    /** True for the two values that name no contact. */
+    fun isMarker(value: String): Boolean =
+        value == GroupManager.SELF_ADMIN_MARKER || value == DELETED_ADMIN
+}
+
+/**
+ * True when [key] is an admin-of-record tombstone whose [value] names [contactId] —
+ * the record [VaultDatabase.deleteContact] must REWRITE to
+ * [GroupAdminTombstone.DELETED_ADMIN] inside the same transaction as the delete.
+ * Both actuals (`DatabaseManager`, `IosVaultDatabase`) and the commonTest
+ * `InMemoryVault` call this in their existing `_meta` loop, so all three rewrite
+ * the identical set.
+ *
+ * A REWRITE, not a purge: purging would disarm the warning for that group. A null
+ * [value] (unreadable) rewrites nothing — the record keeps its old content, which
+ * gives the same outcome, and the session-start pass in `GroupManager` retries it.
+ * The markers never match, whatever [contactId] is.
+ */
+internal fun groupAdminTombstoneNamesContact(key: String, value: String?, contactId: String): Boolean =
+    contactId.isNotEmpty() &&
+        !GroupAdminTombstone.isMarker(contactId) &&
+        key.startsWith(GroupAdminTombstone.PREFIX) &&
+        value == contactId
 
 /**
  * The `_meta` namespace the PERSISTED screenshot notices own

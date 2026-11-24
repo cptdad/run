@@ -801,7 +801,8 @@ export const Ids = {
     /** Submits the pasted handle, parsing it into RAM (no persistence). */
     movePasteSubmit: 'move_paste_submit',
     /** Post-unlock import progress line on the new phone ("Fetching →
-     *  Importing → Securing"). Self-dismisses once the import transaction
+     *  Importing"; securing now runs afterwards in the background — see
+     *  moveSecuringStatus). Self-dismisses once the import transaction
      *  commits — wait for it to disappear (Device.waitForGone), not for a
      *  particular stage string (WIDEN, never narrow — the exact stage labels
      *  are app-side copy, not a stable id union). */
@@ -812,6 +813,32 @@ export const Ids = {
     /** Retry affordance next to moveErrorText — re-attempts the drain/import
      *  against the same still-live transfer inbox. */
     moveErrorRetry: 'move_error_retry',
+    /** New phone, settings menu: non-interactive post-move securing status
+     *  ("Switching your inboxes to new access keys…" → "Your inboxes now use
+     *  new access keys"). Present only while read-cap rotations are owed, or after this
+     *  session saw them finish. Both platforms. */
+    moveSecuringStatus: 'move_securing_status',
+
+    // ---- Pairing kind + "How to pair again" (RÚN-03) — same ids on both platforms ----
+    /** Contact long-press menu: the pairing label's VALUE text ("Current" /
+     *  "Older pairing"). Read the text, never key on the wording (WIDEN, never
+     *  narrow — it is localised). */
+    menuPairingKind: 'menu_pairing_kind',
+    /** Contact long-press menu: "How to pair again". Present ONLY for a contact
+     *  on an older pairing. Opens pairAgainGuide. */
+    menuPairAgainHelp: 'menu_pair_again_help',
+    /** The "How to pair again" guide overlay (container). */
+    pairAgainGuide: 'pair_again_guide',
+    /** The guide's Close button. */
+    pairAgainGuideClose: 'pair_again_guide_close',
+    /** Contact list: the dismissible banner shown while at least one contact
+     *  uses an older pairing. Tap opens pairAgainGuide. */
+    olderPairingBanner: 'older_pairing_banner',
+    /** The banner's close (×) control — one global dismissal per vault. */
+    olderPairingBannerClose: 'older_pairing_banner_close',
+    /** Add contact, Done step: "Their version of Rún is older…" — shown when a
+     *  NEW pairing came out as an older pairing (the peer runs a pre-1.6.70 build). */
+    addContactOlderPairingNote: 'add_contact_older_pairing_note',
 } as const
 
 /**

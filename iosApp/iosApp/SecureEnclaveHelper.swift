@@ -195,11 +195,33 @@ import shared
         return copyPrivateKey().status != errSecItemNotFound
     }
 
+    /// Unchecked delete; the outcome is deleteKeyChecked's (ignored here).
     @objc public func deleteKey() {
+        _ = deleteKeyChecked()
+    }
+
+    /// RÚN-02: deletes the SE key and proves it gone. The verify probe asks for
+    /// ATTRIBUTES only — never a key reference, so nothing can use the key and no
+    /// biometric prompt can appear. Outcome rules: KeychainHelper.classifyDelete.
+    @objc public func deleteKeyChecked() -> KeychainDeleteResult {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: tag,
         ]
-        SecItemDelete(query as CFDictionary)
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        return KeychainHelper.classifyDelete(deleteStatus: deleteStatus,
+                                             probeStatus: KeychainHelper.attributeProbe(query))
     }
+
+    #if DEBUG
+    /// DEBUG-ONLY (`--test-wipe-probe`): 1 = the SE key item exists, 0 = absent,
+    /// ?<status> = the Keychain could not answer. Attribute query, no key use.
+    func debugKeyProbe() -> String {
+        let s = KeychainHelper.attributeProbe([
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: tag,
+        ])
+        return s == errSecSuccess ? "1" : (s == errSecItemNotFound ? "0" : "?\(s)")
+    }
+    #endif
 }

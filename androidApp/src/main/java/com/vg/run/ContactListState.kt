@@ -20,7 +20,16 @@ data class ContactListSnapshot(
     val maximumIds: Set<String> = emptySet(),
     /** Contacts whose one-time-key secure channel is lost ("pair again" row marker). Ids only. */
     val lostIds: Set<String> = emptySet(),
-)
+    /** RÚN-03: the older-pairing banner's one global dismissal flag ([OlderPairingBanner]). */
+    val olderPairingBannerDismissed: Boolean = false,
+) {
+    /** RÚN-03: how many listed contacts use an older pairing (the banner's count). */
+    val olderPairingCount: Int get() = ContactPairing.olderCount(contacts.map { it.pairingKind })
+
+    /** RÚN-03: the contact-list banner shows while an older pairing exists and it was not dismissed. */
+    val showOlderPairingBanner: Boolean
+        get() = OlderPairingBanner.shouldShow(olderPairingCount, olderPairingBannerDismissed)
+}
 
 /**
  * The next referral offer and the next group invite parked in the session's

@@ -1,1 +1,5 @@
-• Si l'appli se ferme pendant l'envoi d'une invitation de groupe, d'un changement de membres ou d'un départ, l'envoi reprend vers les membres non atteints à la prochaine ouverture de l'appli.
+• Chaque contact indique s'il utilise l'appairage actuel ou un ancien appairage.
+• Après un changement de téléphone, le menu indique quand vos boîtes de réception ont de nouvelles clés d'accès.
+• Un effacement vérifie chaque suppression ; groupes et contacts supprimés laissent moins de traces.
+• Les changements de groupe interrompus par la fermeture de l'appli parviennent ensuite aux membres manqués.
+• Corrections de mise en page, dont le champ de phrase secrète et l'écriture de droite à gauche.

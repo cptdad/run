@@ -50,6 +50,9 @@ data class GroupMessage(
     // shown, but there is no group conversation to open yet, so the UI leaves out
     // the "Open group" action. True for everything else.
     val groupJoined: Boolean = true,
+    // [ReceivedMessage.blobKey] of the blob this item came from (RÚN-05): lets the
+    // buffers keep ONE copy of a text the relay delivered twice. RAM only, never shown.
+    val blobKey: String = "",
 ) {
     // Swift-friendly kind tests (a Kotlin enum entry named PRIVATE does not export cleanly).
     val isPrivate: Boolean get() = kind == ReceivedItemKind.PRIVATE
@@ -71,6 +74,8 @@ data class DirectItem(
     // See [GroupMessage.groupJoined]: false only for an echo of a group whose
     // invite is still awaiting the user's answer.
     val groupJoined: Boolean = true,
+    // See [GroupMessage.blobKey].
+    val blobKey: String = "",
 ) {
     val isGroupEcho: Boolean get() = kind == ReceivedItemKind.GROUP_ECHO
 }

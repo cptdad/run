@@ -35,6 +35,9 @@
     <string name="pin_use_recovery_code_prompt">Kan du inte låsa upp? Använd återställningskod</string>
     <string name="pin_orphaned_vault_notice">Enheten har ett valv, men ingen PIN-kod och ingen lösenfras finns sparad för det, så inget kan öppna det. Innehållet går inte att få tillbaka.</string>
     <string name="pin_erase_start_over">Radera och börja om</string>
+    <string name="pin_erase_finishing_title">Slutför raderingen</string>
+    <string name="pin_setup_blocked_message">Konfigurationen kan inte starta än. Lås upp telefonen och tryck sedan på Försök igen.</string>
+    <string name="pin_erase_finishing_message">Vissa data på den här telefonen har inte raderats än. Lås upp telefonen och tryck sedan på Försök igen. Konfigurationen öppnas när raderingen är klar.</string>
 
     <!-- Styrkemätare för lösenfras (delas av inmatning/uppsättning/byte) -->
     <string name="pin_strength_too_weak">För svag</string>

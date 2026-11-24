@@ -7,9 +7,9 @@
     <string name="conversation_alias_unknown">ناشناس</string>
     <string name="conversation_contact_fallback">مخاطب</string>
     <string name="conversation_fs_stalled_title">محرمانگی پیشرو هنوز فعال نشده است</string>
-    <string name="conversation_fs_stalled_body">پیام‌هایی که به این مخاطب می‌فرستید همچنان رمزگذاری می‌شوند، اما هنوز از آن حفاظت اضافی برخوردار نیستند که اگر بعداً کلیدی لو برود، پیام‌های گذشته را ایمن نگه می‌دارد. معمولاً به‌محض اینکه مخاطب پاسخ بدهد، این وضعیت برطرف می‌شود. اگر ادامه داشت، مخاطب را حذف کنید و دوباره اضافه کنید.</string>
-    <string name="conversation_ratchet_refused_body">برقراری کانال امن با این مخاطب ممکن نشد. پیام‌ها ارسال نمی‌شوند. مخاطب را حذف کنید و دوباره جفت‌سازی کنید.</string>
-    <string name="conversation_secure_channel_lost_body">کانال امن با این مخاطب از دست رفته است. پیام‌ها ارسال نمی‌شوند. مخاطب را بردارید و دوباره جفت‌سازی کنید.</string>
+    <string name="conversation_fs_stalled_body">پیام‌هایی که به این مخاطب می‌فرستید همچنان رمزگذاری می‌شوند، اما هنوز از آن حفاظت اضافی برخوردار نیستند که اگر بعداً کلیدی لو برود، پیام‌های گذشته را ایمن نگه می‌دارد. معمولاً به‌محض اینکه مخاطب پاسخ بدهد، این وضعیت برطرف می‌شود. اگر ادامه داشت، دوباره جفت‌سازی کنید و سپس مخاطب قدیمی را حذف کنید.</string>
+    <string name="conversation_ratchet_refused_body">برقراری کانال امن با این مخاطب ممکن نشد. پیام‌ها ارسال نمی‌شوند. دوباره جفت‌سازی کنید و سپس این مخاطب را حذف کنید.</string>
+    <string name="conversation_secure_channel_lost_body">کانال امن با این مخاطب از دست رفته است. پیام‌ها ارسال نمی‌شوند. دوباره جفت‌سازی کنید و سپس این مخاطب را حذف کنید.</string>
 
     <!-- iOS-only report/block sheet (Guideline 1.2) -->
     <string name="conversation_report_confirm_title">گزارش مخاطب</string>

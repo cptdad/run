@@ -39,6 +39,7 @@
     <string name="group_info_leave_confirm_admin_message">شما مدیر هستید. اول نقش را واگذار کنید، وگرنه هیچ‌کس نمی‌تواند فهرست اعضا را تغییر دهد.</string>
     <string name="group_info_leave_confirm_message">به دیگر اعضا گفته می‌شود که شما رفته‌اید.</string>
     <string name="group_info_leave_unread_warning">هر چیزی که فرستاده‌اید و دیگران هنوز نخوانده‌اند ممکن است هرگز به آن‌ها نشان داده نشود.</string>
+    <string name="group_info_leave_kept_note">Rún یادداشتی خصوصی از شناسهٔ این گروه و اینکه مدیرش چه کسی بود در گاوصندوق رمزگذاری‌شدهٔ شما نگه می‌دارد تا اگر بعداً کس دیگری دوباره شما را دعوت کرد، به شما هشدار دهد؛ این یادداشت همراه شما به گوشی تازه منتقل می‌شود و فقط وقتی Rún پاک‌سازی شود از بین می‌رود.</string>
     <string name="group_info_leave_confirm_action">ترک</string>
     <!-- Choose-new-admin picker: Android uses title + subtitle, iOS combines them -->
     <string name="group_info_choose_admin_title">انتخاب مدیر جدید</string>

@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
@@ -26,12 +27,14 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -124,6 +127,12 @@ fun LicencesScreen(onClose: () -> Unit) {
                 }
             }
             HorizontalDivider(color = RuneHairline)
+            // The licence texts are ENGLISH legal text in every app language. Laid out
+            // right-to-left (Arabic, Persian) each line was right-aligned and its closing
+            // punctuation jumped to the start: ".the GNU General Public License"
+            // (seen in the Arabic reference pictures, 2026-11-24). The title row above
+            // stays in the app's direction. iOS sibling: LicencesView.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             SelectionContainer(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -150,6 +159,7 @@ fun LicencesScreen(onClose: () -> Unit) {
                         )
                     }
                 }
+            }
             }
         }
     }

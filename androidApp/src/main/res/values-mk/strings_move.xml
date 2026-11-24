@@ -63,4 +63,6 @@
     <string name="move_error_import">Не можеше да се заврши пренесувањето на вашите податоци. Обидете се повторно.</string>
     <string name="move_error_already_imported">Овој телефон веќе презеде преместување.</string>
     <string name="move_import_skip_label">Продолжи без него</string>
+    <string name="move_securing_pending">Вашите сандачиња се префрлаат на нови клучеви за пристап…</string>
+    <string name="move_securing_done">Вашите сандачиња сега користат нови клучеви за пристап</string>
 </resources>

@@ -63,4 +63,6 @@
     <string name="move_error_import">Impossible de terminer la récupération de vos données. Réessayez.</string>
     <string name="move_error_already_imported">Ce téléphone a déjà reçu un transfert.</string>
     <string name="move_import_skip_label">Continuer sans importer</string>
+    <string name="move_securing_pending">Passage de vos boîtes de réception à de nouvelles clés d\'accès…</string>
+    <string name="move_securing_done">Vos boîtes de réception utilisent maintenant de nouvelles clés d\'accès</string>
 </resources>

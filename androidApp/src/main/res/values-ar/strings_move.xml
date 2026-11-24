@@ -63,4 +63,6 @@
     <string name="move_error_import">تعذّر إكمال نقل بياناتك. حاول مرة أخرى.</string>
     <string name="move_error_already_imported">سبق أن تولّى هذا الهاتف عملية نقل.</string>
     <string name="move_import_skip_label">المتابعة بدونه</string>
+    <string name="move_securing_pending">جارٍ تحويل صناديق الوارد لديك إلى مفاتيح وصول جديدة…</string>
+    <string name="move_securing_done">تستخدم صناديق الوارد لديك الآن مفاتيح وصول جديدة</string>
 </resources>

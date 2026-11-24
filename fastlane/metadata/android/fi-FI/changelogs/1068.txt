@@ -1,1 +1,5 @@
-• Jos sovellus sulkeutuu, kun ryhmäkutsua, jäsenmuutosta tai eroamista vielä lähetetään, tavoittamatta jääneet jäsenet saavat sen, kun seuraavan kerran avaat sovelluksen.
+• Jokainen yhteystieto näyttää, käyttääkö se nykyistä vai vanhempaa paritusta.
+• Puhelimen vaihdon jälkeen valikko näyttää, milloin postilaatikkosi ovat siirtyneet uusiin käyttöavaimiin.
+• Pyyhintä varmistaa jokaisen poiston; poistetuista ryhmistä ja yhteystiedoista jää vähemmän jälkiä.
+• Sovelluksen sulkemisen keskeyttämät ryhmämuutokset tavoittavat ne saamatta jääneet jäsenet seuraavalla kerralla.
+• Asettelukorjauksia, mm. salalauseen kenttä ja oikealta vasemmalle kirjoitettavat kielet.

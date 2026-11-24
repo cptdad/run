@@ -221,9 +221,9 @@ struct GroupConversationView: View {
     // One-time burn-on-read notice (shared with the 1:1 view via the vault-meta
     // latch); first conversation ever opened per vault.
     @State private var showBurnNotice = false
-    // CONVERSATION-SCOPED "I took a screenshot" sender — mirrors ConversationView's
-    // observer exactly (see its kdoc). Armed only while THIS group is on screen.
-    @State private var screenshotObserver: NSObjectProtocol? = nil
+    // CONVERSATION-SCOPED "I took a screenshot" scope (RÚN-07) — mirrors
+    // ConversationView's (see its kdoc). Registered only while THIS group is on screen.
+    @State private var screenshotScopeToken: UUID? = nil
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
 
@@ -374,17 +374,12 @@ struct GroupConversationView: View {
             // ConversationView.swift — same vault-meta latch as the 1:1 view, so
             // it shows once total whichever conversation type opens first).
             if let vault = appState.vault { showBurnNotice = consumeBurnNoticeOnce(vault) }
-            // Screenshot-taken notice: best-effort, fire-and-forget, off-main —
-            // mirrors ConversationView's observer exactly (see its kdoc). Armed
-            // only while this group is on screen — removed in onDisappear below.
-            screenshotObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.userDidTakeScreenshotNotification, object: nil, queue: .main
-            ) { _ in
-                let gm = appState.controller.groupManager
-                DispatchQueue.global(qos: .utility).async {
-                    gm?.sendGroupScreenshotNotice(groupId: groupId)
-                }
-            }
+            // Screenshot-taken notice (RÚN-07): mirrors ConversationView's scope (see
+            // its kdoc) — this group plus the origin of every foreign row. Registered
+            // only while this group is on screen (a Group Info sheet over it keeps it
+            // registered) — removed in onDisappear below.
+            if let old = screenshotScopeToken { appState.unregisterScreenshotScope(old) }
+            screenshotScopeToken = appState.registerScreenshotScope { screenshotOrigins() }
         }
         .burnOnReadNotice(isPresented: $showBurnNotice)
         // A transport-back re-drive landed a parked PRIVATE reply sent from this
@@ -399,9 +394,9 @@ struct GroupConversationView: View {
         }
         .onDisappear {
             appState.controller.setGroupConversationForeground(screenKey: "conv:\(groupId)", open: false)
-            if let obs = screenshotObserver {
-                NotificationCenter.default.removeObserver(obs)
-                screenshotObserver = nil
+            if let token = screenshotScopeToken {
+                appState.unregisterScreenshotScope(token)
+                screenshotScopeToken = nil
             }
             pollTask?.cancel()
             // Do NOT cancel in-flight SEND tasks — a group send must survive leaving
@@ -604,6 +599,30 @@ struct GroupConversationView: View {
         }
     }
 
+    /// RÚN-07: the conversations whose text is in this screen's list right now — this
+    /// group, plus: the 1:1 behind every private row (received, or our own "Reply
+    /// privately"), and the group of every GROUP_ECHO row with the contact it came from
+    /// (that sender is what addresses a group we are only invited to). "In the list",
+    /// not "scrolled into view" — see ConversationView.screenshotOrigins.
+    private func screenshotOrigins() -> [ScreenshotOrigin] {
+        var origins = [ScreenshotOrigin(conversationId: groupId, isGroup: true, senderContactId: "")]
+        for msg in messages {
+            switch msg.kind {
+            case .privateReceived, .privateSent:
+                if !msg.senderContactId.isEmpty {
+                    origins.append(ScreenshotOrigin(conversationId: msg.senderContactId, isGroup: false, senderContactId: msg.senderContactId))
+                }
+            case .groupEcho:
+                if !msg.echoGroupId.isEmpty {
+                    origins.append(ScreenshotOrigin(conversationId: msg.echoGroupId, isGroup: true, senderContactId: msg.senderContactId))
+                }
+            case .group:
+                break
+            }
+        }
+        return origins
+    }
+
     // Keep the list ordered by timestamp. Group traffic merges
     // from N pairwise inboxes (shuffled shared-side), so a slower inbox can deliver an
     // OLDER message in a later poll; a plain append placed it BELOW a newer one and the
@@ -660,6 +679,10 @@ struct GroupConversationView: View {
             // Fan-out (shuffled + jittered) happens inside GroupManager.
             let result = await appState.sendGroupMessage(groupId: groupId, text: text)
             if Task.isCancelled { return }
+            // RÚN-05: this send deliberately outlives the screen. If the screen closed
+            // meanwhile its list was erased (the sent row is gone): write nothing back —
+            // not even the "did not reach N" note below.
+            guard messages.contains(where: { $0.id == msgId }) else { return }
             if let idx = messages.firstIndex(where: { $0.id == msgId }) {
                 messages[idx].delivered = result?.delivered ?? 0
                 messages[idx].total = result?.total ?? 0
@@ -688,6 +711,9 @@ struct GroupConversationView: View {
             var verdictShown = false
             let openedAt = Date()
             var firstPoll = true
+            // RÚN-05: the session this loop belongs to — checked after EVERY `await`
+            // before `messages` is touched (mirrors ConversationView.startPolling).
+            let session = appState.conversationPollToken
             // Announce the fetch on open — only when the relay is reachable; with
             // no relay there are no runes to consult.
             if appState.isRelayReachable {
@@ -700,6 +726,7 @@ struct GroupConversationView: View {
             // notices from here on. Dedupe id keys on receivedAt (the
             // store's stable ordering key), matching the per-tick drain.
             let persistedNotices = await appState.loadScreenshotNotices(conversationId: groupId)
+            guard appState.isConversationPollCurrent(session) else { return }
             for n in persistedNotices {
                 let stableId = "g-sys-ss-\(n.senderContactId)-\(n.receivedAt)"
                 if messages.contains(where: { $0.id == stableId }) { continue }
@@ -724,7 +751,7 @@ struct GroupConversationView: View {
                     try? await Task.sleep(nanoseconds: UInt64(Double.random(in: 3.0...8.0) * 1_000_000_000))
                 }
                 firstPoll = false
-                guard !Task.isCancelled else { break }
+                guard appState.isConversationPollCurrent(session) else { break }
                 // NO per-iteration checkRelayReachability() here (Android parity):
                 // AppState.startRelayCheck's 8–12 s health loop owns reachability —
                 // and everything that rides along with it (the update nudge, the
@@ -747,7 +774,7 @@ struct GroupConversationView: View {
                     if Task.isCancelled, let d { appState.abandonDrain(d); return nil }
                     return d
                 }
-                guard let drainOpt = drained, !Task.isCancelled else {
+                guard let drainOpt = drained, appState.isConversationPollCurrent(session) else {
                     if let d = drained ?? nil { appState.abandonDrain(d) }
                     break
                 }
@@ -794,26 +821,32 @@ struct GroupConversationView: View {
                 // above. Dedupe id keys on receivedAt (the store's stable
                 // ordering key) so it matches the load-on-open id.
                 let noticesRS = await appState.drainScreenshotNotices(conversationId: groupId)
-                for n in noticesRS {
-                    let stableId = "g-sys-ss-\(n.senderContactId)-\(n.receivedAt)"
-                    if messages.contains(where: { $0.id == stableId }) { continue }
-                    insertByTimestamp(GroupChatMessage(
-                        id: stableId,
-                        text: "\(L10n.commonScreenshotNotice(n.senderAlias)) · \(formatNoticeTime(n.timestamp))",
-                        isSent: false,
-                        senderAlias: n.senderAlias,
-                        senderContactId: n.senderContactId,
-                        timestamp: n.timestamp,
-                        membershipOk: true,
-                        isScreenshotNotice: true,
-                        expiresAt: n.expiresAt
-                    ))
+                // RÚN-05: append nothing if the screen closed or the app locked during
+                // that await; the drain's rows were appended before it and it is committed
+                // below as before (after a lock the ack fence makes that a no-op).
+                if appState.isConversationPollCurrent(session) {
+                    for n in noticesRS {
+                        let stableId = "g-sys-ss-\(n.senderContactId)-\(n.receivedAt)"
+                        if messages.contains(where: { $0.id == stableId }) { continue }
+                        insertByTimestamp(GroupChatMessage(
+                            id: stableId,
+                            text: "\(L10n.commonScreenshotNotice(n.senderAlias)) · \(formatNoticeTime(n.timestamp))",
+                            isSent: false,
+                            senderAlias: n.senderAlias,
+                            senderContactId: n.senderContactId,
+                            timestamp: n.timestamp,
+                            membershipOk: true,
+                            isScreenshotNotice: true,
+                            expiresAt: n.expiresAt
+                        ))
+                    }
                 }
                 // Everything is on screen (the @State list holds the items): COMMIT, off
                 // main, and finish it before the next poll of this group starts. NEVER
                 // commit from a scenePhase/teardown path — an uncommitted drain is what
                 // protects the message across a lock.
                 if let drain, !drain.isEmpty { await appState.commitDrain(drain) }
+                guard appState.isConversationPollCurrent(session) else { break }
                 // Rosters may have been applied during the poll.
                 refreshHeader()
                 // First successful fetch: hold "Consulting…" then reveal the
@@ -944,7 +977,8 @@ struct GroupInfoView: View {
                         message: (isAdmin
                             ? L10n.groupInfoLeaveConfirmAdminMessage
                             : L10n.groupInfoLeaveConfirmMessage)
-                            + "\n\n" + L10n.groupInfoLeaveUnreadWarning,
+                            + "\n\n" + L10n.groupInfoLeaveUnreadWarning
+                            + "\n\n" + L10n.groupInfoLeaveKeptNote,
                         // Destructive LAST (safety rule — see RuneDialog in UIComponents).
                         actions: [
                             .secondary(L10n.commonCancel) { },
@@ -1073,7 +1107,9 @@ struct GroupInfoView: View {
             ZStack {
                 Color.runBackground.ignoresSafeArea()
                 VStack(spacing: 8) {
-                    Text(L10n.groupInfoChooseAdminSubtitleIos)
+                    // Tapping a member below hands over AND leaves at once (no further
+                    // confirm), so this picker carries the kept-record note of every leave path.
+                    Text(L10n.groupInfoChooseAdminSubtitleIos + "\n\n" + L10n.groupInfoLeaveKeptNote)
                         .font(.runeCaption)
                         .foregroundColor(Color.runTextSecondary)
                         .padding(.horizontal)

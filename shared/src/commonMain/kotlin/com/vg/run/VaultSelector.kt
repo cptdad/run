@@ -390,6 +390,38 @@ class VaultSelector internal constructor(
         return credentialBlobDecrypts()
     }
 
+    /**
+     * RÚN-02: tri-state read of the credential PAIR for the wipe-erase rules
+     * ([WipeErasePolicy.residualKeyPurgeAllowed] / [WipeErasePolicy.postWipeResidue]):
+     * `true` = `vlt_a` AND `vlt_c` proven present, `false` = BOTH confirmed absent,
+     * `null` = anything else (a store error, or a torn pair). Read-only — unlike
+     * [isConfigured] it never purges a half pair — and never throws, so neither rule
+     * can ever act on an ambiguous read.
+     */
+    fun credentialPairPresence(): Boolean? = try {
+        val verifier = store.contains(VaultStoreKeys.CREDENTIAL_VERIFIER)
+        val dbKey = store.contains(VaultStoreKeys.WRAPPED_DBKEY)
+        when {
+            verifier && dbKey -> true
+            !verifier && !dbKey -> false
+            else -> null
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    /**
+     * RÚN-02: `true` only when the iOS write-ahead journal (`vlt_txn_journal`) is
+     * CONFIRMED absent — a journal can replay credential items, so both wipe-erase
+     * rules refuse while one may exist. A store error answers `false`. Android never
+     * writes a journal, so this is `true` there.
+     */
+    fun batchJournalConfirmedAbsent(): Boolean = try {
+        !store.contains(VaultStoreKeys.BATCH_JOURNAL)
+    } catch (_: Exception) {
+        false
+    }
+
     private fun credentialBlobDecrypts(): Boolean {
         return try {
             // The store read sits INSIDE the try: on iOS getString itself throws
@@ -423,6 +455,9 @@ class VaultSelector internal constructor(
      * `false`.
      */
     fun setRealCredential(credential: String) {
+        // RÚN-02: no fresh setup while a wipe's erase is unresolved (see the
+        // level-aware overload). Thrown, like every other failure of this overload.
+        if (!WipeErasePolicy.mayProvision()) throw KeyUnavailableException("provision refused — a wipe's erase is unresolved")
         provisionCredentialAndVault(credential, passphraseMode = false, level = null)
     }
 
@@ -449,6 +484,15 @@ class VaultSelector internal constructor(
         // Reset at the top of every attempt — see lastProvisionDeviceKeyUnavailable's
         // kdoc for why a stale `true` from a PRIOR call must never explain THIS one.
         lastProvisionDeviceKeyUnavailable = false
+        // RÚN-02: while a wipe's erase is unresolved nothing may start a fresh
+        // setup — a provision now would mint a key the pending retry must never be
+        // able to reach, or seal under a surviving pre-wipe key. Nothing written.
+        // Both platforms' setup screens check this before calling (the fresh-
+        // provision gate); this is the shared backstop.
+        if (!WipeErasePolicy.mayProvision()) {
+            wipeEraseDebugLog("VaultSelector", "provision refused — a wipe's erase is unresolved")
+            return false
+        }
         if (passphraseMode && !CredentialPolicy.meetsFloor(credential)) {
             platformLogWarn("VaultSelector", "provision denied — passphrase below the entropy floor")
             return false
@@ -1925,6 +1969,9 @@ class VaultSelector internal constructor(
      * = no recovery configured / transient / open failed. Call OFF the main thread.
      */
     fun recoverWithCode(recoveryCode: String, credential: String): UnlockResult {
+        // RÚN-02: the recovery code opens the old vault too, so it is closed by the
+        // same unresolved-erase gate as [unlock] — neutral Error, nothing counted.
+        if (!WipeErasePolicy.mayOpenVault()) return UnlockResult.Error
         // Apply the same uniform rate-limit floor the
         // change-credential flow uses. This screen is the ONE credential sink with
         // no attempt budget of its own; the floor bounds an attacker who already
@@ -3693,6 +3740,14 @@ class VaultSelector internal constructor(
      * itself failing.
      */
     fun unlock(credential: String): UnlockResult {
+        // RÚN-02: a wipe whose erase is still unresolved (a key or credential item
+        // that could not be proven gone) keeps the OLD vault closed. The neutral
+        // Error — never Denied, so no wrong-credential budget is spent and no second
+        // wipe is triggered — and before any read, so nothing is evaluated at all.
+        if (!WipeErasePolicy.mayOpenVault()) {
+            wipeEraseDebugLog("VaultSelector", "unlock refused — a wipe's erase is unresolved")
+            return UnlockResult.Error
+        }
         platformLog("VaultSelector", "unlock: checking credential...")
         val (matches, stretched, credVersion, credParams) = try {
             evalCredential(credential)

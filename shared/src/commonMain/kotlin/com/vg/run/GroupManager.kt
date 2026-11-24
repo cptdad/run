@@ -485,7 +485,8 @@ class GroupManager(
          *  androidApp/AddContactScreen.kt, iosApp/AddContactView.swift) or exactly
          *  24 chars (referral-derived, `ReferralManager.referredContactIdFor` —
          *  base64url of 18 fixed bytes, no padding). This 4-char marker can never
-         *  equal either, independent of what characters it uses. */
+         *  equal either, independent of what characters it uses. Its sibling for a
+         *  deleted contact is [GroupAdminTombstone.DELETED_ADMIN] ("gone"). */
         internal const val SELF_ADMIN_MARKER = "self"
 
         /**
@@ -821,6 +822,63 @@ class GroupManager(
         // single-threaded and this instance is not yet published; a live notice
         // applied before the restore would be counted twice). Never throws.
         restoreUnreadAttribution()
+        // RÚN-06: expired screenshot notices go at session start too, not only on the
+        // control sweep — the sweep needs a live transport, so a session that never
+        // reached the relay (no Tor, a move-frozen old phone) never pruned them. Local
+        // vault reads/deletes only; never throws.
+        pruneExpiredScreenshotNotices()
+        // RÚN-06: admin-of-record records an older build left naming an
+        // already-deleted contact are rewritten to "gone" (newer builds do it inside
+        // deleteContact). Never throws, never changes a warning outcome.
+        retireTombstonesOfDeletedContacts()
+    }
+
+    /**
+     * Once per session (from `init`): the migrate-on-read half of the contact-delete
+     * tombstone rewrite (RÚN-06). Before this build, deleting a contact left every
+     * `group_admin:<groupId>` record naming it untouched, and nothing ever writes a
+     * deleted group's record again, so lazy migrate-on-write would never reach those
+     * rows. This pass rewrites them to [GroupAdminTombstone.DELETED_ADMIN].
+     *
+     * Outcome-neutral by construction: a contact id is never reused, so a deleted
+     * contact can never invite again; every later inviter already compared unequal to
+     * the dead id and its alias lookup already answered null — exactly what "gone"
+     * gives. So a WRONG rewrite of a LIVE contact's record is the only harm possible
+     * (that admin's legitimate re-invite would warn, no alias), and the rewrite
+     * therefore needs POSITIVE evidence, twice:
+     *  - the full contact list answered NON-EMPTY (a closed vault and an iOS query
+     *    error both answer empty) and does not contain the id; AND
+     *  - a different query, the per-id lookup, also finds no such contact.
+     * Anything else (empty list, a throw, an unreadable record, a marker) writes
+     * nothing. Writes happen in one transaction, each re-checked against the value
+     * read, so nothing written concurrently is overwritten. Never throws.
+     *
+     * Residual: a vault whose contacts were ALL deleted keeps its old records until a
+     * contact exists again (the outcome is identical either way).
+     */
+    private fun retireTombstonesOfDeletedContacts() {
+        try {
+            val keys = vault.metaKeys().filter { it.startsWith(GroupAdminTombstone.PREFIX) }
+            if (keys.isEmpty()) return
+            val live = vault.getAllContacts().mapTo(HashSet()) { it.contactId }
+            if (live.isEmpty()) return
+            val doomed = LinkedHashMap<String, String>()
+            for (key in keys) {
+                val value = vault.getMeta(key) ?: continue
+                if (value.isEmpty() || GroupAdminTombstone.isMarker(value) || value in live) continue
+                if (vault.getContact(value) != null) continue
+                doomed[key] = value
+            }
+            if (doomed.isEmpty()) return
+            vault.withTransaction {
+                for ((key, value) in doomed) {
+                    if (vault.getMeta(key) == value) vault.putMeta(key, GroupAdminTombstone.DELETED_ADMIN)
+                }
+            }
+            platformLog(TAG, "admin-of-record records of deleted contacts retired: ${doomed.size}")
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "admin-of-record retire skipped: ${e::class.simpleName}")
+        }
     }
 
     /**
@@ -1007,10 +1065,10 @@ class GroupManager(
 
     /**
      * Drops every expired (or undecodable) persisted screenshot notice, across all
-     * conversations. There is NO dedicated timer: this rides the background control
-     * sweep (wired in `createSessionManagers`), whose first pass runs seconds after
-     * unlock, and [screenshotStore] additionally prunes the touched conversation on
-     * every write and every load. Never throws.
+     * conversations. There is NO dedicated timer: this runs once from `init` (session
+     * start, no transport needed — RÚN-06) and rides the background control sweep
+     * (wired in `createSessionManagers`), and [screenshotStore] additionally prunes the
+     * touched conversation on every write and every load. Never throws.
      */
     fun pruneExpiredScreenshotNotices() {
         try {
@@ -1103,7 +1161,10 @@ class GroupManager(
     fun scrubInMemory() {
         // Message text, the unresolved-sender buffer and the RAM screenshot notices
         // (aliases + contactIds); the DURABLE `ssn:` rows are untouched — see
-        // [ConversationBuffers.scrub].
+        // [ConversationBuffers.scrub]. It also SEALS the buffers (RÚN-05): a poll that
+        // still holds this instance (iOS detached poll tasks capture it) and finishes
+        // after the lock can no longer park plaintext here. Safe because this instance
+        // is never used again after its scrub — both platforms drop it right after.
         buffers.scrub()
         // All five unread tallies (contactIds/groupIds + counts). The vault mirror of
         // the `gi` attribution is deliberately untouched (it exists to survive this);
@@ -1148,6 +1209,28 @@ class GroupManager(
         // state, same class as the maps above) and a locked session has no screen.
         clearGroupConversationForeground()
     }
+
+    /**
+     * Drops every waiting text (unresolved sender / awaiting invite) and parked activity
+     * notice past [PENDING_UNRESOLVED_GROUP_TEXT_TTL_MS]. Runs at the top of every
+     * [pollAllControls], [pollDirectPending] and [pollGroupPending] — NOT on a timer, so
+     * between those calls an expired text can stay in RAM (every read refuses it) until
+     * the next one or the session scrub. RAM only, never throws. Count-only log.
+     */
+    internal fun pruneExpiredPending() {
+        try {
+            val dropped = buffers.pruneExpired()
+            if (dropped > 0) platformLog(TAG, "expired waiting items dropped: $dropped")
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "waiting-item prune failed: ${e::class.simpleName}")
+        }
+    }
+
+    /** Is [contactId] marked not-in-sync for [groupId] (RÚN-07 tests). */
+    internal fun isUnconvergedForTest(groupId: String, contactId: String): Boolean = unconverged.isMarked(groupId, contactId)
+
+    /** Count of decrypted texts this session's buffers hold (RÚN-05 tests). */
+    internal fun heldTextCountForTest(): Int = buffers.heldTextCount()
 
     private fun clearGroupConversationForeground() {
         groupConversationForegroundLock.withLock {
@@ -1492,6 +1575,7 @@ class GroupManager(
      * uncommitted ratchet advance. Blocking I/O — background dispatcher only.
      */
     fun pollDirectPending(contactId: String): PendingDrain<DirectItem> {
+        pruneExpiredPending()   // RÚN-05: also here, not only on the control sweep
         screenshotStore.markSeen(contactId)
         val mgr = transport("pollDirect") ?: return buffers.parkedDirectOnly(contactId, null)
         val drainGroup = Any()
@@ -1521,6 +1605,7 @@ class GroupManager(
      * on commit. Blocking I/O — background dispatcher only.
      */
     fun pollGroupPending(groupId: String): PendingDrain<GroupMessage> {
+        pruneExpiredPending()   // RÚN-05: also here, not only on the control sweep
         screenshotStore.markSeen(groupId)
         unreadMarkers.detachGroup(groupId)   // see pollGroupIntoBuffer
         buffers.flushResolvedGroupTexts()
@@ -1576,6 +1661,13 @@ class GroupManager(
      * WITHOUT navigation, which is the whole point of the control channel.
      */
     fun pollAllControls(): Boolean {
+        // RÚN-05: expired waiting texts leave RAM here, BEFORE the transport check, so a
+        // sweep cycle that finds no MessageManager still prunes. The control loops only
+        // run while a relay transport is wired (Android: wireRelayTransport → teardown /
+        // move quiesce; iOS: until move quiesce or lock), and the screen polls prune too;
+        // in a gap where neither runs an expired text stays in RAM until the next of
+        // them or the lock scrub — every read refuses it meanwhile.
+        pruneExpiredPending()
         val mgr = transport("control sweep") ?: return false
         if (!vault.isOpen) return false  // session teardown already closed the vault — nothing to sweep into
         // Consume the pre-drain's latch FIRST, and report it even on the skip path
@@ -2185,7 +2277,7 @@ class GroupManager(
         }
         val screenGroup = if (background) null else wantGroupId
         if (screenGroup == null) {
-            val item = DirectItem(contactId, rm.text, rm.timestamp, rm.dedupeId)
+            val item = DirectItem(contactId, rm.text, rm.timestamp, rm.dedupeId, blobKey = rm.blobKey)
             if (!bufferAll) direct.add(item) else buffers.toDirectScreen(contactId, item)
         } else {
             // PRIVATE: a 1:1 text a GROUP poll fetched. It is shown in that
@@ -2280,7 +2372,7 @@ class GroupManager(
         DirectItem(
             contactId, gm.text, gm.timestamp, gm.dedupeId,
             kind = ReceivedItemKind.GROUP_ECHO, groupId = gm.groupId, groupName = gm.groupName,
-            groupJoined = gm.groupJoined,
+            groupJoined = gm.groupJoined, blobKey = gm.blobKey,
         )
 
     /**
@@ -2315,6 +2407,7 @@ class GroupManager(
             dedupeId = rm.dedupeId,
             groupName = invite.groupName,
             groupJoined = false,
+            blobKey = rm.blobKey,
         )
 
     /** The invite for [groupId] awaiting the user's answer, IF [contactId] sent it. */
@@ -2356,6 +2449,7 @@ class GroupManager(
             membershipOk = true,
             dedupeId = rm.dedupeId,
             kind = ReceivedItemKind.PRIVATE,
+            blobKey = rm.blobKey,
         )
 
     /** Validates and converts a group text message. Null = dropped OR buffered.
@@ -2374,7 +2468,12 @@ class GroupManager(
             //     group id: nothing ever claims those, and they expire unseen —
             //     so "a group we are not in shows nothing" still holds.
             // An invite from SOMEONE ELSE for this group is case 3 for this sender.
-            parkedInviteFrom(groupId, contactId)?.let { return invitedGroupMessage(contactId, it, rm) }
+            parkedInviteFrom(groupId, contactId)?.let {
+                // Shown fresh now: a copy of this same blob held earlier (an abandoned
+                // poll's decrypt, handed on when the invite came) must not show too.
+                buffers.forgetHeldCopies(contactId, rm.blobKey)
+                return invitedGroupMessage(contactId, it, rm)
+            }
             if (hasPendingInviteForGroup(groupId)) {
                 platformLogWarn(TAG, "drop: text for an invited group from a contact that is not its inviter")
             } else {
@@ -2409,6 +2508,10 @@ class GroupManager(
             }
             return null
         }
+        // A resolved member's text, shown fresh: a copy of this same blob parked while
+        // the sender was unresolved (or handed to a screen buffer since) must not be
+        // delivered as well — the relay re-delivered what an earlier poll never committed.
+        buffers.forgetHeldCopies(contactId, rm.blobKey)
         return toGroupMessage(contactId, groupId, g, members, rm)
     }
 
@@ -2429,6 +2532,7 @@ class GroupManager(
             membershipOk = rm.membershipHash == myHash,
             dedupeId = rm.dedupeId,   // preserve the namespaced id for UI de-dup
             groupName = g.name,
+            blobKey = rm.blobKey,
         )
     }
 
@@ -2562,20 +2666,76 @@ class GroupManager(
      * [handleScreenshotNotice] — which is not this counter.)
      */
     fun sendGroupScreenshotNotice(groupId: String) {
-        val g = vault.getGroup(groupId) ?: return
-        val members = vault.getGroupMembers(groupId)
-        val hash = membershipHash(groupId, g.epoch, members.map { it.memberId })
-        // Same block-set filter as sendGroupMessage above — a blocked
-        // co-member must not learn the victim screenshotted the group either.
-        val blocked = blockedContactsSafe()
-        val targets = members
-            .filter { it.contactId != null && it.memberId != g.myMemberId && it.contactId !in blocked }
-            .mapNotNull { it.contactId }
-        if (targets.isEmpty()) return
-        // noPush: a notice must not wake a peer's device or raise a "new message"
-        // banner for something that is not a message (see sendScreenshotNotice).
-        fanOutControl(targets, groupId, KIND_SCREENSHOT, { "{}" }, hash, noPush = true)
+        sendScreenshotNotices(listOf(ScreenshotOrigin(groupId, isGroup = true, senderContactId = "")))
     }
+
+    /**
+     * RÚN-07: one screenshot, one notice per conversation whose text was in the
+     * captured screen's list — the open conversation plus the origin of every row from
+     * another conversation (see ScreenshotNoticeRouting.kt for the routing and why it
+     * needs no new wire field). Same contract as the two single-conversation sends:
+     * BEST-EFFORT and FIRE-AND-FORGET — each conversation is tried once (the ordinary
+     * transient retry inside each send aside), nothing is queued, retried or persisted,
+     * and [origins] is the caller's snapshot, so a failure here can never be attributed
+     * to a later screenshot or another screen. Blocked contacts get nothing. Push is
+     * suppressed on every copy. The conversations go out in a CSPRNG order with the
+     * usual inter-send jitter between them, like any other fan-out. Blocking (network +
+     * jitter) — background dispatcher only. Never throws; returns counts only.
+     */
+    fun sendScreenshotNotices(origins: List<ScreenshotOrigin>): ScreenshotNoticeOutcome {
+        val plan = try {
+            planScreenshotNotices(
+                origins,
+                blocked = blockedContactsSafe(),
+                contactExists = { vault.getContact(it) != null },
+                localGroup = { gid ->
+                    vault.getGroup(gid)?.let { g ->
+                        val members = vault.getGroupMembers(gid)
+                        LocalGroupTargets(
+                            memberContactIds = members.filter { it.memberId != g.myMemberId }.mapNotNull { it.contactId },
+                            membershipHash = membershipHash(gid, g.epoch, members.map { it.memberId }),
+                        )
+                    }
+                },
+                invitePendingFrom = { gid, sender -> parkedInviteFrom(gid, sender) != null },
+            )
+        } catch (e: Exception) {
+            platformLogWarn(TAG, "screenshot notice plan failed: ${e::class.simpleName}")
+            return ScreenshotNoticeOutcome(0, 0)
+        }
+        if (plan.isEmpty()) return ScreenshotNoticeOutcome(0, 0)
+        val mgr = transport("screenshot notice") ?: return ScreenshotNoticeOutcome(plan.size, 0)
+        var reached = 0
+        for ((index, target) in plan.secureShuffled().withIndex()) {
+            if (index > 0) interSendJitter()
+            val ok = try {
+                when (target) {
+                    is ScreenshotNoticeTarget.Direct -> mgr.sendScreenshotNotice(target.contactId)
+                    // noPush: a notice must not wake a peer's device or raise a "new
+                    // message" banner for something that is not a message.
+                    is ScreenshotNoticeTarget.Group -> fanOutControl(
+                        target.memberContactIds, target.groupId, KIND_SCREENSHOT, { "{}" }, target.membershipHash, noPush = true,
+                    ).size < target.memberContactIds.size
+                    // Empty hash on purpose: we have not joined, and an empty hash is
+                    // "no membership view" on every receive path (see the routing file).
+                    is ScreenshotNoticeTarget.InvitedGroup -> mgr.sendGroupControl(
+                        target.senderContactId, target.groupId, KIND_SCREENSHOT, "{}", "",
+                        noPush = true, ttlSeconds = membershipControlTtl(KIND_SCREENSHOT),
+                    )
+                }
+            } catch (e: Exception) {
+                platformLogWarn(TAG, "screenshot notice send failed: ${e::class.simpleName}")
+                false
+            }
+            if (ok) reached++
+        }
+        platformLog(TAG, "screenshot notice: $reached of ${plan.size} conversation(s) reached")
+        return ScreenshotNoticeOutcome(plan.size, reached)
+    }
+
+    // Inter-send jitter between control copies / conversations. A seam so the JVM suite
+    // need not sleep 0.25–2 s per gap; production is [sleepInterSendJitter].
+    internal var interSendJitter: () -> Unit = { sleepInterSendJitter() }
 
     /**
      * Same shuffle+jitter discipline for control fan-out.
@@ -2610,7 +2770,7 @@ class GroupManager(
         val failed = mutableListOf<String>()
         val shuffled = targets.secureShuffled()
         for ((index, contactId) in shuffled.withIndex()) {
-            if (index > 0) sleepInterSendJitter()
+            if (index > 0) interSendJitter()
             val ok = try {
                 mgr.sendGroupControl(contactId, groupId, kind, bodyFor(contactId), hash, noPush, ttl)
             } catch (e: Exception) {
@@ -3381,8 +3541,9 @@ class GroupManager(
     /** _meta key holding the FIRST admin-of-record contactId for a
      *  groupId. Lives in the vault `_meta` table, which deleteGroup does NOT touch,
      *  so it survives a leave/removal and lets a later different-admin invite be
-     *  flagged. Namespaced to avoid collision with other _meta keys. */
-    private fun adminMetaKey(groupId: String): String = "group_admin:$groupId"
+     *  flagged. A contact delete rewrites a value naming that contact to
+     *  [GroupAdminTombstone.DELETED_ADMIN]. Namespaced to avoid collision with other _meta keys. */
+    private fun adminMetaKey(groupId: String): String = GroupAdminTombstone.keyFor(groupId)
 
     /** Invite from a paired (IRL-verified) contact. Consent gate: this does
      *  NOT auto-join and does NOT disclose any tag — it PARKS the invite for the
@@ -3717,7 +3878,9 @@ class GroupManager(
             return true to null
         }
         val mismatch = priorAdmin != null && priorAdmin != inviterContactId
-        val alias = if (mismatch && priorAdmin != null) {
+        // "self" / "gone" name no contact, so there is no alias to look up (the lookup
+        // would answer null anyway; skipping it just makes that explicit).
+        val alias = if (mismatch && priorAdmin != null && !GroupAdminTombstone.isMarker(priorAdmin)) {
             try { vault.getContact(priorAdmin)?.alias } catch (_: Exception) { null }
         } else null
         return mismatch to alias

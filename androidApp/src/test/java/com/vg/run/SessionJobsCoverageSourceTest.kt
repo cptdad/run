@@ -218,7 +218,7 @@ class SessionJobsCoverageSourceTest {
         )
 
         /** RunViewModel's session jobs: registry slots, stopped by `sessionJobs.cancelAll()`. */
-        val VM_SESSION_JOBS = HAND_LIST_JOBS + setOf("contactListJob", "consentTickJob", "skippedKeySweepJob")
+        val VM_SESSION_JOBS = HAND_LIST_JOBS + setOf("contactListJob", "consentTickJob", "skippedKeySweepJob", "moveSecureJob")
 
         /** ConnectTelemetryRecorder's session jobs: cancelled through its two helpers. */
         val RECORDER_SESSION_JOBS = setOf(

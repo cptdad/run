@@ -307,7 +307,9 @@ interface VaultDatabase {
     //                            (GroupManager.adminMetaKey) — the ONLY `group_`
     //                            prefix; in neither residue classifier, so a later
     //                            invite to that groupId from a different contact is
-    //                            still flagged.
+    //                            still flagged. A CONTACT delete REWRITES a value
+    //                            naming that contact to "gone"
+    //                            ([groupAdminTombstoneNamesContact], RÚN-06).
     //   `grp_declined`           the declined-invite tombstone singleton
     //                            (GroupManager.DECLINED_INVITE_META). It shares the
     //                            `grp_` prefix but names no group segment, so the
@@ -329,8 +331,11 @@ interface VaultDatabase {
     //                             .VAULT_MARKER_KEY) — global: not in either purge
     //                             list, denied by MoveMetaPolicy.
     //   `mig_*`                   device-move singletons (`mig_frozen`, `mig_handle`,
-    //                             `mig_imported`, `mig_rotate_pending`), wiped only by
+    //                             `mig_imported`, `mig_rotate_pending`, `mig_rot_v`), wiped only by
     //                             `wipeAllTables` (see MoveManager).
+    //   `older_pairing_banner_v1` "1" once the contact-list older-pairing banner
+    //                             was dismissed (OlderPairingBanner, RÚN-03) —
+    //                             denied by MoveMetaPolicy.
     //   `update_nudge_v1`         update-nudge throttle, `"<version>|<epochDay>"`
     //                             (UpdateNudge). Holds relay-advertised state,
     //                             bounded by the AppVersion grammar.

@@ -48,7 +48,6 @@ internal val migAllowedMeta: Map<String, String> = linkedMapOf(
     "cap-pend/c-one/inbound" to migTestCap(9),
     "grp_ctl_pend:g-one:c-one" to "roster|4|abcdef|2|1725000000000",
     "ref_p:offer-1" to "{\"k\":\"v\"}",
-    "ssn:conv-1:c-one:1725000000123" to "1",
 )
 
 /** Keys that must NEVER travel — every denied prefix plus an unlisted key. */
@@ -65,6 +64,10 @@ internal val migDeniedMeta: Map<String, String> = linkedMapOf(
     "review_prompt_v1" to "DENIED-review",
     "update_nudge_v1" to "DENIED-nudge",
     "onboard_push_prompt_v1" to "DENIED-push-prompt",
+    // RÚN-03: the older-pairing banner's dismissal stays on the old phone.
+    "older_pairing_banner_v1" to "DENIED-older-pairing-banner",
+    // RÚN-06: persisted screenshot notices no longer travel (denied like grp-unread/).
+    "ssn:conv-1:c-one:1725000000123" to "DENIED-screenshot-notice",
     MoveMetaKeys.FROZEN to "DENIED-frozen",
     MoveMetaKeys.IMPORTED to "DENIED-imported",
     "locale" to "DENIED-locale",

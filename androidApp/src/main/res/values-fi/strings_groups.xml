@@ -34,6 +34,7 @@
     <string name="group_info_leave_confirm_admin_message">Olet ylläpitäjä. Siirrä rooli ensin, tai kukaan ei voi enää muuttaa jäsenluetteloa.</string>
     <string name="group_info_leave_confirm_message">Muille jäsenille kerrotaan, että poistuit.</string>
     <string name="group_info_leave_unread_warning">Kaikkea lähettämääsi, mitä muut eivät ole vielä lukeneet, ei ehkä koskaan näytetä heille.</string>
+    <string name="group_info_leave_kept_note">Rún säilyttää salatussa holvissasi yksityisen muistiinpanon tämän ryhmän tunnuksesta ja siitä, kuka sen ylläpitäjä oli, jotta se voi varoittaa sinua, jos joku muu kutsuu sinut myöhemmin takaisin. Muistiinpano siirtyy mukanasi uuteen puhelimeen, ja se poistetaan vain, kun Rún pyyhitään.</string>
     <string name="group_info_leave_confirm_action">Poistu</string>
     <string name="group_info_choose_admin_title">Valitse uusi ylläpitäjä</string>
     <string name="group_info_choose_admin_subtitle_android">Hän voi lisätä ja poistaa jäseniä sen jälkeen, kun olet poistunut.</string>

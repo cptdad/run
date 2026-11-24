@@ -104,7 +104,15 @@ now means the display time (clamped `takenAt`) so existing UI call sites compile
 Pruned on write (`record`), on load (`list`), on the background control sweep
 (`SessionManagers.kt` hook: `{ referralManager.runMaintenance();
 groupManager.pruneExpiredScreenshotNotices() }`, first run seconds after unlock), and hidden UI-side
-per poll tick by `expiresAt <= now` (no vault read per tick).
+per poll tick by `expiresAt <= now` (no vault read per tick). Since RÚN-06 (2026-11-23) also once at
+session start, from `GroupManager`'s `init`: the sweep needs a live transport, so a session that never
+reached the relay (no Tor, a move-frozen old phone) never pruned at all.
+
+### 2.4a Device move — not carried (RÚN-06, 2026-11-23)
+`ssn:` is in `MoveMetaPolicy.deniedPrefixes`, the same rule as the `grp-unread/` markers: a ≤ 24 h
+display hint naming who screenshotted which conversation and when, which nothing depends on. All four
+filter sites (export, encode, decode, import) drop it, including the rows a bundle from an older build
+still carries. Cost: at most a day of notices does not appear on the new phone.
 
 ### 2.5 Ordering / multiplicity
 One key per screenshot; UI loads persisted notices first on open, then the poll loop appends new

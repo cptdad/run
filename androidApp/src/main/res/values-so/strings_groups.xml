@@ -30,6 +30,7 @@
     <string name="group_info_leave_confirm_admin_message">Waxaad tahay maamulaha. Marka hore u wareeji doorkan, haddii kalese qofna ma awoodi doono inuu beddelo liiska xubnaha.</string>
     <string name="group_info_leave_confirm_message">Xubnaha kale waa loo sheegi doonaa inaad ka baxday.</string>
     <string name="group_info_leave_unread_warning">Wixii aad dirtay ee kuwa kale aanay weli akhrin, waxaa laga yaabaa in aan weligood loo muujin.</string>
+    <string name="group_info_leave_kept_note">Rún wuxuu khasnaddaada sirsiiman ku hayaa qoraal gaar ah oo ku saabsan aqoonsiga kooxdan iyo cidda maamulaheedu ahaa, si uu kuugu digo haddii qof kale goor dambe mar kale kugu casuumo; qoraalku wuxuu kula guuraa taleefan cusub, waxaana la tirtiraa oo keliya marka Rún la tirtiro.</string>
     <string name="group_info_leave_confirm_action">Ka bax</string>
     <string name="group_info_choose_admin_title">Dooro maamule cusub</string>
     <string name="group_info_choose_admin_subtitle_android">Way awoodi doonaan inay ku daraan oo ka saaraan xubno ka dib markaad ka baxdo.</string>

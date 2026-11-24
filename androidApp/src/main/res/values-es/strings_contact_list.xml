@@ -79,7 +79,7 @@
 
     <!-- Reset relay access -->
     <string name="contact_list_reset_relay_title">¿Restablecer el acceso al relay?</string>
-    <string name="contact_list_reset_relay_message">Rún pedirá al relay claves de acceso nuevas para esta conversación. Tus mensajes, tu historial y este contacto se quedan exactamente como están, y %1$s no tiene que hacer nada.\n\nHazlo si crees que otra persona tuvo tu teléfono mientras estaba desbloqueado. No puede deshacer lo que ya hayan leído; y si el teléfono estuvo de verdad en otras manos, lo más seguro sigue siendo eliminar este contacto y volver a emparejaros en persona.</string>
+    <string name="contact_list_reset_relay_message">Rún pedirá al relay claves de acceso nuevas para esta conversación. Tus mensajes, tu historial y este contacto se quedan exactamente como están, y %1$s no tiene que hacer nada.\n\nHazlo si crees que otra persona tuvo tu teléfono mientras estaba desbloqueado. No puede deshacer lo que ya hayan leído; y si el teléfono estuvo de verdad en otras manos, lo más seguro sigue siendo volver a emparejaros en persona y eliminar después este contacto.</string>
     <string name="contact_list_reset_button">Restablecer</string>
     <string name="contact_list_reset_relay_success">Acceso al relay restablecido.</string>
     <string name="contact_list_reset_relay_failure">No se ha podido llegar al relay. Rún lo terminará por su cuenta.</string>
@@ -111,6 +111,15 @@
     <string name="contact_list_reset_relay_in_progress">Restableciendo el acceso al relay…</string>
     <string name="contact_list_reset_relay_button">Restablecer el acceso al relay</string>
     <string name="contact_list_delete_contact_button">Eliminar contacto</string>
+    <string name="contact_list_pairing_label">Emparejamiento</string>
+    <string name="contact_list_pairing_current">Actual</string>
+    <string name="contact_list_pairing_current_note">Hecho con las dos apps actualizadas. No hay nada que hacer.</string>
+    <string name="contact_list_pairing_older">Emparejamiento antiguo</string>
+    <string name="contact_list_pairing_older_note">Hecho con una versión anterior de Rún. Actualizar la app no lo cambia; volver a emparejaros, sí.</string>
+    <string name="contact_list_pair_again_button">Cómo volver a emparejar</string>
+    <string name="contact_list_pair_again_why">Mantén pulsado un contacto para ver qué emparejamiento usa.\n\nCon un emparejamiento antiguo, quien haya grabado tus mensajes por el camino y consiga después la clave de este emparejamiento (de uno de vuestros dos teléfonos o, si os emparejasteis en persona, de una foto de los dos códigos) podría leer vuestros primeros mensajes (hasta que los dos hubierais escrito) y algunos mensajes de grupo y de presentación. Los mensajes grabados por sí solos no bastan. Los mensajes posteriores están protegidos igual que con un emparejamiento actual.\n\nVolver a emparejar solo protege los mensajes enviados después.</string>
+    <string name="contact_list_pair_again_steps">1. Los dos actualizáis Rún.\n2. Quedáis y os emparejáis de nuevo con Añadir contacto. Obtienes un contacto nuevo, con otro nombre y sin nota de recordatorio.\n3. Comprueba que el contacto nuevo muestra “Actual” en su menú y que los mensajes llegan en ambos sentidos.\n4. Después, los dos eliminad el contacto antiguo. Lee antes sus mensajes nuevos: al eliminar un contacto también se eliminan sus mensajes que aún esperan en el relay.</string>
+    <string name="contact_list_pair_again_groups">Los grupos que ya compartís no pasan al contacto nuevo. El administrador del grupo tiene que expulsar a esta persona y volver a añadirla.</string>
 
     <!-- Personal-memory (mnemonic) edit dialog -->
     <string name="contact_list_memory_dialog_subtitle">Un recordatorio privado de quién es este contacto. Solo tú puedes verlo.</string>
@@ -134,6 +143,10 @@
     <plurals name="contact_list_repair_banner">
         <item quantity="one">%1$d contacto necesita volver a emparejarse. Toca para añadirlo otra vez.</item>
         <item quantity="other">%1$d contactos necesitan volver a emparejarse. Toca para añadirlos otra vez.</item>
+    </plurals>
+    <plurals name="contact_list_older_pairing_banner">
+        <item quantity="one">%1$d contacto usa un emparejamiento antiguo. Toca para ver cómo volver a emparejar.</item>
+        <item quantity="other">%1$d contactos usan un emparejamiento antiguo. Toca para ver cómo volver a emparejar.</item>
     </plurals>
     <string name="connect_log_title">Registro de conexión</string>
 

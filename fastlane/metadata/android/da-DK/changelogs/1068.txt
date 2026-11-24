@@ -1,1 +1,5 @@
-• Lukkes appen, mens en gruppeinvitation, en medlemsændring eller en udmeldelse stadig sendes, får de medlemmer, der ikke blev nået, den næste gang du åbner appen.
+• Hver kontakt viser, om den bruger en aktuel eller en ældre parring.
+• Efter flytning til ny telefon viser menuen, hvornår dine indbakker er skiftet til nye adgangsnøgler.
+• En sletning bekræfter hver fjernelse; slettede grupper og kontakter efterlader færre spor.
+• Gruppeændringer, der blev afbrudt, da appen lukkede, når næste gang de medlemmer, der gik glip af dem.
+• Layoutrettelser, bl.a. feltet til adgangssætning og sprog, der skrives fra højre mod venstre.

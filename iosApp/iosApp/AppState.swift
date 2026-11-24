@@ -285,6 +285,10 @@ final class AppState: ObservableObject {
     /// after the sleep as a second gate.
     var debugLogConnectTask: Task<Void, Never>?
     private var protectedDataObserver: NSObjectProtocol?
+    /// RÚN-02: process-lifetime observers that feed the protected-data snapshot to
+    /// the controller and drive the silent erase retries (device unlock, app
+    /// activation). See observeEraseRetryTriggers.
+    private var eraseRetryObservers: [NSObjectProtocol] = []
 
     // MARK: - Speculative (launch-time) Tor start — connect-speed lever 2
     //
@@ -433,6 +437,22 @@ final class AppState: ObservableObject {
     private var testNetworkKickTorCancellable: AnyCancellable?
     /// The unlock-time check's latest verdict (UnlockPortCheck.Verdict, lower case), or -.
     private var testNetworkKickConfirm = "-"
+    /// RÚN-02 device procedure (`--test-wipe-probe`, set by RunApp.init inside its
+    /// `#if DEBUG` block): after launch and after every wipe / erase retry, the
+    /// presence of each key class + the last erase report go to LogBuffer and the
+    /// DEBUG-only `wipe_probe` element. Presence flags, counts and OSStatus numbers
+    /// only — never key material. Compiled out of release.
+    static var testWipeProbe = false
+    /// `--test-wipe-after-ms=<n>`: one deniable in-session wipe n ms after launch,
+    /// inside a background task, so it can run with the phone locked. Compiled out
+    /// of release.
+    static var testWipeAfterMs: Int?
+    /// `--test-wipe-nondeniable`: the timed wipe above runs as a NON-deniable
+    /// (user-requested, "erase and start over") wipe instead of a panic wipe, so the
+    /// explicit "Finishing the erase" screen can be measured on a locked phone.
+    static var testWipeNonDeniable = false
+    @Published var wipeProbeSummary: String?
+    private var testWipeTask: UIBackgroundTaskIdentifier = .invalid
     #endif
 
     /// True only in the DEBUG `--test-tor-keepalive-unbounded` measurement mode.
@@ -533,6 +553,10 @@ final class AppState: ObservableObject {
         // on a locked launch — the same deferral re-drives the UI on unlock, so
         // the user never sees the transient mis-state.)
         isConfigured = vaultPresent()
+        // RÚN-02: the erase trusts "already absent" only while protected data is
+        // available — give the controller the current answer before any wipe can run.
+        controller.noteProtectedDataAvailable(available: UIApplication.shared.isProtectedDataAvailable)
+        observeEraseRetryTriggers()
         if UIApplication.shared.isProtectedDataAvailable {
             runLaunchSecurityChecks()
         } else {
@@ -560,6 +584,11 @@ final class AppState: ObservableObject {
 
         // Network-restore kick (2026-10-25): process-lifetime, like TorManager.shared.
         startNetworkRestoreMonitor()
+
+        #if DEBUG
+        refreshWipeProbe("launch")
+        armTestWipeAfterDelay()
+        #endif
     }
 
     /// init() step: lock on a mid-session vault-handle retirement (see the body).
@@ -868,6 +897,25 @@ final class AppState: ObservableObject {
             inactivityCrypto.wipeKey()
             inactivityCrypto = CryptoProvider()
         }
+        // RÚN-02 R2 (owner decision D3): credentials PROVEN present (both reads
+        // succeeded, so not the orphan above) but no run.db in Application Support
+        // OR Caches and no write journal — the residue of a wipe that deleted the
+        // file but not the keys. Without the file nothing can be opened, so erasing
+        // it loses nothing; leaving it kept the device key, the verifier and the
+        // recovery blob alive behind a PIN screen whose every unlock answers the
+        // neutral Error (the old documented dead end). A healthy vault always has
+        // its file — the provision creates it before any credential is written —
+        // and every ambiguous read answers false (postWipeResidueDetected).
+        if controller.postWipeResidueDetected() {
+            wipeDiag("AppState.post-wipe-residue (credentials present, no vault file)")
+            LogBuffer.shared.append(level: "W", tag: "AppState", message: "credentials without a vault file — erasing the leftovers")
+            controller.emergencyWipe()
+            clearWipeResidue()
+            InactivityWipe.clear()
+            BlockStore.clear()
+            inactivityCrypto.wipeKey()
+            inactivityCrypto = CryptoProvider()
+        }
         isConfigured = vaultPresent()
 
         // 7-day inactivity wipe — before showing the PIN screen. -1 = the stored
@@ -907,6 +955,9 @@ final class AppState: ObservableObject {
         } else if isConfigured {
             LogBuffer.shared.append(level: "D", tag: "AppState", message: "inactivity wipe check passed")
         }
+        // RÚN-02: any launch-time wipe above whose erase is not confirmed lands on
+        // the "finishing the erase" screen (D1) instead of setup.
+        eraseUnresolved = !controller.wipeEraseComplete()
 
         // Lever 2 gate: every launch-time wipe decision is now behind us, so Tor
         // may start. Kicking it from HERE (not only from the activation
@@ -1577,6 +1628,25 @@ final class AppState: ObservableObject {
     // that fresh launch, matching Android).
     @Published var wipedThisSession = false
 
+    /// RÚN-02 (owner decision D1): a wipe's erase is not confirmed — some key,
+    /// credential item or vault file could not be proven gone. While true the old
+    /// vault stays closed and no fresh setup can start (the controller refuses
+    /// both); a NON-deniable wipe shows the blocking "finishing the erase" screen
+    /// with a Retry button in place of setup. A DENIABLE panic wipe keeps its black
+    /// cover and retries silently (D2) — ContentView checks wipedThisSession first.
+    /// RAM only; mirrors controller.wipeEraseComplete(), and is also raised by a
+    /// setup the controller refused (lastProvisionBlockedByPendingErase).
+    @Published var eraseUnresolved = false
+
+    /// RÚN-02 deniability rule: the EXPLICIT "Finishing the erase" screen is shown
+    /// only when a NON-deniable, user-requested wipe ("Erase and start over", the
+    /// post-move wipe) ran in THIS process. Every other unresolved state — launch
+    /// residue after a relaunch, the unattended launch wipes, a refused fresh-setup
+    /// purge — shows the neutral "setup can't start yet" state, which never
+    /// mentions erasing (ContentView). A deniable wipe keeps its black cover. RAM
+    /// only, never cleared within the process.
+    @Published var userRequestedEraseThisProcess = false
+
     // The transport half of the published state (torState, extProxyStatus, the
     // three bootstrap-stall tiers) lives in [transport] (AppState+TransportStatus.swift);
     // views keep reading it through the read-only forwarders there.
@@ -2132,6 +2202,10 @@ final class AppState: ObservableObject {
         if isUnlocked { lastUnlockedSessionLockUptime = ProcessInfo.processInfo.systemUptime }
         isUnlocked = false
         sessionGeneration &+= 1
+        // RÚN-07: no conversation screen survives the lock; drop their scopes now
+        // rather than waiting for onDisappear (whose timing in background is unknown).
+        screenshotScopes.removeAll()
+        screenshotFollowUp = nil
         // Captured BEFORE stopRelayCheck() clears it — the Debug-mode "lock"
         // flush further down is skipped entirely on a session whose relay was
         // not answering (see there).
@@ -2457,9 +2531,24 @@ final class AppState: ObservableObject {
         // isConfigured would route ContentView to PinEntryView mid-flow. isUnlocked
         // (set by the closing unlock) drives the transition into the app; a relaunch
         // recomputes isConfigured anyway.
+        //
+        // RÚN-02: drop inactivityCrypto's cached device key BEFORE the controller
+        // provisions. The controller's fresh-provision gate may delete a leftover
+        // device key; a copy cached here would later seal the inactivity stamp
+        // under that deleted key, and the next launch's InactivityWipe would read
+        // the AEAD failure as expiry — a wipe of the NEW vault. Reloaded lazily.
+        inactivityCrypto.wipeKey()
+        controller.noteProtectedDataAvailable(available: UIApplication.shared.isProtectedDataAvailable)
         offMain({
             controller.setRealCredentialWithLevel(credential: credential, passphraseMode: passphraseMode, level: level)
-        }, then: completion)
+        }, then: { [weak self] ok in
+            // Refused because a wipe's erase is still unresolved (or the purge of
+            // leftover keys could not finish): the "finishing the erase" screen.
+            if !ok, let self, self.controller.lastProvisionBlockedByPendingErase() {
+                self.eraseUnresolved = true
+            }
+            completion(ok)
+        })
     }
 
     /// True when the JUST-COMPLETED `setRealCredentialWithLevel` returned `false`
@@ -4938,6 +5027,108 @@ final class AppState: ObservableObject {
         !Task.isCancelled && isUnlocked && token == sessionGeneration
     }
 
+    /// RÚN-05: the session a conversation screen's poll loop started in. Captured once
+    /// at loop start and checked with [isConversationPollCurrent] after EVERY `await`,
+    /// before any write to the screen's message list — so a poll that resumes after the
+    /// screen closed (task cancelled) or the session ended (lock / wipe bumps the
+    /// generation) appends nothing. Main actor only.
+    var conversationPollToken: UInt64 { sessionGeneration }
+
+    /// See [conversationPollToken]. False once the calling task is cancelled, the vault
+    /// is locked, or a lock / wipe has started a new session generation.
+    func isConversationPollCurrent(_ token: UInt64) -> Bool {
+        isPollSessionCurrent(token)
+    }
+
+    // MARK: - Screenshot notices (RÚN-07)
+
+    /// The open conversation screens' screenshot scopes: each returns the conversations
+    /// whose text is in that screen's list right now (its own, plus the origin of every
+    /// foreign row). Registered in the screen's onAppear, removed in its onDisappear,
+    /// cleared on lock / wipe. Main actor only.
+    private var screenshotScopes: [UUID: @MainActor () -> [ScreenshotOrigin]] = [:]
+    /// ONE observer for the whole app, so a screenshot taken while two screens are
+    /// registered (an "Open group" replace runs the new screen's onAppear and the old
+    /// one's onDisappear in an undocumented order) still makes ONE deduped dispatch.
+    private var screenshotObserver: NSObjectProtocol? = nil
+
+    /// Registers a conversation screen's scope; returns the token to unregister with.
+    func registerScreenshotScope(_ origins: @escaping @MainActor () -> [ScreenshotOrigin]) -> UUID {
+        let token = UUID()
+        screenshotScopes[token] = origins
+        if screenshotObserver == nil {
+            screenshotObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.userDidTakeScreenshotNotification, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated { self?.screenshotTaken() }
+            }
+        }
+        return token
+    }
+
+    func unregisterScreenshotScope(_ token: UUID) {
+        screenshotScopes.removeValue(forKey: token)
+    }
+
+    /// True while one screenshot dispatch is running on a background thread (it can take
+    /// N conversations × M members × 0.25–2 s of jitter). Main actor only.
+    private var screenshotDispatchInFlight = false
+    /// The ONE follow-up: the merged origins of every screenshot taken while a dispatch
+    /// was running, with the session they were taken in. RAM only, cleared on lock /
+    /// wipe, dropped if the session ended before it could go. Main actor only.
+    private var screenshotFollowUp: (origins: [ScreenshotOrigin], generation: UInt64)? = nil
+
+    /// A screenshot was taken: tell every conversation whose text is in a registered
+    /// screen's list (the union, deduplicated by the shared layer). The origins are read
+    /// NOW, from the screens' own rows, and handed by value to one best-effort call;
+    /// nothing is retried or persisted, so a failure can never be attributed to a later
+    /// screenshot or another view. At most ONE dispatch runs at a time: a screenshot
+    /// taken meanwhile is merged into a single pending follow-up (same session only).
+    /// Counts only in the log.
+    private func screenshotTaken() {
+        guard isUnlocked, !screenshotScopes.isEmpty else { return }
+        let origins = screenshotScopes.values.flatMap { $0() }
+        guard !origins.isEmpty else { return }
+        if screenshotDispatchInFlight {
+            let prior = (screenshotFollowUp?.generation == sessionGeneration) ? (screenshotFollowUp?.origins ?? []) : []
+            screenshotFollowUp = (Self.mergedOrigins(prior + origins), sessionGeneration)
+            return
+        }
+        dispatchScreenshotNotices(origins)
+    }
+
+    private func dispatchScreenshotNotices(_ origins: [ScreenshotOrigin]) {
+        screenshotDispatchInFlight = true
+        let gm = controller.groupManager
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            if let gm {
+                // Never throws: every send below is best-effort and non-throwing.
+                let outcome = gm.sendScreenshotNotices(origins: origins)
+                LogBuffer.shared.append(level: outcome.reached == outcome.conversations ? "D" : "W", tag: "Chat",
+                    message: "screenshot notice sent to \(outcome.reached) of \(outcome.conversations) conversation(s)")
+            } else {
+                LogBuffer.shared.append(level: "W", tag: "Chat",
+                    message: "screenshot notice not sent — no session yet")
+            }
+            hopToMain { self?.screenshotDispatchFinished() }
+        }
+    }
+
+    private func screenshotDispatchFinished() {
+        screenshotDispatchInFlight = false
+        guard let next = screenshotFollowUp else { return }
+        screenshotFollowUp = nil
+        // A follow-up from a session that has since ended is dropped, never sent late.
+        guard isUnlocked, next.generation == sessionGeneration else { return }
+        dispatchScreenshotNotices(next.origins)
+    }
+
+    /// The merged follow-up stays bounded: one entry per distinct origin.
+    private static func mergedOrigins(_ origins: [ScreenshotOrigin]) -> [ScreenshotOrigin] {
+        var seen = Set<String>()
+        return origins.filter { seen.insert("\($0.isGroup ? "g" : "c")|\($0.conversationId)|\($0.senderContactId)").inserted }
+    }
+
     private func stopRelayCheck() {
         relayCheckTask?.cancel()
         relayCheckTask = nil
@@ -4990,6 +5181,7 @@ final class AppState: ObservableObject {
     /// sign the app was ever configured. Only the deliberate "erase and start
     /// over" path passes false — it needs to land on setup.
     func emergencyWipe(deniable: Bool = true) {
+        if !deniable { userRequestedEraseThisProcess = true }
         wipeDiag("AppState.emergencyWipe() invoked")
         LogBuffer.shared.append(level: "W", tag: "AppState", message: "EMERGENCY WIPE triggered")
 
@@ -5003,11 +5195,14 @@ final class AppState: ObservableObject {
         // Lever-B recovery blob, counters) undecryptable. Previously TorManager
         // teardown + four I/O steps ran on the main actor BEFORE the key was
         // destroyed, so any of those crashes aborted the "irreversible" wipe with
-        // all key material intact while the user believed it had happened. Both
-        // deleteKey()s are idempotent SecItemDelete calls (controller.emergencyWipe
-        // re-issues them harmlessly below).
-        KeychainHelper.shared.deleteKey()          // Keychain device key
-        SecureEnclaveHelper.shared.deleteKey()     // Lever-B Secure Enclave key
+        // all key material intact while the user believed it had happened.
+        //
+        // RÚN-02: CHECKED. The controller arms the erase latch (nothing can mint a
+        // key from here on), deletes the Keychain device key and the Lever-B Secure
+        // Enclave key with a verify probe each, up to three immediate passes, and
+        // keeps the outcome; controller.emergencyWipe() below re-attempts whatever
+        // is still unresolved and reports the whole wipe. Still the first act.
+        _ = controller.eraseKeyMaterialFirst(protectedDataAvailable: UIApplication.shared.isProtectedDataAvailable)
         inactivityCrypto.wipeKey()                 // zero the in-RAM device-key copy too
         // Latch the Tor bootstrap breadcrumb OFF for the rest of the process. Pure
         // in-RAM boolean — no I/O, so it cannot gate or delay the crypto-erase
@@ -5044,6 +5239,8 @@ final class AppState: ObservableObject {
         // Now the slower / crash-prone steps, all AFTER the irreversible erase.
         stopRelayCheck()                           // cancel the pollers before the vault closes
         sessionGeneration &+= 1                    // a sweep still mid-/peek must not write after this
+        screenshotScopes.removeAll()               // RÚN-07: no conversation screen survives a wipe (RAM only)
+        screenshotFollowUp = nil                   // RÚN-07: a pending screenshot follow-up dies with the session
         // Tor teardown + CONFIRMED working-dir wipe. Runs BEFORE controller
         // .emergencyWipe() so that when the latter's own deleteTorData() runs the
         // daemon is already stopped — neither delete races a live tor_main.
@@ -5059,7 +5256,7 @@ final class AppState: ObservableObject {
         // deniable path keeps alive (controller.emergencyWipe() below ends the
         // Kotlin-side session too; the second bump is idempotent).
         TransportFailedSends.companion.shared.endSession()
-        controller.emergencyWipe()                 // wipeAllTables + UserDefaults sweep (incl. EULA) + DB files + SQLCipher close + (idempotent) deleteKey
+        controller.emergencyWipe()                 // checked kv/diag sweep + block list + DB files, wipeAllTables, UserDefaults sweep (incl. EULA), SQLCipher close; re-attempts unresolved keys
         InactivityWipe.clear()
         BlockStore.clear()
         // EULA flag + wipediag.txt breadcrumb — the single residue helper
@@ -5117,7 +5314,21 @@ final class AppState: ObservableObject {
         // (IosAppController.emergencyWipe) clears LogBuffer + ConnectionLog too;
         // keep both (defence in depth: neither side relies on the other's clear).
         ConnectionLog.shared.clear()
-        LogBuffer.shared.append(level: "W", tag: "AppState", message: "emergency wipe complete — all data destroyed")
+        // RÚN-02: the completion line claims only what the erase report confirmed
+        // (every key, credential item, the block list and the vault files proven
+        // gone). Anything unresolved stays latched in RAM: the old vault stays
+        // closed, setup stays blocked, and device unlock / app activation / the
+        // Retry button re-attempt it. A deniable wipe keeps its black cover (D2).
+        let eraseConfirmed = controller.wipeEraseComplete()
+        eraseUnresolved = !eraseConfirmed
+        #if DEBUG
+        // DEBUG builds only: in a release build with Debug mode on, a line naming the
+        // wipe in the kept-alive deniable process would be the evidence itself.
+        LogBuffer.shared.append(level: "W", tag: "AppState", message: eraseConfirmed
+            ? "emergency wipe complete — keys, credential items and vault files confirmed erased"
+            : "emergency wipe: erase NOT confirmed — retrying on device unlock / app activation")
+        refreshWipeProbe("after-wipe")
+        #endif
     }
 
     /// Erase the residue that must NOT survive ANY wipe path (the panic
@@ -5302,6 +5513,94 @@ final class AppState: ObservableObject {
                                 message: "user erased an orphaned vault — starting over")
         emergencyWipe(deniable: false)
     }
+
+    // -----------------------------------------------------------------------
+    // RÚN-02 — retries of an unresolved wipe erase (owner decision D6): three
+    // immediate passes inside the wipe, then one pass on each device unlock
+    // (protectedDataDidBecomeAvailable), each app activation, and each tap on the
+    // "finishing the erase" screen's Retry. No timers. Silent on the deniable
+    // black cover (D2). Never reaches a key provisioned after the erase resolved:
+    // the controller retries only while the erase latch is unresolved, and an
+    // unresolved latch refuses every mint and every provision.
+    // -----------------------------------------------------------------------
+
+    /// init() step: process-lifetime observers. Will-become-unavailable only lowers
+    /// the protected-data snapshot (the erase then refuses to trust "absent");
+    /// did-become-available and activation also retry a pending erase.
+    private func observeEraseRetryTriggers() {
+        let nc = NotificationCenter.default
+        eraseRetryObservers = [
+            nc.addObserver(forName: UIApplication.protectedDataWillBecomeUnavailableNotification,
+                           object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.controller.noteProtectedDataAvailable(available: false) }
+            },
+            nc.addObserver(forName: UIApplication.protectedDataDidBecomeAvailableNotification,
+                           object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.retryPendingErase(trigger: "device-unlock") }
+            },
+            nc.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                           object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.retryPendingErase(trigger: "activation") }
+            },
+        ]
+    }
+
+    /// One retry pass of a pending erase. Cheap no-op (a RAM read) when nothing is
+    /// pending. On resolution drops inactivityCrypto's cached key (the controller
+    /// drops its own) so a later provision seals under the key really persisted.
+    func retryPendingErase(trigger: String) {
+        let available = UIApplication.shared.isProtectedDataAvailable
+        controller.noteProtectedDataAvailable(available: available)
+        guard !controller.wipeEraseComplete() else {
+            if eraseUnresolved { eraseUnresolved = false }
+            return
+        }
+        let done = controller.retryPendingErase(protectedDataAvailable: available)
+        if done { inactivityCrypto.wipeKey() }
+        eraseUnresolved = !done
+        #if DEBUG
+        LogBuffer.shared.append(level: done ? "I" : "W", tag: "AppState",
+                                message: "erase retry (\(trigger)): \(done ? "confirmed" : "still pending")")
+        refreshWipeProbe("after-retry-\(trigger)")
+        #endif
+    }
+
+    #if DEBUG
+    /// `--test-wipe-probe`: one line of presence flags / counts / OSStatus numbers
+    /// (KeychainHelper.debugWipeProbe, SecureEnclaveHelper.debugKeyProbe,
+    /// IosAppController.wipeProbeSummary). Never key material, never the PIN.
+    func refreshWipeProbe(_ moment: String) {
+        guard AppState.testWipeProbe else { return }
+        let line = "\(moment) \(KeychainHelper.shared.debugWipeProbe()) se=\(SecureEnclaveHelper.shared.debugKeyProbe()) " +
+            "\(controller.wipeProbeSummary()) protectedData=\(UIApplication.shared.isProtectedDataAvailable ? 1 : 0)"
+        wipeProbeSummary = line
+        LogBuffer.shared.append(level: "W", tag: "WipeProbe", message: line)
+    }
+
+    /// `--test-wipe-after-ms=<n>`: one deniable in-session wipe n ms after launch,
+    /// held alive by a background task so it can run on a locked phone (the
+    /// device procedure's locked-keybag case). One-shot per process.
+    private func armTestWipeAfterDelay() {
+        guard let ms = AppState.testWipeAfterMs else { return }
+        AppState.testWipeAfterMs = nil
+        testWipeTask = UIApplication.shared.beginBackgroundTask(withName: "test-wipe") { [weak self] in
+            MainActor.assumeIsolated { self?.endTestWipeTask() }
+        }
+        LogBuffer.shared.append(level: "W", tag: "WipeProbe", message: "timed wipe armed in \(ms) ms")
+        hopToMain(after: Double(ms) / 1000.0) { [weak self] in
+            guard let self else { return }
+            self.refreshWipeProbe("before-timed-wipe")
+            self.emergencyWipe(deniable: !AppState.testWipeNonDeniable)
+            self.endTestWipeTask()
+        }
+    }
+
+    private func endTestWipeTask() {
+        guard testWipeTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(testWipeTask)
+        testWipeTask = .invalid
+    }
+    #endif
 
     // -----------------------------------------------------------------------
     // Tor lifecycle

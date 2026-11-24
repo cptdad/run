@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">تعذّر فتح القفل؟ استخدم رمز الاسترداد</string>
     <string name="pin_orphaned_vault_notice">توجد على هذا الجهاز خزنة، لكن لا يوجد رمز PIN ولا عبارة مرور محفوظة لها، فلا شيء يستطيع فتحها. لا يمكن استرداد محتوياتها.</string>
     <string name="pin_erase_start_over">المحو والبدء من جديد</string>
+    <string name="pin_erase_finishing_title">إكمال المحو</string>
+    <string name="pin_setup_blocked_message">لا يمكن بدء الإعداد بعد. افتح قفل هاتفك، ثم اضغط «إعادة المحاولة».</string>
+    <string name="pin_erase_finishing_message">لم تُمحَ بعض البيانات على هذا الهاتف بعد. افتح قفل هاتفك، ثم اضغط «إعادة المحاولة». يُفتح الإعداد عند اكتمال المحو.</string>
 
     <!-- Passphrase strength meter -->
     <string name="pin_strength_too_weak">ضعيفة جدًا</string>

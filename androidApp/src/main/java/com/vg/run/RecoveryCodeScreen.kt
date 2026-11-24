@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -71,6 +72,9 @@ fun RecoveryCodeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                // Edge to edge: keep the end of the column (Done and its hint) above
+                // the navigation bar (same fault as ProtectionLevelScreen, 2026-11-24).
+                .navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,

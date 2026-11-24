@@ -811,6 +811,13 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
             // is the durable copy of an invite from THIS contact that the user never
             // answered (GroupInviteStore). Mirrors DatabaseManager.deleteContact
             // statement-for-statement.
+            //
+            // ADMIN-OF-RECORD TOMBSTONES (value-keyed, REWRITTEN not purged, RÚN-06):
+            // `group_admin:<groupId>` = this contactId becomes "gone" inside this
+            // transaction (execChecked: a failed UPDATE rolls the whole delete back).
+            // An unreadable value (the bridge answers null on a query error) rewrites
+            // nothing; GroupManager's session-start pass retries it. Mirrors
+            // DatabaseManager.deleteContact statement-for-statement.
             for (key in metaKeys()) {
                 if (isGroupMetaResidueForContact(key, contactId)) {
                     execChecked("DELETE FROM _meta WHERE key = ?", key)
@@ -822,6 +829,15 @@ class IosVaultDatabase(dbKey: ByteArray, isProvision: Boolean = false) : VaultDa
                 }
                 if (isGroupInviteResidueForContact(key, contactId)) {
                     execChecked("DELETE FROM _meta WHERE key = ?", key)
+                    continue
+                }
+                if (key.startsWith(GroupAdminTombstone.PREFIX)) {
+                    if (groupAdminTombstoneNamesContact(key, getMeta(key), contactId)) {
+                        execChecked(
+                            "UPDATE _meta SET value = ? WHERE key = ?",
+                            GroupAdminTombstone.DELETED_ADMIN, key,
+                        )
+                    }
                     continue
                 }
                 if (isReferralMetaKey(key) &&

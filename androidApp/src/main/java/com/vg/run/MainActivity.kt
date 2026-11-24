@@ -243,6 +243,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // RÚN-02 (owner decision D6): one silent retry of a pending wipe erase on
+        // every foreground return — BEFORE the cover check below, because the
+        // deniable black cover is exactly where it must run without showing anything
+        // (D2). A RAM read when nothing is pending. Through the existing ViewModel
+        // when there is one (it drops its cached keyset and updates the screen);
+        // never constructs one here.
+        if (WipeEraseLatch.unresolved) {
+            runVm?.retryPendingErase() ?: WipeRoutine.retryPendingErase(applicationContext) {}
+        }
         // The deniable-wipe cover
         // ([ProcessWipeCover]) only ever gated onCreate's rendering. onResume
         // runs on EVERY foreground transition regardless of what onCreate drew —
@@ -286,6 +295,9 @@ class MainActivity : ComponentActivity() {
         // from a BiometricPrompt or the camera-permission dialog) starts it fresh.
         val vm = ViewModelProvider(this).get(RunViewModel::class.java)
         runVm = vm
+        // RÚN-02: the retry at the top of onResume may have resolved the latch
+        // without this ViewModel (runVm was null then) — don't leave its flag stale.
+        vm.refreshEraseState()
         if (!vm.consumeConfigurationChangeRecreation()) vm.noteUserInteraction()
         // The watchdog is now ALWAYS posted (docs/periodic-reauth-design.md): the
         // periodic re-auth branch inside it must tick even in a debug build so a
@@ -485,6 +497,26 @@ class MainActivity : ComponentActivity() {
                     return@RunTheme
                 }
 
+                // RÚN-02 (owner decision D1): a wipe whose erase is not confirmed
+                // blocks here, in place of setup AND unlock — the old vault stays
+                // closed and no fresh setup can start until every item is proven
+                // gone. Below the deniable cover (returned above), so a panic wipe
+                // stays black and retries silently on resume (D2). iOS sibling:
+                // ContentView's `finishing_erase` gate.
+                val eraseUnresolved by viewModel.eraseUnresolved.collectAsState()
+                val userRequestedErase by viewModel.userRequestedErase.collectAsState()
+                if (eraseUnresolved) {
+                    // Deniability rule: "Finishing the erase" ONLY after a
+                    // user-requested wipe in this process; otherwise the neutral
+                    // "setup can't start yet" screen, which never mentions erasing.
+                    if (userRequestedErase) {
+                        FinishingEraseScreen(onRetry = { viewModel.retryPendingErase() })
+                    } else {
+                        SetupBlockedScreen(onRetry = { viewModel.retryPendingErase() })
+                    }
+                    return@RunTheme
+                }
+
                 // Route to setup ONLY when no vault exists by EITHER measure.
                 // isConfigured() reads the KeyValueStore; vaultFileExists() asks the
                 // filesystem. The store read is the one that can transiently say
@@ -671,7 +703,20 @@ class MainActivity : ComponentActivity() {
                 // VaultSelector constructor requires a factory.
                 vaultFactory = androidVaultFactory(this)
             )
-            if (orphanCheck.isConfigured() && !orphanCheck.credentialsReadable()) {
+            val orphaned = orphanCheck.isConfigured() && !orphanCheck.credentialsReadable()
+            // RÚN-02 R2 (owner decision D3), parity with iOS: credentials PROVEN
+            // present but no vault database — the residue of a wipe that deleted the
+            // file but not the keys. Nothing can be opened without the file, so
+            // erasing loses nothing; leaving it keeps the master key and the
+            // verifier / recovery blob behind an unlock that can only fail. A healthy
+            // vault always has its file (the provision creates it before any
+            // credential is written); every ambiguous read answers false.
+            val postWipeResidue = !orphaned && WipeErasePolicy.postWipeResidue(
+                credentialPair = orphanCheck.credentialPairPresence(),
+                vaultFileAbsentAllDirs = WipeRoutine.vaultFilesConfirmedAbsent(this),
+                journalConfirmedAbsent = orphanCheck.batchJournalConfirmedAbsent(),
+            )
+            if (orphaned || postWipeResidue) {
                 // Only crypto-erase when the device is UNLOCKED —
                 // parity with InactivityWipe (above) and iOS (isProtectedDataAvailable).
                 // credentialsReadable() DEFERS on a transient locked-key read, but that
@@ -680,9 +725,13 @@ class MainActivity : ComponentActivity() {
                 // vault as unreadable and wipe it. Gating on device state (not exception
                 // taxonomy) means the destructive branch is never reached while locked.
                 if (InactivityWipe.isDeviceCurrentlyLocked(this)) {
-                    platformLogWarn("MainActivity", "orphan check deferred — device locked (avoid false-wipe)")
+                    platformLogWarn("MainActivity", "orphan / residue check deferred — device locked (avoid false-wipe)")
                 } else {
-                    platformLogWarn("MainActivity", "orphaned credentials detected — wiping (clean re-provision)")
+                    platformLogWarn(
+                        "MainActivity",
+                        if (orphaned) "orphaned credentials detected — wiping (clean re-provision)"
+                        else "credentials without a vault file — erasing the leftovers",
+                    )
                     // Crypto-erase-FIRST: drop the unwrapped keyset BEFORE the
                     // Keystore master key is destroyed, so a RAM acquisition right
                     // after the wipe can't recover what the wipe just erased on

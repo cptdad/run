@@ -25,7 +25,8 @@ no cloud copy, nothing readable on the relay, nothing left on A after the wipe.
    `Contacts` (sharedSecret, alias, trust, counters, vouching), `InboxIds` (inbox ids + caps,
    6 directions since the 2026-09-24 group-inbox pair — text + control + group, each
    inbound/outbound), `ContactGroups`/`GroupMembers`, and the `_meta` table (Double Ratchet state,
-   `cap-pend`, `grp_*`, `ref_*`, `ssn:*`, UX throttles). Tens of KB for a normal user.
+   `cap-pend`, `grp_*`, `ref_*`, `ssn:*`, UX throttles). Tens of KB for a normal user. (`ssn:*`
+   persists but does not travel since RÚN-06 — see the allowlist below.)
 2. **The vault FILE is not portable.** Android keys SQLCipher in passphrase mode (PBKDF2 in the
    file header), iOS in raw-key mode — same 32 bytes, different on-disk key. Unifying was evaluated
    and rejected (bricks every iOS vault). So the bundle is a *logical* export of the records above,
@@ -69,9 +70,12 @@ no cloud copy, nothing readable on the relay, nothing left on A after the wipe.
   insurance against anything A sent between the snapshot and the freeze.
 - **D4 Read-cap rotation on B, no re-mint in phase 1.** After import B rotates the read cap of
   every inbox direction it now OWNS — `inbound`, `inbound-ctl` and (since 2026-09-24) `inbound-grp`,
-  i.e. every entry in `OWNED_READ_DIRECTIONS` (skipping inboxes referenced by pending `ref_*`
-  records). Peers are untouched. A wiped A holds nothing; an unwiped A holds sharedSecrets and
-  peer write caps — the same exposure as any unwiped stolen phone today, closed by the wipe step.
+  i.e. every entry in `OWNED_READ_DIRECTIONS`, plus (since 2026-11-23, RÚN-01) the inboxes a pending
+  introduction minted, once that introduction finalizes (deferred, not skipped, while its `ref_*`
+  record lives). The obligations are committed in the import transaction itself and drained by
+  bounded background passes; see `docs/vault-relay-internals.md` §Move. Peers are untouched. A wiped
+  A holds nothing; an unwiped A holds sharedSecrets and peer write caps — the same exposure as any
+  unwiped stolen phone today, closed by the wipe step.
   Full re-mint + ratchet-sealed announce + 7-day redrive is a phase-3 hardening, not a blocker.
 - **D5 Transport = one dedicated relay inbox, short TTL, one-shot.** A mints a fresh inbox pair
   (only the main inbox is used), uploads fixed-size sealed chunks with `?ttl=1800`, `X-No-Push`.
@@ -106,8 +110,12 @@ no cloud copy, nothing readable on the relay, nothing left on A after the wipe.
 
 `_meta` allowlist: `dr/`, `dr-rxc/`, `dr-on`, `dr-intent`, `dr-rxseen`, `dr-rxlock`,
 `dr-legacyfb`, `m2-chseen`, `ib-bound-seen/`, `cap-pend/`, `grp_` (incl. `grp_ctl_pend:`),
-`grp-ann/` (the group-inbox backfill throttle, since 2026-09-24), `ref_`, `ssn:`. Everything else
-is dropped. `ratchetMetaKeysForContact` is the source of truth for the `dr*` set — extend the
+`grp-ann/` (the group-inbox backfill throttle, since 2026-09-24), `ref_`, `group_admin:` (the
+admin-of-record tombstone), plus the later per-contact additions in `MoveMetaPolicy`. Everything else
+is dropped. Explicitly DENIED (dropped even if a broader prefix would match, and at all four filter
+sites): `grp-unread/` (unread markers) and, since RÚN-06 (2026-11-23), `ssn:` (persisted screenshot
+notices — a ≤ 24 h display hint; an older build's bundle that still carries them is filtered on
+decode and import). `ratchetMetaKeysForContact` is the source of truth for the `dr*` set — extend the
 allowlist from it, do not duplicate the list.
 
 Denylist that must be asserted by a test: no `vlt_*`, no `pin_*`, no `inactivity_*`,
@@ -146,21 +154,28 @@ Phone B (fresh install):
 2. Move ⇒ scan QR (or paste text) ⇒ parse `MoveHandle` into RAM only. No persistence: process
    death means rescan; the bundle waits on the relay for its TTL.
 3. Normal onboarding continues unchanged: PIN/passphrase, tier, provision, first unlock.
-4. First post-unlock action with a handle in RAM: progress screen "Fetching → Importing →
-   Securing".
+4. First post-unlock action with a handle in RAM: progress screen "Fetching → Importing"
+   (securing runs afterwards in the background, step d).
    a. Tor up, `GET /inbox/{id}` (drain) under `rcap`; verify count/AAD/all indices; reassemble;
       decrypt; parse; reject on any failure with the bundle still on the relay if not yet
       drained... (drain is destructive — see "Failure handling").
-   b. Import transaction: upsert contacts (+10 000 to both outbound counters), inboxes, groups,
-      members, allowlisted meta; write `mig_imported=<bundleId>` last.
+   b. Import transaction: upsert contacts (+10 000 to all three outbound counters), inboxes,
+      groups, members, allowlisted meta, then the complete rotation-obligation list
+      (`mig_rotate_pending`: every inbound + inbound-ctl + inbound-grp inbox plus every inbox a
+      pending introduction minted; no length cap) and the marker `mig_rot_v`; write
+      `mig_imported=<bundleId>` last. A failed obligation write fails (rolls back) the import.
    c. `DELETE /inbox/{id}` under `rcap`.
-   d. Rotate read caps of all inbound + inbound-ctl + inbound-grp inboxes (skip inboxes
-      referenced by pending `ref_*` records). The full to-rotate list is written to
-      `mig_rotate_pending` right after the import commits, before the first rotation, and each
-      entry is pruned when its rotation lands, so a failed referral scan, a lock mid-pass or a
-      process death leaves the remainder for the control sweep (which re-applies the referral
-      filter and rotates nothing when that scan fails); never fatal.
-   e. Route to the contact list; the normal push prompt follows.
+   d. Route to the contact list (the import is complete); the normal push prompt follows. In the
+      background, one pass works through the whole list in batches of 16, trying each entry once;
+      each control sweep then runs ≤ 4 more for what is left (unconfirmed / deferred). An export
+      started on this phone waits for the rotation in flight and stops the pass before it
+      freezes, so no rotation overlaps a later move's snapshot. An entry is removed only when its rotation
+      is confirmed or it is a documented exclusion (outbound, no cap, superseded, row gone); an
+      unconfirmed one goes to the back. Inboxes referenced by a live `ref_*` record wait (kept,
+      not dropped) and are rotated once the introduction finalizes. A failed referral scan rotates
+      nothing that pass. The settings menu shows "Switching your inboxes to new access keys…" until
+      the list is empty, and "Your inboxes now use new access keys" only then. A phone that imported
+      on an older build gets one re-rotation of every owned inbox after the update.
 
 ### Failure handling
 
@@ -238,7 +253,8 @@ a11y ids (both platforms, identical): `move_to_new_device_button`, `move_explain
 `move_qr_image`, `move_show_text_toggle`, `move_handle_text`, `move_waiting_status`,
 `move_done_wipe_button`, `move_done_keep_button`, `move_cancel_button`, `setup_choose_new`,
 `setup_choose_move`, `move_scan_view`, `move_paste_field`, `move_paste_submit`,
-`move_progress_status`, `move_error_text`, `move_error_retry`.
+`move_progress_status`, `move_error_text`, `move_error_retry`, `move_securing_status` (the settings-menu
+securing row, RÚN-01).
 
 Relay: no change required. Optional later: a dedicated `/transfer` inbox class with a 30-minute
 hard TTL so transfer inboxes never linger at the 30-day bootstrap TTL when B never comes.
@@ -253,7 +269,14 @@ commonTest
   size; relay-side 64 KiB limit respected for 200 chunks.
 - Import idempotency; counter jump; partial import re-run converges; `mig_imported` last.
 - Freeze semantics: no send/poll while `mig_frozen`; cancel refused after drain.
-- Read-cap rotation skips inboxes referenced by pending `ref_*`.
+- Read-cap rotation defers (never drops) inboxes referenced by pending `ref_*`; referral-minted
+  inboxes are owed and rotated after finalize.
+- RÚN-01 (`MoveRotationBoundaryTest`, `MoveRotationObligationsTest`): 0 / 1 / > 256 eligible
+  inboxes; each side of the import commit with a rollback-capable vault (nothing, or a committed
+  import with every obligation); a failed obligation write never yields `Success`; transient
+  failure + duplicate sweeps keep confirmed entries settled; exclusions counted per verdict; the
+  concurrent import-side pass and sweep; an old-format list; the one-time re-rotation of a
+  pre-fix import (atomic, idempotent, skipped on ambiguous reads and on a frozen vault).
 - Residue: `mig_*` keys in the purge lists (extend `MetaResiduePurgeTest`).
 
 Instrumented / platform

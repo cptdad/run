@@ -56,7 +56,8 @@
     <string name="add_contact_paste_not_ready">Boîte de réception en cours de création — réessayez dans un instant</string>
 
     <!-- vault-refused add -->
-    <string name="add_contact_inbox_in_use">Impossible d\'ajouter ce contact — l\'une des boîtes de réception de son code est déjà utilisée ici. Si vous rajoutez quelqu\'un que vous avez déjà, supprimez d\'abord l\'ancien contact, puis réessayez.</string>
+    <string name="add_contact_inbox_in_use">Impossible d\'ajouter ce contact — l\'une des boîtes de réception de son code est déjà utilisée ici. Recommencez, pour que vous affichiez tous les deux de nouveaux codes.</string>
+    <string name="add_contact_older_pairing_note">Sa version de Rún est plus ancienne : il s\'agit donc d\'un ancien appairage. Demandez à ce contact de mettre à jour Rún, puis appairez-vous à nouveau.</string>
     <string name="add_contact_pairing_failed">L\'appairage n\'a pas fonctionné : le canal sécurisé avec ce contact n\'a pas pu être établi. Recommencez pour vous appairer avec un nouveau code.</string>
     <string name="add_contact_pairing_failed_action">Recommencer</string>
     <string name="add_contact_start_again_error">Impossible de terminer l\'ajout de ce contact, et rien n\'a été enregistré. Recommencez pour obtenir un nouveau code.</string>

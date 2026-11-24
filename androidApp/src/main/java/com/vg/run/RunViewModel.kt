@@ -768,6 +768,18 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
     private var movePollJob: Job? by sessionJobs.slot()
 
     /**
+     * NEW phone: the background read-cap rotation pass started right after a
+     * successful import ([startMoveSecuring]). Its own slot so the import screen is
+     * never held by it, and every session teardown cancels it with the rest (the
+     * rotations it did not confirm stay listed for the control sweep).
+     */
+    private var moveSecureJob: Job? by sessionJobs.slot()
+
+    /** The settings-menu status row for the post-import securing ([MoveSecuringRow]). */
+    private val _moveSecuringRow = MutableStateFlow(MoveSecuringRow.HIDDEN)
+    val moveSecuringRow: StateFlow<MoveSecuringRow> = _moveSecuringRow.asStateFlow()
+
+    /**
      * True while this device is the OLD phone of a move (or is running the export
      * that makes it one): every poll loop stays down and no push registration is
      * made, while Tor and the MessageManager stay ALIVE because the transfer inbox
@@ -1307,6 +1319,71 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
     private val _wipedThisSession = MutableStateFlow(false)
     val wipedThisSession: StateFlow<Boolean> = _wipedThisSession.asStateFlow()
 
+    /**
+     * RÚN-02 (owner decisions D1/D5): a wipe's erase is not confirmed — a key, a
+     * vault prefs file or a vault file could not be proven gone ([WipeEraseLatch],
+     * RAM only). While true the old vault stays closed and no fresh setup can start
+     * (VaultSelector / CryptoManager refuse); MainActivity shows the "finishing the
+     * erase" screen with Retry in place of setup and unlock. A deniable wipe keeps
+     * its black cover (checked first) and retries silently on resume. Initialised
+     * from the latch so a launch-time wipe that ran before this ViewModel existed
+     * is reflected too.
+     */
+    private val _eraseUnresolved = MutableStateFlow(WipeEraseLatch.unresolved)
+    val eraseUnresolved: StateFlow<Boolean> = _eraseUnresolved.asStateFlow()
+
+    /**
+     * RÚN-02 deniability rule (iOS sibling: AppState.userRequestedEraseThisProcess):
+     * the EXPLICIT "Finishing the erase" screen only after a NON-deniable,
+     * user-requested wipe ("Erase and start over", the post-move wipe) ran through
+     * THIS ViewModel. Every other unresolved state shows the neutral "setup can't
+     * start yet" screen, which never mentions erasing. ViewModel-scoped, so a new
+     * ViewModel in a cached process falls back to the neutral (safe) wording.
+     */
+    private val _userRequestedErase = MutableStateFlow(false)
+    val userRequestedErase: StateFlow<Boolean> = _userRequestedErase.asStateFlow()
+
+    /** Re-reads the RAM latch (MainActivity.onResume — a retry may have resolved it
+     *  while this ViewModel was not the one running it). */
+    fun refreshEraseState() {
+        if (_eraseUnresolved.value && !WipeEraseLatch.unresolved) _eraseUnresolved.value = false
+    }
+
+    /**
+     * RÚN-02: the fresh-provision gate — call FIRST in a setup, off the main thread,
+     * before [VaultSelector.setRealCredential] (whose first seal is the first point a
+     * new keyset can be created). Refuses while an erase is unresolved; on a provably
+     * empty install (credential pair CONFIRMED absent, no vault file, no journal)
+     * deletes a leftover master key / auth-bound key, checked; always drops the
+     * cached keyset. False ⇒ do not provision; [eraseUnresolved] is raised.
+     */
+    fun prepareFreshProvision(): Boolean {
+        val app = getApplication<Application>()
+        val ok = FreshProvisionGate.prepare(
+            store = WipeRoutine.AndroidWipeKeyStore(app),
+            credentialPair = vaultSelector.credentialPairPresence(),
+            vaultFileAbsentAllDirs = WipeRoutine.vaultFilesConfirmedAbsent(app),
+            journalConfirmedAbsent = vaultSelector.batchJournalConfirmedAbsent(),
+            dropCachedKeys = { cryptoProvider.wipeKey() },
+        )
+        // A refused setup shows the blocked state either way; with no latch (nothing
+        // was ever deleted — e.g. a brand-new install whose delete could not be
+        // confirmed) Retry simply clears it and setup can be tried again.
+        _eraseUnresolved.value = WipeEraseLatch.unresolved || !ok
+        return ok
+    }
+
+    /**
+     * RÚN-02: one retry pass of a pending erase (MainActivity.onResume, the Retry
+     * button). A no-op when nothing is pending, so it can never reach a keyset
+     * created after the erase resolved. On resolution drops the cached keyset.
+     */
+    fun retryPendingErase(): Boolean {
+        val done = WipeRoutine.retryPendingErase(getApplication()) { cryptoProvider.wipeKey() }
+        _eraseUnresolved.value = !done
+        return done
+    }
+
     // Contacts the relay has persistently 404'd (inbox lost server-side) → the
     // contact list flags them for re-pair. Refreshed by the control poll below.
     private val _relayLostContacts = MutableStateFlow<Set<String>>(emptySet())
@@ -1596,6 +1673,21 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                 LogBuffer.append("W", "Contact", "saveMnemonic failed: ${e::class.simpleName}")
             }
             withContext(Dispatchers.Main) { onDone() }
+        }
+    }
+
+    /**
+     * RÚN-03: the contact list's older-pairing banner was closed. Writes the one global
+     * dismissal flag OFF the main thread, then reloads the list (the snapshot carries
+     * the flag). iOS sibling: ContactListView.dismissOlderPairingBanner.
+     */
+    fun dismissOlderPairingBannerInBackground() {
+        val v = vault
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!dismissOlderPairingBanner(v)) {
+                LogBuffer.append("W", "Contact", "older-pairing banner dismissal not saved")
+            }
+            withContext(Dispatchers.Main) { refreshContactList() }
         }
     }
 
@@ -4421,6 +4513,54 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 is MoveImportResult.Failure -> MoveImportUiState.Failed(result.error)
             }
+            // Imported is not secured: the read-cap rotations the import committed run
+            // now, in the background, while the screen moves on to the contacts. Only
+            // while THIS session is still live: a lock/wipe's `sessionJobs.cancelAll()`
+            // cancels this coroutine (it is `moveOpJob`), and this tail runs on Main
+            // with no suspension point, so `isActive` + the open vault are the check
+            // that keeps a new job from being launched after the teardown.
+            if (result is MoveImportResult.Success && isActive && vault != null) startMoveSecuring()
+        }
+    }
+
+    /**
+     * NEW phone: one bounded background pass over the read-cap rotations the import
+     * committed ([MoveManager.secureImportedInboxes]); the control sweep finishes
+     * whatever it leaves. Off Main (vault reads + Tor round trips). Never holds the
+     * import screen and never fails anything visible: an unconfirmed rotation simply
+     * stays listed. The status row is refreshed before and after.
+     */
+    private fun startMoveSecuring() {
+        if (moveSecureJob?.isActive == true) return
+        if (vault == null) return
+        moveSecureJob = viewModelScope.launch(Dispatchers.IO) {
+            if (vault == null) return@launch
+            refreshMoveSecuringRowNow()
+            try {
+                moveManagerImpl.secureImportedInboxes()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                LogBuffer.append("W", "Move", "securing pass ended early: ${e::class.simpleName}")
+            }
+            refreshMoveSecuringRowNow()
+        }
+    }
+
+    /** Re-reads the securing status row (the settings menu calls this when it opens). */
+    fun refreshMoveSecuringRow() {
+        viewModelScope.launch(Dispatchers.IO) { refreshMoveSecuringRowNow() }
+    }
+
+    private fun refreshMoveSecuringRowNow() {
+        _moveSecuringRow.value = if (vault == null) {
+            MoveSecuringRow.HIDDEN
+        } else {
+            try {
+                moveManagerImpl.securingRow()
+            } catch (e: Exception) {
+                _moveSecuringRow.value
+            }
         }
     }
 
@@ -4480,6 +4620,8 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // ProcessWipeCoverTest's source-level pin of the exact
         // "if (deniable) ProcessWipeCover.arm()" line survives untouched.
         if (deniable) _wipedThisSession.value = true
+        // RÚN-02: only a user-requested (non-deniable) wipe may later say "erase".
+        if (!deniable) _userRequestedErase.value = true
 
         // Relay-side push unregister — best-effort, NON-BLOCKING, fired
         // while the vault + relay transport are STILL alive (mirrors iOS
@@ -4570,6 +4712,9 @@ class RunViewModel(application: Application) : AndroidViewModel(application) {
         // WipeRoutine erases the key BEFORE the file, so a crash mid-wipe
         // still leaves the DB unrecoverable.
         WipeRoutine.wipePersistentState(app)
+        // RÚN-02: an unconfirmed erase blocks setup behind "finishing the erase"
+        // (a deniable wipe's black cover still wins — MainActivity checks it first).
+        _eraseUnresolved.value = WipeEraseLatch.unresolved
 
         vault = null
         // The ONE other function (besides lockSession) that

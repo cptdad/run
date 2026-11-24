@@ -175,120 +175,142 @@ object MigrationBundleCodec {
      *
      * The returned bytes are the CLEARTEXT of every shared secret and capability in the
      * vault. `secureWipe` them as soon as [MigrationSeal.seal] has consumed them.
-     * Known limitation: the intermediate JSON is a Kotlin String, which is
-     * immutable and cannot be wiped — it lives until GC. Unavoidable without a
-     * byte-level serializer, bounded by the fact that this path runs only on an
-     * unlocked device that is about to be frozen and wiped, and no worse than the
-     * envelope building every message send already does.
+     *
+     * Byte-oriented (RÚN-04 part b): the document is written piece by piece into a
+     * [WipingByteSink], which zeroes every backing array it outgrows and its final
+     * working array; no String of the whole document exists at any point. What is
+     * left (D2, by design): the per-field Strings — the String-typed [VaultSnapshot]
+     * values themselves, the base64 of each `sharedSecret`, and the escaped copy of
+     * each value (`jsonEscapeString`); each escaped value's UTF-8 temporary is wiped
+     * after it is copied into the sink.
+     *
+     * WIRE FORMAT: byte-identical to the String-based encoder it replaced — pinned by
+     * MigrationBundleGoldenTest and compared against the frozen reference
+     * (LegacyMigrationBundleCodec, commonTest). Byte identity holds by construction:
+     * the pieces are split only at ASCII JSON punctuation, never inside a value, so a
+     * surrogate pair is never split and each platform's UTF-8 of the concatenation
+     * equals the concatenation of the pieces' UTF-8 — including its own replacement
+     * for a lone surrogate (JVM `?`, Kotlin/Native EF BF BD; D4, deliberately kept).
      */
-    fun encode(b: MigrationBundle): ByteArray = encodeToString(b).encodeToByteArray()
+    fun encode(b: MigrationBundle): ByteArray = encodeInto(b, WipingByteSink())
 
-    internal fun encodeToString(b: MigrationBundle): String {
-        if (b.version != CURRENT_VERSION) throw FormatException("refusing to encode bundle version ${b.version}")
-        if (!isValidFrom(b.from)) throw FormatException("invalid 'from' tag")
-        if (!MoveHandleCodec.isValidBundleId(b.bundleId)) throw FormatException("invalid bundleId")
-        val s = b.snapshot
-        if (s.contacts.size > MAX_RECORDS || s.inboxes.size > MAX_RECORDS ||
-            s.groups.size > MAX_RECORDS || s.members.size > MAX_RECORDS
-        ) throw FormatException("too many records to encode")
-        if (s.meta.size > MAX_META_ROWS) throw FormatException("too many meta rows to encode")
-        if (b.schema < CURRENT_SCHEMA && needsCurrentSchema(s)) {
-            throw FormatException("a v3 contact or a v3 introduction needs bundle schema $CURRENT_SCHEMA")
+    /** Test-only wrapper over [encode] (existing tests read the document as text). Production never calls it. */
+    internal fun encodeToString(b: MigrationBundle): String = encode(b).decodeToString()
+
+    /** [encode] into a caller-supplied sink — the seam MigrationBundleBufferHygieneTest observes. */
+    internal fun encodeInto(b: MigrationBundle, out: WipingByteSink): ByteArray {
+        try {
+            if (b.version != CURRENT_VERSION) throw FormatException("refusing to encode bundle version ${b.version}")
+            if (!isValidFrom(b.from)) throw FormatException("invalid 'from' tag")
+            if (!MoveHandleCodec.isValidBundleId(b.bundleId)) throw FormatException("invalid bundleId")
+            val s = b.snapshot
+            if (s.contacts.size > MAX_RECORDS || s.inboxes.size > MAX_RECORDS ||
+                s.groups.size > MAX_RECORDS || s.members.size > MAX_RECORDS
+            ) throw FormatException("too many records to encode")
+            if (s.meta.size > MAX_META_ROWS) throw FormatException("too many meta rows to encode")
+            if (b.schema < CURRENT_SCHEMA && needsCurrentSchema(s)) {
+                throw FormatException("a v3 contact or a v3 introduction needs bundle schema $CURRENT_SCHEMA")
+            }
+            if (VaultSnapshotIo.v3ContactsMissingRatchetState(s)) {
+                throw FormatException("a v3 contact without its ratchet state")
+            }
+
+            out.ascii('{')
+            out.ascii("\"").ascii(K_VERSION).ascii("\":").ascii(b.version.toString())
+            out.ascii(",\"").ascii(K_SCHEMA).ascii("\":").ascii(b.schema.toString())
+            out.ascii(",\"").ascii(K_FROM).ascii("\":"); escaped(out, b.from)
+            out.ascii(",\"").ascii(K_CREATED).ascii("\":").ascii(b.createdMs.toString())
+            out.ascii(",\"").ascii(K_BID).ascii("\":"); escaped(out, b.bundleId)
+
+            out.ascii(",\"").ascii(K_CONTACTS).ascii("\":[")
+            s.contacts.forEachIndexed { i, c ->
+                if (i > 0) out.ascii(',')
+                out.ascii('{')
+                str(out, "contactId", c.contactId, first = true)
+                str(out, "sharedSecret", encodeBase64(c.sharedSecret))
+                num(out, "trustLevel", c.trustLevel.toLong())
+                str(out, "alias", c.alias)
+                num(out, "aliasLastRotated", c.aliasLastRotated)
+                str(out, "mnemonic", c.mnemonic)
+                num(out, "outboundCounter", c.outboundCounter)
+                num(out, "inboundCounter", c.inboundCounter)
+                str(out, "inboundEpoch", c.inboundEpoch)
+                num(out, "outboundCtlCounter", c.outboundCtlCounter)
+                num(out, "inboundCtlCounter", c.inboundCtlCounter)
+                // v10 — the group channel's counter space. Emitted unconditionally
+                // (numbers, never absent) so a v10 → v10 move carries the spent
+                // outbound counter; the importer adds COUNTER_JUMP to it.
+                num(out, "outboundGrpCounter", c.outboundGrpCounter)
+                num(out, "inboundGrpCounter", c.inboundGrpCounter)
+                // null is encoded by ABSENCE, so "" and null stay distinguishable.
+                if (c.vouchedByContactId != null) str(out, "vouchedByContactId", c.vouchedByContactId)
+                num(out, "vouchedAt", c.vouchedAt)
+                // v11 — present only for a v3 contact (absence = legacy), see K_CONTACT_V3.
+                if (c.ratchetBootstrapV3) num(out, K_CONTACT_V3, 1L)
+                out.ascii('}')
+            }
+            out.ascii(']')
+
+            out.ascii(",\"").ascii(K_INBOXES).ascii("\":[")
+            s.inboxes.forEachIndexed { i, r ->
+                if (i > 0) out.ascii(',')
+                out.ascii('{')
+                str(out, "inboxId", r.inboxId, first = true)
+                str(out, "contactId", r.contactId)
+                num(out, "createdAt", r.createdAt)
+                num(out, "expiresAt", r.expiresAt)
+                str(out, "direction", r.direction)
+                if (r.cap != null) str(out, "cap", r.cap)
+                out.ascii('}')
+            }
+            out.ascii(']')
+
+            out.ascii(",\"").ascii(K_GROUPS).ascii("\":[")
+            s.groups.forEachIndexed { i, g ->
+                if (i > 0) out.ascii(',')
+                out.ascii('{')
+                str(out, "groupId", g.groupId, first = true)
+                str(out, "name", g.name)
+                num(out, "epoch", g.epoch)
+                str(out, "adminMemberId", g.adminMemberId)
+                str(out, "myMemberId", g.myMemberId)
+                num(out, "createdAt", g.createdAt)
+                out.ascii('}')
+            }
+            out.ascii(']')
+
+            out.ascii(",\"").ascii(K_MEMBERS).ascii("\":[")
+            s.members.forEachIndexed { i, m ->
+                if (i > 0) out.ascii(',')
+                out.ascii('{')
+                str(out, "groupId", m.groupId, first = true)
+                str(out, "memberId", m.memberId)
+                if (m.contactId != null) str(out, "contactId", m.contactId)
+                num(out, "addedAt", m.addedAt)
+                str(out, "tags", m.tags)
+                out.ascii('}')
+            }
+            out.ascii(']')
+
+            out.ascii(",\"").ascii(K_META).ascii("\":{")
+            var firstMeta = true
+            for ((k, v) in s.meta) {
+                if (!MoveMetaPolicy.isAllowedKey(k)) continue
+                if (!firstMeta) out.ascii(',')
+                firstMeta = false
+                escaped(out, k)
+                out.ascii(':')
+                escaped(out, v)
+            }
+            out.ascii('}')
+
+            out.ascii('}')
+            return out.toByteArrayAndWipe()
+        } finally {
+            // Success: already released by toByteArrayAndWipe (no-op). Any throw: the
+            // partial document is zeroed before the exception leaves.
+            out.wipe()
         }
-        if (VaultSnapshotIo.v3ContactsMissingRatchetState(s)) {
-            throw FormatException("a v3 contact without its ratchet state")
-        }
-
-        val sb = StringBuilder(4096)
-        sb.append('{')
-        sb.append("\"").append(K_VERSION).append("\":").append(b.version)
-        sb.append(",\"").append(K_SCHEMA).append("\":").append(b.schema)
-        sb.append(",\"").append(K_FROM).append("\":").append(jsonEscapeString(b.from))
-        sb.append(",\"").append(K_CREATED).append("\":").append(b.createdMs)
-        sb.append(",\"").append(K_BID).append("\":").append(jsonEscapeString(b.bundleId))
-
-        sb.append(",\"").append(K_CONTACTS).append("\":[")
-        s.contacts.forEachIndexed { i, c ->
-            if (i > 0) sb.append(',')
-            sb.append('{')
-            str(sb, "contactId", c.contactId, first = true)
-            str(sb, "sharedSecret", encodeBase64(c.sharedSecret))
-            num(sb, "trustLevel", c.trustLevel.toLong())
-            str(sb, "alias", c.alias)
-            num(sb, "aliasLastRotated", c.aliasLastRotated)
-            str(sb, "mnemonic", c.mnemonic)
-            num(sb, "outboundCounter", c.outboundCounter)
-            num(sb, "inboundCounter", c.inboundCounter)
-            str(sb, "inboundEpoch", c.inboundEpoch)
-            num(sb, "outboundCtlCounter", c.outboundCtlCounter)
-            num(sb, "inboundCtlCounter", c.inboundCtlCounter)
-            // v10 — the group channel's counter space. Emitted unconditionally
-            // (numbers, never absent) so a v10 → v10 move carries the spent
-            // outbound counter; the importer adds COUNTER_JUMP to it.
-            num(sb, "outboundGrpCounter", c.outboundGrpCounter)
-            num(sb, "inboundGrpCounter", c.inboundGrpCounter)
-            // null is encoded by ABSENCE, so "" and null stay distinguishable.
-            if (c.vouchedByContactId != null) str(sb, "vouchedByContactId", c.vouchedByContactId)
-            num(sb, "vouchedAt", c.vouchedAt)
-            // v11 — present only for a v3 contact (absence = legacy), see K_CONTACT_V3.
-            if (c.ratchetBootstrapV3) num(sb, K_CONTACT_V3, 1L)
-            sb.append('}')
-        }
-        sb.append(']')
-
-        sb.append(",\"").append(K_INBOXES).append("\":[")
-        s.inboxes.forEachIndexed { i, r ->
-            if (i > 0) sb.append(',')
-            sb.append('{')
-            str(sb, "inboxId", r.inboxId, first = true)
-            str(sb, "contactId", r.contactId)
-            num(sb, "createdAt", r.createdAt)
-            num(sb, "expiresAt", r.expiresAt)
-            str(sb, "direction", r.direction)
-            if (r.cap != null) str(sb, "cap", r.cap)
-            sb.append('}')
-        }
-        sb.append(']')
-
-        sb.append(",\"").append(K_GROUPS).append("\":[")
-        s.groups.forEachIndexed { i, g ->
-            if (i > 0) sb.append(',')
-            sb.append('{')
-            str(sb, "groupId", g.groupId, first = true)
-            str(sb, "name", g.name)
-            num(sb, "epoch", g.epoch)
-            str(sb, "adminMemberId", g.adminMemberId)
-            str(sb, "myMemberId", g.myMemberId)
-            num(sb, "createdAt", g.createdAt)
-            sb.append('}')
-        }
-        sb.append(']')
-
-        sb.append(",\"").append(K_MEMBERS).append("\":[")
-        s.members.forEachIndexed { i, m ->
-            if (i > 0) sb.append(',')
-            sb.append('{')
-            str(sb, "groupId", m.groupId, first = true)
-            str(sb, "memberId", m.memberId)
-            if (m.contactId != null) str(sb, "contactId", m.contactId)
-            num(sb, "addedAt", m.addedAt)
-            str(sb, "tags", m.tags)
-            sb.append('}')
-        }
-        sb.append(']')
-
-        sb.append(",\"").append(K_META).append("\":{")
-        var firstMeta = true
-        for ((k, v) in s.meta) {
-            if (!MoveMetaPolicy.isAllowedKey(k)) continue
-            if (!firstMeta) sb.append(',')
-            firstMeta = false
-            sb.append(jsonEscapeString(k)).append(':').append(jsonEscapeString(v))
-        }
-        sb.append('}')
-
-        sb.append('}')
-        return sb.toString()
     }
 
     /**
@@ -307,11 +329,16 @@ object MigrationBundleCodec {
      * [MoveMetaPolicy.isAllowedKey] and disallowed ones are DROPPED (not rejected) —
      * an old or unpatched exporter, or a bundle assembled by anything but this build,
      * cannot smuggle a `vlt_*` / `pin_*` / `mig_*` row into the new vault.
+     *
+     * Byte-oriented (RÚN-04 part b): [MigJson.parseBundleDocument] scans [bytes]
+     * directly and decodes each string token on its own; no String of the whole
+     * document is built. Accept/reject decisions, values and exception messages are
+     * those of the String-based decoder it replaced (see [MigJson.parseBundleDocument]
+     * for why, and MigrationBundleGoldenTest / MigrationBundleDifferentialTest for the
+     * proof). [bytes] is not modified and not retained; the caller still wipes it.
      */
-    fun decode(bytes: ByteArray): MigrationBundle = decodeFromString(bytes.decodeToString())
-
-    internal fun decodeFromString(text: String): MigrationBundle {
-        val doc = MigJson.parseBundleDocument(text) ?: throw FormatException("malformed bundle JSON")
+    fun decode(bytes: ByteArray): MigrationBundle {
+        val doc = MigJson.parseBundleDocument(bytes) ?: throw FormatException("malformed bundle JSON")
 
         val version = doc.int(K_VERSION) ?: throw FormatException("missing bundle version")
         // Version FIRST: nothing else in the document may be interpreted under an
@@ -409,18 +436,118 @@ object MigrationBundleCodec {
         )
     }
 
+    /** Test-only wrapper over [decode] (existing tests build documents as text). Production never calls it. */
+    internal fun decodeFromString(text: String): MigrationBundle = decode(text.encodeToByteArray())
+
     /** `android` / `ios` today; kept as a bounded lowercase token so a future platform needs no codec change. */
     private fun isValidFrom(s: String): Boolean =
         s.isNotEmpty() && s.length <= MAX_FROM_LEN &&
             s.all { it in 'a'..'z' || it in '0'..'9' || it == '_' || it == '-' }
 
-    private fun str(sb: StringBuilder, key: String, value: String, first: Boolean = false) {
-        if (!first) sb.append(',')
-        sb.append('"').append(key).append("\":").append(jsonEscapeString(value))
+    private fun str(out: WipingByteSink, key: String, value: String, first: Boolean = false) {
+        if (!first) out.ascii(',')
+        out.ascii('"').ascii(key).ascii("\":")
+        escaped(out, value)
     }
 
-    private fun num(sb: StringBuilder, key: String, value: Long) {
-        sb.append(",\"").append(key).append("\":").append(value)
+    private fun num(out: WipingByteSink, key: String, value: Long) {
+        out.ascii(",\"").ascii(key).ascii("\":").ascii(value.toString())
+    }
+
+    /**
+     * `jsonEscapeString(value)` as UTF-8, appended. One whole value per call — never a
+     * part of one — which is what keeps a surrogate pair (and each platform's
+     * lone-surrogate replacement) exactly as the String-based encoder wrote it. The
+     * UTF-8 temporary is zeroed once copied; the escaped String itself is immutable.
+     */
+    private fun escaped(out: WipingByteSink, value: String) {
+        val utf8 = jsonEscapeString(value).encodeToByteArray()
+        try {
+            out.bytes(utf8)
+        } finally {
+            utf8.secureWipe()
+        }
+    }
+}
+
+/**
+ * The bundle encoder's output buffer (RÚN-04 part b): a growable byte array that
+ * ZEROES every backing array it outgrows, and its final working array once the
+ * exact-size result has been copied out ([toByteArrayAndWipe]) or the encode failed
+ * ([wipe]). Growth doubles, so a several-MB bundle costs O(n) copying.
+ *
+ * [onRetired] is a test seam only (MigrationBundleBufferHygieneTest): it receives each
+ * retired array AFTER it was zeroed. Production passes null.
+ */
+internal class WipingByteSink(
+    initialCapacity: Int = 4096,
+    private val onRetired: ((ByteArray) -> Unit)? = null,
+) {
+    private var buf = ByteArray(initialCapacity.coerceAtLeast(16))
+    private var size = 0
+    private var released = false
+
+    /** Appends one ASCII char (JSON punctuation). */
+    fun ascii(c: Char): WipingByteSink {
+        require(c.code < 0x80) { "not ASCII" }
+        ensure(1)
+        buf[size++] = c.code.toByte()
+        return this
+    }
+
+    /** Appends an ASCII-only string (a key constant or a decimal number). */
+    fun ascii(s: String): WipingByteSink {
+        ensure(s.length)
+        for (c in s) {
+            require(c.code < 0x80) { "not ASCII" }
+            buf[size++] = c.code.toByte()
+        }
+        return this
+    }
+
+    fun bytes(b: ByteArray): WipingByteSink {
+        ensure(b.size)
+        b.copyInto(buf, destinationOffset = size)
+        size += b.size
+        return this
+    }
+
+    /** The exact-size result (owned by the caller); the working array is zeroed and dropped. */
+    fun toByteArrayAndWipe(): ByteArray {
+        check(!released) { "sink already released" }
+        val result = buf.copyOf(size)
+        wipe()
+        return result
+    }
+
+    /** Zeroes and drops the working array. Idempotent. */
+    fun wipe() {
+        if (released) return
+        released = true
+        val old = buf
+        buf = ByteArray(0)
+        size = 0
+        retire(old)
+    }
+
+    private fun ensure(extra: Int) {
+        check(!released) { "sink already released" }
+        val need = size + extra
+        // > 2 GiB: unreachable for a real vault (the seal caps the plaintext at ~12 MB).
+        if (need < 0) throw MigrationBundleCodec.FormatException("bundle too large to encode")
+        if (need <= buf.size) return
+        var cap = buf.size
+        while (cap < need) cap = if (cap > Int.MAX_VALUE / 2) need else cap * 2
+        val old = buf
+        // Swap first, then retire: if the seam throws, the live buffer is the new one
+        // and the encoder's `finally` still zeroes it.
+        buf = old.copyOf(cap)
+        retire(old)
+    }
+
+    private fun retire(old: ByteArray) {
+        old.secureWipe()
+        onRetired?.invoke(old)
     }
 }
 
@@ -874,26 +1001,94 @@ internal object MigJson {
         return if (negative) -acc else acc
     }
 
-    /** Parses the bundle document, or null if it is not exactly the expected shape. */
-    fun parseBundleDocument(body: String): MigDocument? {
-        val s = body
-        var i = 0
-        fun skipWs() { while (i < s.length && s[i].isWhitespace()) i++ }
+    /**
+     * Parses the bundle document, or null if it is not exactly the expected shape.
+     *
+     * Byte-oriented (RÚN-04 part b) and an exact port of the String-based reader it
+     * replaced, which ran over the whole document decoded to one String: same grammar,
+     * same order of checks, same limits, same first-duplicate-wins rule, same values.
+     * Why scanning bytes gives the same answers as scanning the decoded String
+     * (an argument; the proof is MigrationBundleGoldenTest + MigrationBundleDifferentialTest
+     * on the JVM and Kotlin/Native):
+     *
+     *  - Every structural token is ASCII, and an ASCII byte is never part of a
+     *    multi-byte or malformed UTF-8 sequence (continuation bytes are 0x80–0xBF; both
+     *    platforms' decoders end a bad sequence before an ASCII byte). So the String's
+     *    ASCII chars sit exactly at the ASCII bytes, and a slice between two ASCII bytes
+     *    decodes to exactly the chars the whole-document decode had there — including
+     *    each platform's own U+FFFD replacement for malformed input (D4, kept).
+     *  - A string token is found by skipping one byte after each `\` up to the closing
+     *    `"`; its raw slice alone is decoded to a String and unescaped with
+     *    `jsonUnescapeString` — per field, as before.
+     *  - Outside strings, a run of non-ASCII bytes is decoded as one piece and walked
+     *    char by char ([Scanner.peek]/[Scanner.advance]), so `Char.isWhitespace()` sees
+     *    the same chars it saw before (U+00A0, U+2028, U+3000 … between tokens are still
+     *    accepted, on each platform by its own `isWhitespace`), and a bare scalar keeps
+     *    the same text.
+     */
+    fun parseBundleDocument(bytes: ByteArray): MigDocument? = Scanner(bytes).document()
 
-        // ---- a JSON string starting at s[i] == '"' ----
+    private class Scanner(private val b: ByteArray) {
+        private val n = b.size
+
+        /** Byte position. While [run] is set, it is the START of that run. */
+        private var i = 0
+
+        // A run of non-ASCII bytes OUTSIDE a string, decoded as one piece. Only an
+        // unusual document has one (Unicode whitespace, a non-ASCII bare scalar,
+        // malformed bytes); a bundle this codec wrote has none.
+        private var run: String? = null
+        private var runEnd = 0
+        private var k = 0
+
+        private fun atEnd(): Boolean = run == null && i >= n
+
+        /** The current char. Precondition: !atEnd(). */
+        private fun peek(): Char {
+            val r = run
+            if (r != null) return r[k]
+            val x = b[i]
+            if (x >= 0) return x.toInt().toChar()
+            var e = i
+            while (e < n && b[e] < 0) e++
+            val s = b.decodeToString(i, e)
+            run = s
+            runEnd = e
+            k = 0
+            return s[0]
+        }
+
+        /** Moves past the current char. Precondition: peek() was called for it. */
+        private fun advance() {
+            val r = run
+            if (r != null) {
+                k++
+                if (k == r.length) { run = null; i = runEnd }
+            } else {
+                i++
+            }
+        }
+
+        private fun skipWs() { while (!atEnd() && peek().isWhitespace()) advance() }
+
+        // ---- a JSON string starting at the current char == '"' ----
         fun readString(): String? {
-            if (i >= s.length || s[i] != '"') return null
+            if (atEnd() || peek() != '"') return null
+            // '"' is ASCII, so no run is active and b[i] is the quote.
             i++
-            val sb = StringBuilder()
-            while (i < s.length) {
-                val c = s[i]
-                when {
-                    c == '\\' -> {
-                        if (i + 1 >= s.length) return null
-                        sb.append(c).append(s[i + 1]); i += 2
+            val start = i
+            while (i < n) {
+                when (b[i]) {
+                    BACKSLASH -> {
+                        if (i + 1 >= n) return null
+                        i += 2
                     }
-                    c == '"' -> { i++; return jsonUnescapeString(sb.toString()) }
-                    else -> { sb.append(c); i++ }
+                    QUOTE -> {
+                        val raw = b.decodeToString(start, i)
+                        i++
+                        return jsonUnescapeString(raw)
+                    }
+                    else -> i++
                 }
             }
             return null
@@ -901,29 +1096,34 @@ internal object MigJson {
 
         // ---- a bare scalar token (number / true / false / null) ----
         fun readBareScalar(): String? {
-            val start = i
-            while (i < s.length && s[i] != ',' && s[i] != '}' && s[i] != ']' && !s[i].isWhitespace()) i++
-            return if (i > start) s.substring(start, i) else null
+            var sb: StringBuilder? = null
+            while (!atEnd()) {
+                val c = peek()
+                if (c == ',' || c == '}' || c == ']' || c.isWhitespace()) break
+                (sb ?: StringBuilder().also { sb = it }).append(c)
+                advance()
+            }
+            return sb?.toString()
         }
 
         // ---- a FLAT object: {"k":<string|scalar>, …}. Any nesting inside ⇒ reject. ----
         fun readFlatObject(limit: Int): Map<String, JsonScalar>? {
             skipWs()
-            if (i >= s.length || s[i] != '{') return null
-            i++
+            if (atEnd() || peek() != '{') return null
+            advance()
             val out = LinkedHashMap<String, JsonScalar>()
             skipWs()
-            if (i < s.length && s[i] == '}') { i++; return out }
-            while (i < s.length) {
+            if (!atEnd() && peek() == '}') { advance(); return out }
+            while (!atEnd()) {
                 skipWs()
-                if (i >= s.length || s[i] != '"') return null
+                if (atEnd() || peek() != '"') return null
                 val key = readString() ?: return null
                 skipWs()
-                if (i >= s.length || s[i] != ':') return null
-                i++
+                if (atEnd() || peek() != ':') return null
+                advance()
                 skipWs()
-                if (i >= s.length) return null
-                val value: JsonScalar = when (s[i]) {
+                if (atEnd()) return null
+                val value: JsonScalar = when (peek()) {
                     '"' -> JsonScalar(readString() ?: return null, true)
                     '{', '[' -> return null           // no nesting inside a record / meta
                     else -> JsonScalar(readBareScalar() ?: return null, false)
@@ -933,10 +1133,10 @@ internal object MigJson {
                 if (!out.containsKey(key)) out[key] = value
                 if (out.size > limit) return null
                 skipWs()
-                if (i >= s.length) return null
-                when (s[i]) {
-                    ',' -> { i++; continue }
-                    '}' -> { i++; return out }
+                if (atEnd()) return null
+                when (peek()) {
+                    ',' -> { advance(); continue }
+                    '}' -> { advance(); return out }
                     else -> return null
                 }
             }
@@ -946,20 +1146,20 @@ internal object MigJson {
         // ---- an array of flat objects ----
         fun readObjectArray(): List<Map<String, JsonScalar>>? {
             skipWs()
-            if (i >= s.length || s[i] != '[') return null
-            i++
+            if (atEnd() || peek() != '[') return null
+            advance()
             val out = ArrayList<Map<String, JsonScalar>>()
             skipWs()
-            if (i < s.length && s[i] == ']') { i++; return out }
-            while (i < s.length) {
+            if (!atEnd() && peek() == ']') { advance(); return out }
+            while (!atEnd()) {
                 val obj = readFlatObject(MAX_ELEMENTS) ?: return null
                 out.add(obj)
                 if (out.size > MAX_ELEMENTS) return null
                 skipWs()
-                if (i >= s.length) return null
-                when (s[i]) {
-                    ',' -> { i++; continue }
-                    ']' -> { i++; return out }
+                if (atEnd()) return null
+                when (peek()) {
+                    ',' -> { advance(); continue }
+                    ']' -> { advance(); return out }
                     else -> return null
                 }
             }
@@ -969,16 +1169,19 @@ internal object MigJson {
         // ---- skip an unknown value (forward compatibility), iteratively ----
         fun skipValue(): Boolean {
             skipWs()
-            if (i >= s.length) return false
-            when (s[i]) {
+            if (atEnd()) return false
+            when (peek()) {
                 '"' -> return readString() != null
                 '{', '[' -> {
+                    // The opener is ASCII, so no run is active. Inside, only `"{[]}` count
+                    // and every other byte (non-ASCII included) is skipped one by one —
+                    // the same positions the char loop skipped.
                     var depth = 0
-                    while (i < s.length) {
-                        when (s[i]) {
-                            '"' -> { if (readString() == null) return false }
-                            '{', '[' -> { depth++; i++ }
-                            '}', ']' -> { depth--; i++; if (depth == 0) return true }
+                    while (i < n) {
+                        when (b[i]) {
+                            QUOTE -> { if (readString() == null) return false }
+                            LBRACE, LBRACKET -> { depth++; i++ }
+                            RBRACE, RBRACKET -> { depth--; i++; if (depth == 0) return true }
                             else -> i++
                         }
                     }
@@ -988,61 +1191,70 @@ internal object MigJson {
             }
         }
 
-        skipWs()
-        if (i >= s.length || s[i] != '{') return null
-        i++
-        val scalars = LinkedHashMap<String, JsonScalar>()
-        val arrays = LinkedHashMap<String, List<Map<String, JsonScalar>>>()
-        var meta: Map<String, String> = emptyMap()
-        var metaSeen = false
-        skipWs()
-        if (i < s.length && s[i] == '}') {
-            i++
-            return MigDocument(scalars, arrays, meta)
-        }
-        while (i < s.length) {
+        fun document(): MigDocument? {
             skipWs()
-            if (i >= s.length || s[i] != '"') return null
-            val key = readString() ?: return null
+            if (atEnd() || peek() != '{') return null
+            advance()
+            val scalars = LinkedHashMap<String, JsonScalar>()
+            val arrays = LinkedHashMap<String, List<Map<String, JsonScalar>>>()
+            var meta: Map<String, String> = emptyMap()
+            var metaSeen = false
             skipWs()
-            if (i >= s.length || s[i] != ':') return null
-            i++
-            skipWs()
-            if (i >= s.length) return null
-            when {
-                key in ARRAY_KEYS -> {
-                    if (arrays.containsKey(key)) return null       // duplicate top-level array
-                    arrays[key] = readObjectArray() ?: return null
-                }
-                key == "meta" -> {
-                    if (metaSeen) return null
-                    metaSeen = true
-                    val flat = readFlatObject(MAX_META_ROWS) ?: return null
-                    val m = LinkedHashMap<String, String>(flat.size)
-                    for ((k, v) in flat) {
-                        if (!v.isString) return null                // meta values are always strings
-                        m[k] = v.text
+            if (!atEnd() && peek() == '}') {
+                advance()
+                return MigDocument(scalars, arrays, meta)
+            }
+            while (!atEnd()) {
+                skipWs()
+                if (atEnd() || peek() != '"') return null
+                val key = readString() ?: return null
+                skipWs()
+                if (atEnd() || peek() != ':') return null
+                advance()
+                skipWs()
+                if (atEnd()) return null
+                when {
+                    key in ARRAY_KEYS -> {
+                        if (arrays.containsKey(key)) return null       // duplicate top-level array
+                        arrays[key] = readObjectArray() ?: return null
                     }
-                    meta = m
+                    key == "meta" -> {
+                        if (metaSeen) return null
+                        metaSeen = true
+                        val flat = readFlatObject(MAX_META_ROWS) ?: return null
+                        val m = LinkedHashMap<String, String>(flat.size)
+                        for ((mk, v) in flat) {
+                            if (!v.isString) return null                // meta values are always strings
+                            m[mk] = v.text
+                        }
+                        meta = m
+                    }
+                    peek() == '"' -> {
+                        val v = readString() ?: return null
+                        if (!scalars.containsKey(key)) scalars[key] = JsonScalar(v, true)
+                    }
+                    peek() == '{' || peek() == '[' -> { if (!skipValue()) return null }   // unknown structured field
+                    else -> {
+                        val v = readBareScalar() ?: return null
+                        if (!scalars.containsKey(key)) scalars[key] = JsonScalar(v, false)
+                    }
                 }
-                s[i] == '"' -> {
-                    val v = readString() ?: return null
-                    if (!scalars.containsKey(key)) scalars[key] = JsonScalar(v, true)
-                }
-                s[i] == '{' || s[i] == '[' -> { if (!skipValue()) return null }   // unknown structured field
-                else -> {
-                    val v = readBareScalar() ?: return null
-                    if (!scalars.containsKey(key)) scalars[key] = JsonScalar(v, false)
+                skipWs()
+                if (atEnd()) return null
+                when (peek()) {
+                    ',' -> { advance(); continue }
+                    '}' -> { advance(); return MigDocument(scalars, arrays, meta) }
+                    else -> return null
                 }
             }
-            skipWs()
-            if (i >= s.length) return null
-            when (s[i]) {
-                ',' -> { i++; continue }
-                '}' -> { i++; return MigDocument(scalars, arrays, meta) }
-                else -> return null
-            }
+            return null
         }
-        return null
     }
+
+    private const val QUOTE: Byte = 0x22
+    private const val BACKSLASH: Byte = 0x5C
+    private const val LBRACE: Byte = 0x7B
+    private const val RBRACE: Byte = 0x7D
+    private const val LBRACKET: Byte = 0x5B
+    private const val RBRACKET: Byte = 0x5D
 }

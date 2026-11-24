@@ -43,7 +43,8 @@
     <string name="add_contact_copied_bang">Копирано!</string>
     <string name="add_contact_invalid_code">Невалиден код</string>
     <string name="add_contact_paste_not_ready">Сандачето сè уште се поставува — обидете се повторно за момент</string>
-    <string name="add_contact_inbox_in_use">Контактот не можеше да се додаде — едно од сандачињата во нивниот код веќе се користи тука. Ако повторно додавате некого што веќе го имате, прво избришете го стариот контакт, па обидете се повторно.</string>
+    <string name="add_contact_inbox_in_use">Контактот не можеше да се додаде — едно од сандачињата во нивниот код веќе се користи тука. Започнете одново, за двајцата да прикажете нови кодови.</string>
+    <string name="add_contact_older_pairing_note">Нивната верзија на Rún е постара, па ова е постаро спарување. Замолете ги да го ажурираат Rún, а потоа спарете се повторно.</string>
     <string name="add_contact_pairing_failed">Спарувањето не успеа: безбедниот канал со овој контакт не можеше да се воспостави. Започнете одново за да се спарите со нов код.</string>
     <string name="add_contact_pairing_failed_action">Започни одново</string>
     <string name="add_contact_start_again_error">Не можеше да се заврши додавањето на овој контакт и ништо не беше зачувано. Започнете одново за да добиете нов код.</string>

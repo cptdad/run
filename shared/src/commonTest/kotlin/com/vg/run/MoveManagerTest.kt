@@ -495,7 +495,11 @@ class MoveManagerTest {
         assertTrue(result is MoveImportResult.Success, "expected Success, got $result")
         assertEquals(1, result.contacts)
         assertEquals(1, result.groups)
-        assertEquals(listOf(MoveImportStep.FETCHING, MoveImportStep.IMPORTING, MoveImportStep.SECURING), steps)
+        // RÚN-01: securing is no longer a step of the import screen.
+        assertEquals(listOf(MoveImportStep.FETCHING, MoveImportStep.IMPORTING), steps)
+        assertTrue(transport.rotated.isEmpty(), "the import itself rotates nothing")
+        // The background pass the platform starts right after the import.
+        mgr.secureImportedInboxes()
 
         // Both outbound counters jumped, exactly once.
         val imported = target.getContact("contact-1")
@@ -515,7 +519,10 @@ class MoveManagerTest {
         assertEquals(CAP_D, target.getInboxId(INBOUND_CTL_INBOX)?.cap)
         assertEquals(CAP_A, target.getInboxId(REFERRAL_INBOX)?.cap, "a referral-referenced inbox must keep its cap")
         assertEquals(CAP_C, target.getInboxId(OUTBOUND_INBOX)?.cap, "an outbound row is not ours to rotate")
-        assertNull(target.getMeta(MoveManager.META_ROTATE_PENDING), "nothing deferred on a clean securing pass")
+        assertEquals(
+            REFERRAL_INBOX, target.getMeta(MoveManager.META_ROTATE_PENDING),
+            "the referral-referenced inbox stays owed (deferred until its record resolves), never dropped",
+        )
     }
 
     // ---- import cancellation: rethrow BEFORE the commit, swallow AFTER it --------
@@ -548,10 +555,9 @@ class MoveManagerTest {
     }
 
     @Test
-    fun aCancelAfterTheCommit_stillReturnsSuccess_andLeavesTheRotationsListed() = runTest {
+    fun aCancelDuringTheSecuringPass_afterTheCommit_leavesTheRotationsListed() = runTest {
         val (handle, chunks) = sealSnapshot(VaultSnapshotIo.export(seededVault()))
         val target = MoveFakeVault()
-        val steps = mutableListOf<MoveImportStep>()
         val transport = FakeMoveTransport().apply {
             drainBlobs = chunks
             rotateSuspend = { awaitCancellation() }
@@ -559,9 +565,11 @@ class MoveManagerTest {
         val mgr = manager(target, FakeSession(transport))
 
         var result: MoveImportResult? = null
-        val job = launch { result = mgr.importFromHandle(handle) { steps.add(it) } }
-        testScheduler.runCurrent()          // suspended inside the first rotation (SECURING)
-        assertEquals(MoveImportStep.SECURING, steps.last(), "precondition: the import committed")
+        val job = launch {
+            result = mgr.importFromHandle(handle) {}
+            mgr.secureImportedInboxes()
+        }
+        testScheduler.runCurrent()          // suspended inside the first rotation of the securing pass
         job.cancel()
         job.join()
 
@@ -586,6 +594,7 @@ class MoveManagerTest {
         val mgr = manager(target, FakeSession(transport))
 
         val result = mgr.importFromHandle(handle) {}
+        mgr.secureImportedInboxes()
 
         assertTrue(result is MoveImportResult.Success, "a failed rotation must never fail the import: $result")
         assertEquals(INBOUND_CTL_INBOX, target.getMeta(MoveManager.META_ROTATE_PENDING))
@@ -608,29 +617,38 @@ class MoveManagerTest {
         val mgr = manager(target, FakeSession(transport))
 
         assertTrue(mgr.importFromHandle(handle) {} is MoveImportResult.Success)
+        // Committed WITH the import: every owned row is owed, the referral-referenced
+        // one included (it is deferred at pass time, not left out).
+        assertEquals(
+            "$INBOUND_INBOX,$INBOUND_CTL_INBOX,$REFERRAL_INBOX", target.getMeta(MoveManager.META_ROTATE_PENDING),
+        )
+        mgr.secureImportedInboxes()
 
         assertEquals(2, seenAtRotation.size, "two owned inboxes rotate: $seenAtRotation")
         // Before the FIRST rotation the whole obligation is already on disk…
-        assertEquals("$INBOUND_INBOX,$INBOUND_CTL_INBOX", seenAtRotation[0])
+        assertEquals("$INBOUND_INBOX,$INBOUND_CTL_INBOX,$REFERRAL_INBOX", seenAtRotation[0])
         // …and each success prunes its own entry.
-        assertEquals(INBOUND_CTL_INBOX, seenAtRotation[1])
-        assertNull(target.getMeta(MoveManager.META_ROTATE_PENDING), "a clean pass leaves nothing listed")
-        // A referral-referenced inbox is never listed (and never rotated).
-        assertTrue(seenAtRotation.none { it != null && REFERRAL_INBOX in it }, "$seenAtRotation")
+        assertEquals("$INBOUND_CTL_INBOX,$REFERRAL_INBOX", seenAtRotation[1])
+        assertEquals(REFERRAL_INBOX, target.getMeta(MoveManager.META_ROTATE_PENDING), "only the deferred entry is left")
+        // A referral-referenced inbox is never rotated while its record lives.
         assertFalse(REFERRAL_INBOX in transport.rotated)
     }
 
     @Test
     fun importFromHandle_aVaultClosedMidPass_leavesTheUnrotatedTailListed() = runTest {
-        // A lock closes the vault while the securing pass is still running: every read
-        // after that throws. The obligation for what did not rotate must survive.
+        // A lock closes the vault while the securing pass is still running: every
+        // read answers nothing and every write throws (the iOS shape). The
+        // obligations for what was not confirmed on disk must survive.
         val source = seededVault()
         val (handle, chunks) = sealSnapshot(VaultSnapshotIo.export(source))
         var closed = false
         val target = object : MoveFakeVault() {
-            override fun getInboxId(inboxId: String): InboxIdRecord? {
+            override val isOpen: Boolean get() = !closed
+            override fun getInboxId(inboxId: String): InboxIdRecord? = if (closed) null else super.getInboxId(inboxId)
+            override fun getMeta(key: String): String? = if (closed) null else super.getMeta(key)
+            override fun putMeta(key: String, value: String) {
                 if (closed) throw IllegalStateException("closed")
-                return super.getInboxId(inboxId)
+                super.putMeta(key, value)
             }
         }
         val transport = FakeMoveTransport().apply {
@@ -640,10 +658,12 @@ class MoveManagerTest {
         val mgr = manager(target, FakeSession(transport))
 
         assertTrue(mgr.importFromHandle(handle) {} is MoveImportResult.Success)
+        mgr.secureImportedInboxes()
 
+        closed = false                      // the next unlock
         val listed = target.getMeta(MoveManager.META_ROTATE_PENDING)
-        assertNotNull(listed, "the un-rotated inbox must stay listed for the sweep")
-        assertTrue(INBOUND_CTL_INBOX in listed, listed)
+        assertNotNull(listed, "the un-confirmed inboxes must stay listed for the sweep")
+        assertTrue(INBOUND_INBOX in listed && INBOUND_CTL_INBOX in listed, listed)
     }
 
     @Test
@@ -657,6 +677,7 @@ class MoveManagerTest {
         val mgr = manager(target, FakeSession(transport))
 
         assertTrue(mgr.importFromHandle(handle) {} is MoveImportResult.Success)
+        mgr.secureImportedInboxes()
 
         assertTrue(transport.rotated.isEmpty(), "an unprovable rotation is deferred, never run")
         assertEquals(
@@ -753,6 +774,8 @@ class MoveManagerTest {
     @Test
     fun retryPendingMoveRotations_isANoOpWithoutATransportAndDropsDeadEntries() {
         val vault = MoveFakeVault()
+        vault.putMeta(MoveMetaKeys.IMPORTED, "bundle-1")
+        vault.putMeta(MoveMetaKeys.ROTATE_VERSION, "2")
         vault.putMeta(MoveManager.META_ROTATE_PENDING, INBOUND_INBOX)
 
         // No transport: the obligation must survive for a later sweep.
@@ -766,17 +789,22 @@ class MoveManagerTest {
     }
 
     @Test
-    fun retryPendingMoveRotations_neverRotatesAReferralReferencedEntry() {
+    fun retryPendingMoveRotations_neverRotatesAReferralReferencedEntry_andKeepsItOwed() {
         val vault = MoveFakeVault()
         vault.insertInboxId(InboxIdRecord(REFERRAL_INBOX, "contact-1", 1L, 2L, "inbound", CAP_A))
         vault.putMeta("ref_p:intro1", """{"mi":"$REFERRAL_INBOX","mr":"$CAP_A"}""")
+        vault.putMeta(MoveMetaKeys.IMPORTED, "bundle-1")
+        vault.putMeta(MoveMetaKeys.ROTATE_VERSION, "2")
         vault.putMeta(MoveManager.META_ROTATE_PENDING, REFERRAL_INBOX)
         val relay = RecordingRelayHttp()
 
         retryPendingMoveRotations(vault, MessageManager(vault, "http://relay.test", relay))
 
         assertTrue(relay.calls.none { REFERRAL_INBOX in it.url }, "a referral inbox must never be rotated")
-        assertNull(vault.getMeta(MoveManager.META_ROTATE_PENDING), "the entry is dropped, exactly as at import")
+        assertEquals(
+            REFERRAL_INBOX, vault.getMeta(MoveManager.META_ROTATE_PENDING),
+            "deferred, NOT dropped: it is rotated once the referral resolves",
+        )
         assertEquals(CAP_A, vault.getInboxId(REFERRAL_INBOX)?.cap)
     }
 
@@ -786,6 +814,8 @@ class MoveManagerTest {
             override fun metaKeys(): List<String> = throw RuntimeException("scan failed")
         }
         vault.insertInboxId(InboxIdRecord(INBOUND_INBOX, "contact-1", 1L, 2L, "inbound", CAP_A))
+        vault.putMeta(MoveMetaKeys.IMPORTED, "bundle-1")
+        vault.putMeta(MoveMetaKeys.ROTATE_VERSION, "2")
         vault.putMeta(MoveManager.META_ROTATE_PENDING, INBOUND_INBOX)
         val relay = RecordingRelayHttp()
 
@@ -842,6 +872,7 @@ class MoveManagerTest {
         // actuals) is what erases them.
         val keys = listOf(
             MoveMetaKeys.FROZEN, MoveMetaKeys.HANDLE, MoveMetaKeys.IMPORTED, MoveManager.META_ROTATE_PENDING,
+            MoveMetaKeys.ROTATE_VERSION,
         )
         for (k in keys) {
             assertFalse(isGroupMetaResidueForGroup(k, "g"), k)

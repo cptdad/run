@@ -161,6 +161,10 @@ struct ContentView: View {
         // connection-log panel does not exist). Absent unless armed; in RELEASE an
         // EmptyView overlay — no test surface.
         .overlay(alignment: .bottomLeading) { testNetworkKickOverlay }
+        // RÚN-02 device procedure (DEBUG only — `--test-wipe-probe`): the last wipe
+        // probe line as an accessibility VALUE, readable on every screen including
+        // setup and the black cover. In RELEASE an EmptyView overlay.
+        .overlay(alignment: .bottomTrailing) { wipeProbeOverlay }
         .onChange(of: scenePhase) { phase in
             // Only `.active` and `.background` — NEVER the transient `.inactive`
             // (Face ID / Control Center; the Lever-B re-lock lesson).
@@ -201,6 +205,52 @@ struct ContentView: View {
                 .foregroundColor(.white)
                 .padding(.top, 8)
             }
+        } else if appState.eraseUnresolved && !appState.wipedThisSession && appState.userRequestedEraseThisProcess {
+            // RÚN-02 (owner decision D1): the user asked for this erase IN THIS
+            // PROCESS ("Erase and start over", the post-move wipe) and it is not
+            // confirmed yet — so, and ONLY so, the screen may say so. Replaces setup
+            // and unlock (the controller refuses both). Above the EULA gate. No
+            // detail about which item failed.
+            GateNoticeScreen(
+                icon: "hourglass",
+                tint: .yellow,
+                title: L10n.pinEraseFinishingTitle,
+                message: L10n.pinEraseFinishingMessage
+            ) {
+                Button {
+                    appState.retryPendingErase(trigger: "button")
+                } label: {
+                    gateButtonLabel(L10n.commonRetry)
+                }
+                .foregroundColor(.white)
+                .padding(.top, 8)
+                .accessibilityIdentifier("erase_retry_button")
+            }
+            .containerA11yId("finishing_erase")
+        } else if appState.eraseUnresolved && !appState.wipedThisSession {
+            // RÚN-02 deniability rule: every OTHER unresolved state — leftovers found
+            // at launch after a relaunch, the unattended launch wipes, a refused
+            // fresh-setup purge — looks like a setup that cannot start yet. Nothing
+            // here (text, icon or accessibility id) may mention erasing: that would
+            // prove a wipe happened on a phone that must look never configured. The
+            // deniable in-session wipe never lands here (`!wipedThisSession` → the
+            // black cover, silent retries, D2).
+            GateNoticeScreen(
+                icon: "exclamationmark.circle",
+                tint: .yellow,
+                title: L10n.pinDeviceKeyBusyTitle,
+                message: L10n.pinSetupBlockedMessage
+            ) {
+                Button {
+                    appState.retryPendingErase(trigger: "button")
+                } label: {
+                    gateButtonLabel(L10n.commonRetry)
+                }
+                .foregroundColor(.white)
+                .padding(.top, 8)
+                .accessibilityIdentifier("setup_retry_button")
+            }
+            .containerA11yId("setup_blocked")
         } else if acceptedEulaVersion < EulaConsent.version && !appState.wipedThisSession {
             // Deniability: a DENIABLE panic wipe clears
             // the EULA-accepted flag (clearWipeResidue), resetting
@@ -487,6 +537,22 @@ struct ContentView: View {
                 .contentShape(Rectangle())
                 .accessibilityElement()
                 .accessibilityIdentifier("test_network_kick_probe")
+                .accessibilityLabel(Text(summary))
+                .accessibilityValue(Text(summary))
+        }
+        #endif
+    }
+
+    /// RÚN-02 wipe probe (`wipe_probe`). Flags, counts and OSStatus numbers only.
+    @ViewBuilder
+    private var wipeProbeOverlay: some View {
+        #if DEBUG
+        if let summary = appState.wipeProbeSummary {
+            Color.clear
+                .frame(width: 6, height: 6)
+                .contentShape(Rectangle())
+                .accessibilityElement()
+                .accessibilityIdentifier("wipe_probe")
                 .accessibilityLabel(Text(summary))
                 .accessibilityValue(Text(summary))
         }

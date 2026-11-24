@@ -222,6 +222,35 @@ karaa*) — never a promise, never a request.
 - **de/da:** the comma before the relative clause (*die du tippst*, *ord, du
   skriver*) is grammatical, not stylistic — keep it.
 
+### Pairing-kind sweep (2026-11-23, RÚN-03)
+
+`contact_list_pairing_*`, `contact_list_pair_again_*`,
+`contact_list_older_pairing_banner`, `add_contact_older_pairing_note`
+(ContactListScreen.kt / ContactListView.swift, AddContactScreen.kt /
+AddContactView.swift). Hard rules in every locale:
+
+- "pair again" reuses the established pairing lexeme (see the ratchet-refusal
+  sweep above). "pairing" (noun) is the noun of `add_contact_cancel_pairing`.
+- **"Current"** (`contact_list_pairing_current`) is a LABEL and is quoted
+  byte-identically in step 3 of `contact_list_pair_again_steps`. It means "the
+  up-to-date kind", not "the present one"; pick the adjective that reads as the
+  newer kind next to "Older pairing".
+- **"Older pairing"** is the opposite label, used the same way in the banner and
+  the add-contact note. Never "legacy", "insecure", "v3", "old version", and no
+  version numbers.
+- Plain words only: no "forward secrecy", no "key exchange", no cipher names.
+  "key" in `contact_list_pair_again_why` is the everyday word for what opens the
+  messages.
+- Order in `contact_list_pair_again_steps` is binding: pair again, check, THEN
+  delete the old contact. Never reorder or merge steps 3 and 4.
+
+| English term | en rendering |
+| --- | --- |
+| Pairing (menu caption) | Pairing |
+| Current (label) | Current |
+| Older pairing (label) | Older pairing |
+| How to pair again | How to pair again |
+
 ## sv — Swedish
 
 | concept | rendering |

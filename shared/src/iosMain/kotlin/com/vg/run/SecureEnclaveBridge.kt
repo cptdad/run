@@ -59,8 +59,14 @@ interface SecureEnclaveBridge {
      */
     fun isKeyPresent(): Boolean
 
-    /** Deletes the SE key (called from the wipe path). */
+    /** Deletes the SE key, unchecked (delegates to [deleteKeyChecked] in Swift). */
     fun deleteKey()
+
+    /**
+     * RÚN-02: deletes the SE key and proves it gone with an ATTRIBUTE probe (never a
+     * key reference: no use, no prompt). See [KeychainDeleteResult].
+     */
+    fun deleteKeyChecked(): KeychainDeleteResult
 }
 
 object SecureEnclaveBridgeHolder {

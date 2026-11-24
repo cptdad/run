@@ -259,6 +259,16 @@ struct PinSetupView: View {
         let baseLevel = honestPersistedLevel(level, leverBEnabled: false)
         appState.setRealCredentialWithLevel(credential, passphraseMode: usesPassphrase, level: baseLevel) { ok in
             guard ok else {
+                // RÚN-02: refused because a wipe's erase is unresolved (or leftover
+                // keys could not be purged). AppState has already raised
+                // eraseUnresolved, so ContentView replaces this screen with
+                // "finishing the erase"; nothing was written. Just drop the input.
+                if appState.eraseUnresolved {
+                    pin = ""; chosen = ""; phrase = ""; chosenPhrase = ""
+                    chosenCredential = ""
+                    processing = false
+                    return
+                }
                 // PROVISION-1: `ok == false` covers BOTH a retryable provisioning
                 // failure and the provision guard refusing because a vault database
                 // is already there. Only the first is worth shaking-and-retrying —

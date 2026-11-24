@@ -34,6 +34,7 @@
     <string name="group_info_leave_confirm_admin_message">Vous êtes l\'administrateur. Transférez d\'abord ce rôle, sinon plus personne ne pourra modifier la liste des membres.</string>
     <string name="group_info_leave_confirm_message">Les autres membres seront informés de votre départ.</string>
     <string name="group_info_leave_unread_warning">Ce que vous avez envoyé et que les autres n\'ont pas encore lu risque de ne jamais leur être affiché.</string>
+    <string name="group_info_leave_kept_note">Rún conserve dans votre coffre-fort chiffré une note privée avec l\'identifiant de ce groupe et le nom de son admin, afin de pouvoir vous avertir si quelqu\'un d\'autre vous y invite plus tard ; la note vous suit sur un nouveau téléphone et n\'est effacée que lorsque Rún est effacé.</string>
     <string name="group_info_leave_confirm_action">Quitter</string>
     <string name="group_info_choose_admin_title">Choisir un nouvel admin</string>
     <string name="group_info_choose_admin_subtitle_android">Cette personne pourra ajouter et retirer des membres après votre départ.</string>

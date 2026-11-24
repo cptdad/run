@@ -190,15 +190,96 @@ import shared
         SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     }
 
-    /// Deletes the device key from Keychain.
+    /// Deletes the device key from Keychain. Kept for the mint path's orphan cleanup
+    /// (`getOrCreateKey`); it goes through the checked delete and ignores the
+    /// outcome there. Every wipe path calls `deleteKeyChecked()` and acts on it.
     @objc public func deleteKey() {
-        let query: [String: Any] = [
+        _ = deleteKeyChecked()
+    }
+
+    // -----------------------------------------------------------------------
+    // RÚN-02 — CHECKED deletion. Each delete keeps its OSStatus and is followed
+    // by a verify probe: an ATTRIBUTE query (no data, no key use), so the probe
+    // can never read secret bytes. Outcome codes are Kotlin's EraseOutcome:
+    // 0 DELETED (delete succeeded, probe: not found), 1 ALREADY_ABSENT (delete
+    // and probe: not found), 2 UNRESOLVED (anything else — the item still
+    // visible, a refused delete, or a probe that could not answer). Kotlin
+    // additionally refuses to trust "absent" while protected data is
+    // unavailable: whether a locked keybag can see these items at all is what
+    // the RÚN-02 device procedure measures.
+    // -----------------------------------------------------------------------
+
+    /// The decision for one delete + its verify probe. The mapping lives in Kotlin
+    /// (`classifyKeychainDelete`, pinned by iosTest) so there is exactly one copy.
+    static func classifyDelete(deleteStatus: OSStatus, probeStatus: OSStatus) -> KeychainDeleteResult {
+        KeychainBridgeKt.classifyKeychainDelete(deleteStatus: deleteStatus, probeStatus: probeStatus)
+    }
+
+    /// Worst of two outcomes (one service's leftover makes the whole sweep unresolved).
+    static func combineDeletes(_ a: KeychainDeleteResult, _ b: KeychainDeleteResult) -> KeychainDeleteResult {
+        KeychainBridgeKt.combineKeychainDeletes(a: a, b: b)
+    }
+
+    /// Attribute-only presence probe for [query] (one item, or every item of a service).
+    static func attributeProbe(_ query: [String: Any], all: Bool = false) -> OSStatus {
+        var q = query
+        q[kSecReturnAttributes as String] = true
+        q[kSecMatchLimit as String] = all ? kSecMatchLimitAll : kSecMatchLimitOne
+        var out: AnyObject?
+        return SecItemCopyMatching(q as CFDictionary, &out)
+    }
+
+    /// Deletes the device key and proves it gone.
+    @objc public func deleteKeyChecked() -> KeychainDeleteResult {
+        let query = baseQuery()
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        return KeychainHelper.classifyDelete(deleteStatus: deleteStatus,
+                                             probeStatus: KeychainHelper.attributeProbe(query))
+    }
+
+    /// The block-list item (BlockStore: service `com.vg.run.crypto`, account
+    /// `blocked_contacts_v1` — keep both in step with UserSafety.swift).
+    private let blockListAccount = "blocked_contacts_v1"
+
+    private func blockListQuery() -> [String: Any] {
+        [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: blockListAccount,
         ]
-        SecItemDelete(query as CFDictionary)
     }
+
+    /// Deletes the block list (sealed, or a pre-fix PLAINTEXT list of contact IDs) and proves it gone.
+    @objc public func deleteBlockListChecked() -> KeychainDeleteResult {
+        let query = blockListQuery()
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        return KeychainHelper.classifyDelete(deleteStatus: deleteStatus,
+                                             probeStatus: KeychainHelper.attributeProbe(query))
+    }
+
+    #if DEBUG
+    /// DEBUG-ONLY (`--test-wipe-probe`, the RÚN-02 device procedure): presence flags
+    /// and item COUNTS only — never a value, never an account name. 1 = present,
+    /// 0 = absent, ?<status> = the Keychain could not answer.
+    func debugWipeProbe() -> String {
+        func presence(_ s: OSStatus) -> String { s == errSecSuccess ? "1" : (s == errSecItemNotFound ? "0" : "?\(s)") }
+        func count(_ svc: String) -> String {
+            let q: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: svc,
+                kSecReturnAttributes as String: true,
+                kSecMatchLimit as String: kSecMatchLimitAll,
+            ]
+            var out: AnyObject?
+            let s = SecItemCopyMatching(q as CFDictionary, &out)
+            if s == errSecItemNotFound { return "0" }
+            guard s == errSecSuccess else { return "?\(s)" }
+            return "\((out as? [Any])?.count ?? 1)"
+        }
+        return "dk=\(presence(KeychainHelper.attributeProbe(baseQuery()))) kv=\(count(kvService)) " +
+            "diag=\(count(diagService)) bl=\(presence(KeychainHelper.attributeProbe(blockListQuery())))"
+    }
+    #endif
 
     // -----------------------------------------------------------------------
     // Generic keyed storage (KeyValueStore backing). Holds the vault credential
@@ -303,21 +384,38 @@ import shared
         return status == errSecSuccess || status == errSecItemNotFound
     }
 
+    /// Unchecked sweep (the DEBUG e2e wipe); the outcome is the checked one's.
     @objc public func kvDeleteAll() {
-        let query: [String: Any] = [
+        _ = kvDeleteAllChecked()
+    }
+
+    /// RÚN-02: sweeps the kv service AND the diagnostic service, then proves both
+    /// empty with an attribute-only match-all probe.
+    ///
+    /// The diagnostic service is swept by the SAME call, deliberately: this is
+    /// the one Keychain sweep that BOTH the production wipe
+    /// (IosAppController.emergencyWipe → KeychainBridge.kvDeleteAllChecked, which
+    /// runs AFTER the crypto-erase there) and the DEBUG e2e wipe
+    /// (RunApp.wipeAllPersistentStateForTest → kvDeleteAll) already call, so a
+    /// breadcrumb cannot survive a wipe through a call site someone forgot to
+    /// update. AppState.clearWipeResidue() ALSO removes it explicitly, as the
+    /// Swift-side belt — same belt-and-braces posture as the EULA flag. See diagService.
+    @objc public func kvDeleteAllChecked() -> KeychainDeleteResult {
+        let kv: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: kvService,
         ]
-        SecItemDelete(query as CFDictionary)
-        // The diagnostic service is swept by the SAME call, deliberately: this is
-        // the one Keychain sweep that BOTH the production wipe
-        // (IosAppController.emergencyWipe → KeychainBridge.kvDeleteAll, which runs
-        // AFTER the crypto-erase there) and the DEBUG e2e wipe
-        // (RunApp.wipeAllPersistentStateForTest) already call, so a breadcrumb
-        // cannot survive a wipe through a call site someone forgot to update.
-        // AppState.clearWipeResidue() ALSO removes it explicitly, as the Swift-side
-        // belt — same belt-and-braces posture as the EULA flag. See diagService.
-        diagDeleteAll()
+        let kvStatus = SecItemDelete(kv as CFDictionary)
+        let kvResult = KeychainHelper.classifyDelete(deleteStatus: kvStatus,
+                                                     probeStatus: KeychainHelper.attributeProbe(kv, all: true))
+        let diag: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: diagService,
+        ]
+        let diagStatus = SecItemDelete(diag as CFDictionary)
+        let diagResult = KeychainHelper.classifyDelete(deleteStatus: diagStatus,
+                                                       probeStatus: KeychainHelper.attributeProbe(diag, all: true))
+        return KeychainHelper.combineDeletes(kvResult, diagResult)
     }
 
     // -----------------------------------------------------------------------
@@ -403,13 +501,6 @@ import shared
         SecItemDelete(diagBaseQuery(key) as CFDictionary)
     }
 
-    /// Sweeps the whole diagnostic service. Called from [kvDeleteAll] so every
-    /// existing wipe path gets it for free — see the comment there.
-    private func diagDeleteAll() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: diagService,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
+    // The whole diagnostic service is swept (checked) by kvDeleteAllChecked, so
+    // every wipe path gets it for free — see the comment there.
 }

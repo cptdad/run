@@ -69,7 +69,8 @@ internal open class InMemoryVault : VaultDatabase {
         groups.remove(groupId)
         groupMembers.removeAll { it.groupId == groupId }
         // Mirror production: purge group-scoped _meta residue via the shared
-        // classifier (group_admin: tombstone deliberately retained).
+        // classifier (group_admin: tombstone deliberately retained; a CONTACT delete
+        // rewrites it instead, see deleteContact).
         meta.keys.filter { isGroupMetaResidueForGroup(it, groupId) }.forEach { meta.remove(it) }
         // Mirror production: purge this group's persisted screenshot notices.
         meta.keys.toList()
@@ -113,6 +114,11 @@ internal open class InMemoryVault : VaultDatabase {
         meta.keys.toList()
             .filter { isReferralMetaKey(it) && isReferralMetaResidueForContact(it, meta[it], contactId) }
             .forEach { meta.remove(it) }
+        // Mirror production (RÚN-06): an admin-of-record tombstone naming the contact
+        // is REWRITTEN to "gone", never purged (the warning must keep firing).
+        meta.keys.toList()
+            .filter { groupAdminTombstoneNamesContact(it, meta[it], contactId) }
+            .forEach { meta[it] = GroupAdminTombstone.DELETED_ADMIN }
         // Production behaviour: group member rows become unresolved.
         for (i in groupMembers.indices) {
             if (groupMembers[i].contactId == contactId) {

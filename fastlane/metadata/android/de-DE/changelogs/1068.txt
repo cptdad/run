@@ -1,1 +1,5 @@
-• Schließt sich die App, während eine Gruppeneinladung, eine Mitgliederänderung oder ein Austritt noch gesendet wird, erhalten die nicht erreichten Mitglieder sie, wenn du die App das nächste Mal öffnest.
+• Jeder Kontakt zeigt, ob er die aktuelle oder eine ältere Kopplung nutzt.
+• Nach einem Telefonwechsel zeigt das Menü, wann deine Postfächer neue Zugangsschlüssel nutzen.
+• Eine Löschung prüft jeden Löschvorgang; gelöschte Gruppen und Kontakte hinterlassen weniger Spuren.
+• Durch das Schließen der App unterbrochene Gruppenänderungen erreichen fehlende Mitglieder beim nächsten Mal.
+• Layoutkorrekturen, u. a. beim Passphrase-Feld und bei Sprachen mit Schreibrichtung rechts nach links.

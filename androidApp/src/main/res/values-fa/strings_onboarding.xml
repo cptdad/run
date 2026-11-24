@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">قفل باز نمی‌شود؟ از کد بازیابی استفاده کنید</string>
     <string name="pin_orphaned_vault_notice">روی این دستگاه گاوصندوقی هست، اما نه PIN برای آن ذخیره شده و نه عبارت عبور؛ پس هیچ چیز نمی‌تواند آن را باز کند. محتوای آن قابل بازیابی نیست.</string>
     <string name="pin_erase_start_over">پاک کردن و شروع دوباره</string>
+    <string name="pin_erase_finishing_title">تکمیل پاک‌سازی</string>
+    <string name="pin_setup_blocked_message">راه‌اندازی هنوز نمی‌تواند شروع شود. قفل گوشی را باز کنید، سپس روی «تلاش دوباره» بزنید.</string>
+    <string name="pin_erase_finishing_message">برخی داده‌های این گوشی هنوز پاک نشده‌اند. قفل گوشی را باز کنید، سپس روی «تلاش دوباره» بزنید. وقتی پاک‌سازی کامل شود، راه‌اندازی باز می‌شود.</string>
 
     <!-- Passphrase strength meter -->
     <string name="pin_strength_too_weak">خیلی ضعیف</string>

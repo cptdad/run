@@ -22,6 +22,9 @@
     <string name="pin_use_recovery_code_prompt">Entsperren klappt nicht? Wiederherstellungscode nutzen</string>
     <string name="pin_orphaned_vault_notice">Auf diesem Gerät liegt ein Tresor, aber es ist weder eine PIN noch eine Passphrase dafür gespeichert — nichts kann ihn öffnen. Sein Inhalt lässt sich nicht wiederherstellen.</string>
     <string name="pin_erase_start_over">Löschen und neu beginnen</string>
+    <string name="pin_erase_finishing_title">Löschen wird abgeschlossen</string>
+    <string name="pin_setup_blocked_message">Die Einrichtung kann noch nicht starten. Entsperre dein Telefon und tippe dann auf „Wiederholen“.</string>
+    <string name="pin_erase_finishing_message">Einige Daten auf diesem Telefon wurden noch nicht gelöscht. Entsperre dein Telefon und tippe dann auf „Wiederholen“. Die Einrichtung öffnet sich, sobald das Löschen abgeschlossen ist.</string>
 
     <!-- Passphrase strength meter -->
     <string name="pin_strength_too_weak">Zu schwach</string>

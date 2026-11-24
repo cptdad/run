@@ -37,6 +37,7 @@
     <string name="group_info_leave_confirm_admin_message">Eres el administrador. Cede el cargo primero o nadie podrá cambiar la lista de miembros.</string>
     <string name="group_info_leave_confirm_message">Se avisará a los demás miembros de que has salido.</string>
     <string name="group_info_leave_unread_warning">Puede que nunca se les muestre a los demás lo que hayas enviado y aún no hayan leído.</string>
+    <string name="group_info_leave_kept_note">Rún guarda en tu caja fuerte cifrada una nota privada con el ID de este grupo y quién era su administrador, para poder avisarte si alguien te invita de nuevo más adelante; la nota se traslada contigo a un teléfono nuevo y solo se borra cuando se borra Rún.</string>
     <string name="group_info_leave_confirm_action">Salir</string>
     <string name="group_info_choose_admin_title">Elige un administrador nuevo</string>
     <string name="group_info_choose_admin_subtitle_android">Podrá añadir y quitar miembros cuando salgas.</string>

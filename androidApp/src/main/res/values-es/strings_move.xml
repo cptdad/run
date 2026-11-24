@@ -63,4 +63,6 @@
     <string name="move_error_import">No se ha podido terminar de traer tus datos. Inténtalo de nuevo.</string>
     <string name="move_error_already_imported">Este teléfono ya se ha hecho cargo de un traslado.</string>
     <string name="move_import_skip_label">Continuar sin ello</string>
+    <string name="move_securing_pending">Cambiando tus buzones a claves de acceso nuevas…</string>
+    <string name="move_securing_done">Tus buzones ya usan claves de acceso nuevas</string>
 </resources>

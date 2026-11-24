@@ -63,4 +63,6 @@
     <string name="move_error_import">Lama dhammaystiri karin soo wareejinta xogtaada. Isku day mar kale.</string>
     <string name="move_error_already_imported">Taleefankan horey ayuu u qaatay wareejin.</string>
     <string name="move_import_skip_label">Sii wad la\'aanteed</string>
+    <string name="move_securing_pending">Sanduuqyadaada waxaa loo beddelayaa furayaal gelitaan oo cusub…</string>
+    <string name="move_securing_done">Sanduuqyadaadu hadda waxay isticmaalaan furayaal gelitaan oo cusub</string>
 </resources>

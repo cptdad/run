@@ -95,6 +95,15 @@ data class ReceivedMessage(
     // both UIs keyed on "rx-{counter}". Empty only for test / system-notice messages the
     // UI keys by other means.
     val dedupeId: String = "",
+    // The identity of the RELAY BLOB this message was decrypted from, stable across a
+    // re-delivery of that same blob (RÚN-05). [dedupeId] is NOT: a ratchet receive gets a
+    // fresh "dr-<n>" on every decrypt, so a blob an abandoned screen poll decrypted and
+    // the relay then handed back would look like a new message. Ratchet: a truncated
+    // SHA-256 of the wire bytes; legacy: the channel tag + the sender's sealed counter.
+    // Unique per (sender contact, blob) — compare it together with the sender. RAM only,
+    // never persisted, never logged, never shown. Empty for control items and test /
+    // system messages (an empty key never matches anything).
+    val blobKey: String = "",
 )
 
 /**
@@ -174,6 +183,24 @@ private object PendingLegacyRegistry {
  */
 internal fun receiveDedupeId(ratchet: Boolean, counter: Long): String =
     if (ratchet) "dr-$counter" else "rx-$counter"
+
+/**
+ * [ReceivedMessage.blobKey] of a RATCHET receive: the first 16 bytes of SHA-256 over the
+ * wire bytes, hex. A re-delivered blob is byte-identical, so it gets the same key; the
+ * relay cannot mint a second valid wire for one message. RAM only (RÚN-05).
+ */
+internal fun ratchetBlobKey(wire: ByteArray): String = "w:" + bytesToHex(sha256(wire).copyOfRange(0, 16))
+
+/**
+ * [ReceivedMessage.blobKey] of a LEGACY receive: the channel tag, the envelope epoch and
+ * the sender's counter, all sealed inside the AEAD. The counter is strict-monotonic per
+ * (contact, channel) WITHIN one epoch, and the epoch is derived from the pairing secret,
+ * so a re-pairing that ever reused a contactId would restart the counter under a NEW
+ * epoch and could not collide. Unique per sender, stable across a re-delivery of the
+ * same blob (RÚN-05).
+ */
+internal fun legacyBlobKey(chan: MessageManager.Chan, epoch: String, counter: Long): String =
+    "l:${chan.tag}:$epoch:$counter"
 
 /**
  * Source of the `n` in a ratchet receive's UI id ("dr-{n}", [receiveDedupeId]).
@@ -4900,7 +4927,10 @@ class MessageManager(
     } catch (_: Exception) { false }
 
     /** True when [contactId] was paired with the one-time ratchet bootstrap (the
-     *  contact-row flag). Never throws; an unreadable row answers false. */
+     *  contact-row flag). Never throws; an unreadable row answers false. Not the
+     *  source of the contact menu's "Current" / "Older pairing" label: that false-on-
+     *  error would show a current contact as older. The UIs project the flag from the
+     *  record they already loaded ([ContactPairing.kindOf]). */
     fun isRatchetBootstrapV3(contactId: String): Boolean = try {
         databaseManager.getContact(contactId)?.let { c -> c.sharedSecret.secureWipe(); c.ratchetBootstrapV3 } ?: false
     } catch (_: Exception) { false }
@@ -5576,7 +5606,10 @@ class MessageManager(
             }
             val rxId = RatchetReceiveIds.next()
             consumedIds = true
-            out.add(env.toReceived(counter = rxId, dedupeId = receiveDedupeId(ratchet = true, counter = rxId)))
+            out.add(env.toReceived(
+                counter = rxId, dedupeId = receiveDedupeId(ratchet = true, counter = rxId),
+                blobKey = ratchetBlobKey(wires[wireIndex]),
+            ))
         }
         // Migrate-on-write: a vault written by an older build still holds the retired
         // per-contact count. Deleted on the first drain that surfaced a text (one read,
@@ -7176,7 +7209,10 @@ class MessageManager(
             // transit). Flag only once we have a baseline in this epoch.
             val gap = lastCounter > 0 && counter > lastCounter + 1
             messages.add(
-                env.toReceived(counter = counter, sequenceGap = gap, dedupeId = receiveDedupeId(ratchet = false, counter = counter))
+                env.toReceived(
+                    counter = counter, sequenceGap = gap, dedupeId = receiveDedupeId(ratchet = false, counter = counter),
+                    blobKey = legacyBlobKey(chan, env.epoch ?: "", counter),
+                )
             )
             lastCounter = counter
             advanced = true
@@ -8112,11 +8148,14 @@ class MessageManager(
     /** What a receive path surfaces for an envelope that passed all its checks. The
      *  defaults are [ReceivedMessage]'s own (control items carry no counter, no gap
      *  and no UI id). The text is display-capped here, once, for every path. */
-    private fun Envelope.toReceived(counter: Long = 0, sequenceGap: Boolean = false, dedupeId: String = ""): ReceivedMessage =
+    private fun Envelope.toReceived(
+        counter: Long = 0, sequenceGap: Boolean = false, dedupeId: String = "", blobKey: String = "",
+    ): ReceivedMessage =
         ReceivedMessage(
             text = capMessageForDisplay(text), timestamp = timestamp, counter = counter,
             sequenceGap = sequenceGap, groupId = groupId, membershipHash = membershipHash,
             controlKind = controlKind, controlBody = controlBody, dedupeId = dedupeId,
+            blobKey = blobKey,
         )
 
     internal class Envelope(

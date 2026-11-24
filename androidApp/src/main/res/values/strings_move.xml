@@ -92,4 +92,10 @@
     <string name="move_error_already_imported">This phone has already taken over a move.</string>
     <string name="move_import_skip_label">Continue without it</string>
 
+    <!-- New phone — settings-menu status after the import: the inboxes in use are
+         switched to new access keys in the background; the second line only once
+         every owed switch is confirmed. Deliberately claims no more than that. -->
+    <string name="move_securing_pending">Switching your inboxes to new access keys…</string>
+    <string name="move_securing_done">Your inboxes now use new access keys</string>
+
 </resources>

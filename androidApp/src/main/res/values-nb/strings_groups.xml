@@ -34,6 +34,7 @@
     <string name="group_info_leave_confirm_admin_message">Du er administrator. Overfør rollen først, ellers kan ingen endre medlemslisten.</string>
     <string name="group_info_leave_confirm_message">De andre medlemmene får beskjed om at du har forlatt gruppen.</string>
     <string name="group_info_leave_unread_warning">Det du har sendt som de andre ikke har lest ennå, blir kanskje aldri vist for dem.</string>
+    <string name="group_info_leave_kept_note">Rún beholder et privat notat om gruppens ID og hvem som var administrator, i det krypterte hvelvet ditt, slik at du kan bli varslet hvis noen andre senere inviterer deg tilbake. Notatet følger deg til en ny telefon og slettes først når Rún slettes.</string>
     <string name="group_info_leave_confirm_action">Forlat</string>
     <string name="group_info_choose_admin_title">Velg ny administrator</string>
     <string name="group_info_choose_admin_subtitle_android">Vedkommende kan legge til og fjerne medlemmer etter at du har forlatt gruppen.</string>

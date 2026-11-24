@@ -45,8 +45,18 @@ internal fun loadContactListSnapshot(
     val known = contacts.map { it.contactId }.toSet()
     val maximumIds = (maximumShield?.claimedContactIds() ?: emptySet()).filter { it in known }.toSet()
     val lostIds = contacts.filter { secureChannelLost(it.contactId) }.map { it.contactId }.toSet()
-    return ContactListSnapshot(contacts, groups, staleIds, pendingIds, maximumIds, lostIds)
+    // RÚN-03: the pairing kind rides in each projected item (from the row flag, before
+    // the secret wipe above); the banner's one global dismissal flag is read here.
+    val bannerDismissed = OlderPairingBanner.isDismissed(vault)
+    return ContactListSnapshot(contacts, groups, staleIds, pendingIds, maximumIds, lostIds, bannerDismissed)
 }
+
+/**
+ * RÚN-03: records the older-pairing banner's dismissal (one global `_meta` flag, not
+ * carried by a move, erased by a wipe). Never throws.
+ */
+internal fun dismissOlderPairingBanner(vault: VaultDatabase?): Boolean =
+    vault != null && OlderPairingBanner.dismiss(vault)
 
 /**
  * Persists a mnemonic change. ContactEdits.updateMnemonic re-reads the row and

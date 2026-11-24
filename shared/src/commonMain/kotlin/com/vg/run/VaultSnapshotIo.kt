@@ -80,6 +80,13 @@ object VaultSnapshotIo {
      *   re-checked here rather than trusted from the caller, so a snapshot built
      *   by hand (or a future bug in [export]) can never smuggle a `vlt_*` or other
      *   denied key into the vault.
+     * - The post-import read-cap rotation obligations ([moveRotationObligations]:
+     *   every owned inbox plus every inbox a pending introduction minted) are
+     *   written into [MoveMetaKeys.ROTATE_PENDING], together with the
+     *   [MoveMetaKeys.ROTATE_VERSION] marker, INSIDE this transaction and before
+     *   [MoveMetaKeys.IMPORTED]. So the store shows either no committed import or a
+     *   committed import with every obligation, never an import whose obligations
+     *   an interruption lost; a failed obligation write rolls the import back.
      * - [MoveMetaKeys.IMPORTED] is written LAST, strictly after every other write
      *   in the batch, so its presence is proof the whole import landed.
      *
@@ -92,6 +99,9 @@ object VaultSnapshotIo {
         // Before anything is written (the decoder already refuses such a bundle; this
         // keeps every other caller of import from creating the dead contact either).
         if (v3ContactsMissingRatchetState(snapshot)) throw IncompleteSnapshotException()
+        // Pure function of the snapshot: computed before the transaction, so nothing
+        // inside it can fail on a scan.
+        val obligations = moveRotationObligations(snapshot)
         db.withTransaction {
             if (db.getMeta(MoveMetaKeys.IMPORTED) == bundleId) return@withTransaction
 
@@ -110,6 +120,12 @@ object VaultSnapshotIo {
             for ((key, value) in snapshot.meta) {
                 if (MoveMetaPolicy.isAllowedKey(key)) db.putMeta(key, value)
             }
+
+            // The rotation obligations commit WITH the import (see the KDoc). `putMeta`
+            // throws on failure, which rolls everything above back too.
+            if (obligations.isEmpty()) db.deleteMeta(MoveMetaKeys.ROTATE_PENDING)
+            else db.putMeta(MoveMetaKeys.ROTATE_PENDING, MoveRotation.encode(obligations))
+            db.putMeta(MoveMetaKeys.ROTATE_VERSION, MoveRotation.VERSION)
 
             // Must be the LAST write in the batch — its presence is what the
             // idempotency guard above (and the caller's "did it land" check) trusts.

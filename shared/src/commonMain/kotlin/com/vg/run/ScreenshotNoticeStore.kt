@@ -26,8 +26,10 @@ package com.vg.run
 // value `<takenAtMs>|<isGroup 0/1>|<seen 0/1>`. No alias, no text, no capability,
 // no key material — ids the vault already holds in its own tables plus two
 // timestamps. Bounded at [MAX_PER_CONVERSATION] rows per conversation and
-// self-expiring after [SCREENSHOT_NOTICE_TTL_MS]; pruned on write, on read, and
-// on the background control sweep (SessionManagers).
+// self-expiring after [SCREENSHOT_NOTICE_TTL_MS]; pruned on write, on read, at
+// session start (GroupManager init — no transport needed) and on the background
+// control sweep (SessionManagers). NOT carried by a device move (MoveMetaPolicy
+// denies `ssn:`, RÚN-06).
 //
 // PURGE COUPLING (the rule from docs/vault-relay-internals.md): these keys are
 // classified by `isScreenshotNoticeResidueForContact` / `…ForGroup` in
@@ -361,9 +363,10 @@ internal class ScreenshotNoticeStore(
 
     /**
      * Deletes every expired or undecodable `ssn:` row, across all conversations.
-     * There is no timer: this rides the background control sweep (SessionManagers),
-     * whose first pass runs seconds after unlock, and the per-conversation prunes in
-     * [record] / [list] cover everything between sweeps. Never throws.
+     * There is no timer: this runs once at session start (GroupManager init, which
+     * needs no transport) and rides the background control sweep (SessionManagers),
+     * and the per-conversation prunes in [record] / [list] cover everything between
+     * sweeps. A row whose READ fails is left alone (ambiguous absence). Never throws.
      */
     fun pruneExpired() {
         val now = clock()

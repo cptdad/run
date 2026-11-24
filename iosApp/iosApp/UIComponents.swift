@@ -257,6 +257,11 @@ private struct PasteBlockedSecureField: UIViewRepresentable {
                         action: #selector(Coordinator.editingChanged(_:)),
                         for: .editingChanged)
         field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        // One line tall, always. A UITextField hugs its height only weakly, and SwiftUI
+        // reads a weak hug as "may stretch": next to a Spacer the field then filled the
+        // whole screen, and the button under it jumped by a third of the screen each time
+        // the keyboard came or went (seen on film, unlock screen, 2026-11-23).
+        field.setContentHuggingPriority(.required, for: .vertical)
         field.accessibilityIdentifier = identifier
         return field
     }
